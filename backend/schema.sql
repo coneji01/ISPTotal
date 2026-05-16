@@ -218,13 +218,16 @@ CREATE TABLE IF NOT EXISTS empleados (
   cedula TEXT UNIQUE,
   telefono TEXT,
   tipo TEXT,
+  tipo_otro TEXT,
   salario REAL,
   periodo TEXT DEFAULT 'mensual',
   dia_pago1 INTEGER,
   dia_pago2 INTEGER,
   fecha_ingreso DATE,
+  usuario_id INTEGER,
   activo INTEGER DEFAULT 1,
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
 );
 
 CREATE TABLE IF NOT EXISTS prestamos_empleado (

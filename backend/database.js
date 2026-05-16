@@ -13,4 +13,8 @@ db.pragma('foreign_keys = ON');
 const schema = fs.readFileSync(path.join(__dirname, 'schema.sql'), 'utf-8');
 db.exec(schema);
 
+// Migration: Add nuevos campos a empleados si no existen
+try { db.exec("ALTER TABLE empleados ADD COLUMN tipo_otro TEXT"); } catch(e) {}
+try { db.exec("ALTER TABLE empleados ADD COLUMN usuario_id INTEGER REFERENCES usuarios(id)"); } catch(e) {}
+
 module.exports = db;

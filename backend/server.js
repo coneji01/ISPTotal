@@ -113,6 +113,8 @@ app.get('/modulo', requireAuth, (req, res) => {
       break;
     }
     case 'NuevoCliente': {
+      data.zonas = db.prepare('SELECT * FROM zonas ORDER BY nombre').all();
+      data.planes = db.prepare('SELECT * FROM planes ORDER BY nombre').all();
       break;
     }
     case 'Ordenes': {
@@ -185,6 +187,7 @@ app.get('/modulo', requireAuth, (req, res) => {
         SELECT e.*, COALESCE((SELECT SUM(restante) FROM prestamos_empleado WHERE empleado_id=e.id AND restante>0),0) as deuda
         FROM empleados e ORDER BY e.id DESC
       `).all();
+      data.usuarios = db.prepare('SELECT id, username, nombre, rol FROM usuarios WHERE activo=1').all();
       break;
     }
     case 'PagosAdmin': {
@@ -317,6 +320,81 @@ app.post("/api/routers/:id/resync", requireAuth, async (req, res) => {
   res.json(result);
 });
 
+// ======== NUEVO CLIENTE API ========
+app.post('/api/nuevo-cliente/verificar-documento', requireAuth, (req, res) => {
+  const { tipo, numero } = req.body;
+  if (!numero) return res.json({ existe: false });
+  const cliente = tipo === 'rnc'
+    ? db.prepare('SELECT id, nombre, cedula, telefono FROM clientes WHERE cedula=?').get(numero)
+    : db.prepare('SELECT id, nombre, cedula, telefono FROM clientes WHERE cedula=?').get(numero);
+  if (cliente) {
+    return res.json({ existe: true, cliente: cliente });
+  }
+  res.json({ existe: false });
+});
+
+app.post('/api/nuevo-cliente/save', requireAuth, (req, res) => {
+  const {
+    tipo_doc, cedula, name, alias, phone, phone2, address, observations,
+    sector_id, plan_id, billing_type, dia_generacion, dia_corte,
+    wifi_ssid, wifi_pass, precio_instalacion,
+    crear_factura_instalacion, instalacion_pagada
+  } = req.body;
+
+  if (!name || !phone || !address) {
+    return res.json({ success: false, message: 'Nombre, tel\u00e9fono y direcci\u00f3n son requeridos' });
+  }
+
+  const docNum = cedula || '';
+
+  // 1. Crear cliente
+  const clienteResult = db.prepare(
+    'INSERT INTO clientes (nombre, cedula, telefono, telefono2, direccion, apodo, zona_id) VALUES (?,?,?,?,?,?,?)'
+  ).run(name, docNum, phone, phone2 || null, address, alias || null, sector_id || null);
+
+  const clienteId = clienteResult.lastInsertRowid;
+
+  // 2. Crear servicio si hay plan
+  let servicioId = null;
+  if (plan_id) {
+    const servResult = db.prepare(
+      'INSERT INTO servicios (cliente_id, plan_id, zona_id, estado, fecha_activacion) VALUES (?,?,?,\'activo\',date(\'now\'))'
+    ).run(clienteId, plan_id, sector_id || null);
+    servicioId = servResult.lastInsertRowid;
+
+    // 3. Crear orden de instalaci\u00f3n
+    let detalle = 'Instalaci\u00f3n';
+    if (wifi_ssid) detalle += ' | WiFi: ' + wifi_ssid;
+    if (observations) detalle += ' | ' + observations;
+
+    db.prepare(
+      "INSERT INTO ordenes (tipo, cliente_id, servicio_id, detalle, zona_id, estado, usuario_id) VALUES (?,?,?,?,?,'pendiente',?)"
+    ).run('instalacion', clienteId, servicioId, detalle, sector_id || null, req.session.user.id);
+
+    // 4. Crear factura de instalaci\u00f3n si aplica
+    const precioInst = parseFloat(precio_instalacion) || 0;
+    if (precioInst > 0 && crear_factura_instalacion === '1') {
+      const factEstado = instalacion_pagada === '1' ? 'pagada' : 'pendiente';
+      db.prepare(
+        "INSERT INTO facturas (servicio_id, periodo, monto, estado, fecha_emision, fecha_vencimiento) VALUES (?,?,?,?,date('now'),date('now','+30 days'))"
+      ).run(servicioId, 'Instalaci\u00f3n', precioInst, factEstado);
+
+      if (instalacion_pagada === '1') {
+        db.prepare(
+          "INSERT INTO pagos (servicio_id, cliente_id, monto, metodo, usuario_id) VALUES (?,?,?,'efectivo',?)"
+        ).run(servicioId, clienteId, precioInst, req.session.user.id);
+      }
+    }
+  }
+
+  res.json({
+    success: true,
+    cliente_id: clienteId,
+    cliente_nombre: name,
+    servicio_id: servicioId
+  });
+});
+
 app.post('/api/clientes', requireAuth, (req, res) => {
   const { nombre, cedula, telefono, direccion, apodo, zona_id } = req.body;
   const r = db.prepare('INSERT INTO clientes (nombre, cedula, telefono, direccion, apodo, zona_id) VALUES (?,?,?,?,?,?)')
@@ -444,6 +522,155 @@ app.post('/api/perfil', requireAuth, (req, res) => {
   }
   req.session.user.nombre = nombre;
   res.json({ message: 'Perfil actualizado' });
+});
+
+// ======== EMPLEADOS API ========
+
+// List empleados with search & pagination
+app.get('/api/empleados', requireAuth, (req, res) => {
+  const page = parseInt(req.query.page) || 1;
+  const search = (req.query.search || '').trim();
+  const limit = 20;
+  const offset = (page - 1) * limit;
+  
+  let where = 'WHERE e.activo=1';
+  let params = [];
+  if (search) {
+    where += ' AND (e.nombre LIKE ? OR e.cedula LIKE ? OR e.telefono LIKE ?)';
+    const s = '%' + search + '%';
+    params.push(s, s, s);
+  }
+  
+  const total = db.prepare('SELECT COUNT(*) as cnt FROM empleados e ' + where).get(...params).cnt;
+  const pages = Math.max(1, Math.ceil(total / limit));
+  
+  const data = db.prepare(`
+    SELECT e.*,
+      COALESCE((SELECT SUM(restante) FROM prestamos_empleado WHERE empleado_id=e.id AND restante>0),0) as deuda,
+      u.nombre as usuario_nombre
+    FROM empleados e
+    LEFT JOIN usuarios u ON u.id=e.usuario_id
+    ${where}
+    ORDER BY e.id DESC
+    LIMIT ? OFFSET ?
+  `).all(...params, limit, offset);
+  
+  res.json({ success: true, data, page, pages, total });
+});
+
+// Get single empleado
+app.get('/api/empleados/:id', requireAuth, (req, res) => {
+  const emp = db.prepare(`
+    SELECT e.*, u.nombre as usuario_nombre
+    FROM empleados e
+    LEFT JOIN usuarios u ON u.id=e.usuario_id
+    WHERE e.id=?
+  `).get(req.params.id);
+  if (!emp) return res.json({ success: false, message: 'Empleado no encontrado' });
+  res.json({ success: true, data: emp });
+});
+
+// Save empleado (create or update)
+app.post('/api/empleados/save', requireAuth, (req, res) => {
+  const { id, nombre, cedula, telefono, tipo, tipo_otro, salario, periodo, dia_pago1, dia_pago2, fecha_ingreso, usuario_id } = req.body;
+  if (!nombre) return res.json({ success: false, message: 'Nombre requerido' });
+  
+  const sal = parseFloat(salario) || 0;
+  const dp1 = parseInt(dia_pago1) || 1;
+  const dp2 = parseInt(dia_pago2) || 15;
+  const uid = parseInt(usuario_id) || null;
+  const per = periodo === 'quincenal' ? 'quincenal' : 'mensual';
+  const tp = tipo || 'Tecnico';
+  
+  if (parseInt(id) > 0) {
+    db.prepare(`UPDATE empleados SET nombre=?, cedula=?, telefono=?, tipo=?, tipo_otro=?, salario=?, periodo=?, dia_pago1=?, dia_pago2=?, fecha_ingreso=?, usuario_id=? WHERE id=?`)
+      .run(nombre, cedula || null, telefono || null, tp, tipo_otro || null, sal, per, dp1, dp2, fecha_ingreso || null, uid, parseInt(id));
+  } else {
+    db.prepare(`INSERT INTO empleados (nombre, cedula, telefono, tipo, tipo_otro, salario, periodo, dia_pago1, dia_pago2, fecha_ingreso, usuario_id) VALUES (?,?,?,?,?,?,?,?,?,?,?)`)
+      .run(nombre, cedula || null, telefono || null, tp, tipo_otro || null, sal, per, dp1, dp2, fecha_ingreso || null, uid);
+  }
+  res.json({ success: true });
+});
+
+// Delete empleado
+app.post('/api/empleados/:id/delete', requireAuth, (req, res) => {
+  db.prepare('DELETE FROM prestamos_empleado WHERE empleado_id=?').run(req.params.id);
+  db.prepare('DELETE FROM empleados WHERE id=?').run(req.params.id);
+  res.json({ success: true });
+});
+
+// Get orders for empleado
+app.get('/api/empleados/:id/ordenes', requireAuth, (req, res) => {
+  const id = req.params.id;
+  const mes = parseInt(req.query.mes) || (new Date().getMonth() + 1);
+  const anio = parseInt(req.query.anio) || new Date().getFullYear();
+  
+  const data = db.prepare(`
+    SELECT o.*, c.nombre as cliente_nombre, z.nombre as zona_nombre
+    FROM ordenes o
+    LEFT JOIN clientes c ON c.id=o.cliente_id
+    LEFT JOIN zonas z ON z.id=o.zona_id
+    WHERE o.tecnico_id=? AND strftime('%m', o.created_at)=? AND strftime('%Y', o.created_at)=?
+    ORDER BY o.id DESC
+  `).all(id, String(mes).padStart(2,'0'), String(anio));
+  
+  const total = data.length;
+  const completadas = data.filter(o => o.estado === 'completada' || o.estado === 'completed').length;
+  res.json({ success: true, data, total, completadas });
+});
+
+// Get loans for empleado
+app.get('/api/empleados/:id/prestamos', requireAuth, (req, res) => {
+  const data = db.prepare('SELECT * FROM prestamos_empleado WHERE empleado_id=? ORDER BY id DESC').all(req.params.id);
+  const balance = db.prepare('SELECT COALESCE(SUM(restante),0) as bal FROM prestamos_empleado WHERE empleado_id=? AND restante>0').get(req.params.id).bal;
+  res.json({ success: true, data, balance });
+});
+
+// Create or update loan (prestamo)
+app.post('/api/empleados/prestamo', requireAuth, (req, res) => {
+  const { empleado_id, loan_id, monto, descripcion, fecha } = req.body;
+  if (!parseFloat(monto)) return res.json({ success: false, message: 'Monto requerido' });
+  
+  const loanId = parseInt(loan_id);
+  if (loanId > 0) {
+    // Edit existing loan: update monto, descripcion, fecha, reset restante to new monto minus what was already paid
+    const old = db.prepare('SELECT * FROM prestamos_empleado WHERE id=?').get(loanId);
+    if (!old) return res.json({ success: false, message: 'Préstamo no encontrado' });
+    const alreadyPaid = parseFloat(old.monto) - parseFloat(old.restante);
+    const newRestante = parseFloat(monto) - alreadyPaid;
+    if (newRestante < 0) {
+      db.prepare('UPDATE prestamos_empleado SET monto=?, descripcion=?, fecha=?, restante=0 WHERE id=?').run(parseFloat(monto), descripcion || null, fecha || null, loanId);
+    } else {
+      db.prepare('UPDATE prestamos_empleado SET monto=?, descripcion=?, fecha=?, restante=? WHERE id=?').run(parseFloat(monto), descripcion || null, fecha || null, newRestante, loanId);
+    }
+  } else {
+    // New loan
+    const eid = parseInt(empleado_id);
+    if (!eid) return res.json({ success: false, message: 'Empleado requerido' });
+    db.prepare('INSERT INTO prestamos_empleado (empleado_id, monto, restante, descripcion, fecha) VALUES (?,?,?,?,?)')
+      .run(eid, parseFloat(monto), parseFloat(monto), descripcion || null, fecha || null);
+  }
+  res.json({ success: true });
+});
+
+// Pay/abonar or delete loan
+app.post('/api/empleados/prestamo/abonar', requireAuth, (req, res) => {
+  const { loan_id, monto, delete: isDelete } = req.body;
+  
+  if (isDelete || req.body._delete) {
+    db.prepare('DELETE FROM prestamos_empleado WHERE id=?').run(loan_id);
+    return res.json({ success: true });
+  }
+  
+  if (!loan_id || !parseFloat(monto)) return res.json({ success: false, message: 'Datos incompletos' });
+  
+  const loan = db.prepare('SELECT * FROM prestamos_empleado WHERE id=?').get(loan_id);
+  if (!loan) return res.json({ success: false, message: 'Préstamo no encontrado' });
+  
+  let newRestante = parseFloat(loan.restante) - parseFloat(monto);
+  if (newRestante < 0) newRestante = 0;
+  db.prepare('UPDATE prestamos_empleado SET restante=? WHERE id=?').run(newRestante, loan_id);
+  res.json({ success: true });
 });
 
 // Create default admin password on first run

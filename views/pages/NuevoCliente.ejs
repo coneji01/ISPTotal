@@ -1,34 +1,390 @@
 <div class="page-header">
-  <h2><i class="fas fa-<%= pagina === 'Clientes' ? 'users' : pagina === 'Ordenes' ? 'clipboard-list' : pagina === 'Gpon' ? 'network-wired' : pagina === 'CajasNap' ? 'box' : pagina === 'Inventario' ? 'boxes' : pagina === 'Ventas' ? 'shopping-cart' : pagina === 'Proveedores' ? 'truck' : pagina === 'Empleados' ? 'id-badge' : pagina === 'PagosAdmin' ? 'coins' : pagina === 'Estadisticas' ? 'chart-bar' : pagina === 'Monitoreo' ? 'desktop' : pagina === 'RegistrarPago' ? 'money-bill' : pagina === 'NuevoCliente' ? 'user-plus' : pagina === 'BuscarOnu' ? 'search' : pagina === 'CambioOnu' ? 'exchange-alt' : pagina === 'CambioDeTitular' ? 'user-edit' : pagina === 'Traslados' ? 'truck-moving' : pagina === 'PromesaDePago' ? 'handshake' : pagina === 'CuadreCaja' ? 'cash-register' : pagina === 'Configuracion' ? 'cog' : pagina === 'Actualizaciones' ? 'sync' : 'cog' %>"></i> <%= pagina.replace(/([A-Z])/g, ' $1').trim() %></h2>
-  <div class="btn-group">
-    <% if (pagina !== 'BuscarOnu' && pagina !== 'Estadisticas' && pagina !== 'Monitoreo' && pagina !== 'Configuracion' && pagina !== 'Actualizaciones') { %>
-    <button class="btn btn-primary btn-sm" onclick="openModal('nuevoModal')"><i class="fas fa-plus"></i> Nuevo</button>
-    <% } %>
-  </div>
+    <h2><i class="fas fa-user-plus"></i> Nuevo Cliente</h2>
+    <a href="/modulo?pagina=Clientes" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Volver
+    </a>
 </div>
 
-<div class="card">
-  <div class="card-body">
-    <div class="loading"><i class="fas fa-spinner fa-spin"></i><br>Cargando...</div>
-  </div>
+<div class="card" style="max-width:860px;margin:0 auto;">
+    <form id="formNuevoCliente" method="POST">
+        <input type="hidden" name="accion" value="guardar">
+
+        <!-- Identificación del Cliente -->
+        <h4 style="color:var(--primary);border-bottom:1px solid var(--border);padding-bottom:10px;margin-bottom:20px;">
+            <i class="fas fa-id-card"></i> Identificación del Cliente
+        </h4>
+
+        <div class="form-group">
+            <label class="form-label">Documento de Identidad <span style="color:red">*</span></label>
+            <div class="doc-row" style="display:flex;gap:10px;flex-wrap:wrap;">
+                <select name="tipo_doc" id="tipoDoc" class="form-control" style="width:140px;flex-shrink:0;">
+                    <option value="cedula">Cédula</option>
+                    <option value="pasaporte">Pasaporte</option>
+                    <option value="rnc">RNC</option>
+                </select>
+                <input type="text" name="cedula" id="inputCedula" class="form-control" required
+                       placeholder="Número sin guiones" autocomplete="off"
+                       style="flex:1;min-width:200px;"
+                       oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+                <button type="button" class="btn btn-success" id="btnConfirmarDoc" onclick="validarDocumento()" style="flex-shrink:0;">
+                    <i class="fas fa-check"></i> Confirmar
+                </button>
+            </div>
+            <small style="color:var(--text-gray);font-size:0.75rem;margin-top:5px;display:block;">
+                Seleccione el tipo y escriba el número sin guiones.
+            </small>
+            <div id="docResult" style="margin-top:8px;display:none;"></div>
+        </div>
+
+        <fieldset id="restoFormulario" disabled style="border:none;padding:0;margin:0;opacity:0.6;transition:opacity 0.3s;">
+
+            <!-- Datos Personales -->
+            <div class="form-grid" style="margin-top:20px;">
+                <div class="form-group">
+                    <label class="form-label">Nombre Completo <span style="color:red">*</span></label>
+                    <input type="text" name="name" id="inputName" class="form-control" required
+                           placeholder="Ej: JUAN PEREZ"
+                           oninput="this.value=this.value.replace(/[^a-zA-Z0-9\s]/g,'').toUpperCase()"
+                           style="text-transform:uppercase;">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Apodo</label>
+                    <input type="text" name="alias" id="inputAlias" class="form-control" placeholder="Ej: El Rubio">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Teléfono / Celular <span style="color:red">*</span></label>
+                    <input type="text" name="phone" id="inputPhone" class="form-control" required
+                           placeholder="8090000000" minlength="10"
+                           oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Teléfono 2 <small style="color:var(--text-gray);">(opcional)</small></label>
+                    <input type="text" name="phone2" id="inputPhone2" class="form-control"
+                           placeholder="Segundo teléfono"
+                           oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+                </div>
+                <div class="form-group" style="grid-column:span 2;">
+                    <label class="form-label">Dirección del Servicio <span style="color:red">*</span></label>
+                    <input type="text" name="address" class="form-control" required
+                           placeholder="Calle, Número, Referencia...">
+                </div>
+                <div class="form-group" style="grid-column:span 2;">
+                    <label class="form-label" id="lblObs">Observaciones</label>
+                    <input type="text" name="observations" id="inputObs" class="form-control"
+                           placeholder="Detalles de ubicación, referencias extra...">
+                </div>
+            </div>
+
+            <!-- Zona y Servicio -->
+            <h4 style="color:var(--primary);border-bottom:1px solid var(--border);padding-bottom:10px;margin:30px 0 20px 0;">
+                <i class="fas fa-map-marker-alt"></i> Zona y Servicio
+            </h4>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label">Zona / Sector <span style="color:red">*</span></label>
+                    <select name="sector_id" id="sectorSelect" class="form-control" required onchange="mostrarPlanes()">
+                        <option value="">-- Seleccione zona para ver planes --</option>
+                        <% (zonas || []).forEach(function(z) { %>
+                        <option value="<%= z.id %>"><%= z.nombre %></option>
+                        <% }) %>
+                    </select>
+                </div>
+                <div class="form-group" id="divPlan" style="display:none;">
+                    <label class="form-label">Plan de Internet <span style="color:red">*</span></label>
+                    <select name="plan_id" id="planSelect" class="form-control">
+                        <option value="">-- Seleccione Plan --</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Facturación -->
+            <h4 style="color:var(--primary);border-bottom:1px solid var(--border);padding-bottom:10px;margin:30px 0 20px 0;">
+                <i class="fas fa-file-invoice-dollar"></i> Facturación
+            </h4>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label">Tipo de Facturación <span style="color:red">*</span></label>
+                    <select name="billing_type" id="billingTypeSelect" class="form-control" required onchange="mostrarInfoCiclo()">
+                        <option value="">-- Seleccione --</option>
+                        <option value="postpago">POSTPAGO</option>
+                        <option value="prepago">PREPAGO</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Día de Generación <span style="color:red">*</span></label>
+                    <select name="dia_generacion" id="diaGeneracion" class="form-control">
+                        <% for(var d=1; d<=31; d++) { %>
+                        <option value="<%= d %>" <%= d===25?'selected':'' %>>Día <%= d %></option>
+                        <% } %>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Día de Corte <span style="color:red">*</span></label>
+                    <select name="dia_corte" id="diaCorte" class="form-control">
+                        <% for(var d=1; d<=31; d++) { %>
+                        <option value="<%= d %>" <%= d===11?'selected':'' %>>Día <%= d %></option>
+                        <% } %>
+                    </select>
+                </div>
+                <div class="form-group" id="divInfoCiclo" style="display:none;">
+                    <label class="form-label">Resumen</label>
+                    <div id="infoCicloBox" style="display:flex;gap:10px;align-items:center;padding:8px 0;flex-wrap:wrap;">
+                        <span id="badgeTipo" style="padding:4px 10px;border-radius:5px;font-size:0.78rem;font-weight:700;"></span>
+                        <span id="badgeGen" style="padding:4px 10px;border-radius:5px;font-size:0.78rem;font-weight:600;background:#e0f2fe;color:#0369a1;display:none;">
+                            <i class="fas fa-file-invoice"></i> Gen: Día <span id="txtGen"></span>
+                        </span>
+                        <span id="badgeCorte" style="padding:4px 10px;border-radius:5px;font-size:0.78rem;font-weight:600;background:#fee2e2;color:#991b1b;display:none;">
+                            <i class="fas fa-ban"></i> Corte: Día <span id="txtCorte"></span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- WiFi -->
+            <h4 style="color:var(--primary);border-bottom:1px solid var(--border);padding-bottom:10px;margin:30px 0 20px 0;">
+                <i class="fas fa-wifi"></i> WiFi (Opcional)
+            </h4>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label">Nombre WiFi (SSID)</label>
+                    <input type="text" name="wifi_ssid" class="form-control" placeholder="Ej: ISP_Total">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Clave WiFi <small style="color:var(--text-gray);">(min. 8 caracteres)</small></label>
+                    <input type="text" name="wifi_pass" class="form-control" minlength="8"
+                           placeholder="Mínimo 8 caracteres"
+                           onkeydown="if(event.key===' ')event.preventDefault();"
+                           oninput="this.value=this.value.replace(/\s/g,'');">
+                </div>
+            </div>
+
+            <!-- Costo de Instalación -->
+            <h4 style="color:var(--primary);border-bottom:1px solid var(--border);padding-bottom:10px;margin:30px 0 20px 0;">
+                <i class="fas fa-tools"></i> Instalación
+            </h4>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label">Costo de Instalación (RD$)</label>
+                    <input type="number" name="precio_instalacion" id="inputPrecioInst" class="form-control"
+                           value="0" min="0" step="0.01"
+                           onchange="actualizarInstalacion()">
+                </div>
+                <div class="form-group" style="display:flex;align-items:flex-end;gap:10px;padding-bottom:8px;">
+                    <label class="checkbox-label" style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+                        <input type="checkbox" name="crear_factura_instalacion" id="chkFacturaInst" value="1"
+                               onchange="actualizarInstalacion()">
+                        Crear factura de instalación
+                    </label>
+                    <label class="checkbox-label" style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+                        <input type="checkbox" name="instalacion_pagada" id="chkInstPagada" value="1"
+                               onchange="actualizarInstalacion()">
+                        Instalación pagada
+                    </label>
+                </div>
+            </div>
+
+            <!-- Crea Orden -->
+            <div style="margin-top:30px;text-align:right;border-top:1px solid var(--border);padding-top:20px;">
+                <button type="submit" class="btn btn-primary" style="padding:12px 30px;font-size:1rem;">
+                    <i class="fas fa-save"></i> Guardar Cliente
+                </button>
+            </div>
+        </fieldset>
+    </form>
 </div>
 
-<!-- Modal placeholder -->
-<div id="nuevoModal" class="modal" style="display:none">
-  <div class="modal-content">
-    <div class="modal-header"><h3><i class="fas fa-plus"></i> Nuevo</h3><span class="modal-close" onclick="closeModal('nuevoModal')">&times;</span></div>
-    <div class="modal-body">
-      <p style="color:var(--text-gray);text-align:center;padding:20px;">Módulo en construcción</p>
-      <div class="btn-group" style="justify-content:flex-end;margin-top:16px;">
-        <button class="btn btn-secondary" onclick="closeModal('nuevoModal')">Cancelar</button>
-        <button class="btn btn-primary">Guardar</button>
-      </div>
+<!-- Modal Resultado -->
+<div id="modalResultado" class="modal" style="display:none;">
+    <div class="modal-content" style="max-width:420px;">
+        <div class="modal-header">
+            <h3 id="modalResultadoTitle"><i class="fas fa-check-circle"></i> Cliente Creado</h3>
+            <span class="modal-close" onclick="cerrarResultado()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <p id="modalResultadoMsg" style="text-align:center;padding:10px 0;"></p>
+            <div class="btn-group" style="justify-content:center;margin-top:16px;">
+                <button class="btn btn-secondary" onclick="cerrarResultado()">Cerrar</button>
+                <button class="btn btn-primary" onclick="irAClientes()">Ir a Clientes</button>
+            </div>
+        </div>
     </div>
-  </div>
 </div>
+
+<style>
+    .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+    @media (max-width:768px) {
+        .form-grid { grid-template-columns:1fr; }
+        .form-group[style*="span 2"] { grid-column:span 1 !important; }
+        .doc-row { flex-wrap:wrap !important; }
+        .doc-row select, .doc-row input, .doc-row button { width:100% !important; min-width:0 !important; flex-shrink:1 !important; }
+    }
+    .checkbox-label { font-size:0.85rem; color:var(--text-color); }
+</style>
 
 <script>
-setTimeout(function() {
-  document.querySelector('.loading').innerHTML = '<p style="color:var(--text-gray);text-align:center;padding:20px;">Datos cargados correctamente</p>';
-}, 500);
+var clienteConfirmado = null;
+var planesCache = {};
+
+// Cargar todos los planes disponibles
+<% (planes || []).forEach(function(p) { %>
+if (!planesCache['todas']) planesCache['todas'] = [];
+planesCache['todas'].push({ id: <%= p.id %>, nombre: '<%= (p.nombre || "").replace(/'/g, "\\'") %>', velocidad: '<%= (p.velocidad || "").replace(/'/g, "\\'") %>', precio: <%= p.precio || 0 %> });
+<% }); %>
+
+function limpiarInput(el) { el.value = el.value.replace(/[^0-9]/g,''); }
+
+function validarDocumento() {
+    var tipo = document.getElementById('tipoDoc').value;
+    var num = document.getElementById('inputCedula').value.trim();
+    var docResult = document.getElementById('docResult');
+
+    if (!num) { docResult.style.display = 'block'; docResult.innerHTML = '<span style="color:red;">Debe escribir un número de documento.</span>'; return; }
+
+    docResult.style.display = 'block';
+    docResult.innerHTML = '<span style="color:var(--text-gray);"><i class="fas fa-spinner fa-spin"></i> Verificando...</span>';
+
+    fetch('/api/nuevo-cliente/verificar-documento', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tipo: tipo, numero: num })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+        if (d.existe) {
+            docResult.innerHTML = '<span style="color:#d97706;"><i class="fas fa-exclamation-triangle"></i> Este documento ya está registrado: <strong>' + d.cliente.nombre + '</strong></span>';
+            clienteConfirmado = d.cliente;
+            document.getElementById('btnConfirmarDoc').disabled = true;
+            return;
+        }
+        docResult.innerHTML = '<span style="color:#16a34a;"><i class="fas fa-check-circle"></i> Documento válido. Complete los datos.</span>';
+        clienteConfirmado = null;
+        document.getElementById('restoFormulario').disabled = false;
+        document.getElementById('restoFormulario').style.opacity = '1';
+        document.getElementById('inputName').focus();
+    })
+    .catch(function(e) {
+        docResult.innerHTML = '<span style="color:red;">Error de conexión. Intente de nuevo.</span>';
+    });
+}
+
+function mostrarPlanes() {
+    var sectorId = document.getElementById('sectorSelect').value;
+    var divPlan = document.getElementById('divPlan');
+    var planSelect = document.getElementById('planSelect');
+
+    if (!sectorId) { divPlan.style.display = 'none'; return; }
+
+    divPlan.style.display = 'block';
+    planSelect.innerHTML = '<option value="">-- Seleccione Plan --</option>';
+
+    var planes = planesCache['todas'] || [];
+
+    planes.forEach(function(p) {
+        var opt = document.createElement('option');
+        opt.value = p.id;
+        opt.textContent = p.nombre + (p.velocidad ? ' (' + p.velocidad + ')' : '') + ' - RD$' + (p.precio || 0);
+        planSelect.appendChild(opt);
+    });
+}
+
+function mostrarInfoCiclo() {
+    var tipo = document.getElementById('billingTypeSelect').value;
+    var divInfo = document.getElementById('divInfoCiclo');
+    var badgeTipo = document.getElementById('badgeTipo');
+    var badgeGen = document.getElementById('badgeGen');
+    var badgeCorte = document.getElementById('badgeCorte');
+    var txtGen = document.getElementById('txtGen');
+    var txtCorte = document.getElementById('txtCorte');
+    var diaGen = document.getElementById('diaGeneracion').value;
+    var diaCorte = document.getElementById('diaCorte').value;
+
+    if (!tipo) { divInfo.style.display = 'none'; return; }
+
+    divInfo.style.display = 'block';
+    badgeTipo.textContent = tipo.toUpperCase();
+    badgeTipo.style.background = tipo === 'postpago' ? '#dbeafe' : '#fef3c7';
+    badgeTipo.style.color = tipo === 'postpago' ? '#1e40af' : '#92400e';
+
+    if (tipo) {
+        badgeGen.style.display = 'inline-flex';
+        badgeCorte.style.display = 'inline-flex';
+        txtGen.textContent = diaGen;
+        txtCorte.textContent = diaCorte;
+    }
+}
+
+function actualizarInstalacion() {
+    var precio = parseFloat(document.getElementById('inputPrecioInst').value) || 0;
+    var chkFactura = document.getElementById('chkFacturaInst');
+    var chkPagada = document.getElementById('chkInstPagada');
+
+    if (precio <= 0) {
+        chkFactura.checked = false;
+        chkPagada.checked = false;
+        chkFactura.disabled = true;
+        chkPagada.disabled = true;
+    } else {
+        chkFactura.disabled = false;
+        chkPagada.disabled = false;
+    }
+}
+
+// Submit
+document.getElementById('formNuevoCliente').addEventListener('submit', function(e) {
+    e.preventDefault();
+    var form = this;
+    var btn = form.querySelector('button[type="submit"]');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+
+    var fd = new FormData(form);
+    var data = {};
+    fd.forEach(function(v, k) { data[k] = v; });
+
+    fetch('/api/nuevo-cliente/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-save"></i> Guardar Cliente';
+        if (d.success) {
+            document.getElementById('modalResultadoTitle').innerHTML = '<i class="fas fa-check-circle" style="color:#16a34a;"></i> Cliente Creado';
+            document.getElementById('modalResultadoMsg').innerHTML = 'Cliente <strong>' + (d.cliente_nombre || '') + '</strong> creado exitosamente.<br>' +
+                (d.cliente_id ? 'ID: <strong>' + d.cliente_id + '</strong>' : '') +
+                (d.servicio_id ? '<br>Servicio ID: <strong>' + d.servicio_id + '</strong>' : '');
+            document.getElementById('modalResultado').style.display = 'flex';
+            form.reset();
+            document.getElementById('restoFormulario').disabled = true;
+            document.getElementById('restoFormulario').style.opacity = '0.6';
+            document.getElementById('docResult').style.display = 'none';
+        } else {
+            document.getElementById('modalResultadoTitle').innerHTML = '<i class="fas fa-times-circle" style="color:#dc2626;"></i> Error';
+            document.getElementById('modalResultadoMsg').innerHTML = d.message || 'Error al guardar. Intente de nuevo.';
+            document.getElementById('modalResultado').style.display = 'flex';
+        }
+    })
+    .catch(function(e) {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-save"></i> Guardar Cliente';
+        document.getElementById('modalResultadoTitle').innerHTML = '<i class="fas fa-times-circle" style="color:#dc2626;"></i> Error';
+        document.getElementById('modalResultadoMsg').innerHTML = 'Error de conexión. Intente de nuevo.';
+        document.getElementById('modalResultado').style.display = 'flex';
+    });
+});
+
+function cerrarResultado() { document.getElementById('modalResultado').style.display = 'none'; }
+function irAClientes() { window.location.href = '/modulo?pagina=Clientes'; }
+
+// Init
+document.getElementById('restoFormulario').disabled = true;
+document.getElementById('restoFormulario').style.opacity = '0.6';
+document.getElementById('chkFacturaInst').disabled = true;
+document.getElementById('chkInstPagada').disabled = true;
 </script>
