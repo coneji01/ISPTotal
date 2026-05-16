@@ -236,6 +236,25 @@ app.get("/api/config/get", requireAuth, (req, res) => {
 });
 
 // ======== API ROUTES ========
+const MikroTikAPI = require("./mikrotik-api");
+
+app.post("/api/routers/test", requireAuth, async (req, res) => {
+  const { host, port, username, password } = req.body;
+  const result = await MikroTikAPI.testConnection(host, port || 8728, username, password);
+  res.json(result);
+});
+
+app.post("/api/routers/interfaces", requireAuth, async (req, res) => {
+  const { host, port, username, password } = req.body;
+  const result = await MikroTikAPI.getInterfaces(host, port || 8728, username, password);
+  res.json(result);
+});
+
+app.post("/api/routers/dhcp", requireAuth, async (req, res) => {
+  const { host, port, username, password } = req.body;
+  const result = await MikroTikAPI.getDHCPLeases(host, port || 8728, username, password);
+  res.json(result);
+});
 app.post('/api/clientes', requireAuth, (req, res) => {
   const { nombre, cedula, telefono, direccion, apodo, zona_id } = req.body;
   const r = db.prepare('INSERT INTO clientes (nombre, cedula, telefono, direccion, apodo, zona_id) VALUES (?,?,?,?,?,?)')

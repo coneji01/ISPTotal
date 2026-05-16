@@ -146,10 +146,11 @@ const configSections = {
   routers: {
     title: 'Routers',
     icon: 'fa-server',
+    routerPanel: true,
     fields: [
-      { label: 'IP del Router Principal', name: 'router_ip', type: 'text' },
+      { label: 'IP del Router', name: 'router_ip', type: 'text', placeholder: '192.168.88.1' },
       { label: 'Puerto API', name: 'router_port', type: 'number', value: '8728' },
-      { label: 'Usuario API', name: 'router_user', type: 'text' },
+      { label: 'Usuario API', name: 'router_user', type: 'text', value: 'admin' },
       { label: 'Contraseña API', name: 'router_pass', type: 'password' },
       { label: 'Usar SSL', name: 'router_ssl', type: 'select', options: ['No', 'Si'] }
     ]
@@ -358,7 +359,31 @@ function openConfig(sectionId) {
     html += '</div>';
   }
   
-  if (section.textarea) {
+  if (section.routerPanel) {
+    html += '<form id="configForm" onsubmit="saveConfig(event, \'' + sectionId + '\')">';
+    section.fields.forEach(f => {
+      html += '<div class="form-group">';
+      html += '<label>' + f.label + '</label>';
+      if (f.type === 'select') {
+        html += '<select name="' + f.name + '" class="form-control">';
+        (f.options || []).forEach(o => { html += '<option value="' + o + '">' + o + '</option>'; });
+        html += '</select>';
+      } else if (f.type === 'password') {
+        html += '<input type="password" name="' + f.name + '" class="form-control" placeholder="' + (f.placeholder || '') + '">';
+      } else {
+        html += '<input type="' + f.type + '" name="' + f.name + '" class="form-control" placeholder="' + (f.placeholder || '') + '" value="' + (f.value || '') + '">';
+      }
+      html += '</div>';
+    });
+    html += '<div class="btn-group" style="margin-top:16px;">';
+    html += '<button type="button" class="btn btn-primary" onclick="testRouterConnection()"><i class="fas fa-plug"></i> Probar Conexión</button>';
+    html += '<button type="submit" class="btn btn-success"><i class="fas fa-save"></i> Guardar</button>';
+    html += '</div>';
+    html += '<div id="routerStatus" style="margin-top:16px;"></div>';
+    html += '</form>';
+    html += '<div class="card mt-20"><div class="card-header"><i class="fas fa-network-wired"></i> Interfaces del Router</div><div class="card-body" id="routerInterfaces"><p class="loading"><i class="fas fa-spinner fa-spin"></i> Conecta y prueba para ver interfaces</p></div></div>';
+    html += '<div class="card mt-20"><div class="card-header"><i class="fas fa-tasks"></i> DHCP Leases</div><div class="card-body" id="routerLeases"><p class="loading"><i class="fas fa-spinner fa-spin"></i> Conecta y prueba para ver leases</p></div></div>';
+  } else if (section.textarea) {
     html += '<form id="configForm" onsubmit="saveConfig(event, \'' + sectionId + '\')">';
     section.fields.forEach(f => {
       html += '<div class="form-group">';
@@ -454,3 +479,101 @@ function installUpdate() { showToast('Instalando actualización...'); }
 }
 .config-title { font-size: 0.75rem; color: #475569; line-height: 1.3; }
 </style>
+
+<script>
+async function testRouterConnection() {
+  const form = document.getElementById('configForm');
+  const data = {
+    host: form.router_ip?.value,
+    port: parseInt(form.router_port?.value) || 8728,
+    username: form.router_user?.value || 'admin',
+    password: form.router_pass?.value || ''
+  };
+  
+  if (!data.host) { showToast('Ingrese la IP del router', 'error'); return; }
+  
+  const statusDiv = document.getElementById('routerStatus');
+  statusDiv.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Conectando a ' + data.host + ':' + data.port + '...</div>';
+  
+  try {
+    const r = await fetch('/api/routers/test', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    const result = await r.json();
+    
+    if (result.success) {
+      const info = result.info;
+      statusDiv.innerHTML = '<div style="background:#dcfce7;color:#166534;padding:12px 16px;border-radius:8px;">' +
+        '<i class="fas fa-check-circle"></i> <strong>Conexión exitosa</strong><br>' +
+        '<span style="font-size:0.85rem;">Router: ' + (info['board-name'] || info['identity-name'] || 'MikroTik') + 
+        ' | Versión: ' + (info.version || info['routeros-version'] || '?') +
+        ' | Uptime: ' + (info.uptime || '?') + '</span></div>';
+      
+      // Load interfaces
+      loadRouterInterfaces(data);
+      loadRouterLeases(data);
+    } else {
+      statusDiv.innerHTML = '<div style="background:#fef2f2;color:#991b1b;padding:12px 16px;border-radius:8px;">' +
+        '<i class="fas fa-times-circle"></i> <strong>Error de conexión</strong><br>' +
+        '<span style="font-size:0.85rem;">' + (result.error || 'No se pudo conectar') + '</span></div>';
+    }
+  } catch(e) {
+    statusDiv.innerHTML = '<div style="background:#fef2f2;color:#991b1b;padding:12px 16px;border-radius:8px;">' +
+      '<i class="fas fa-times-circle"></i> Error: ' + e.message + '</div>';
+  }
+}
+
+async function loadRouterInterfaces(data) {
+  const div = document.getElementById('routerInterfaces');
+  try {
+    const r = await fetch('/api/routers/interfaces', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    const result = await r.json();
+    
+    if (result.success && result.interfaces) {
+      let html = '<div class="table-container"><table><thead><tr><th>Nombre</th><th>Tipo</th><th>MAC</th><th>Estado</th><th>Velocidad</th></tr></thead><tbody>';
+      result.interfaces.forEach(iface => {
+        const status = iface.running === 'yes' ? '<span class="badge badge-success">UP</span>' : '<span class="badge badge-danger">DOWN</span>';
+        html += '<tr><td>' + (iface.name || '') + '</td><td>' + (iface.type || '') + '</td><td>' + (iface['mac-address'] || '') + '</td><td>' + status + '</td><td>' + (iface.speed || 'N/A') + '</td></tr>';
+      });
+      html += '</tbody></table></div>';
+      div.innerHTML = html;
+    } else {
+      div.innerHTML = '<p style="color:var(--text-gray);text-align:center;padding:20px;">No se pudieron cargar las interfaces</p>';
+    }
+  } catch(e) {
+    div.innerHTML = '<p style="color:#ef4444;text-align:center;padding:20px;">Error: ' + e.message + '</p>';
+  }
+}
+
+async function loadRouterLeases(data) {
+  const div = document.getElementById('routerLeases');
+  try {
+    const r = await fetch('/api/routers/dhcp', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    const result = await r.json();
+    
+    if (result.success && result.leases) {
+      let html = '<div class="table-container"><table><thead><tr><th>Dirección</th><th>MAC</th><th>Hostname</th><th>Estado</th><th>Servidor</th></tr></thead><tbody>';
+      result.leases.forEach(lease => {
+        const status = lease.status === 'bound' ? '<span class="badge badge-success">' + lease.status + '</span>' : '<span class="badge badge-warning">' + lease.status + '</span>';
+        html += '<tr><td>' + (lease.address || '') + '</td><td>' + (lease['mac-address'] || '') + '</td><td>' + (lease['host-name'] || '') + '</td><td>' + status + '</td><td>' + (lease.server || '') + '</td></tr>';
+      });
+      html += '</tbody></table></div>';
+      div.innerHTML = html;
+    } else {
+      div.innerHTML = '<p style="color:var(--text-gray);text-align:center;padding:20px;">No se pudieron cargar los leases DHCP</p>';
+    }
+  } catch(e) {
+    div.innerHTML = '<p style="color:#ef4444;text-align:center;padding:20px;">Error: ' + e.message + '</p>';
+  }
+}
+</script>
