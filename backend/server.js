@@ -256,6 +256,53 @@ app.post("/api/routers/dhcp", requireAuth, async (req, res) => {
   res.json(result);
 });
 app.post('/api/clientes', requireAuth, (req, res) => {
+
+app.get("/api/routers", requireAuth, (req, res) => {
+  const routers = db.prepare("SELECT * FROM routers ORDER BY name").all();
+  res.json(routers);
+});
+
+app.get("/api/routers/:id", requireAuth, (req, res) => {
+  const router = db.prepare("SELECT * FROM routers WHERE id=?").get(req.params.id);
+  if (!router) return res.status(404).json({ error: "Router no encontrado" });
+  res.json(router);
+});
+
+app.post("/api/routers/save", requireAuth, (req, res) => {
+  const { accion, id_router, name, ip, port, user, password, ip_blocks } = req.body;
+  if (accion === "editar" && id_router) {
+    if (password) {
+      db.prepare("UPDATE routers SET name=?, ip=?, port=?, user=?, password=?, ip_blocks=? WHERE id=?")
+        .run(name, ip, port || 8728, user, password, ip_blocks || "[]", id_router);
+    } else {
+      db.prepare("UPDATE routers SET name=?, ip=?, port=?, user=?, ip_blocks=? WHERE id=?")
+        .run(name, ip, port || 8728, user, ip_blocks || "[]", id_router);
+    }
+    res.json({ success: true });
+  } else {
+    const r = db.prepare("INSERT INTO routers (name, ip, port, user, password, ip_blocks) VALUES (?,?,?,?,?,?)")
+      .run(name, ip, port || 8728, user, password || "", ip_blocks || "[]");
+    res.json({ success: true, id: r.lastInsertRowid });
+  }
+});
+
+app.post("/api/routers/:id/delete", requireAuth, (req, res) => {
+  db.prepare("DELETE FROM routers WHERE id=?").run(req.params.id);
+  res.json({ success: true });
+});
+
+app.post("/api/routers/:id/resync", requireAuth, async (req, res) => {
+  const router = db.prepare("SELECT * FROM routers WHERE id=?").get(req.params.id);
+  if (!router) return res.json({ success: false, error: "Router no encontrado" });
+  const result = await MikroTikAPI.testConnection(router.ip, router.port || 8728, router.user, router.password);
+  if (result.success) {
+    db.prepare("UPDATE routers SET connected=1, last_sync=datetime(\"now\") WHERE id=?").run(req.params.id);
+  } else {
+    db.prepare("UPDATE routers SET connected=0 WHERE id=?").run(req.params.id);
+  }
+  res.json(result);
+});
+
   const { nombre, cedula, telefono, direccion, apodo, zona_id } = req.body;
   const r = db.prepare('INSERT INTO clientes (nombre, cedula, telefono, direccion, apodo, zona_id) VALUES (?,?,?,?,?,?)')
     .run(nombre, cedula, telefono, direccion, apodo, zona_id || null);
