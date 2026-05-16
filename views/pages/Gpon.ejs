@@ -1,34 +1,730 @@
-<div class="page-header">
-  <h2><i class="fas fa-<%= pagina === 'Clientes' ? 'users' : pagina === 'Ordenes' ? 'clipboard-list' : pagina === 'Gpon' ? 'network-wired' : pagina === 'CajasNap' ? 'box' : pagina === 'Inventario' ? 'boxes' : pagina === 'Ventas' ? 'shopping-cart' : pagina === 'Proveedores' ? 'truck' : pagina === 'Empleados' ? 'id-badge' : pagina === 'PagosAdmin' ? 'coins' : pagina === 'Estadisticas' ? 'chart-bar' : pagina === 'Monitoreo' ? 'desktop' : pagina === 'RegistrarPago' ? 'money-bill' : pagina === 'NuevoCliente' ? 'user-plus' : pagina === 'BuscarOnu' ? 'search' : pagina === 'CambioOnu' ? 'exchange-alt' : pagina === 'CambioDeTitular' ? 'user-edit' : pagina === 'Traslados' ? 'truck-moving' : pagina === 'PromesaDePago' ? 'handshake' : pagina === 'CuadreCaja' ? 'cash-register' : pagina === 'Configuracion' ? 'cog' : pagina === 'Actualizaciones' ? 'sync' : 'cog' %>"></i> <%= pagina.replace(/([A-Z])/g, ' $1').trim() %></h2>
-  <div class="btn-group">
-    <% if (pagina !== 'BuscarOnu' && pagina !== 'Estadisticas' && pagina !== 'Monitoreo' && pagina !== 'Configuracion' && pagina !== 'Actualizaciones') { %>
-    <button class="btn btn-primary btn-sm" onclick="openModal('nuevoModal')"><i class="fas fa-plus"></i> Nuevo</button>
-    <% } %>
+<!-- SmartOLT Module - ISP Total -->
+<style>
+:root {
+  --so-primary: #6366f1;
+  --so-success: #16a34a;
+  --so-warning: #d97706;
+  --so-danger: #ef4444;
+  --so-bg: #f8fafc;
+  --so-border: #e2e8f0;
+  --so-text: #1e293b;
+  --so-gray: #64748b;
+}
+.so-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; flex-wrap:wrap; gap:10px; }
+.so-header h2 { margin:0; font-size:1.3rem; color:var(--so-text); display:flex; align-items:center; gap:8px; }
+.so-actions { display:flex; gap:8px; flex-wrap:wrap; }
+.so-btn { padding:8px 16px; border:none; border-radius:8px; font-size:0.85rem; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:6px; transition:all 0.2s; }
+.so-btn-primary { background:var(--so-primary); color:#fff; }
+.so-btn-primary:hover { opacity:0.9; }
+.so-btn-success { background:var(--so-success); color:#fff; }
+.so-btn-success:hover { opacity:0.9; }
+.so-btn-warning { background:var(--so-warning); color:#fff; }
+.so-btn-warning:hover { opacity:0.9; }
+.so-btn-danger { background:var(--so-danger); color:#fff; }
+.so-btn-danger:hover { opacity:0.9; }
+.so-btn-secondary { background:#e2e8f0; color:var(--so-text); }
+.so-btn-secondary:hover { background:#cbd5e1; }
+.so-btn-sm { padding:5px 10px; font-size:0.78rem; }
+.so-btn-xs { padding:3px 7px; font-size:0.72rem; border-radius:5px; }
+
+/* Cards */
+.so-card { background:#fff; border-radius:12px; border:1px solid var(--so-border); overflow:hidden; margin-bottom:20px; }
+.so-card-header { padding:14px 18px; border-bottom:1px solid var(--so-border); display:flex; align-items:center; justify-content:space-between; background:var(--so-bg); }
+.so-card-header h3 { margin:0; font-size:0.95rem; color:var(--so-text); display:flex; align-items:center; gap:6px; }
+.so-card-body { padding:18px; }
+
+/* Tabs */
+.so-tabs { display:flex; gap:0; border-bottom:1px solid var(--so-border); margin-bottom:0; background:var(--so-bg); }
+.so-tab { padding:10px 20px; cursor:pointer; font-size:0.85rem; font-weight:500; color:var(--so-gray); border-bottom:2px solid transparent; transition:all 0.2s; }
+.so-tab:hover { color:var(--so-text); }
+.so-tab.active { color:var(--so-primary); border-bottom-color:var(--so-primary); }
+
+/* Table */
+.so-table-wrap { overflow-x:auto; }
+.so-table { width:100%; border-collapse:collapse; font-size:0.83rem; }
+.so-table th { padding:10px 12px; text-align:left; font-weight:600; color:var(--so-gray); border-bottom:2px solid var(--so-border); white-space:nowrap; }
+.so-table td { padding:10px 12px; border-bottom:1px solid var(--so-border); color:var(--so-text); }
+.so-table tr:hover td { background:#f1f5f9; }
+.so-table .text-right { text-align:right; }
+.so-badge { display:inline-block; padding:2px 8px; border-radius:10px; font-size:0.72rem; font-weight:600; }
+.so-badge-ok { background:#dcfce7; color:#166534; }
+.so-badge-err { background:#fef2f2; color:#991b1b; }
+.so-badge-pending { background:#fef3c7; color:#92400e; }
+
+/* Form */
+.so-form-group { margin-bottom:14px; }
+.so-form-group label { display:block; font-size:0.82rem; font-weight:600; color:var(--so-text); margin-bottom:4px; }
+.so-input { width:100%; padding:8px 12px; border:1px solid var(--so-border); border-radius:8px; font-size:0.85rem; outline:none; transition:border-color 0.2s; box-sizing:border-box; }
+.so-input:focus { border-color:var(--so-primary); }
+.so-input-group { display:flex; align-items:center; }
+.so-input-group .so-prepend { padding:8px 10px; background:#e0e7ff; border:1px solid #c7d2fe; border-right:none; border-radius:8px 0 0 8px; color:#4338ca; font-size:0.78rem; white-space:nowrap; }
+.so-input-group .so-input { border-radius:0; }
+.so-input-group .so-append { padding:8px 10px; background:#e0e7ff; border:1px solid #c7d2fe; border-left:none; border-radius:0 8px 8px 0; color:#4338ca; font-size:0.78rem; white-space:nowrap; }
+.so-row { display:flex; gap:14px; }
+.so-col-6 { flex:1; }
+
+/* Modal */
+.so-modal-overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.4); z-index:9999; justify-content:center; align-items:center; }
+.so-modal { background:#fff; border-radius:14px; width:520px; max-width:95vw; max-height:90vh; overflow-y:auto; box-shadow:0 20px 40px rgba(0,0,0,0.15); }
+.so-modal-header { padding:16px 20px; border-bottom:1px solid var(--so-border); display:flex; align-items:center; justify-content:space-between; }
+.so-modal-header h3 { margin:0; font-size:1rem; }
+.so-modal-close { background:none; border:none; font-size:1.3rem; cursor:pointer; color:var(--so-gray); padding:0 4px; }
+.so-modal-body { padding:20px; }
+.so-modal-footer { padding:12px 20px; border-top:1px solid var(--so-border); display:flex; gap:8px; justify-content:flex-end; }
+
+/* Status cell */
+.so-status-ok { color:var(--so-success); font-weight:600; }
+.so-status-err { color:var(--so-danger); font-weight:600; cursor:pointer; }
+
+/* Signal */
+.so-signal-bar { display:flex; align-items:center; gap:8px; }
+.so-signal-fill { height:6px; border-radius:3px; flex:1; }
+.so-signal-good { background:var(--so-success); }
+.so-signal-warn { background:var(--so-warning); }
+.so-signal-bad { background:var(--so-danger); }
+.so-signal-val { font-size:0.78rem; font-weight:600; white-space:nowrap; }
+</style>
+
+<div class="so-header">
+  <h2><i class="fas fa-cloud" style="color:var(--so-primary)"></i> SmartOLT - Gestión via API</h2>
+  <div class="so-actions">
+    <button class="so-btn so-btn-primary" onclick="openSmartoltConfig()"><i class="fas fa-cog"></i> Configuración</button>
   </div>
 </div>
 
-<div class="card">
-  <div class="card-body">
-    <div class="loading"><i class="fas fa-spinner fa-spin"></i><br>Cargando...</div>
-  </div>
+<!-- Tabs -->
+<div class="so-tabs">
+  <div class="so-tab active" data-tab="onus" onclick="switchSoTab('onus')"><i class="fas fa-satellite-dish"></i> ONUs Sincronizadas</div>
+  <div class="so-tab" data-tab="types" onclick="switchSoTab('types')"><i class="fas fa-microchip"></i> Modelos de ONU</div>
 </div>
 
-<!-- Modal placeholder -->
-<div id="nuevoModal" class="modal" style="display:none">
-  <div class="modal-content">
-    <div class="modal-header"><h3><i class="fas fa-plus"></i> Nuevo</h3><span class="modal-close" onclick="closeModal('nuevoModal')">&times;</span></div>
-    <div class="modal-body">
-      <p style="color:var(--text-gray);text-align:center;padding:20px;">Módulo en construcción</p>
-      <div class="btn-group" style="justify-content:flex-end;margin-top:16px;">
-        <button class="btn btn-secondary" onclick="closeModal('nuevoModal')">Cancelar</button>
-        <button class="btn btn-primary">Guardar</button>
+<!-- Tab: ONUs -->
+<div id="soTabOnus" class="so-tab-content">
+  <div class="so-card">
+    <div class="so-card-header">
+      <h3><i class="fas fa-list"></i> ONUs desde SmartOLT</h3>
+      <div class="so-actions">
+        <button class="so-btn so-btn-success so-btn-sm" onclick="syncSmartoltOnus()"><i class="fas fa-sync"></i> Sincronizar</button>
       </div>
+    </div>
+    <div class="so-card-body" style="padding:12px 18px; border-bottom:1px solid var(--so-border);">
+      <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+        <input type="text" id="soSearchOnu" class="so-input" style="width:250px; max-width:100%;" placeholder="Buscar por SN, nombre, cliente..." oninput="filterSoOnus()">
+        <select id="soFilterEstado" class="so-input" style="width:150px;" onchange="filterSoOnus()">
+          <option value="">Todos los estados</option>
+          <option value="active">Activo</option>
+          <option value="inactive">Inactivo</option>
+        </select>
+      </div>
+    </div>
+    <div class="so-table-wrap">
+      <table class="so-table" id="soOnuTable">
+        <thead>
+          <tr>
+            <th>SN</th>
+            <th>Nombre ONU</th>
+            <th>Puerto OLT</th>
+            <th>Cliente</th>
+            <th>Señal</th>
+            <th>Estado</th>
+            <th class="text-right">Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="soOnuBody">
+          <tr><td colspan="7" style="text-align:center;padding:40px;color:var(--so-gray);"><i class="fas fa-spinner fa-spin"></i> Cargando ONUs...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Tab: ONU Types -->
+<div id="soTabTypes" class="so-tab-content" style="display:none;">
+  <div class="so-card">
+    <div class="so-card-header">
+      <h3><i class="fas fa-microchip"></i> Modelos de ONU Registrados</h3>
+      <div class="so-actions">
+        <button class="so-btn so-btn-primary so-btn-sm" onclick="openAddOnuType()"><i class="fas fa-plus"></i> Agregar Modelo</button>
+      </div>
+    </div>
+    <div class="so-card-body" style="padding:12px 18px; border-bottom:1px solid var(--so-border);">
+      <input type="text" id="soSearchType" class="so-input" style="width:250px; max-width:100%;" placeholder="Buscar por modelo..." oninput="filterSoTypes()">
+    </div>
+    <div class="so-table-wrap">
+      <table class="so-table" id="soTypeTable">
+        <thead><tr><th>Modelo</th><th>Tipo PON</th><th>Ethernet</th><th>WiFi</th><th class="text-right">Acciones</th></tr></thead>
+        <tbody id="soTypeBody">
+          <tr><td colspan="5" style="text-align:center;padding:40px;color:var(--so-gray);"><i class="fas fa-spinner fa-spin"></i> Cargando modelos...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Configuración SmartOLT -->
+<div id="soModalConfig" class="so-modal-overlay">
+  <div class="so-modal">
+    <div class="so-modal-header">
+      <h3><i class="fas fa-cog"></i> <span id="soConfigTitle">Configurar SmartOLT</span></h3>
+      <button class="so-modal-close" onclick="closeSoModal('soModalConfig')">&times;</button>
+    </div>
+    <form id="soConfigForm" onsubmit="return saveSmartoltConfig(event)">
+      <div class="so-modal-body">
+        <div class="so-form-group">
+          <label>Nombre identificativo</label>
+          <input type="text" id="soCfgName" class="so-input" value="SmartOLT" placeholder="Ej: OLT Principal">
+        </div>
+        <div class="so-form-group">
+          <label>Subdominio SmartOLT</label>
+          <div class="so-input-group">
+            <span class="so-prepend">https://</span>
+            <input type="text" id="soCfgSubdomain" class="so-input" placeholder="miwisp" style="border-radius:0;">
+            <span class="so-append">.smartolt.com</span>
+          </div>
+        </div>
+        <div class="so-form-group">
+          <label>API Key</label>
+          <input type="password" id="soCfgApiKey" class="so-input" placeholder="API Key de SmartOLT">
+          <small style="color:var(--so-gray);font-size:0.72rem;">SmartOLT → Settings → API KEY</small>
+        </div>
+        <div class="so-form-group">
+          <label>ID OLT en SmartOLT <small style="color:var(--so-gray);">(dejar vacío para auto-detectar)</small></label>
+          <input type="text" id="soCfgOltId" class="so-input" placeholder="Se detecta al probar conexión">
+        </div>
+        <div id="soConfigResult"></div>
+      </div>
+      <div class="so-modal-footer">
+        <button type="button" class="so-btn so-btn-secondary" onclick="closeSoModal('soModalConfig')">Cancelar</button>
+        <button type="button" class="so-btn so-btn-warning" onclick="testSmartoltConnection()"><i class="fas fa-plug"></i> Probar Conexión</button>
+        <button type="submit" class="so-btn so-btn-primary" id="soBtnSaveConfig" disabled><i class="fas fa-save"></i> Guardar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL: Agregar/Editar Modelo ONU -->
+<div id="soModalOnuType" class="so-modal-overlay">
+  <div class="so-modal">
+    <div class="so-modal-header">
+      <h3><i class="fas fa-microchip"></i> <span id="soTypeModalTitle">Agregar Modelo de ONU</span></h3>
+      <button class="so-modal-close" onclick="closeSoModal('soModalOnuType')">&times;</button>
+    </div>
+    <form id="soTypeForm" onsubmit="return submitSoOnuType(event)">
+      <div class="so-modal-body">
+        <input type="hidden" id="soTypeEditId" value="0">
+        <div class="so-form-group">
+          <label>Modelo de ONU</label>
+          <input type="text" id="soTypeName" class="so-input" placeholder="Ej: ZTE-F660V6.0">
+        </div>
+        <div class="so-row">
+          <div class="so-col-6">
+            <div class="so-form-group">
+              <label>Tipo PON</label>
+              <select id="soTypePon" class="so-input">
+                <option value="gpon">GPON</option>
+                <option value="epon">EPON</option>
+              </select>
+            </div>
+          </div>
+          <div class="so-col-6">
+            <div class="so-form-group">
+              <label>Puertos Ethernet</label>
+              <select id="soTypeEth" class="so-input">
+                <option value="1">1 Puerto</option>
+                <option value="2">2 Puertos</option>
+                <option value="3">3 Puertos</option>
+                <option value="4" selected>4 Puertos</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="so-form-group">
+          <label>Banda WiFi</label>
+          <div style="display:flex;gap:8px;">
+            <label class="so-btn so-btn-sm" style="cursor:pointer;" onclick="pickSoBand(this,'none')">
+              <input type="radio" name="so_wifi_band" value="none" checked style="display:none;"> <i class="fas fa-ban"></i> Sin WiFi
+            </label>
+            <label class="so-btn so-btn-sm" style="cursor:pointer;" onclick="pickSoBand(this,'2.4ghz')">
+              <input type="radio" name="so_wifi_band" value="2.4ghz" style="display:none;"> <i class="fas fa-wifi"></i> 2.4 GHz
+            </label>
+            <label class="so-btn so-btn-sm" style="cursor:pointer;" onclick="pickSoBand(this,'dual')">
+              <input type="radio" name="so_wifi_band" value="dual" style="display:none;"> <i class="fas fa-broadcast-tower"></i> 2.4+5 GHz
+            </label>
+          </div>
+        </div>
+        <div id="soTypeResult"></div>
+      </div>
+      <div class="so-modal-footer">
+        <button type="button" class="so-btn so-btn-secondary" onclick="closeSoModal('soModalOnuType')">Cancelar</button>
+        <button type="submit" class="so-btn so-btn-primary" id="soBtnSaveType"><i class="fas fa-plus"></i> Agregar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL: Vincular ONU a Cliente -->
+<div id="soModalLink" class="so-modal-overlay">
+  <div class="so-modal" style="width:480px;">
+    <div class="so-modal-header">
+      <h3><i class="fas fa-link"></i> Vincular ONU a Cliente</h3>
+      <button class="so-modal-close" onclick="closeSoModal('soModalLink')">&times;</button>
+    </div>
+    <div class="so-modal-body">
+      <input type="hidden" id="soLinkOnuId">
+      <input type="hidden" id="soLinkOnuSn">
+      <div class="so-form-group">
+        <label>ONU</label>
+        <input type="text" id="soLinkOnuDisplay" class="so-input" disabled>
+      </div>
+      <div class="so-form-group">
+        <label>Buscar Cliente</label>
+        <input type="text" id="soLinkSearch" class="so-input" placeholder="Nombre, cédula o teléfono..." oninput="debounceSearchCliente()">
+      </div>
+      <div class="so-form-group">
+        <label>Cliente seleccionado</label>
+        <select id="soLinkCliente" class="so-input" size="5" style="height:auto;min-height:100px;"></select>
+      </div>
+      <div id="soLinkResult"></div>
+    </div>
+    <div class="so-modal-footer">
+      <button type="button" class="so-btn so-btn-secondary" onclick="closeSoModal('soModalLink')">Cancelar</button>
+      <button type="button" class="so-btn so-btn-primary" onclick="submitSoLink()"><i class="fas fa-link"></i> Vincular</button>
+    </div>
+  </div>
+</div>
+
+<!-- Error detail modal -->
+<div id="soModalError" class="so-modal-overlay" style="z-index:20000;">
+  <div class="so-modal" style="width:500px;">
+    <div class="so-modal-header">
+      <h3><i class="fas fa-bug"></i> Detalle del Error</h3>
+      <button class="so-modal-close" onclick="closeSoModal('soModalError')">&times;</button>
+    </div>
+    <div class="so-modal-body">
+      <textarea id="soErrorDetail" class="so-input" style="height:120px;resize:vertical;" readonly></textarea>
+    </div>
+    <div class="so-modal-footer">
+      <button class="so-btn so-btn-secondary" onclick="closeSoModal('soModalError')">Cerrar</button>
     </div>
   </div>
 </div>
 
 <script>
-setTimeout(function() {
-  document.querySelector('.loading').innerHTML = '<p style="color:var(--text-gray);text-align:center;padding:20px;">Datos cargados correctamente</p>';
-}, 500);
+let soBandSelected = 'none';
+let soErrorLog = {};
+
+// === UTILITY ===
+function closeSoModal(id) { document.getElementById(id).style.display = 'none'; }
+function openSoModal(id) { document.getElementById(id).style.display = 'flex'; }
+
+function pickSoBand(el, val) {
+  soBandSelected = val;
+  document.querySelectorAll('#soModalOnuType label.so-btn').forEach(function(o) { o.style.background = '#e2e8f0'; o.style.color = '#1e293b'; });
+  el.style.background = 'var(--so-primary)';
+  el.style.color = '#fff';
+}
+
+function showSoError(msg) {
+  document.getElementById('soErrorDetail').value = msg;
+  openSoModal('soModalError');
+}
+
+// === TABS ===
+function switchSoTab(tab) {
+  document.querySelectorAll('.so-tab').forEach(function(t) { t.classList.remove('active'); });
+  document.querySelectorAll('.so-tab-content').forEach(function(tc) { tc.style.display = 'none'; });
+  document.querySelector('.so-tab[data-tab="' + tab + '"]').classList.add('active');
+  document.getElementById('soTab' + tab.charAt(0).toUpperCase() + tab.slice(1)).style.display = 'block';
+  if (tab === 'types') loadSoOnuTypes();
+  if (tab === 'onus') loadSoOnus();
+}
+
+// === CONFIGURATION ===
+function openSmartoltConfig() {
+  document.getElementById('soConfigForm').reset();
+  document.getElementById('soBtnSaveConfig').disabled = true;
+  document.getElementById('soConfigResult').innerHTML = '';
+  // Load existing config
+  fetch('/api/smartolt/config')
+    .then(function(r) { return r.json(); })
+    .then(function(cfg) {
+      if (cfg.subdomain) document.getElementById('soCfgSubdomain').value = cfg.subdomain;
+      if (cfg.api_key) document.getElementById('soCfgApiKey').value = cfg.api_key;
+      if (cfg.olt_id) document.getElementById('soCfgOltId').value = cfg.olt_id;
+      if (cfg.name) document.getElementById('soCfgName').value = cfg.name;
+    })
+    .catch(function() {});
+  openSoModal('soModalConfig');
+}
+
+function saveSmartoltConfig(e) {
+  e.preventDefault();
+  var data = {
+    name: document.getElementById('soCfgName').value.trim(),
+    subdomain: document.getElementById('soCfgSubdomain').value.trim(),
+    api_key: document.getElementById('soCfgApiKey').value.trim(),
+    olt_id: document.getElementById('soCfgOltId').value.trim()
+  };
+  fetch('/api/smartolt/config/save', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    if (d.success) {
+      document.getElementById('soConfigResult').innerHTML = '<div style="color:#16a34a;padding:8px 10px;background:#f0fdf4;border-radius:6px;font-weight:600;"><i class="fas fa-check-circle"></i> Configuración guardada</div>';
+      setTimeout(function() { closeSoModal('soModalConfig'); }, 1000);
+    } else {
+      document.getElementById('soConfigResult').innerHTML = '<div style="color:#ef4444;padding:8px 10px;background:#fef2f2;border-radius:6px;">' + (d.message || 'Error al guardar') + '</div>';
+    }
+  })
+  .catch(function(e) {
+    document.getElementById('soConfigResult').innerHTML = '<div style="color:#ef4444;padding:6px 0;">Error: ' + e.message + '</div>';
+  });
+  return false;
+}
+
+function testSmartoltConnection() {
+  var btn = document.querySelector('#soModalConfig .so-btn-warning');
+  var res = document.getElementById('soConfigResult');
+  var btnSave = document.getElementById('soBtnSaveConfig');
+  btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Conectando...'; res.innerHTML = '';
+  
+  var data = {
+    subdomain: document.getElementById('soCfgSubdomain').value.trim(),
+    api_key: document.getElementById('soCfgApiKey').value.trim(),
+    olt_id: document.getElementById('soCfgOltId').value.trim()
+  };
+  
+  fetch('/api/smartolt/test', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    btn.disabled = false; btn.innerHTML = '<i class="fas fa-plug"></i> Probar Conexión';
+    if (d.success) {
+      var h = '<div style="color:#16a34a;font-weight:bold;padding:8px 0;"><i class="fas fa-check-circle"></i> ' + d.message + '</div>';
+      if (d.olts && Array.isArray(d.olts)) {
+        h += '<div style="margin-top:8px;font-size:0.85rem;">';
+        d.olts.forEach(function(o) { h += '<div style="padding:4px 8px;background:#f0fdf4;border-radius:4px;margin:3px 0;">ID: <b>' + (o.id||'?') + '</b> - ' + (o.name||'') + ' (' + (o.olt_type||'') + ')</div>'; });
+        h += '</div>';
+        if (d.olts.length === 1) document.getElementById('soCfgOltId').value = d.olts[0].id;
+      }
+      res.innerHTML = h;
+      btnSave.disabled = false;
+    } else {
+      res.innerHTML = '<div style="color:#ef4444;padding:8px 0;"><i class="fas fa-times-circle"></i> ' + (d.message || d.msg || 'Error de conexión') + '</div>';
+    }
+  })
+  .catch(function(e) {
+    btn.disabled = false; btn.innerHTML = '<i class="fas fa-plug"></i> Probar Conexión';
+    res.innerHTML = '<div style="color:#ef4444;">Error: ' + e.message + '</div>';
+  });
+}
+
+// === ONU TYPES ===
+function loadSoOnuTypes() {
+  var tb = document.getElementById('soTypeBody');
+  tb.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:40px;color:var(--so-gray);"><i class="fas fa-spinner fa-spin"></i> Cargando modelos...</td></tr>';
+  
+  fetch('/api/smartolt/onu-types')
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (!d.success || !Array.isArray(d.data) || d.data.length === 0) {
+        tb.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:40px;color:var(--so-gray);"><i class="fas fa-microchip" style="font-size:2rem;opacity:0.3;"></i><br><br>No hay modelos de ONU registrados.<br><small>Agregue uno para poder autorizar ONUs.</small></td></tr>';
+        return;
+      }
+      var h = '';
+      d.data.forEach(function(t) {
+        var wifiBadge = '';
+        if (t.wifi_band === 'dual') wifiBadge = '<span class="so-badge" style="background:#e0e7ff;color:#4338ca;"><i class="fas fa-broadcast-tower"></i> 2.4+5 GHz</span>';
+        else if (t.wifi_band === '2.4ghz') wifiBadge = '<span class="so-badge" style="background:#dbeafe;color:#1e40af;"><i class="fas fa-wifi"></i> 2.4 GHz</span>';
+        else wifiBadge = '<span class="so-badge" style="background:#f1f5f9;color:#64748b;"><i class="fas fa-ban"></i> Sin WiFi</span>';
+        h += '<tr>';
+        h += '<td><strong>' + (t.name || '-') + '</strong></td>';
+        h += '<td><span class="so-badge" style="background:#e0e7ff;color:#4338ca;">' + (t.pon_type || 'gpon').toUpperCase() + '</span></td>';
+        h += '<td>' + (t.ethernet_ports || '-') + (t.ethernet_ports != '-' ? ' puertos' : '') + '</td>';
+        h += '<td>' + wifiBadge + '</td>';
+        h += '<td class="text-right"><button class="so-btn so-btn-sm so-btn-secondary" onclick="openEditSoType(' + t.id + ', \'' + (t.name||'').replace(/'/g,"\\'") + '\', \'' + (t.pon_type||'gpon') + '\', ' + (t.ethernet_ports||4) + ', \'' + (t.wifi_band||'none') + '\')"><i class="fas fa-pencil-alt"></i> Editar</button></td>';
+        h += '</tr>';
+      });
+      tb.innerHTML = h;
+    })
+    .catch(function(e) {
+      tb.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:20px;color:#ef4444;"><i class="fas fa-exclamation-triangle"></i> ' + e.message + '</td></tr>';
+    });
+}
+
+function openAddOnuType() {
+  soBandSelected = 'none';
+  document.getElementById('soTypeEditId').value = '0';
+  document.getElementById('soTypeModalTitle').innerHTML = '<i class="fas fa-plus"></i> Agregar Modelo de ONU';
+  document.getElementById('soTypeName').value = '';
+  document.getElementById('soTypePon').value = 'gpon';
+  document.getElementById('soTypeEth').value = '4';
+  document.querySelectorAll('#soModalOnuType label.so-btn').forEach(function(o) { o.style.background = '#e2e8f0'; o.style.color = '#1e293b'; });
+  document.getElementById('soTypeResult').innerHTML = '';
+  document.getElementById('soBtnSaveType').innerHTML = '<i class="fas fa-plus"></i> Agregar';
+  openSoModal('soModalOnuType');
+}
+
+function openEditSoType(id, name, pon, eth, band) {
+  soBandSelected = band;
+  document.getElementById('soTypeEditId').value = id;
+  document.getElementById('soTypeModalTitle').innerHTML = '<i class="fas fa-pencil-alt"></i> Editar: ' + name;
+  document.getElementById('soTypeName').value = name;
+  document.getElementById('soTypePon').value = pon;
+  document.getElementById('soTypeEth').value = eth;
+  document.querySelectorAll('#soModalOnuType label.so-btn').forEach(function(o) {
+    o.style.background = '#e2e8f0';
+    o.style.color = '#1e293b';
+    var inp = o.querySelector('input[type=radio]');
+    if (inp && inp.value === band) { o.style.background = 'var(--so-primary)'; o.style.color = '#fff'; }
+  });
+  document.getElementById('soTypeResult').innerHTML = '';
+  document.getElementById('soBtnSaveType').innerHTML = '<i class="fas fa-save"></i> Guardar';
+  openSoModal('soModalOnuType');
+}
+
+function submitSoOnuType(e) {
+  e.preventDefault();
+  var name = document.getElementById('soTypeName').value.trim();
+  if (!name) { document.getElementById('soTypeResult').innerHTML = '<div style="color:#ef4444;padding:6px 0;font-size:0.88rem;"><i class="fas fa-exclamation-circle"></i> Ingrese el modelo de ONU</div>'; return; }
+  var isEdit = parseInt(document.getElementById('soTypeEditId').value) > 0;
+  var btn = document.getElementById('soBtnSaveType');
+  btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ' + (isEdit ? 'Guardando...' : 'Agregando...');
+  
+  var data = {
+    id: isEdit ? parseInt(document.getElementById('soTypeEditId').value) : 0,
+    name: name,
+    pon_type: document.getElementById('soTypePon').value,
+    ethernet_ports: parseInt(document.getElementById('soTypeEth').value),
+    wifi_band: soBandSelected
+  };
+  
+  fetch('/api/smartolt/onu-types/save', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    btn.disabled = false; btn.innerHTML = isEdit ? '<i class="fas fa-save"></i> Guardar' : '<i class="fas fa-plus"></i> Agregar';
+    if (d.success) {
+      document.getElementById('soTypeResult').innerHTML = '<div style="color:#16a34a;padding:8px 10px;background:#f0fdf4;border-radius:6px;font-weight:600;"><i class="fas fa-check-circle"></i> ' + (d.message || 'Guardado') + '</div>';
+      setTimeout(function() { closeSoModal('soModalOnuType'); loadSoOnuTypes(); }, 1000);
+    } else {
+      document.getElementById('soTypeResult').innerHTML = '<div style="color:#ef4444;padding:8px 10px;background:#fef2f2;border-radius:6px;">' + (d.message || 'Error') + '</div>';
+    }
+  })
+  .catch(function(e) {
+    btn.disabled = false; btn.innerHTML = isEdit ? '<i class="fas fa-save"></i> Guardar' : '<i class="fas fa-plus"></i> Agregar';
+    document.getElementById('soTypeResult').innerHTML = '<div style="color:#ef4444;padding:6px 0;">Error: ' + e.message + '</div>';
+  });
+  return false;
+}
+
+function filterSoTypes() {
+  var q = document.getElementById('soSearchType').value.toLowerCase().trim();
+  var rows = document.querySelectorAll('#soTypeBody tr');
+  rows.forEach(function(row) {
+    row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+}
+
+// === ONUS ===
+function loadSoOnus() {
+  var tb = document.getElementById('soOnuBody');
+  tb.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--so-gray);"><i class="fas fa-spinner fa-spin"></i> Cargando ONUs...</td></tr>';
+  
+  fetch('/api/smartolt/onus')
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (!d.success) {
+        tb.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:#ef4444;"><i class="fas fa-exclamation-triangle"></i> ' + (d.message || 'Error al cargar ONUs') + '</td></tr>';
+        return;
+      }
+      var onus = d.data || [];
+      if (onus.length === 0) {
+        tb.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--so-gray);"><i class="fas fa-satellite-dish" style="font-size:2rem;opacity:0.3;"></i><br><br>No hay ONUs sincronizadas.<br><small>Use el botón "Sincronizar" para traer las ONUs desde SmartOLT.</small></td></tr>';
+        return;
+      }
+      var h = '';
+      onus.forEach(function(o) {
+        var estadoClass = (o.estado === 'active' || o.estado === 'activo') ? 'so-badge-ok' : 'so-badge-err';
+        var estadoText = (o.estado === 'active' || o.estado === 'activo') ? 'Activo' : 'Inactivo';
+        var sigClass = '';
+        var sigPct = 50;
+        if (o.senial !== null && o.senial !== undefined) {
+          var s = parseFloat(o.senial);
+          if (s >= -20) { sigClass = 'so-signal-good'; sigPct = 90; }
+          else if (s >= -25) { sigClass = 'so-signal-warn'; sigPct = 60; }
+          else { sigClass = 'so-signal-bad'; sigPct = 30; }
+        }
+        var signalHtml = '<span class="so-signal-val" style="color:var(--so-gray);">N/A</span>';
+        if (sigClass) signalHtml = '<div class="so-signal-bar"><div class="so-signal-fill ' + sigClass + '" style="width:' + sigPct + '%"></div><span class="so-signal-val">' + o.senial + ' dBm</span></div>';
+        
+        h += '<tr class="so-onu-row" data-sn="' + (o.sn || '') + '" data-estado="' + (o.estado || '') + '">';
+        h += '<td><code style="background:#f1f5f9;padding:2px 6px;border-radius:4px;font-size:0.78rem;">' + (o.sn || '-') + '</code></td>';
+        h += '<td><strong>' + (o.nombre || 'Sin nombre') + '</strong></td>';
+        h += '<td>' + (o.puerto_olt || '-') + '</td>';
+        h += '<td>' + (o.cliente_nombre || '<span style="color:#94a3b8;">Sin cliente</span>') + '</td>';
+        h += '<td>' + signalHtml + '</td>';
+        h += '<td><span class="so-badge ' + estadoClass + '">' + estadoText + '</span></td>';
+        h += '<td class="text-right"><div style="display:flex;gap:4px;justify-content:flex-end;flex-wrap:wrap;">';
+        h += '<button class="so-btn so-btn-xs so-btn-success" onclick="soOnuAction(' + (o.id||0) + ',\'activate\')" title="Activar"><i class="fas fa-play"></i></button>';
+        h += '<button class="so-btn so-btn-xs so-btn-warning" onclick="soOnuAction(' + (o.id||0) + ',\'deactivate\')" title="Suspender"><i class="fas fa-pause"></i></button>';
+        h += '<button class="so-btn so-btn-xs so-btn-secondary" onclick="soOnuAction(' + (o.id||0) + ',\'reboot\')" title="Reiniciar"><i class="fas fa-sync"></i></button>';
+        h += '<button class="so-btn so-btn-xs so-btn-primary" onclick="openSoLink(' + (o.id||0) + ',\'' + (o.sn||'').replace(/'/g,"\\'") + '\',\'' + (o.nombre||'').replace(/'/g,"\\'") + '\')" title="Vincular a cliente"><i class="fas fa-link"></i></button>';
+        h += '<button class="so-btn so-btn-xs so-btn-danger" onclick="soOnuAction(' + (o.id||0) + ',\'delete\')" title="Eliminar"><i class="fas fa-trash"></i></button>';
+        h += '<button class="so-btn so-btn-xs so-btn-secondary" onclick="soOnuAction(' + (o.id||0) + ',\'resync\')" title="Resincronizar"><i class="fas fa-exchange-alt"></i></button>';
+        h += '</div></td>';
+        h += '</tr>';
+      });
+      tb.innerHTML = h;
+    })
+    .catch(function(e) {
+      tb.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:#ef4444;"><i class="fas fa-exclamation-triangle"></i> ' + e.message + '</td></tr>';
+    });
+}
+
+function filterSoOnus() {
+  var q = document.getElementById('soSearchOnu').value.toLowerCase().trim();
+  var estadoFiltro = document.getElementById('soFilterEstado').value;
+  var rows = document.querySelectorAll('#soOnuBody tr.so-onu-row');
+  rows.forEach(function(row) {
+    var texto = row.textContent.toLowerCase();
+    var estado = row.getAttribute('data-estado') || '';
+    var matchSearch = !q || texto.includes(q);
+    var matchEstado = !estadoFiltro || estado === estadoFiltro;
+    row.style.display = (matchSearch && matchEstado) ? '' : 'none';
+  });
+}
+
+// === SYNC ===
+function syncSmartoltOnus() {
+  var btn = event && event.target ? (event.target.tagName === 'I' ? event.target.parentElement : event.target) : document.querySelector('.so-btn-success');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sincronizando...';
+  
+  fetch('/api/smartolt/sync', { method: 'POST' })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      btn.disabled = false; btn.innerHTML = '<i class="fas fa-sync"></i> Sincronizar';
+      if (d.success) {
+        alert('✅ ' + (d.message || 'ONUs sincronizadas correctamente') + (d.count ? ' (' + d.count + ' ONUs)' : ''));
+        loadSoOnus();
+      } else {
+        alert('❌ ' + (d.message || d.msg || 'Error al sincronizar'));
+      }
+    })
+    .catch(function(e) {
+      btn.disabled = false; btn.innerHTML = '<i class="fas fa-sync"></i> Sincronizar';
+      alert('❌ Error: ' + e.message);
+    });
+}
+
+// === ONU ACTIONS ===
+function soOnuAction(id, action) {
+  var labels = { activate: 'activar', deactivate: 'suspender', reboot: 'reiniciar', delete: 'eliminar', resync: 'resincronizar' };
+  var msgs = { activate: '¿Activar esta ONU?', deactivate: '¿Suspender esta ONU?', reboot: '¿Reiniciar esta ONU?', delete: '¿Eliminar esta ONU? Se desvinculará del cliente.', resync: '¿Resincronizar esta ONU?' };
+  
+  if (!confirm(msgs[action] || '¿Realizar acción ' + action + '?')) return;
+  
+  fetch('/api/smartolt/onu/' + id + '/action', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: action })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    if (d.success) {
+      alert('✅ ' + (d.message || 'Acción ' + (labels[action] || action) + ' ejecutada'));
+      loadSoOnus();
+    } else {
+      alert('❌ ' + (d.message || d.msg || 'Error al ' + (labels[action] || action)));
+    }
+  })
+  .catch(function(e) {
+    alert('❌ Error: ' + e.message);
+  });
+}
+
+// === LINK ONU TO CLIENT ===
+function openSoLink(id, sn, nombre) {
+  document.getElementById('soLinkOnuId').value = id;
+  document.getElementById('soLinkOnuSn').value = sn;
+  document.getElementById('soLinkOnuDisplay').value = sn + ' - ' + nombre;
+  document.getElementById('soLinkSearch').value = '';
+  document.getElementById('soLinkCliente').innerHTML = '<option value="">--- Busque un cliente ---</option>';
+  document.getElementById('soLinkResult').innerHTML = '';
+  openSoModal('soModalLink');
+  // Load some clients
+  buscarClientes('');
+}
+
+var soSearchTimeout = null;
+function debounceSearchCliente() {
+  if (soSearchTimeout) clearTimeout(soSearchTimeout);
+  soSearchTimeout = setTimeout(function() {
+    buscarClientes(document.getElementById('soLinkSearch').value.trim());
+  }, 300);
+}
+
+function buscarClientes(q) {
+  var sel = document.getElementById('soLinkCliente');
+  sel.innerHTML = '<option value=""><i class="fas fa-spinner fa-spin"></i> Buscando...</option>';
+  
+  fetch('/api/clientes/buscar?q=' + encodeURIComponent(q))
+    .then(function(r) { return r.json(); })
+    .then(function(clientes) {
+      sel.innerHTML = '';
+      if (!clientes || clientes.length === 0) {
+        sel.innerHTML = '<option value="">No se encontraron clientes</option>';
+        return;
+      }
+      clientes.forEach(function(c) {
+        var opt = document.createElement('option');
+        opt.value = c.id;
+        opt.text = c.nombre + (c.cedula ? ' (' + c.cedula + ')' : '') + ' - ' + (c.telefono || '');
+        sel.appendChild(opt);
+      });
+    })
+    .catch(function() {
+      sel.innerHTML = '<option value="">Error al buscar</option>';
+    });
+}
+
+function submitSoLink() {
+  var onuId = document.getElementById('soLinkOnuId').value;
+  var clienteId = document.getElementById('soLinkCliente').value;
+  if (!clienteId) { document.getElementById('soLinkResult').innerHTML = '<div style="color:#ef4444;padding:6px 0;">Seleccione un cliente</div>'; return; }
+  
+  fetch('/api/smartolt/onu/link', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ onu_id: parseInt(onuId), cliente_id: parseInt(clienteId) })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    if (d.success) {
+      document.getElementById('soLinkResult').innerHTML = '<div style="color:#16a34a;padding:8px 10px;background:#f0fdf4;border-radius:6px;font-weight:600;"><i class="fas fa-check-circle"></i> ONU vinculada a cliente</div>';
+      setTimeout(function() { closeSoModal('soModalLink'); loadSoOnus(); }, 1000);
+    } else {
+      document.getElementById('soLinkResult').innerHTML = '<div style="color:#ef4444;padding:8px 10px;background:#fef2f2;border-radius:6px;">' + (d.message || 'Error') + '</div>';
+    }
+  })
+  .catch(function(e) {
+    document.getElementById('soLinkResult').innerHTML = '<div style="color:#ef4444;padding:6px 0;">Error: ' + e.message + '</div>';
+  });
+}
+
+// === INIT ===
+document.addEventListener('DOMContentLoaded', function() {
+  loadSoOnus();
+  loadSoOnuTypes();
+});
 </script>

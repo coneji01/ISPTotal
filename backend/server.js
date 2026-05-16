@@ -149,6 +149,10 @@ app.get('/modulo', requireAuth, (req, res) => {
         LEFT JOIN olts ol ON ol.id=o.olt_id ORDER BY o.id DESC
       `).all();
       data.olts = db.prepare('SELECT * FROM olts').all();
+      // SmartOLT config
+      const soCfg = db.prepare("SELECT key, value FROM configuracion WHERE key IN ('smartolt_subdomain','smartolt_api_key','smartolt_olt_id','smartolt_name')").all();
+      data.smartoltConfig = {};
+      soCfg.forEach(function(c) { data.smartoltConfig[c.key.replace('smartolt_', '')] = c.value; });
       break;
     }
     case 'CajasNap': {
@@ -318,6 +322,409 @@ app.post("/api/routers/:id/resync", requireAuth, async (req, res) => {
     db.prepare("UPDATE routers SET connected=0 WHERE id=?").run(req.params.id);
   }
   res.json(result);
+});
+
+// ======== SMARTOLT API ========
+const SMARTOLT_BASE = 'https://api.smartolt.com/api';
+
+// Helper: fetch SmartOLT API
+async function smartoltFetch(endpoint, method = 'GET', body = null) {
+  const cfg = db.prepare("SELECT key, value FROM configuracion WHERE key IN ('smartolt_subdomain','smartolt_api_key','smartolt_olt_id')").all();
+  const config = {};
+  cfg.forEach(function(c) { config[c.key] = c.value; });
+  
+  if (!config.smartolt_subdomain || !config.smartolt_api_key) {
+    throw new Error('SmartOLT no configurado. Configure subdominio y API Key');
+  }
+  
+  // Use subdomain-based API URL
+  const apiUrl = 'https://' + config.smartolt_subdomain + '.smartolt.com/api';
+  const headers = {
+    'X-API-Key': config.smartolt_api_key,
+    'Content-Type': 'application/json',
+    'Accept': 'application/json'
+  };
+  
+  const opts = {
+    method: method,
+    headers: headers
+  };
+  if (body) opts.body = JSON.stringify(body);
+  
+  const response = await fetch(apiUrl + endpoint, opts);
+  
+  // Handle non-JSON responses
+  const ct = response.headers.get('content-type') || '';
+  if (ct.indexOf('json') === -1) {
+    const text = await response.text();
+    throw new Error('Respuesta no JSON: ' + text.substring(0, 300));
+  }
+  
+  const data = await response.json();
+  if (data.status === 'error' || data.error) {
+    throw new Error(data.msg || data.message || data.error || 'Error en API SmartOLT');
+  }
+  return data;
+}
+
+// GET /api/smartolt/config - Get SmartOLT configuration
+app.get('/api/smartolt/config', requireAuth, (req, res) => {
+  const cfg = db.prepare("SELECT key, value FROM configuracion WHERE key LIKE 'smartolt_%' OR key = 'smartolt_name'").all();
+  const config = { name: 'SmartOLT' };
+  cfg.forEach(function(c) { config[c.key.replace('smartolt_', '')] = c.value; });
+  res.json(config);
+});
+
+// POST /api/smartolt/config/save - Save SmartOLT config
+app.post('/api/smartolt/config/save', requireAuth, (req, res) => {
+  const { name, subdomain, api_key, olt_id } = req.body;
+  if (!subdomain || !api_key) {
+    return res.json({ success: false, message: 'Subdominio y API Key son requeridos' });
+  }
+  const txn = db.transaction(function() {
+    db.prepare("INSERT OR REPLACE INTO configuracion (key, value) VALUES ('smartolt_name', ?)").run(name || 'SmartOLT');
+    db.prepare("INSERT OR REPLACE INTO configuracion (key, value) VALUES ('smartolt_subdomain', ?)").run(subdomain);
+    db.prepare("INSERT OR REPLACE INTO configuracion (key, value) VALUES ('smartolt_api_key', ?)").run(api_key);
+    db.prepare("INSERT OR REPLACE INTO configuracion (key, value) VALUES ('smartolt_olt_id', ?)").run(olt_id || '');
+  });
+  txn();
+  res.json({ success: true, message: 'Configuración guardada' });
+});
+
+// POST /api/smartolt/test - Test SmartOLT connection
+app.post('/api/smartolt/test', requireAuth, async (req, res) => {
+  const { subdomain, api_key, olt_id } = req.body;
+  
+  if (!subdomain || !api_key) {
+    return res.json({ success: false, message: 'Subdominio y API Key son requeridos' });
+  }
+  
+  try {
+    const apiUrl = 'https://' + subdomain + '.smartolt.com/api';
+    const headers = {
+      'X-API-Key': api_key,
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    };
+    
+    // Try to get OLTs list
+    const response = await fetch(apiUrl + '/olts', { method: 'GET', headers: headers });
+    
+    // Handle non-JSON
+    const ct = response.headers.get('content-type') || '';
+    if (ct.indexOf('json') === -1) {
+      const text = await response.text();
+      if (response.status >= 400) {
+        return res.json({ success: false, message: 'Error ' + response.status + ': ' + text.substring(0, 200) });
+      }
+      return res.json({ success: true, message: 'Conexión exitosa (respuesta no JSON)', olts: [] });
+    }
+    
+    const data = await response.json();
+    
+    let olts = [];
+    if (data.data && Array.isArray(data.data)) {
+      olts = data.data;
+    } else if (Array.isArray(data)) {
+      olts = data;
+    } else if (data.olts && Array.isArray(data.olts)) {
+      olts = data.olts;
+    }
+    
+    return res.json({
+      success: true,
+      message: 'Conexión exitosa. OLTs encontradas: ' + olts.length,
+      olts: olts
+    });
+  } catch (e) {
+    return res.json({ success: false, message: e.message || 'Error de conexión' });
+  }
+});
+
+// POST /api/smartolt/sync - Sync ONUs from SmartOLT
+app.post('/api/smartolt/sync', requireAuth, async (req, res) => {
+  try {
+    const cfg = db.prepare("SELECT key, value FROM configuracion WHERE key IN ('smartolt_subdomain','smartolt_api_key','smartolt_olt_id')").all();
+    const config = {};
+    cfg.forEach(function(c) { config[c.key] = c.value; });
+    
+    if (!config.smartolt_subdomain || !config.smartolt_api_key) {
+      return res.json({ success: false, message: 'SmartOLT no configurado' });
+    }
+    
+    const apiUrl = 'https://' + config.smartolt_subdomain + '.smartolt.com/api';
+    const headers = {
+      'X-API-Key': config.smartolt_api_key,
+      'Accept': 'application/json'
+    };
+    
+    // 1. Fetch ONUs from SmartOLT API
+    const onuEndpoint = '/onus' + (config.smartolt_olt_id ? '?olt_id=' + config.smartolt_olt_id : '');
+    const response = await fetch(apiUrl + onuEndpoint, { method: 'GET', headers: headers });
+    
+    const ct = response.headers.get('content-type') || '';
+    if (ct.indexOf('json') === -1) {
+      const text = await response.text();
+      return res.json({ success: false, message: 'Respuesta no JSON: ' + text.substring(0, 200) });
+    }
+    
+    const data = await response.json();
+    
+    let onus = [];
+    if (data.data && Array.isArray(data.data)) {
+      onus = data.data;
+    } else if (Array.isArray(data)) {
+      onus = data;
+    } else if (data.onus && Array.isArray(data.onus)) {
+      onus = data.onus;
+    }
+    
+    if (onus.length === 0) {
+      return res.json({ success: true, message: 'No se encontraron ONUs en SmartOLT', count: 0 });
+    }
+    
+    // 2. Sync ONUs to local database
+    const txn = db.transaction(function() {
+      const upsertStmt = db.prepare(`
+        INSERT INTO onu (sn, nombre, olt_id, puerto_olt, estado, senial)
+        VALUES (?, ?, ?, ?, ?, ?)
+        ON CONFLICT(sn) DO UPDATE SET
+          nombre = COALESCE(excluded.nombre, onu.nombre),
+          olt_id = COALESCE(excluded.olt_id, onu.olt_id),
+          puerto_olt = COALESCE(excluded.puerto_olt, onu.puerto_olt),
+          estado = COALESCE(excluded.estado, onu.estado),
+          senial = COALESCE(excluded.senial, onu.senial)
+      `);
+      
+      onus.forEach(function(o) {
+        const sn = o.sn || o.serial || o.serial_number || '';
+        const nombre = o.name || o.nombre || o.description || sn;
+        const oltId = parseInt(o.olt_id || config.smartolt_olt_id || 0) || null;
+        const puerto = o.port || o.pon_port || o.puerto || null;
+        const estado = (o.status === 'active' || o.estado === 'active') ? 'activo' : 'inactive';
+        const senial = o.signal || o.signal_dbm || o.rx_power || o.senial || null;
+        
+        if (sn) {
+          upsertStmt.run(sn, nombre, oltId, puerto, estado, senial);
+        }
+      });
+    });
+    txn();
+    
+    return res.json({
+      success: true,
+      message: onus.length + ' ONUs sincronizadas',
+      count: onus.length
+    });
+  } catch (e) {
+    return res.json({ success: false, message: e.message || 'Error al sincronizar' });
+  }
+});
+
+// GET /api/smartolt/onus - List ONUs
+app.get('/api/smartolt/onus', requireAuth, (req, res) => {
+  try {
+    const onus = db.prepare(`
+      SELECT o.*, c.nombre as cliente_nombre, c.telefono as cliente_telefono,
+             s.estado as servicio_estado, s.id as servicio_id
+      FROM onu o
+      LEFT JOIN clientes c ON c.id = o.cliente_id
+      LEFT JOIN servicios s ON s.id = o.servicio_id
+      ORDER BY o.created_at DESC
+    `).all();
+    res.json({ success: true, data: onus });
+  } catch (e) {
+    res.json({ success: false, message: e.message });
+  }
+});
+
+// POST /api/smartolt/onu/:id/action - Execute action on ONU
+app.post('/api/smartolt/onu/:id/action', requireAuth, async (req, res) => {
+  const onuId = parseInt(req.params.id);
+  const { action } = req.body;
+  
+  try {
+    const cfg = db.prepare("SELECT key, value FROM configuracion WHERE key IN ('smartolt_subdomain','smartolt_api_key')").all();
+    const config = {};
+    cfg.forEach(function(c) { config[c.key] = c.value; });
+    
+    if (!config.smartolt_subdomain || !config.smartolt_api_key) {
+      return res.json({ success: false, message: 'SmartOLT no configurado' });
+    }
+    
+    const onu = db.prepare('SELECT * FROM onu WHERE id = ?').get(onuId);
+    if (!onu) {
+      return res.json({ success: false, message: 'ONU no encontrada en la base de datos' });
+    }
+    
+    const apiUrl = 'https://' + config.smartolt_subdomain + '.smartolt.com/api';
+    const headers = {
+      'X-API-Key': config.smartolt_api_key,
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    };
+    
+    const actionsMap = {
+      'activate': { endpoint: '/onus/' + onu.sn + '/activate', method: 'POST', description: 'activar' },
+      'deactivate': { endpoint: '/onus/' + onu.sn + '/deactivate', method: 'POST', description: 'suspender' },
+      'reboot': { endpoint: '/onus/' + onu.sn + '/reboot', method: 'POST', description: 'reiniciar' },
+      'delete': { endpoint: '/onus/' + onu.sn + '/delete', method: 'POST', description: 'eliminar' },
+      'resync': { endpoint: '/onus/' + onu.sn, method: 'GET', description: 'resincronizar' }
+    };
+    
+    const act = actionsMap[action];
+    if (!act) {
+      return res.json({ success: false, message: 'Acción no válida: ' + action });
+    }
+    
+    // For local actions (delete from DB, resync from API)
+    if (action === 'delete') {
+      // Try API delete first, then remove from local DB
+      try {
+        const apiUrl2 = 'https://' + config.smartolt_subdomain + '.smartolt.com/api';
+        await fetch(apiUrl2 + '/onus/' + onu.sn + '/delete', { method: 'POST', headers: headers });
+      } catch (apiErr) {
+        // Continue even if API delete fails
+      }
+      db.prepare('UPDATE onu SET cliente_id = NULL, servicio_id = NULL WHERE id = ?').run(onuId);
+      db.prepare('DELETE FROM onu WHERE id = ?').run(onuId);
+      return res.json({ success: true, message: 'ONU eliminada' });
+    }
+    
+    if (action === 'resync') {
+      // Re-fetch this ONU from SmartOLT API
+      try {
+        const resp = await fetch(apiUrl + '/onus/' + onu.sn, { method: 'GET', headers: headers });
+        const ct = resp.headers.get('content-type') || '';
+        if (ct.indexOf('json') !== -1) {
+          const data = await resp.json();
+          const o = data.data || data;
+          if (o) {
+            const senial = o.signal || o.signal_dbm || o.rx_power || null;
+            const estado = (o.status === 'active' || o.estado === 'active') ? 'activo' : 'inactive';
+            db.prepare('UPDATE onu SET estado = ?, senial = ? WHERE id = ?').run(estado, senial, onuId);
+          }
+        }
+        return res.json({ success: true, message: 'ONU resincronizada' });
+      } catch (e) {
+        return res.json({ success: false, message: 'Error al resincronizar: ' + e.message });
+      }
+    }
+    
+    // API actions (activate, deactivate, reboot)
+    try {
+      const resp = await fetch(apiUrl + act.endpoint, { method: act.method, headers: headers });
+      const ct = resp.headers.get('content-type') || '';
+      if (ct.indexOf('json') === -1) {
+        const text = await resp.text();
+        if (resp.ok) {
+          // Update local state
+          const newEstado = action === 'activate' ? 'activo' : 'inactive';
+          db.prepare('UPDATE onu SET estado = ? WHERE id = ?').run(newEstado, onuId);
+          return res.json({ success: true, message: 'ONU ' + act.description + ' exitosamente' });
+        }
+        return res.json({ success: false, message: 'Error ' + resp.status + ': ' + text.substring(0, 200) });
+      }
+      
+      const data = await resp.json();
+      
+      // Update local state
+      const newEstado = action === 'activate' ? 'activo' : 'inactive';
+      db.prepare('UPDATE onu SET estado = ? WHERE id = ?').run(newEstado, onuId);
+      
+      return res.json({ success: true, message: 'ONU ' + act.description + ' exitosamente' });
+    } catch (e) {
+      return res.json({ success: false, message: 'Error en API SmartOLT: ' + e.message });
+    }
+  } catch (e) {
+    return res.json({ success: false, message: e.message });
+  }
+});
+
+// POST /api/smartolt/onu/link - Link ONU to client
+app.post('/api/smartolt/onu/link', requireAuth, (req, res) => {
+  const { onu_id, cliente_id } = req.body;
+  
+  if (!onu_id || !cliente_id) {
+    return res.json({ success: false, message: 'ONU ID y Cliente ID son requeridos' });
+  }
+  
+  try {
+    const onu = db.prepare('SELECT * FROM onu WHERE id = ?').get(onu_id);
+    if (!onu) {
+      return res.json({ success: false, message: 'ONU no encontrada' });
+    }
+    
+    const cliente = db.prepare('SELECT * FROM clientes WHERE id = ?').get(cliente_id);
+    if (!cliente) {
+      return res.json({ success: false, message: 'Cliente no encontrado' });
+    }
+    
+    // Find or create a service for this client
+    let servicio = db.prepare('SELECT * FROM servicios WHERE cliente_id = ? LIMIT 1').get(cliente_id);
+    
+    // Link ONU to cliente and servicio
+    db.prepare('UPDATE onu SET cliente_id = ?, servicio_id = ? WHERE id = ?')
+      .run(cliente_id, servicio ? servicio.id : null, onu_id);
+    
+    res.json({ success: true, message: 'ONU vinculada a ' + cliente.nombre });
+  } catch (e) {
+    res.json({ success: false, message: e.message });
+  }
+});
+
+// CRUD for ONU Types
+app.get('/api/smartolt/onu-types', requireAuth, (req, res) => {
+  try {
+    let types = db.prepare("SELECT * FROM configuracion WHERE key LIKE 'onu_type_%' ORDER BY key").all();
+    let result = [];
+    types.forEach(function(t) {
+      try {
+        const parsed = JSON.parse(t.value);
+        if (parsed && parsed.name) {
+          result.push({ id: parsed.id, ...parsed });
+        }
+      } catch(e) {}
+    });
+    result.sort(function(a, b) { return a.id - b.id; });
+    res.json({ success: true, data: result });
+  } catch (e) {
+    res.json({ success: false, message: e.message });
+  }
+});
+
+app.post('/api/smartolt/onu-types/save', requireAuth, (req, res) => {
+  const { id, name, pon_type, ethernet_ports, wifi_band } = req.body;
+  if (!name) {
+    return res.json({ success: false, message: 'Nombre requerido' });
+  }
+  try {
+    let typeId = parseInt(id) || 0;
+    if (typeId <= 0) {
+      // Get next ID
+      const existing = db.prepare('SELECT value FROM configuracion WHERE key LIKE "onu_type_%"').all();
+      let maxId = 0;
+      existing.forEach(function(t) {
+        try { const p = JSON.parse(t.value); if (p.id > maxId) maxId = p.id; } catch(e) {}
+      });
+      typeId = maxId + 1;
+    }
+    
+    const data = JSON.stringify({
+      id: typeId,
+      name: name,
+      pon_type: pon_type || 'gpon',
+      ethernet_ports: parseInt(ethernet_ports) || 4,
+      wifi_band: wifi_band || 'none'
+    });
+    
+    db.prepare('INSERT OR REPLACE INTO configuracion (key, value) VALUES (?, ?)')
+      .run('onu_type_' + typeId, data);
+    
+    res.json({ success: true, message: 'Modelo de ONU guardado' });
+  } catch (e) {
+    res.json({ success: false, message: e.message });
+  }
 });
 
 // ======== NUEVO CLIENTE API ========
