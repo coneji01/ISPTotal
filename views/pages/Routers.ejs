@@ -225,7 +225,19 @@ function guardarRouter(e) {
   })
   .then(r => r.json())
   .then(res => {
-    if (res.success) { showToast('Router guardado'); cerrarModal(); cargarRouters(); }
+    if (res.success) { 
+      showToast('Router guardado, probando conexión...'); 
+      cerrarModal(); 
+      // Resync after save
+      fetch('/api/routers/' + res.id + '/resync', { method: 'POST' })
+        .then(function(r){ return r.json(); })
+        .then(function(sr) { 
+          if (sr.success) showToast('Router conectado correctamente');
+          else showToast('Router guardado pero sin conexión: ' + (sr.error || 'desconocido'), 'warning');
+          cargarRouters();
+        })
+        .catch(function(){ cargarRouters(); });
+    }
     else showToast('Error: ' + (res.message || 'No se pudo guardar'), 'error');
   })
   .catch(() => showToast('Error de conexión', 'error'));
