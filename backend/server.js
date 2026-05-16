@@ -268,8 +268,9 @@ app.get("/api/routers/:id", requireAuth, (req, res) => {
   res.json(router);
 });
 
-app.post("/api/routers/save", requireAuth, (req, res) => {
-  const { accion, id_router, name, ip, port, user, password, ip_blocks } = req.body;
+app.post("/api/routers/save", requireAuth, async (req, res) => {
+  const { accion, id_router, id_router_edit, name, ip, port, user, password, ip_blocks } = req.body;
+  let routerId = id_router || id_router_edit;
   if (accion === "editar" && id_router) {
     if (password) {
       db.prepare("UPDATE routers SET name=?, ip=?, port=?, user=?, password=?, ip_blocks=? WHERE id=?")
@@ -278,12 +279,25 @@ app.post("/api/routers/save", requireAuth, (req, res) => {
       db.prepare("UPDATE routers SET name=?, ip=?, port=?, user=?, ip_blocks=? WHERE id=?")
         .run(name, ip, port || 8728, user, ip_blocks || "[]", id_router);
     }
-    res.json({ success: true });
+    routerId = id_router;
   } else {
     const r = db.prepare("INSERT INTO routers (name, ip, port, user, password, ip_blocks) VALUES (?,?,?,?,?,?)")
       .run(name, ip, port || 8728, user, password || "", ip_blocks || "[]");
-    res.json({ success: true, id: r.lastInsertRowid });
+    routerId = r.lastInsertRowid;
   }
+  // ⭐ Test connection after save (use saved password if not provided)
+  var testPass = password || (id_router ? db.prepare("SELECT password FROM routers WHERE id=?").get(id_router)?.password : "");
+  try {
+    const result = await MikroTikAPI.testConnection(ip, port || 8728, user, testPass);
+    if (result.success) {
+      db.prepare("UPDATE routers SET connected=1, last_sync=datetime('now') WHERE id=?").run(routerId);
+    } else {
+      db.prepare("UPDATE routers SET connected=0 WHERE id=?").run(routerId);
+    }
+  } catch(e) {
+    db.prepare("UPDATE routers SET connected=0 WHERE id=?").run(routerId);
+  }
+  res.json({ success: true, id: parseInt(routerId) });
 });
 
 app.post("/api/routers/:id/delete", requireAuth, (req, res) => {
@@ -296,7 +310,7 @@ app.post("/api/routers/:id/resync", requireAuth, async (req, res) => {
   if (!router) return res.json({ success: false, error: "Router no encontrado" });
   const result = await MikroTikAPI.testConnection(router.ip, router.port || 8728, router.user, router.password);
   if (result.success) {
-    db.prepare("UPDATE routers SET connected=1, last_sync=datetime(\"now\") WHERE id=?").run(req.params.id);
+    db.prepare("UPDATE routers SET connected=1, last_sync=datetime('now') WHERE id=?").run(req.params.id);
   } else {
     db.prepare("UPDATE routers SET connected=0 WHERE id=?").run(req.params.id);
   }
@@ -325,6 +339,75 @@ app.post('/api/pagos', requireAuth, (req, res) => {
     db.prepare('UPDATE facturas SET estado=\'pagada\' WHERE id=?').run(factura_id);
   }
   res.json({ id: r.lastInsertRowid, message: 'Pago registrado' });
+});
+
+app.get("/api/clientes/lista", requireAuth, (req, res) => {
+  const { estado, zona, facturas, q, mostrar = "20", p = "1" } = req.query;
+  const limit = mostrar === "all" ? 99999 : parseInt(mostrar);
+  const offset = (parseInt(p) - 1) * limit;
+  let where = ["1=1"];
+  let params = [];
+  if (estado && estado !== "todos") { where.push("c.estado=?"); params.push(estado); }
+  if (zona && zona !== "todas") { where.push("c.zona_id=?"); params.push(zona); }
+  if (facturas === "sin") { where.push("(SELECT COUNT(*) FROM facturas WHERE cliente_id=c.id)=0"); }
+  else if (facturas === "1") { where.push("(SELECT COUNT(*) FROM facturas WHERE cliente_id=c.id)=1"); }
+  else if (facturas === "2+") { where.push("(SELECT COUNT(*) FROM facturas WHERE cliente_id=c.id)>=2"); }
+  if (q) { where.push("(c.nombre LIKE ? OR c.cedula LIKE ? OR c.telefono LIKE ?)"); params.push("%"+q+"%","%"+q+"%","%"+q+"%"); }
+  const whereSQL = where.join(" AND ");
+  const total = db.prepare("SELECT COUNT(*) as cnt FROM clientes c WHERE " + whereSQL).get(...params).cnt;
+  const clientes = db.prepare("SELECT c.*, z.nombre as zona_nombre, (SELECT COUNT(*) FROM servicios WHERE cliente_id=c.id) as servicios_count FROM clientes c LEFT JOIN zonas z ON z.id=c.zona_id WHERE " + whereSQL + " ORDER BY c.id DESC LIMIT ? OFFSET ?").all(...params, limit, offset);
+  let html = "";
+  if (clientes.length === 0) {
+    html = "<tr><td colspan=\"7\" style=\"text-align:center;padding:40px;color:var(--text-gray);\">No se encontraron clientes</td></tr>";
+  } else {
+    clientes.forEach(function(c) {
+      const est = c.estado === "activo" ? "<span class=\"badge badge-success\">Activo</span>" : c.estado === "suspendido" ? "<span class=\"badge badge-warning\">Suspendido</span>" : "<span class=\"badge badge-danger\">Retirado</span>";
+      html += "<tr><td><input type=\"checkbox\" class=\"clienteCheck\" data-id=\"" + c.id + "\" onchange=\"actualizarBulkSelection()\"></td><td>" + c.id + "</td><td><strong>" + c.nombre + "</strong></td><td>" + (c.zona_nombre || "") + "</td><td>" + (c.telefono || "") + "</td><td>" + est + "</td><td><div class=\"btn-group\"><button class=\"btn btn-sm btn-secondary\" onclick=\"toggleCliente(" + c.id + ")\" title=\"Seleccionar\"><i class=\"fas fa-check\"></i></button><button class=\"btn btn-sm btn-danger\" onclick=\"borrarCliente(" + c.id + ")\" title=\"Eliminar\"><i class=\"fas fa-trash\"></i></button></div></td></tr>";
+    });
+  }
+  res.json({ status: "success", html: html, total: total });
+});
+
+app.post("/api/clientes/save", requireAuth, (req, res) => {
+  const { nombre, cedula, telefono, direccion, zona_id, apodo } = req.body;
+  if (!nombre) return res.json({ success: false, message: "Nombre requerido" });
+  db.prepare("INSERT INTO clientes (nombre, cedula, telefono, direccion, zona_id, apodo) VALUES (?,?,?,?,?,?)").run(nombre, cedula, telefono, direccion, zona_id || null, apodo || null);
+  res.json({ success: true });
+});
+
+app.post("/api/clientes/bulk", requireAuth, (req, res) => {
+  const { action, ids } = req.body;
+  if (!ids || ids.length === 0) return res.json({ success: false });
+  const placeholders = ids.map(function(){return "?"}).join(",");
+  if (action === "eliminar") {
+    const delServ = db.prepare("DELETE FROM servicios WHERE cliente_id=?");
+    const delCli = db.prepare("DELETE FROM clientes WHERE id=?");
+    const txn = db.transaction(function() {
+      for (var i = 0; i < ids.length; i++) {
+        delServ.run(ids[i]);
+        delCli.run(ids[i]);
+      }
+    });
+    txn();
+  } else if (action === "activar" || action === "suspender" || action === "retirar") {
+    var estadoVal = action === "activar" ? "activo" : action;
+    const updServ = db.prepare("UPDATE servicios SET estado=? WHERE cliente_id=?");
+    const updCli = db.prepare("UPDATE clientes SET estado=? WHERE id=?");
+    const txn = db.transaction(function() {
+      for (var i = 0; i < ids.length; i++) {
+        updServ.run(estadoVal, ids[i]);
+        updCli.run(estadoVal, ids[i]);
+      }
+    });
+    txn();
+  }
+  res.json({ success: true });
+});
+
+app.post("/api/clientes/:id/delete", requireAuth, (req, res) => {
+  db.prepare("DELETE FROM servicios WHERE cliente_id=?").run(req.params.id);
+  db.prepare("DELETE FROM clientes WHERE id=?").run(req.params.id);
+  res.json({ success: true });
 });
 
 app.get('/api/clientes/buscar', requireAuth, (req, res) => {

@@ -1,34 +1,381 @@
 <div class="page-header">
-  <h2><i class="fas fa-<%= pagina === 'Clientes' ? 'users' : pagina === 'Ordenes' ? 'clipboard-list' : pagina === 'Gpon' ? 'network-wired' : pagina === 'CajasNap' ? 'box' : pagina === 'Inventario' ? 'boxes' : pagina === 'Ventas' ? 'shopping-cart' : pagina === 'Proveedores' ? 'truck' : pagina === 'Empleados' ? 'id-badge' : pagina === 'PagosAdmin' ? 'coins' : pagina === 'Estadisticas' ? 'chart-bar' : pagina === 'Monitoreo' ? 'desktop' : pagina === 'RegistrarPago' ? 'money-bill' : pagina === 'NuevoCliente' ? 'user-plus' : pagina === 'BuscarOnu' ? 'search' : pagina === 'CambioOnu' ? 'exchange-alt' : pagina === 'CambioDeTitular' ? 'user-edit' : pagina === 'Traslados' ? 'truck-moving' : pagina === 'PromesaDePago' ? 'handshake' : pagina === 'CuadreCaja' ? 'cash-register' : pagina === 'Configuracion' ? 'cog' : pagina === 'Actualizaciones' ? 'sync' : 'cog' %>"></i> <%= pagina.replace(/([A-Z])/g, ' $1').trim() %></h2>
+  <h2><i class="fas fa-users"></i> Gestión de Clientes</h2>
   <div class="btn-group">
-    <% if (pagina !== 'BuscarOnu' && pagina !== 'Estadisticas' && pagina !== 'Monitoreo' && pagina !== 'Configuracion' && pagina !== 'Actualizaciones') { %>
-    <button class="btn btn-primary btn-sm" onclick="openModal('nuevoModal')"><i class="fas fa-plus"></i> Nuevo</button>
-    <% } %>
+    <button class="btn btn-primary btn-sm" onclick="abrirModalNuevo()"><i class="fas fa-user-plus"></i> Nuevo</button>
+    <button class="btn btn-secondary btn-sm" onclick="abrirModalInformal()"><i class="fas fa-user-clock"></i> Informal</button>
+    <button class="btn btn-secondary btn-sm" onclick="exportarLista()"><i class="fas fa-print"></i> Imprimir PDF</button>
   </div>
 </div>
 
-<div class="card">
+<!-- Filters -->
+<div class="card mb-20">
   <div class="card-body">
-    <div class="loading"><i class="fas fa-spinner fa-spin"></i><br>Cargando...</div>
+    <div class="filters" style="flex-wrap:wrap;gap:8px;align-items:center;">
+      <select id="estadoActual" class="form-control" style="width:auto;" onchange="cargarTabla()">
+        <option value="todos">Todos</option>
+        <option value="activo">Activos</option>
+        <option value="suspendido">Suspendidos</option>
+        <option value="retirado">Retirados</option>
+      </select>
+      <select id="filtroZona" class="form-control" style="width:auto;" onchange="cargarTabla()">
+        <option value="todas">Todas las Zonas</option>
+        <% (zonas || []).forEach(function(z) { %>
+        <option value="<%= z.id %>"><%= z.nombre %></option>
+        <% }) %>
+      </select>
+      <select id="filtroFacturas" class="form-control" style="width:auto;" onchange="cargarTabla()">
+        <option value="">Con y sin facturas</option>
+        <option value="sin">Sin facturas</option>
+        <option value="1">Con 1 factura</option>
+        <option value="2+">Con 2 o más facturas</option>
+      </select>
+      <select id="filtroMostrar" class="form-control" style="width:auto;" onchange="cargarTabla()">
+        <option value="15">Mostrar: 15</option>
+        <option value="30">Mostrar: 30</option>
+        <option value="50">Mostrar: 50</option>
+        <option value="100">Mostrar: 100</option>
+        <option value="all">Todo</option>
+      </select>
+      <input type="text" id="buscador" class="form-control" style="width:180px;" placeholder="🔍 Buscar..." onkeyup="if(event.key==='Enter')cargarTabla()">
+      <span class="badge badge-info" id="totalClientesText" style="display:none;">Total: 0</span>
+    </div>
   </div>
 </div>
 
-<!-- Modal placeholder -->
-<div id="nuevoModal" class="modal" style="display:none">
-  <div class="modal-content">
-    <div class="modal-header"><h3><i class="fas fa-plus"></i> Nuevo</h3><span class="modal-close" onclick="closeModal('nuevoModal')">&times;</span></div>
-    <div class="modal-body">
-      <p style="color:var(--text-gray);text-align:center;padding:20px;">Módulo en construcción</p>
-      <div class="btn-group" style="justify-content:flex-end;margin-top:16px;">
-        <button class="btn btn-secondary" onclick="closeModal('nuevoModal')">Cancelar</button>
-        <button class="btn btn-primary">Guardar</button>
+<!-- Bulk Actions Bar -->
+<div id="bulkActionsBar" style="display:none;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:10px 16px;margin-bottom:16px;align-items:center;justify-content:space-between;">
+  <span id="bulkCount">0 seleccionado(s)</span>
+  <div class="btn-group">
+    <button class="btn btn-sm btn-success" onclick="ejecutarBulk('activar')"><i class="fas fa-play"></i> Activar</button>
+    <button class="btn btn-sm btn-warning" onclick="ejecutarBulk('suspender')"><i class="fas fa-pause"></i> Suspender</button>
+    <button class="btn btn-sm btn-danger" onclick="ejecutarBulk('retirar')"><i class="fas fa-minus-circle"></i> Retirar</button>
+    <button class="btn btn-sm btn-danger" onclick="ejecutarBulk('eliminar')"><i class="fas fa-trash"></i> Eliminar</button>
+  </div>
+</div>
+
+<!-- Table -->
+<div class="card">
+  <div class="card-body" style="padding:0;">
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:30px;"><input type="checkbox" id="selectAll" onchange="toggleAll()"></th>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Zona</th>
+            <th>Teléfono</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="tablaResultados">
+          <tr><td colspan="7" class="loading"><i class="fas fa-spinner fa-spin"></i> Cargando datos...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div id="paginacion" class="btn-group" style="justify-content:center;margin-top:16px;display:none;"></div>
+
+<!-- Modal Nuevo Cliente -->
+<div id="modalNuevoCliente" class="modal" style="display:none">
+  <div class="modal-content" style="max-width:550px;">
+    <div class="modal-header"><h3><i class="fas fa-user-plus"></i> Nuevo Cliente</h3><span class="modal-close" onclick="cerrarModal('modalNuevoCliente')">&times;</span></div>
+    <form onsubmit="guardarCliente(event)" id="formCliente">
+      <div class="modal-body">
+        <input type="hidden" name="accion" value="guardar_cliente">
+        <div class="form-group">
+          <label>Nombre *</label>
+          <input type="text" name="nombre" class="form-control" required>
+        </div>
+        <div class="row" style="display:flex;gap:10px;">
+          <div class="form-group" style="flex:1;">
+            <label>Cédula</label>
+            <input type="text" name="cedula" class="form-control" placeholder="000-0000000-0">
+          </div>
+          <div class="form-group" style="flex:1;">
+            <label>Teléfono</label>
+            <input type="text" name="telefono" class="form-control" placeholder="809-555-0101">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Dirección</label>
+          <input type="text" name="direccion" class="form-control" placeholder="Calle, número, sector">
+        </div>
+        <div class="row" style="display:flex;gap:10px;">
+          <div class="form-group" style="flex:1;">
+            <label>Zona</label>
+            <select name="zona_id" class="form-control">
+              <option value="">-- Sin zona --</option>
+              <% (zonas || []).forEach(function(z) { %>
+              <option value="<%= z.id %>"><%= z.nombre %></option>
+              <% }) %>
+            </select>
+          </div>
+          <div class="form-group" style="flex:1;">
+            <label>Apodo</label>
+            <input type="text" name="apodo" class="form-control" placeholder="Alias / Apodo">
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer" style="padding:16px 20px;border-top:1px solid #e2e8f0;display:flex;justify-content:flex-end;gap:8px;">
+        <button type="button" class="btn btn-secondary" onclick="cerrarModal('modalNuevoCliente')">Cancelar</button>
+        <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Guardar Cliente</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal Cliente Informal -->
+<div id="modalInformal" class="modal" style="display:none">
+  <div class="modal-content" style="max-width:450px;">
+    <div class="modal-header"><h3><i class="fas fa-user-clock"></i> Nuevo Cliente Informal</h3><span class="modal-close" onclick="cerrarModal('modalInformal')">&times;</span></div>
+    <form onsubmit="guardarInformal(event)" id="formInformal">
+      <div class="modal-body">
+        <p style="color:var(--text-gray);font-size:0.85rem;margin-bottom:16px;">Crear cliente directo sin pasar por orden de trabajo.</p>
+        <div class="form-group">
+          <label>Nombre *</label>
+          <input type="text" name="nombre" id="infNombre" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label>Cédula</label>
+          <input type="text" name="cedula" id="infCedula" class="form-control" placeholder="000-0000000-0">
+        </div>
+        <div class="form-group">
+          <label>Teléfono</label>
+          <input type="text" name="telefono" id="infTelefono" class="form-control">
+        </div>
+        <div class="form-group">
+          <label>Zona</label>
+          <select name="zona_id" id="infZona" class="form-control">
+            <option value="">-- Sin zona --</option>
+            <% (zonas || []).forEach(function(z) { %>
+            <option value="<%= z.id %>"><%= z.nombre %></option>
+            <% }) %>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Apodo</label>
+          <input type="text" name="apodo" id="infApodo" class="form-control" placeholder="Alias">
+        </div>
+        <div class="form-group">
+          <label>Dirección</label>
+          <input type="text" name="direccion" id="infDireccion" class="form-control" placeholder="Dirección">
+        </div>
+      </div>
+      <div class="modal-footer" style="padding:16px 20px;border-top:1px solid #e2e8f0;display:flex;justify-content:flex-end;gap:8px;">
+        <button type="button" class="btn btn-secondary" onclick="cerrarModal('modalInformal')">Cancelar</button>
+        <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Guardar Cliente</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal Confirmación Bulk -->
+<div id="bulkConfirmModal" class="modal" style="display:none">
+  <div class="modal-content" style="max-width:450px;">
+    <div class="modal-header" id="bulkConfirmHeader"><h3 id="bulkConfirmTitle"></h3><span class="modal-close" onclick="cerrarModal('bulkConfirmModal')">&times;</span></div>
+    <div class="modal-body" style="text-align:center;">
+      <div id="bulkConfirmIcon" style="font-size:2rem;margin-bottom:10px;"></div>
+      <div id="bulkConfirmMsg"></div>
+      <div class="btn-group" style="justify-content:center;margin-top:16px;">
+        <button class="btn btn-secondary" onclick="cerrarModal('bulkConfirmModal')">Cancelar</button>
+        <button class="btn btn-primary" id="bulkConfirmBtn" onclick="confirmarBulk()">Si, Confirmar</button>
+        <button class="btn btn-secondary" id="bulkPrintBtn" style="display:none;"><i class="fas fa-print"></i> Imprimir</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Confirmar Eliminar -->
+<div id="modalConfirmDelete" class="modal" style="display:none">
+  <div class="modal-content" style="max-width:400px;">
+    <div class="modal-header"><h3><i class="fas fa-trash" style="color:#ef4444;"></i> Eliminar Cliente</h3><span class="modal-close" onclick="cerrarModal('modalConfirmDelete')">&times;</span></div>
+    <div class="modal-body" style="text-align:center;">
+      <p style="color:#64748b;margin-bottom:16px;">Lo ideal es retirar servicios para no perder la información del cliente.</p>
+      <p style="color:#991b1b;font-weight:600;margin-bottom:16px;">¿Estás seguro que deseas eliminar completamente?</p>
+      <p style="font-size:0.85rem;color:#64748b;margin-bottom:20px;">Esta acción es irrevocable y borrará todos los servicios del MikroTik.</p>
+      <div class="btn-group" style="justify-content:center;">
+        <button class="btn btn-secondary" onclick="cerrarModal('modalConfirmDelete')">Cancelar</button>
+        <button class="btn btn-danger" onclick="confirmarEliminar()">Sí, Eliminar Todo</button>
       </div>
     </div>
   </div>
 </div>
 
 <script>
-setTimeout(function() {
-  document.querySelector('.loading').innerHTML = '<p style="color:var(--text-gray);text-align:center;padding:20px;">Datos cargados correctamente</p>';
-}, 500);
+let bulkSelectedIds = [];
+let currentPage = 1;
+let totalPages = 1;
+let currentSuspMes = 0;
+let currentSuspAnio = 0;
+let _bulkPendingAction = '';
+
+function abrirModalNuevo() { document.getElementById('formCliente').reset(); abrirModal('modalNuevoCliente'); }
+function abrirModalInformal() { document.getElementById('formInformal').reset(); abrirModal('modalInformal'); }
+
+function cargarTabla(pagina) {
+  if (pagina) currentPage = pagina;
+  const estado = document.getElementById('estadoActual').value;
+  const zona = document.getElementById('filtroZona').value;
+  const facturas = document.getElementById('filtroFacturas').value;
+  const q = document.getElementById('buscador').value;
+  const mostrar = document.getElementById('filtroMostrar').value;
+  
+  document.getElementById('paginacion').style.display = (mostrar === 'all') ? 'none' : 'flex';
+  
+  fetch('/api/clientes/lista?estado=' + encodeURIComponent(estado) + '&zona=' + encodeURIComponent(zona) + 
+    '&facturas=' + encodeURIComponent(facturas) + '&q=' + encodeURIComponent(q) + '&mostrar=' + mostrar + 
+    '&p=' + currentPage +'&_t=' + Date.now())
+    .then(r => r.json())
+    .then(data => {
+      document.getElementById('tablaResultados').innerHTML = data.html;
+      if (data.total !== undefined) {
+        const labels = {todos:'Total', activo:'Activos', suspendido:'Suspendidos', retirado:'Retirados'};
+        const el = document.getElementById('totalClientesText');
+        el.textContent = (labels[estado] || 'Total') + ': ' + data.total + ' titulares';
+        el.style.display = 'inline';
+        totalPages = Math.max(1, Math.ceil(data.total / (parseInt(mostrar) || 20)));
+        renderPaginacion();
+      }
+    });
+}
+
+function renderPaginacion() {
+  let h = '<div class="btn-group" style="gap:4px;">';
+  for (let i = Math.max(1, currentPage-2); i <= Math.min(totalPages, currentPage+2); i++) {
+    h += '<button class="btn btn-sm ' + (i === currentPage ? 'btn-primary' : 'btn-secondary') + '" onclick="cargarTabla(' + i + ')">' + i + '</button>';
+  }
+  h += '</div>';
+  document.getElementById('paginacion').innerHTML = h;
+}
+
+function toggleAll() {
+  const checked = document.getElementById('selectAll').checked;
+  document.querySelectorAll('.clienteCheck').forEach(cb => cb.checked = checked);
+  actualizarBulkSelection();
+}
+
+function toggleCliente(id) {
+  const cb = document.querySelector('.clienteCheck[data-id="' + id + '"]');
+  if (cb) { cb.checked = !cb.checked; }
+  actualizarBulkSelection();
+}
+
+function actualizarBulkSelection() {
+  bulkSelectedIds = [];
+  document.querySelectorAll('.clienteCheck:checked').forEach(cb => {
+    bulkSelectedIds.push(parseInt(cb.dataset.id));
+  });
+  const bar = document.getElementById('bulkActionsBar');
+  const count = bulkSelectedIds.length;
+  if (count > 0) {
+    bar.style.display = 'flex';
+    document.getElementById('bulkCount').textContent = count + ' seleccionado(s)';
+  } else {
+    bar.style.display = 'none';
+  }
+}
+
+function ejecutarBulk(action) {
+  if (bulkSelectedIds.length === 0) return;
+  _bulkPendingAction = action;
+  const count = bulkSelectedIds.length;
+  const modal = document.getElementById('bulkConfirmModal');
+  const icon = document.getElementById('bulkConfirmIcon');
+  const title = document.getElementById('bulkConfirmTitle');
+  const msg = document.getElementById('bulkConfirmMsg');
+  const btn = document.getElementById('bulkConfirmBtn');
+  const printBtn = document.getElementById('bulkPrintBtn');
+  printBtn.style.display = 'none';
+
+  if (action === 'suspender') {
+    icon.innerHTML = '<i class="fas fa-pause-circle" style="color:#dc2626;font-size:2rem;"></i>';
+    title.textContent = 'Suspender clientes';
+    msg.innerHTML = '<div style="text-align:center;">¿Estás seguro que deseas suspender los servicios de <b>' + count + '</b> cliente(s)?</div>';
+    btn.style.background = '#dc2626'; btn.textContent = 'Sí, Suspender';
+  } else if (action === 'activar') {
+    icon.innerHTML = '<i class="fas fa-play-circle" style="color:#16a34a;font-size:2rem;"></i>';
+    title.textContent = 'Activar clientes';
+    msg.innerHTML = '<div style="text-align:center;">¿Estás seguro que deseas activar los servicios de <b>' + count + '</b> cliente(s)?</div>';
+    btn.style.background = '#16a34a'; btn.textContent = 'Sí, Activar';
+  } else if (action === 'retirar') {
+    icon.innerHTML = '<i class="fas fa-exclamation-triangle" style="color:#ea580c;font-size:2rem;"></i>';
+    title.textContent = 'Retirar titulares';
+    msg.innerHTML = '<div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;padding:12px;color:#7c2d12;"><b>Estás retirando ' + count + ' titular(es).</b><br>Los servicios se eliminarán del MikroTik y de la OLT. ¿Seguro que deseas continuar?</div>';
+    btn.style.background = '#ea580c'; btn.textContent = 'Sí, Retirar';
+  } else if (action === 'eliminar') {
+    icon.innerHTML = '<i class="fas fa-exclamation-triangle" style="color:#991b1b;font-size:2rem;"></i>';
+    title.textContent = 'Eliminar titulares';
+    msg.innerHTML = '<div style="background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:12px;color:#7f1d1d;"><b>Estás eliminando ' + count + ' titular(es).</b><br>Esta acción es irrevocable y borrará todos los servicios del MikroTik. ¿Seguro?</div>';
+    btn.style.background = '#991b1b'; btn.textContent = 'Sí, Eliminar';
+  }
+  abrirModal('bulkConfirmModal');
+}
+
+function confirmarBulk() {
+  if (_bulkPendingAction && bulkSelectedIds.length > 0) {
+    fetch('/api/clientes/bulk', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ action: _bulkPendingAction, ids: bulkSelectedIds })
+    }).then(r => r.json()).then(res => {
+      if (res.success) { showToast('Operación completada en ' + bulkSelectedIds.length + ' clientes'); cerrarModal('bulkConfirmModal'); cargarTabla(); }
+      else showToast('Error', 'error');
+    });
+  }
+}
+
+function guardarCliente(e) {
+  e.preventDefault();
+  const fd = new FormData(document.getElementById('formCliente'));
+  fetch('/api/clientes/save', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify(Object.fromEntries(fd))
+  }).then(r => r.json()).then(res => {
+    if (res.success) { showToast('Cliente guardado'); cerrarModal('modalNuevoCliente'); cargarTabla(); }
+    else showToast('Error: ' + (res.message || 'desconocido'), 'error');
+  });
+}
+
+function guardarInformal(e) {
+  e.preventDefault();
+  const nombre = document.getElementById('infNombre').value.trim();
+  if (!nombre) { showToast('El nombre es obligatorio', 'error'); return; }
+  fetch('/api/clientes/save', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({
+      nombre: nombre,
+      cedula: document.getElementById('infCedula').value,
+      telefono: document.getElementById('infTelefono').value,
+      zona_id: document.getElementById('infZona').value,
+      apodo: document.getElementById('infApodo').value,
+      direccion: document.getElementById('infDireccion').value
+    })
+  }).then(r => r.json()).then(res => {
+    if (res.success) { showToast('Cliente informal creado'); cerrarModal('modalInformal'); cargarTabla(); }
+    else showToast('Error: ' + (res.message || 'desconocido'), 'error');
+  });
+}
+
+let deleteId = null;
+function borrarCliente(id) { deleteId = id; abrirModal('modalConfirmDelete'); }
+function confirmarEliminar() {
+  if (deleteId) {
+    fetch('/api/clientes/' + deleteId + '/delete', { method: 'POST' })
+      .then(r => r.json()).then(res => {
+        if (res.success) { showToast('Cliente eliminado'); deleteId = null; cerrarModal('modalConfirmDelete'); cargarTabla(); }
+      });
+  }
+}
+
+function exportarLista() { showToast('Exportando lista...'); }
+function abrirModal(id) { document.getElementById(id).style.display = 'flex'; }
+function cerrarModal(id) { document.getElementById(id).style.display = 'none'; }
+
+cargarTabla();
 </script>
