@@ -1,5 +1,5 @@
 <div class="page-header">
-  <h2><i class="fas fa-server"></i> Routers</h2>
+  <h2><i class="fas fa-server"></i> Gestión de Routers</h2>
   <button class="btn btn-primary btn-sm" onclick="abrirModalCrear()"><i class="fas fa-plus"></i> Nuevo Router</button>
 </div>
 
@@ -11,7 +11,7 @@
 
 <!-- Modal Crear/Editar Router -->
 <div id="modalRouter" class="modal" style="display:none">
-  <div class="modal-content" style="max-width:550px;">
+  <div class="modal-content" style="max-width:600px;">
     <div class="modal-header">
       <h3 id="modalTitle"><i class="fas fa-plus-circle" style="color:#10b981;"></i> Nuevo Router</h3>
       <span class="modal-close" onclick="cerrarModal()">&times;</span>
@@ -19,40 +19,83 @@
     <div class="modal-body">
       <form id="formRouter" onsubmit="guardarRouter(event)">
         <input type="hidden" name="accion" id="accionInput" value="guardar">
-        <input type="hidden" name="id_router" id="idRouterInput" value="">
+        <input type="hidden" name="id_router_edit" id="idRouterInput" value="">
         
         <div class="form-group">
-          <label>Nombre del Router *</label>
-          <input type="text" name="name" id="routerName" class="form-control" placeholder="Ej: MikroTik Principal" required>
+          <label>Nombre</label>
+          <input type="text" name="name" id="routerName" class="form-control" placeholder="Nombre del router" required>
         </div>
-        <div class="form-group">
-          <label>Dirección IP *</label>
-          <input type="text" name="ip" id="routerIp" class="form-control" placeholder="Ej: 192.168.88.1" required>
+        <div class="row" style="display:flex;gap:10px;">
+          <div class="form-group" style="flex:3;">
+            <label>IP</label>
+            <input type="text" name="ip" id="routerIp" class="form-control" placeholder="IP del router" required>
+          </div>
+          <div class="form-group" style="flex:1;">
+            <label>Puerto API</label>
+            <input type="number" name="port" id="routerPort" class="form-control" value="8728">
+          </div>
         </div>
-        <div class="form-group">
-          <label>Puerto API</label>
-          <input type="number" name="port" id="routerPort" class="form-control" placeholder="8728" value="8728">
+        <div class="row" style="display:flex;gap:10px;">
+          <div class="form-group" style="flex:1;">
+            <label>Usuario</label>
+            <input type="text" name="user" id="routerUser" class="form-control" placeholder="admin">
+          </div>
+          <div class="form-group" style="flex:1;">
+            <label>Password</label>
+            <input type="password" name="password" id="routerPass" class="form-control" placeholder="••••••••">
+          </div>
         </div>
-        <div class="form-group">
-          <label>Usuario API *</label>
-          <input type="text" name="user" id="routerUser" class="form-control" placeholder="admin" required>
+
+        <div class="row" style="display:flex;gap:10px;">
+          <div class="form-group" style="flex:1;">
+            <label>OS</label>
+            <select name="version" id="routerVersion" class="form-control">
+              <option value="RouterOS v7">RouterOS v7</option>
+              <option value="RouterOS v6">RouterOS v6</option>
+            </select>
+          </div>
+          <div class="form-group" style="flex:1;">
+            <label>Autenticación</label>
+            <select name="auth_type" id="routerAuth" class="form-control">
+              <option value="PPPoE">PPPoE</option>
+              <option value="IP Estática">IP Estática</option>
+              <option value="DHCP (IPoE)">DHCP (IPoE)</option>
+            </select>
+          </div>
         </div>
-        <div class="form-group">
-          <label>Contraseña API</label>
-          <input type="password" name="password" id="routerPass" class="form-control" placeholder="Contraseña">
-        </div>
-        
+
         <div style="border-top:1px solid #e2e8f0;padding-top:16px;margin-top:16px;">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-            <label style="font-weight:600;font-size:0.9rem;">Bloques de IP Privadas</label>
-            <button type="button" class="btn btn-secondary btn-sm" onclick="addPool('priv')">+ Agregar Bloque</button>
+            <label style="font-weight:600;font-size:0.9rem;">Pool Privado</label>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="addPool('priv')">+ Agregar Bloque Privado</button>
           </div>
-          <div id="ipBlocksList"></div>
+          <div id="ipPrivateList" style="font-size:0.85rem;color:var(--text-gray);">Ninguno</div>
+          
+          <div style="display:flex;justify-content:space-between;align-items:center;margin:16px 0 10px;">
+            <label style="font-weight:600;font-size:0.9rem;">Pool Público</label>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="addPool('public')">+ Agregar Bloque Público</button>
+          </div>
+          <div id="ipPublicList" style="font-size:0.85rem;color:var(--text-gray);">Ninguno</div>
         </div>
-        
-        <div class="btn-group" style="justify-content:flex-end;margin-top:20px;">
+
+        <div class="form-group" style="margin-top:16px;">
+          <label>DHCPv6 PD Pool</label>
+          <input type="text" name="ipv6_pd" id="routerIpv6" class="form-control" placeholder="Nombre exacto del PD Pool en MikroTik">
+        </div>
+
+        <div style="border-top:1px solid #e2e8f0;padding-top:16px;margin-top:16px;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+            <input type="checkbox" name="suspend_ips" id="suspendIps" value="1">
+            <label for="suspendIps" style="margin:0;">¿Suspender ip's en este router?</label>
+          </div>
+          <p style="font-size:0.8rem;color:var(--text-gray); margin-bottom:16px;">
+            <i class="fas fa-info-circle"></i> Al guardar se aplicará a todos los profiles PPPoE de este router
+          </p>
+        </div>
+
+        <div class="btn-group" style="justify-content:flex-end;margin-top:16px;">
           <button type="button" class="btn btn-secondary" onclick="cerrarModal()">Cancelar</button>
-          <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Guardar</button>
+          <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Guardar Router</button>
         </div>
       </form>
     </div>
@@ -77,35 +120,50 @@
   </div>
 </div>
 
+<!-- Modal Resync -->
+<div id="modalResync" class="modal" style="display:none">
+  <div class="modal-content" style="max-width:420px;">
+    <div class="modal-header">
+      <h3><i class="fas fa-sync" style="color:#2563eb;"></i> Resincronizar MikroTik</h3>
+      <span class="modal-close" onclick="cerrarModalResync()">&times;</span>
+    </div>
+    <div class="modal-body" style="text-align:center;">
+      <div style="font-size:0.9rem;color:#64748b;margin-bottom:20px;">
+        Esta acción cargará todos los datos con un delay de 1s por registro. El proceso tardará unos minutos.
+      </div>
+      <div class="btn-group" style="justify-content:center;">
+        <button class="btn btn-secondary" onclick="cerrarModalResync()">Cancelar</button>
+        <button class="btn btn-primary" id="btnConfirmarResync"><i class="fas fa-sync"></i> Sincronizar Ahora</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
-let ipBlocks = [];
+let ipPriv = [];
+let ipPub = [];
+let resyncId = null;
 
 function cargarRouters() {
-  const div = document.getElementById('routersList');
-  div.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i><br>Cargando routers...</div>';
-  
   fetch('/api/routers')
     .then(r => r.json())
     .then(data => {
       if (data.length === 0) {
-        div.innerHTML = '<p style="text-align:center;padding:40px;color:var(--text-gray);"><i class="fas fa-server" style="font-size:2rem;display:block;margin-bottom:10px;"></i>No hay routers registrados<br><button class="btn btn-primary btn-sm mt-20" onclick="abrirModalCrear()"><i class="fas fa-plus"></i> Nuevo Router</button></p>';
+        document.getElementById('routersList').innerHTML = '<p style="text-align:center;padding:40px;color:var(--text-gray);"><i class="fas fa-server" style="font-size:2rem;display:block;margin-bottom:10px;"></i>No hay routers registrados<br><button class="btn btn-primary btn-sm mt-20" onclick="abrirModalCrear()"><i class="fas fa-plus"></i> Nuevo Router</button></p>';
         return;
       }
-      let html = '<div class="table-container"><table><thead><tr><th>Nombre</th><th>IP</th><th>Puerto</th><th>Estado</th><th>Última sinc.</th><th>Acciones</th></tr></thead><tbody>';
-      data.forEach(r => {
+      let html = '<div class="table-container"><table><thead><tr><th>#</th><th>Nombre</th><th>IP / Puerto</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>';
+      data.forEach((r, i) => {
         const status = r.connected ? '<span class="badge badge-success">Online</span>' : '<span class="badge badge-danger">Offline</span>';
-        html += '<tr><td><strong>' + r.name + '</strong></td><td>' + r.ip + '</td><td>' + (r.port || 8728) + '</td><td>' + status + '</td><td>' + (r.last_sync || 'Nunca') + '</td><td>';
+        html += '<tr><td>' + (i+1) + '</td><td><strong>' + r.name + '</strong></td><td>' + r.ip + '<br><span style="font-size:0.8rem;color:#94a3b8;">:' + (r.port || 8728) + '</span></td><td>' + status + '</td><td>';
         html += '<div class="btn-group">';
+        html += '<button class="btn btn-sm btn-primary" onclick="abrirModalResync(' + r.id + ')"><i class="fas fa-sync"></i></button>';
         html += '<button class="btn btn-sm btn-secondary" onclick="abrirModalEditar(' + r.id + ')"><i class="fas fa-edit"></i></button>';
-        html += '<button class="btn btn-sm btn-primary" onclick="resyncRouter(' + r.id + ')"><i class="fas fa-sync"></i></button>';
         html += '<button class="btn btn-sm btn-danger" onclick="confirmarEliminar(' + r.id + ',\'' + r.name.replace(/'/g, "\\'") + '\')"><i class="fas fa-trash"></i></button>';
         html += '</div></td></tr>';
       });
       html += '</tbody></table></div>';
-      div.innerHTML = html;
-    })
-    .catch(e => {
-      div.innerHTML = '<p style="text-align:center;padding:40px;color:#ef4444;">Error al cargar routers</p>';
+      document.getElementById('routersList').innerHTML = html;
     });
 }
 
@@ -114,8 +172,8 @@ function abrirModalCrear() {
   document.getElementById('accionInput').value = 'guardar';
   document.getElementById('idRouterInput').value = '';
   document.getElementById('modalTitle').innerHTML = '<i class="fas fa-plus-circle" style="color:#10b981;"></i> Nuevo Router';
-  ipBlocks = [];
-  document.getElementById('ipBlocksList').innerHTML = '';
+  ipPriv = []; ipPub = [];
+  renderPools();
   document.getElementById('modalRouter').style.display = 'flex';
 }
 
@@ -131,30 +189,35 @@ function abrirModalEditar(id) {
       document.getElementById('routerUser').value = r.user || '';
       document.getElementById('routerPass').value = '';
       document.getElementById('modalTitle').innerHTML = '<i class="fas fa-edit" style="color:#f59e0b;"></i> Editar Router';
-      
-      ipBlocks = JSON.parse(r.ip_blocks || '[]');
-      renderIpBlocks();
+      try {
+        const blocks = JSON.parse(r.ip_blocks || '[]');
+        ipPriv = blocks.filter(b => b.type === 'priv');
+        ipPub = blocks.filter(b => b.type === 'public');
+      } catch(e) { ipPriv = []; ipPub = []; }
+      renderPools();
       document.getElementById('modalRouter').style.display = 'flex';
     });
 }
 
-function cerrarModal() {
-  document.getElementById('modalRouter').style.display = 'none';
-}
+function cerrarModal() { document.getElementById('modalRouter').style.display = 'none'; }
 
 function guardarRouter(e) {
   e.preventDefault();
+  const allBlocks = [...ipPriv.map(b => ({...b, type: 'priv'})), ...ipPub.map(b => ({...b, type: 'public'}))];
   const data = {
     accion: document.getElementById('accionInput').value,
-    id_router: document.getElementById('idRouterInput').value,
+    id_router_edit: document.getElementById('idRouterInput').value,
     name: document.getElementById('routerName').value,
     ip: document.getElementById('routerIp').value,
     port: document.getElementById('routerPort').value,
     user: document.getElementById('routerUser').value,
     password: document.getElementById('routerPass').value,
-    ip_blocks: JSON.stringify(ipBlocks)
+    version: document.getElementById('routerVersion').value,
+    auth_type: document.getElementById('routerAuth').value,
+    ip_blocks: JSON.stringify(allBlocks),
+    ipv6_pd: document.getElementById('routerIpv6').value,
+    suspend_ips: document.getElementById('suspendIps').checked ? 1 : 0
   };
-  
   fetch('/api/routers/save', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -162,80 +225,65 @@ function guardarRouter(e) {
   })
   .then(r => r.json())
   .then(res => {
-    if (res.success) {
-      showToast('Router guardado');
-      cerrarModal();
-      cargarRouters();
-    } else {
-      showToast('Error: ' + (res.message || 'No se pudo guardar'), 'error');
-    }
+    if (res.success) { showToast('Router guardado'); cerrarModal(); cargarRouters(); }
+    else showToast('Error: ' + (res.message || 'No se pudo guardar'), 'error');
   })
   .catch(() => showToast('Error de conexión', 'error'));
 }
 
 function confirmarEliminar(id, nombre) {
   document.getElementById('eliminarMsg').innerHTML = 'Está seguro que desea eliminar el router <b>' + nombre + '</b>? Esta acción no se puede deshacer.';
-  const btn = document.getElementById('btnConfirmarEliminar');
-  btn.onclick = function() { eliminarRouter(id); };
+  document.getElementById('btnConfirmarEliminar').onclick = function() {
+    fetch('/api/routers/' + id + '/delete', { method: 'POST' })
+      .then(r => r.json()).then(res => {
+        if (res.success) { showToast('Router eliminado'); cerrarModalEliminar(); cargarRouters(); }
+        else showToast('Error al eliminar', 'error');
+      });
+  };
   document.getElementById('modalEliminar').style.display = 'flex';
 }
+function cerrarModalEliminar() { document.getElementById('modalEliminar').style.display = 'none'; }
 
-function cerrarModalEliminar() {
-  document.getElementById('modalEliminar').style.display = 'none';
-}
-
-function eliminarRouter(id) {
-  fetch('/api/routers/' + id + '/delete', { method: 'POST' })
-    .then(r => r.json())
-    .then(res => {
-      if (res.success) {
-        showToast('Router eliminado');
-        cerrarModalEliminar();
+function abrirModalResync(id) {
+  resyncId = id;
+  document.getElementById('btnConfirmarResync').onclick = function() {
+    showToast('Sincronizando router...');
+    fetch('/api/routers/' + resyncId + '/resync', { method: 'POST' })
+      .then(r => r.json()).then(res => {
+        if (res.success) showToast('Router sincronizado');
+        else showToast('Error: ' + (res.error || 'desconocido'), 'error');
+        cerrarModalResync();
         cargarRouters();
-      } else {
-        showToast('Error al eliminar', 'error');
-      }
-    });
+      });
+  };
+  document.getElementById('modalResync').style.display = 'flex';
 }
-
-function resyncRouter(id) {
-  showToast('Sincronizando router...');
-  fetch('/api/routers/' + id + '/resync', { method: 'POST' })
-    .then(r => r.json())
-    .then(res => {
-      if (res.success) showToast('Router sincronizado');
-      else showToast('Error de conexión: ' + (res.error || 'desconocido'), 'error');
-    })
-    .catch(() => showToast('Error al sincronizar', 'error'));
-}
+function cerrarModalResync() { document.getElementById('modalResync').style.display = 'none'; }
 
 function addPool(type) {
   const net = prompt('Ingrese la red (Ej: 192.168.1.0/24):');
   if (net) {
-    ipBlocks.push({ network: net, type: type });
-    renderIpBlocks();
+    if (type === 'priv') ipPriv.push({ network: net });
+    else ipPub.push({ network: net });
+    renderPools();
   }
 }
-
-function removePool(idx) {
-  ipBlocks.splice(idx, 1);
-  renderIpBlocks();
+function removePool(type, idx) {
+  if (type === 'priv') ipPriv.splice(idx, 1);
+  else ipPub.splice(idx, 1);
+  renderPools();
+}
+function renderPools() {
+  const render = (arr, elId) => {
+    const div = document.getElementById(elId);
+    if (arr.length === 0) { div.innerHTML = '<span style="color:var(--text-gray);font-size:0.85rem;">Ninguno</span>'; return; }
+    let h = '';
+    arr.forEach((b, i) => { h += '<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 8px;background:#f8fafc;border-radius:4px;margin-bottom:4px;"><span>' + b.network + '</span><button class="btn btn-sm btn-danger" onclick="removePool(\'' + (elId === 'ipPrivateList' ? 'priv' : 'public') + '\',' + i + ')"><i class="fas fa-times"></i></button></div>'; });
+    div.innerHTML = h;
+  };
+  render(ipPriv, 'ipPrivateList');
+  render(ipPub, 'ipPublicList');
 }
 
-function renderIpBlocks() {
-  const div = document.getElementById('ipBlocksList');
-  if (ipBlocks.length === 0) {
-    div.innerHTML = '<p style="color:var(--text-gray);font-size:0.85rem;">No hay bloques configurados</p>';
-    return;
-  }
-  let html = '<div class="table-container"><table style="font-size:0.8rem;"><thead><tr><th>Red</th><th>Tipo</th><th></th></tr></thead><tbody>';
-  ipBlocks.forEach((b, i) => {
-    html += '<tr><td>' + b.network + '</td><td>' + (b.type === 'priv' ? 'Privada' : 'Pública') + '</td><td><button class="btn btn-sm btn-danger" onclick="removePool(' + i + ')"><i class="fas fa-times"></i></button></td></tr>';
-  });
-  html += '</tbody></table></div>';
-  div.innerHTML = html;
-}
-
-// Load on page init
 cargarRouters();
 </script>

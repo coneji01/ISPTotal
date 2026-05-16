@@ -39,6 +39,7 @@ function renderPage(req, res, page, data = {}) {
     { id: 'Traslados', icon: 'fa-truck-moving', nombre: 'Traslados' },
     { id: 'Inventario', icon: 'fa-boxes', nombre: 'Inventario' },
     { id: 'Ventas', icon: 'fa-shopping-cart', nombre: 'Ventas' },
+    { id: "Routers", icon: "fa-server", nombre: "Routers" },
     { id: 'Gpon', icon: 'fa-network-wired', nombre: 'GPON' },
     { id: 'CajasNap', icon: 'fa-box', nombre: 'Cajas NAP' },
     { id: 'BuscarOnu', icon: 'fa-search', nombre: 'Buscar ONU' },
@@ -255,7 +256,6 @@ app.post("/api/routers/dhcp", requireAuth, async (req, res) => {
   const result = await MikroTikAPI.getDHCPLeases(host, port || 8728, username, password);
   res.json(result);
 });
-app.post('/api/clientes', requireAuth, (req, res) => {
 
 app.get("/api/routers", requireAuth, (req, res) => {
   const routers = db.prepare("SELECT * FROM routers ORDER BY name").all();
@@ -303,6 +303,7 @@ app.post("/api/routers/:id/resync", requireAuth, async (req, res) => {
   res.json(result);
 });
 
+app.post('/api/clientes', requireAuth, (req, res) => {
   const { nombre, cedula, telefono, direccion, apodo, zona_id } = req.body;
   const r = db.prepare('INSERT INTO clientes (nombre, cedula, telefono, direccion, apodo, zona_id) VALUES (?,?,?,?,?,?)')
     .run(nombre, cedula, telefono, direccion, apodo, zona_id || null);
