@@ -1,0 +1,72 @@
+<div class="dashboard-grid">
+  <div class="stat-card stat-blue">
+    <div class="stat-icon"><i class="fas fa-wifi"></i></div>
+    <div class="stat-info">
+      <div class="stat-value"><%= servicios || 0 %></div>
+      <div class="stat-label">Servicios Totales</div>
+      <div class="stat-sub"><span class="text-green"><%= activos || 0 %> Act.</span> · <span class="text-orange"><%= suspendidos || 0 %> Susp.</span></div>
+    </div>
+  </div>
+  <div class="stat-card stat-green">
+    <div class="stat-icon"><i class="fas fa-dollar-sign"></i></div>
+    <div class="stat-info">
+      <div class="stat-value">$<%= (pagosHoy || 0).toFixed(0) %></div>
+      <div class="stat-label">Cobrado Hoy</div>
+      <a href="/modulo?pagina=RegistrarPago" class="stat-link">Ver detalle de pagos</a>
+    </div>
+  </div>
+  <div class="stat-card stat-orange">
+    <div class="stat-icon"><i class="fas fa-clipboard-list"></i></div>
+    <div class="stat-info">
+      <div class="stat-value"><%= pendientes || 0 %></div>
+      <div class="stat-label">Órdenes pendientes</div>
+      <div class="stat-sub"><%= instalaciones || 0 %> Instalaciones</div>
+    </div>
+  </div>
+  <div class="stat-card stat-purple" onclick="openModal('perfilModal')" style="cursor:pointer">
+    <div class="stat-icon"><i class="fas fa-user"></i></div>
+    <div class="stat-info">
+      <div class="stat-value"><%= user.nombre || user.username %></div>
+      <div class="stat-label">Mi Perfil</div>
+      <div class="stat-sub"><i class="fas fa-chevron-right"></i> Click para editar</div>
+    </div>
+  </div>
+</div>
+
+<div class="card mt-20">
+  <div class="card-header"><i class="fas fa-chart-line"></i> Instalados vs Retirados (12 meses)</div>
+  <div class="card-body" style="height:200px;display:flex;align-items:center;justify-content:center;color:#888">
+    <canvas id="chartInstalaciones"></canvas>
+  </div>
+</div>
+
+<div class="card mt-20">
+  <div class="card-header"><i class="fas fa-tachometer-alt"></i> Tráfico WAN Total (24h)</div>
+  <div class="card-body">
+    <div class="traffic-grid">
+      <div class="traffic-item"><span class="text-green">▼ Descarga</span> <strong>-- Mbps</strong></div>
+      <div class="traffic-item"><span class="text-blue">▲ Subida</span> <strong>-- Mbps</strong></div>
+      <div class="traffic-item"><span class="text-gray">Máx Descarga</span> <strong>-- Mbps</strong></div>
+      <div class="traffic-item"><span class="text-gray">Máx Subida</span> <strong>-- Mbps</strong></div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+fetch('/api/stats').then(r=>r.json()).then(d=>{
+  if(d.pagosMes && document.getElementById('chartInstalaciones')){
+    new Chart(document.getElementById('chartInstalaciones'), {
+      type:'bar',
+      data:{
+        labels:['Ene','Feb','Mar','Abr','May','Jun'],
+        datasets:[
+          {label:'Instalados',data:[0,5,7,1,0,0],backgroundColor:'#22c55e'},
+          {label:'Retirados',data:[0,1,0,0,0,0],backgroundColor:'#ef4444'}
+        ]
+      },
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top'}}}
+    });
+  }
+});
+</script>

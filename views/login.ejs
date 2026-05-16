@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Acceso | ISP Total</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="/css/style.css" rel="stylesheet">
+</head>
+<body>
+  <div class="login-card">
+    <div class="brand-logo"><i class="fas fa-globe"></i></div>
+    <h2>ISP Total</h2>
+    <p class="subtitle">Panel de Administración</p>
+    
+    <% if (typeof error !== 'undefined' && error) { %>
+    <div class="alert alert-error"><i class="fas fa-exclamation-circle"></i> <%= error %></div>
+    <% } %>
+    
+    <form method="POST" action="/login">
+      <div class="input-group">
+        <i class="fas fa-user input-icon"></i>
+        <input type="text" name="username" placeholder="Usuario" required autofocus>
+      </div>
+      <div class="input-group">
+        <i class="fas fa-lock input-icon"></i>
+        <input type="password" name="password" placeholder="Contraseña" required>
+      </div>
+      <button type="submit" class="btn-login"><i class="fas fa-sign-in-alt"></i> Ingresar</button>
+    </form>
+    <p class="footer-text">Sistema de Gestión ISP</p>
+  </div>
+</body>
+</html>

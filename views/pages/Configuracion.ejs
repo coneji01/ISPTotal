@@ -1,0 +1,456 @@
+<div class="page-header">
+  <h2><i class="fas fa-cog"></i> Configuración</h2>
+</div>
+
+<div class="config-menu-grid">
+  <!-- Empresa -->
+  <div class="config-card" onclick="openConfig('empresa')">
+    <div class="config-icon-box"><i class="fas fa-building"></i></div>
+    <div class="config-title">Empresa</div>
+  </div>
+  <!-- Gestión de Personal -->
+  <div class="config-card" onclick="openConfig('personal')">
+    <div class="config-icon-box"><i class="fas fa-users-cog"></i></div>
+    <div class="config-title">Gestión de<br>Personal</div>
+  </div>
+  <!-- Routers -->
+  <div class="config-card" onclick="openConfig('routers')">
+    <div class="config-icon-box"><i class="fas fa-server"></i></div>
+    <div class="config-title">Routers</div>
+  </div>
+  <!-- VPN -->
+  <div class="config-card" onclick="openConfig('vpn')">
+    <div class="config-icon-box"><i class="fas fa-shield-alt"></i></div>
+    <div class="config-title">VPN</div>
+  </div>
+  <!-- OLT -->
+  <div class="config-card" onclick="openConfig('olt')">
+    <div class="config-icon-box"><i class="fas fa-network-wired"></i></div>
+    <div class="config-title">OLT</div>
+  </div>
+  <!-- TR069 -->
+  <div class="config-card" onclick="openConfig('tr069')">
+    <div class="config-icon-box"><i class="fas fa-project-diagram"></i></div>
+    <div class="config-title">TR069</div>
+  </div>
+  <!-- Zonas -->
+  <div class="config-card" onclick="openConfig('zonas')">
+    <div class="config-icon-box"><i class="fas fa-map-marker-alt"></i></div>
+    <div class="config-title">Zonas</div>
+  </div>
+  <!-- Planes -->
+  <div class="config-card" onclick="openConfig('planes')">
+    <div class="config-icon-box"><i class="fas fa-tachometer-alt"></i></div>
+    <div class="config-title">Planes</div>
+  </div>
+  <!-- Facturación -->
+  <div class="config-card" onclick="openConfig('facturacion')">
+    <div class="config-icon-box"><i class="fas fa-file-invoice-dollar"></i></div>
+    <div class="config-title">Facturación</div>
+  </div>
+  <!-- Facturación Electrónica -->
+  <div class="config-card" onclick="openConfig('factura-electronica')">
+    <div class="config-icon-box"><i class="fas fa-qrcode"></i></div>
+    <div class="config-title">Facturación<br>Electrónica</div>
+  </div>
+  <!-- Pagos en Línea -->
+  <div class="config-card" onclick="openConfig('pagos-linea')">
+    <div class="config-icon-box"><i class="fas fa-credit-card"></i></div>
+    <div class="config-title">Pagos en<br>Línea</div>
+  </div>
+  <!-- Presets -->
+  <div class="config-card" onclick="openConfig('presets')">
+    <div class="config-icon-box"><i class="fas fa-sliders-h"></i></div>
+    <div class="config-title">Presets</div>
+  </div>
+  <!-- Editor de Plantillas -->
+  <div class="config-card" onclick="openConfig('plantillas')">
+    <div class="config-icon-box"><i class="fas fa-edit"></i></div>
+    <div class="config-title">Editor de<br>Plantillas</div>
+  </div>
+  <!-- Mensajería -->
+  <div class="config-card" onclick="openConfig('mensajeria')">
+    <div class="config-icon-box"><i class="fas fa-comments"></i></div>
+    <div class="config-title">Mensajería</div>
+  </div>
+  <!-- App del Cliente -->
+  <div class="config-card" onclick="openConfig('app-cliente')">
+    <div class="config-icon-box"><i class="fas fa-id-card-alt"></i></div>
+    <div class="config-title">App del<br>Cliente</div>
+  </div>
+  <!-- Tareas Programadas -->
+  <div class="config-card" onclick="openConfig('tareas')">
+    <div class="config-icon-box"><i class="fas fa-calendar-check"></i></div>
+    <div class="config-title">Tareas<br>Programadas</div>
+  </div>
+  <!-- API -->
+  <div class="config-card" onclick="openConfig('api')">
+    <div class="config-icon-box"><i class="fas fa-plug"></i></div>
+    <div class="config-title">API</div>
+  </div>
+  <!-- Backup -->
+  <div class="config-card" onclick="openConfig('backup')">
+    <div class="config-icon-box"><i class="fas fa-database"></i></div>
+    <div class="config-title">Backup</div>
+  </div>
+  <!-- Log de Actividad -->
+  <div class="config-card" onclick="openConfig('log')">
+    <div class="config-icon-box"><i class="fas fa-history"></i></div>
+    <div class="config-title">Log de<br>Actividad</div>
+  </div>
+  <!-- Actualizaciones -->
+  <div class="config-card" onclick="openConfig('actualizaciones')">
+    <div class="config-icon-box"><i class="fas fa-cloud-download-alt"></i></div>
+    <div class="config-title">Actualizaciones</div>
+  </div>
+</div>
+
+<!-- Config Section Container -->
+<div id="configSectionContainer" style="display:none; margin-top:20px;">
+  <div class="card">
+    <div class="card-header" id="configSectionHeader">
+      <button class="btn btn-secondary btn-sm" onclick="closeConfigSection()"><i class="fas fa-arrow-left"></i> Volver</button>
+      <span id="configSectionTitle" style="margin-left:12px;"></span>
+    </div>
+    <div class="card-body" id="configSectionBody">
+      <div class="loading"><i class="fas fa-spinner fa-spin"></i><br>Cargando...</div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Config sections data
+const configSections = {
+  empresa: {
+    title: 'Empresa',
+    icon: 'fa-building',
+    fields: [
+      { label: 'Nombre de la empresa', name: 'empresa_nombre', type: 'text' },
+      { label: 'RNC / Cédula', name: 'empresa_rnc', type: 'text' },
+      { label: 'Teléfono', name: 'empresa_telefono', type: 'text' },
+      { label: 'Correo', name: 'empresa_correo', type: 'email' },
+      { label: 'Dirección', name: 'empresa_direccion', type: 'text' },
+      { label: 'Moneda', name: 'moneda', type: 'select', options: ['RD$', 'US$', '€'] },
+      { label: 'Logo URL', name: 'empresa_logo', type: 'text' }
+    ]
+  },
+  personal: {
+    title: 'Gestión de Personal',
+    icon: 'fa-users-cog',
+    fields: [
+      { label: 'Salario mensual por defecto', name: 'salario_default', type: 'number' },
+      { label: 'Día de pago', name: 'dia_pago', type: 'select', options: ['1', '5', '10', '15', '20', '25', '30'] },
+      { label: 'Permitir préstamos a empleados', name: 'prestamos_empleados', type: 'select', options: ['Si', 'No'] }
+    ]
+  },
+  routers: {
+    title: 'Routers',
+    icon: 'fa-server',
+    fields: [
+      { label: 'IP del Router Principal', name: 'router_ip', type: 'text' },
+      { label: 'Puerto API', name: 'router_port', type: 'number', value: '8728' },
+      { label: 'Usuario API', name: 'router_user', type: 'text' },
+      { label: 'Contraseña API', name: 'router_pass', type: 'password' },
+      { label: 'Usar SSL', name: 'router_ssl', type: 'select', options: ['No', 'Si'] }
+    ]
+  },
+  vpn: {
+    title: 'VPN',
+    icon: 'fa-shield-alt',
+    fields: [
+      { label: 'Servidor VPN', name: 'vpn_server', type: 'text' },
+      { label: 'Puerto', name: 'vpn_port', type: 'number', value: '1194' },
+      { label: 'Protocolo', name: 'vpn_protocol', type: 'select', options: ['UDP', 'TCP'] },
+      { label: 'Rango IP VPN', name: 'vpn_range', type: 'text' }
+    ]
+  },
+  olt: {
+    title: 'OLT - SmartOLT',
+    icon: 'fa-network-wired',
+    fields: [
+      { label: 'Subdominio SmartOLT', name: 'smartolt_subdomain', type: 'text' },
+      { label: 'API Key', name: 'smartolt_apikey', type: 'password' },
+      { label: 'ID de la OLT', name: 'smartolt_olt_id', type: 'number' },
+      { label: 'Sincronización automática', name: 'smartolt_autosync', type: 'select', options: ['Cada 5 min', 'Cada 15 min', 'Cada 30 min', 'Cada 1 hora', 'Manual'] }
+    ]
+  },
+  tr069: {
+    title: 'TR069 - ACS',
+    icon: 'fa-project-diagram',
+    fields: [
+      { label: 'Servidor ACS', name: 'acs_server', type: 'text' },
+      { label: 'Puerto', name: 'acs_port', type: 'number', value: '7547' },
+      { label: 'Usuario', name: 'acs_user', type: 'text' },
+      { label: 'Contraseña', name: 'acs_pass', type: 'password' }
+    ]
+  },
+  zonas: {
+    title: 'Zonas / Sectores',
+    icon: 'fa-map-marker-alt',
+    table: true,
+    columns: ['ID', 'Nombre', 'Creado', 'Acciones'],
+    endpoint: '/api/zonas'
+  },
+  planes: {
+    title: 'Planes de Internet',
+    icon: 'fa-tachometer-alt',
+    table: true,
+    columns: ['ID', 'Nombre', 'Velocidad', 'Precio', 'Acciones'],
+    endpoint: '/api/planes'
+  },
+  facturacion: {
+    title: 'Facturación',
+    icon: 'fa-file-invoice-dollar',
+    fields: [
+      { label: 'Plantilla de factura por defecto', name: 'factura_plantilla', type: 'select', options: ['POSTPAGO | Gen: Día 25 | Corte: Día 11', 'PREPAGO | Gen: Día 10 | Corte: Día 20', 'POSTPAGO | Gen: Día 30 | Corte: Día 31'] },
+      { label: 'Día de generación', name: 'factura_dia_gen', type: 'number', value: '25' },
+      { label: 'Día de corte', name: 'factura_dia_corte', type: 'number', value: '11' },
+      { label: 'Interés por mora (%)', name: 'factura_interes', type: 'number', value: '5' },
+      { label: 'Generar facturas automáticamente', name: 'factura_auto', type: 'select', options: ['Si', 'No'] }
+    ]
+  },
+  'factura-electronica': {
+    title: 'Facturación Electrónica',
+    icon: 'fa-qrcode',
+    fields: [
+      { label: 'Ambiente', name: 'dgii_ambiente', type: 'select', options: ['Pruebas', 'Producción'] },
+      { label: 'RNC Emisor', name: 'dgii_rnc', type: 'text' },
+      { label: 'API Key DGII', name: 'dgii_apikey', type: 'password' },
+      { label: 'Certificado Digital (.p12)', name: 'dgii_cert', type: 'file' }
+    ]
+  },
+  'pagos-linea': {
+    title: 'Pagos en Línea',
+    icon: 'fa-credit-card',
+    fields: [
+      { label: 'Procesador de pagos', name: 'pagos_procesador', type: 'select', options: ['Ninguno', 'PayPal', 'Stripe', 'MercadoPago', 'Paymentez'] },
+      { label: 'API Key Pública', name: 'pagos_public_key', type: 'text' },
+      { label: 'API Key Secreta', name: 'pagos_secret_key', type: 'password' },
+      { label: 'Moneda', name: 'pagos_moneda', type: 'select', options: ['DOP', 'USD', 'EUR'] }
+    ]
+  },
+  presets: {
+    title: 'Presets de Configuración',
+    icon: 'fa-sliders-h',
+    description: 'Configuraciones predefinidas para instalaciones rápidas.',
+    fields: [
+      { label: 'PPPoe Username por defecto', name: 'preset_pppoe_user', type: 'text' },
+      { label: 'PPPoe Password por defecto', name: 'preset_pppoe_pass', type: 'password' },
+      { label: 'DHCP Range', name: 'preset_dhcp_range', type: 'text', value: '192.168.1.2-254' },
+      { label: 'DNS Primario', name: 'preset_dns1', type: 'text', value: '8.8.8.8' },
+      { label: 'DNS Secundario', name: 'preset_dns2', type: 'text', value: '8.8.4.4' },
+      { label: 'SSID por defecto', name: 'preset_ssid', type: 'text' }
+    ]
+  },
+  plantillas: {
+    title: 'Editor de Plantillas',
+    icon: 'fa-edit',
+    textarea: true,
+    fields: [
+      { label: 'Plantilla de Recibo', name: 'plantilla_recibo', type: 'textarea', rows: 10, value: '<html>...' },
+      { label: 'Plantilla de Contrato', name: 'plantilla_contrato', type: 'textarea', rows: 10, value: '<html>...' },
+      { label: 'Plantilla de Factura', name: 'plantilla_factura', type: 'textarea', rows: 10, value: '<html>...' }
+    ]
+  },
+  mensajeria: {
+    title: 'Mensajería',
+    icon: 'fa-comments',
+    fields: [
+      { label: 'Canal principal', name: 'sms_canal', type: 'select', options: ['WhatsApp', 'SMS', 'Email', 'WhatsApp + SMS'] },
+      { label: 'Token WhatsApp Business', name: 'sms_waba_token', type: 'password' },
+      { label: 'Número de teléfono', name: 'sms_telefono', type: 'text' },
+      { label: 'API Key SMS', name: 'sms_apikey', type: 'password' },
+      { label: 'SMTP Servidor', name: 'smtp_server', type: 'text' },
+      { label: 'SMTP Puerto', name: 'smtp_port', type: 'number', value: '587' },
+      { label: 'SMTP Usuario', name: 'smtp_user', type: 'text' },
+      { label: 'SMTP Contraseña', name: 'smtp_pass', type: 'password' },
+      { label: 'Correo remitente', name: 'smtp_from', type: 'email' }
+    ]
+  },
+  'app-cliente': {
+    title: 'App del Cliente',
+    icon: 'fa-id-card-alt',
+    fields: [
+      { label: 'Nombre de la App', name: 'app_nombre', type: 'text', value: 'Mi ISP Total' },
+      { label: 'Color primario', name: 'app_color', type: 'color', value: '#0f172a' },
+      { label: 'Logo URL', name: 'app_logo', type: 'text' },
+      { label: 'Versión actual', name: 'app_version', type: 'text', value: '1.0.0' },
+      { label: 'URL de descarga Android', name: 'app_android_url', type: 'text' },
+      { label: 'URL de descarga iOS', name: 'app_ios_url', type: 'text' }
+    ]
+  },
+  tareas: {
+    title: 'Tareas Programadas',
+    icon: 'fa-calendar-check',
+    fields: [
+      { label: 'Generar facturas', name: 'cron_generar_facturas', type: 'select', options: ['Desactivado', 'Diario', 'Semanal', 'Mensual'] },
+      { label: 'Sincronizar ONUs', name: 'cron_sync_onus', type: 'select', options: ['Desactivado', 'Cada 5 min', 'Cada 15 min', 'Cada 30 min', 'Cada 1 hora'] },
+      { label: 'Respaldar BD', name: 'cron_backup', type: 'select', options: ['Desactivado', 'Diario', 'Semanal'] },
+      { label: 'Enviar recordatorios', name: 'cron_recordatorios', type: 'select', options: ['Desactivado', 'Diario', 'Semanal'] }
+    ]
+  },
+  api: {
+    title: 'API',
+    icon: 'fa-plug',
+    fields: [
+      { label: 'Token de API', name: 'api_token', type: 'text', readonly: true, value: '••••••••' },
+      { label: 'Generar nuevo token', name: 'api_regenerate', type: 'button' },
+      { label: 'Límite de peticiones/min', name: 'api_rate_limit', type: 'number', value: '60' },
+      { label: 'IPs permitidas', name: 'api_ips', type: 'textarea', rows: 3, placeholder: 'IPs separadas por coma' }
+    ]
+  },
+  backup: {
+    title: 'Backup',
+    icon: 'fa-database',
+    description: 'Gestión de respaldos de la base de datos.',
+    buttons: [
+      { label: 'Descargar Backup', action: 'downloadBackup()', class: 'btn-primary' },
+      { label: 'Restaurar Backup', action: 'restoreBackup()', class: 'btn-warning' }
+    ],
+    fields: [
+      { label: 'Último backup', name: 'backup_last', type: 'text', readonly: true, value: 'Nunca' },
+      { label: 'Respaldos automáticos', name: 'backup_auto', type: 'select', options: ['Desactivado', 'Diario', 'Semanal'] },
+      { label: 'Máximo de respaldos', name: 'backup_max', type: 'number', value: '10' }
+    ]
+  },
+  log: {
+    title: 'Log de Actividad',
+    icon: 'fa-history',
+    description: 'Registro de todas las acciones realizadas en el sistema.',
+    table: true,
+    columns: ['ID', 'Usuario', 'Acción', 'Detalle', 'Fecha'],
+    endpoint: '/api/logs'
+  },
+  actualizaciones: {
+    title: 'Actualizaciones',
+    icon: 'fa-cloud-download-alt',
+    description: 'Versión actual: 1.0.0',
+    buttons: [
+      { label: 'Buscar Actualizaciones', action: 'checkUpdates()', class: 'btn-primary' },
+      { label: 'Instalar Actualización', action: 'installUpdate()', class: 'btn-success' }
+    ],
+    fields: [
+      { label: 'Versión instalada', name: 'version', type: 'text', readonly: true, value: '1.0.0' },
+      { label: 'Última comprobación', name: 'ultima_comp', type: 'text', readonly: true, value: 'Nunca' },
+      { label: 'Canal de actualizaciones', name: 'update_channel', type: 'select', options: ['Estable', 'Beta', 'Nightly'] }
+    ]
+  }
+};
+
+function openConfig(sectionId) {
+  const section = configSections[sectionId];
+  if (!section) return;
+  
+  document.getElementById('configSectionTitle').innerHTML = '<i class="fas ' + section.icon + '"></i> ' + section.title;
+  document.getElementById('configSectionContainer').style.display = 'block';
+  
+  let html = '';
+  
+  if (section.description) {
+    html += '<p style="color:var(--text-gray);margin-bottom:16px;">' + section.description + '</p>';
+  }
+  
+  if (section.buttons) {
+    html += '<div class="btn-group" style="margin-bottom:16px;">';
+    section.buttons.forEach(b => {
+      html += '<button class="btn ' + (b.class || 'btn-primary') + '" onclick="' + b.action + '">' + b.label + '</button>';
+    });
+    html += '</div>';
+  }
+  
+  if (section.textarea) {
+    html += '<form id="configForm" onsubmit="saveConfig(event, \'' + sectionId + '\')">';
+    section.fields.forEach(f => {
+      html += '<div class="form-group">';
+      html += '<label>' + f.label + '</label>';
+      html += '<textarea name="' + f.name + '" class="form-control" rows="' + (f.rows || 5) + '">' + (f.value || '') + '</textarea>';
+      html += '</div>';
+    });
+    html += '<button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Guardar</button>';
+    html += '</form>';
+  } else if (section.table) {
+    html += '<div class="table-container"><table><thead><tr>';
+    section.columns.forEach(c => { html += '<th>' + c + '</th>'; });
+    html += '</tr></thead><tbody>';
+    html += '<tr><td colspan="' + section.columns.length + '" class="loading"><i class="fas fa-spinner fa-spin"></i> Cargando...</td></tr>';
+    html += '</tbody></table></div>';
+  } else if (section.fields) {
+    html += '<form id="configForm" onsubmit="saveConfig(event, \'' + sectionId + '\')">';
+    section.fields.forEach(f => {
+      html += '<div class="form-group">';
+      html += '<label>' + f.label + '</label>';
+      if (f.type === 'select') {
+        html += '<select name="' + f.name + '" class="form-control">';
+        (f.options || []).forEach(o => {
+          html += '<option value="' + o + '" ' + (f.value === o ? 'selected' : '') + '>' + o + '</option>';
+        });
+        html += '</select>';
+      } else if (f.type === 'color') {
+        html += '<input type="color" name="' + f.name + '" value="' + (f.value || '#000000') + '" style="width:60px;height:40px;padding:2px;">';
+      } else if (f.type === 'button') {
+        html += '<button type="button" class="btn btn-warning btn-sm" onclick="generateToken()">' + f.label + '</button>';
+      } else if (f.type === 'file') {
+        html += '<input type="file" name="' + f.name + '" class="form-control" style="padding:8px;">';
+      } else if (f.type === 'textarea') {
+        html += '<textarea name="' + f.name + '" class="form-control" rows="' + (f.rows || 3) + '" placeholder="' + (f.placeholder || '') + '">' + (f.value || '') + '</textarea>';
+      } else if (f.type === 'password') {
+        html += '<input type="password" name="' + f.name + '" class="form-control" placeholder="' + (f.placeholder || '') + '" value="' + (f.value || '') + '" ' + (f.readonly ? 'readonly' : '') + '>';
+      } else {
+        html += '<input type="' + f.type + '" name="' + f.name + '" class="form-control" placeholder="' + (f.placeholder || '') + '" value="' + (f.value || '') + '" ' + (f.readonly ? 'readonly' : '') + '>';
+      }
+      html += '</div>';
+    });
+    html += '<button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Guardar Cambios</button>';
+    html += '</form>';
+  }
+  
+  document.getElementById('configSectionBody').innerHTML = html;
+}
+
+function closeConfigSection() {
+  document.getElementById('configSectionContainer').style.display = 'none';
+}
+
+function saveConfig(e, sectionId) {
+  e.preventDefault();
+  const form = document.getElementById('configForm');
+  const data = new FormData(form);
+  const obj = Object.fromEntries(data);
+  
+  fetch('/api/config/save', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ section: sectionId, data: obj })
+  }).then(r => r.json()).then(res => {
+    if (res.success) showToast('Configuración guardada');
+    else showToast('Error al guardar', 'error');
+  }).catch(() => showToast('Error de conexión', 'error'));
+}
+
+function generateToken() {
+  const token = Array.from({length: 40}, () => Math.random().toString(36)[2]).join('');
+  showToast('Nuevo token generado: ' + token.substring(0, 10) + '...');
+}
+
+function downloadBackup() { showToast('Descargando backup...'); }
+function restoreBackup() { showToast('Función de restauración'); }
+function checkUpdates() { showToast('Buscando actualizaciones...'); }
+function installUpdate() { showToast('Instalando actualización...'); }
+</script>
+
+<style>
+.config-menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 15px; }
+.config-card { 
+  background: #fff; border: 1px solid #e0e0e0; border-radius: 10px;
+  padding: 15px 5px; text-align: center; cursor: pointer;
+  transition: all 0.2s ease; display: flex; flex-direction: column; align-items: center; gap: 8px;
+  text-decoration: none; color: #333;
+}
+.config-card:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.05); border-color: #6366f1; }
+.config-icon-box {
+  width: 40px; height: 40px; border-radius: 50%;
+  background: rgba(99, 102, 241, 0.1); color: #6366f1;
+  display: flex; align-items: center; justify-content: center; font-size: 1.2rem;
+}
+.config-title { font-size: 0.75rem; color: #475569; line-height: 1.3; }
+</style>
