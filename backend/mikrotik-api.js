@@ -9,8 +9,8 @@ class MikroTikAPI {
     this.timeout = options.timeout || 5000;
     this.socket = null;
     this.buffer = Buffer.alloc(0);
-    this._resolve = null;
-    this._reject = null;
+    this._execResolve = null;
+    this._execReject = null;
     this._sentences = [];
     this._currentSentence = [];
     this._tagCounter = 0;
@@ -50,7 +50,7 @@ class MikroTikAPI {
   // Encode a sentence: [words..., zero-length word]
   _encodeSentence(words) {
     const parts = words.map(w => this._encodeWord(w));
-    parts.push(Buffer.from([0xC0, 0x00])); // zero-length word (0x4000 -> 0xC000 in 2-byte encoding)
+    parts.push(Buffer.from([0x00])); // zero-length word terminates sentence
     return Buffer.concat(parts);
   }
 
@@ -61,7 +61,7 @@ class MikroTikAPI {
       this.socket.setTimeout(this.timeout);
       
       this.socket.on('connect', () => {
-        this._resolve = resolve;
+        resolve(true); // Conexión TCP establecida
         this._readLoop();
       });
 
@@ -94,6 +94,13 @@ class MikroTikAPI {
       let wordLen = 0;
       let headerLen = 1;
 
+      // Zero-length word (0x00) terminates the sentence - check BEFORE word length
+      if (firstByte === 0x00) {
+        this._onSentenceComplete();
+        this.buffer = this.buffer.slice(1);
+        continue;
+      }
+      
       if (firstByte < 0x80) {
         wordLen = firstByte;
       } else if (firstByte < 0xC0) {
@@ -109,19 +116,7 @@ class MikroTikAPI {
         wordLen = (this.buffer[1] << 24) | (this.buffer[2] << 16) | (this.buffer[3] << 8) | this.buffer[4];
         headerLen = 5;
       } else {
-        // Zero-length word or control byte
-        if (firstByte === 0x00) {
-          this._onSentenceComplete();
-          this.buffer = this.buffer.slice(1);
-          continue;
-        }
-        // Try to handle 0xC0 0x00 pattern (2-byte zero-length)
-        if (firstByte === 0xC0 && this.buffer[1] === 0x00) {
-          this._onSentenceComplete();
-          this.buffer = this.buffer.slice(2);
-          continue;
-        }
-        // Unknown control byte
+        // Control byte (>= 0xF8), skip it
         this.buffer = this.buffer.slice(1);
         continue;
       }
@@ -140,10 +135,15 @@ class MikroTikAPI {
     this._currentSentence = [];
     this._sentences.push(sentence);
     
-    if (sentence[0] === '!done' && this._resolve) {
-      this._resolve(this._sentences);
+    // Check if this is a terminal reply
+    const isDone = sentence[0] === '!done';
+    const isTrap = sentence[0] === '!trap';
+    
+    if ((isDone || isTrap) && this._execResolve) {
+      this._execResolve(this._sentences);
       this._sentences = [];
-      this._resolve = null;
+      this._execResolve = null;
+      this._execReject = null;
     }
   }
 
@@ -154,8 +154,8 @@ class MikroTikAPI {
     }
 
     return new Promise((resolve, reject) => {
-      this._resolve = resolve;
-      this._reject = reject;
+      this._execResolve = resolve;
+      this._execReject = reject;
       this._sentences = [];
 
       const command = args[0].startsWith('/') ? args[0] : '/' + args[0];
@@ -167,7 +167,26 @@ class MikroTikAPI {
 
   // Login
   async login(username, password) {
-    await this.exec('/login', '=name=' + username, '=password=' + password);
+    const crypto = require('crypto');
+    // Try new method first (direct password)
+    const result = await this.exec('/login', '=name=' + username, '=password=' + password);
+    
+    // Check if challenge was requested
+    const firstSentence = result[0];
+    if (firstSentence && firstSentence.some(w => w.startsWith('=ret='))) {
+      const ret = firstSentence.find(w => w.startsWith('=ret='));
+      const challenge = ret.split('=')[2];
+      const chalBytes = Buffer.from(challenge, 'hex');
+      
+      // MD5(0x00 + password + challenge_bytes)
+      const md5 = crypto.createHash('md5');
+      md5.update(Buffer.from([0x00]));
+      md5.update(Buffer.from(password, 'utf8'));
+      md5.update(chalBytes);
+      const hash = md5.digest('hex');
+      
+      await this.exec('/login', '=name=' + username, '=response=00' + hash);
+    }
     return true;
   }
 
