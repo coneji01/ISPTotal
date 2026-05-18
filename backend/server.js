@@ -3487,13 +3487,9 @@ app.post('/api/smartolt/onu/authorize', requireAuth, async (req, res) => {
       } catch(eDet) {}
     }
     if (model) params.append('onu_type', model);
-    // Default: Routing (PPPoE). Only Bridging if explicitly set
+    // Siempre Routing a menos que el usuario envíe explícitamente 'bridge'
     var onuMode = 'Routing';
-    if (req.body.onu_mode && req.body.onu_mode.toLowerCase().includes('bridge')) onuMode = 'Bridging';
-    else if (servicio_id) {
-      var authCheck = db.prepare('SELECT auth_type FROM servicios WHERE id=?').get(servicio_id);
-      if (authCheck && authCheck.auth_type !== 'pppoe') onuMode = 'Bridging';
-    }
+    if (req.body.onu_mode && (req.body.onu_mode.toLowerCase() === 'bridging' || req.body.onu_mode.toLowerCase() === 'bridge')) onuMode = 'Bridging';
     params.append('onu_mode', onuMode);
     params.append('zone', zonaName || 'default');
     params.append('name', (cliente_nombre || descripcion || serial).replace(/[^a-zA-Z0-9 @$&()\-`.+,/_\:;]/g, '').trim().substring(0, 64) || serial);
@@ -3871,6 +3867,30 @@ app.post('/api/smartolt/onu/enviar-tr069', requireAuth, async (req, res) => {
         require('fs').appendFileSync('/tmp/isptotal.log', '[TR069-BTN] SpeedProfile=' + JSON.stringify(spData) + '\n');
       } catch(eSp) { require('fs').appendFileSync('/tmp/isptotal.log', '[TR069-BTN] SpeedError=' + eSp.message + '\n'); }
     }
+
+    // Enable TR069 first (needed for TR069 WAN mode)
+    require('fs').appendFileSync('/tmp/isptotal.log', '[TR069-BTN] Habilitando TR069...\n');
+    try {
+      var tr069Params = new URLSearchParams();
+      tr069Params.append('tr069_profile', olt.tr069_profile || 'SmartOLT');
+      var trResp = await fetch(apiUrl + '/onu/enable_tr069/' + extId, {
+        method: 'POST', headers: { 'X-Token': olt.smartolt_api_key, 'Content-Type': 'application/x-www-form-urlencoded' }, body: tr069Params
+      });
+      var trData = await trResp.json();
+      require('fs').appendFileSync('/tmp/isptotal.log', '[TR069-BTN] TR069 enable response: ' + JSON.stringify(trData) + '\n');
+    } catch(eTr) { require('fs').appendFileSync('/tmp/isptotal.log', '[TR069-BTN] TR069 enable error: ' + eTr.message + '\n'); }
+    
+    // Set Mgmt IP to DHCP (needed for TR069)
+    try {
+      var mgmtParams = new URLSearchParams();
+      var mgmtVlan = olt.tr069_vlan || '';
+      if (mgmtVlan) mgmtParams.append('vlan', mgmtVlan);
+      var mgmtResp = await fetch(apiUrl + '/onu/set_onu_mgmt_ip_dhcp/' + extId, {
+        method: 'POST', headers: { 'X-Token': olt.smartolt_api_key, 'Content-Type': 'application/x-www-form-urlencoded' }, body: mgmtParams
+      });
+      var mgmtData = await mgmtResp.json();
+      require('fs').appendFileSync('/tmp/isptotal.log', '[TR069-BTN] MgmtIP response: ' + JSON.stringify(mgmtData) + '\n');
+    } catch(eM) { require('fs').appendFileSync('/tmp/isptotal.log', '[TR069-BTN] MgmtIP error: ' + eM.message + '\n'); }
 
     // Send WAN PPPoE
     require('fs').appendFileSync('/tmp/isptotal.log', '[TR069-BTN] Enviando WAN PPPoE usuario=' + (svc.pppoe_user || 'Joel') + '\n');
@@ -4392,17 +4412,40 @@ app.post('/api/cambio-onu/eliminar-onu-vieja', requireAuth, async (req, res) => 
     }
     
     // Try to delete from SmartOLT
+    require('fs').appendFileSync('/tmp/isptotal.log', '[ELIMINAR-ONU] sn=' + sn + ' olt_id=' + olt_id + ' extId=' + extId + '\n');
     if (extId) {
-      try {
-        await fetch(apiUrl + '/onu/delete/' + extId, { method: 'POST', headers: { 'X-Token': olt.smartolt_api_key } });
-      } catch(e2) { /* ignore API errors */ }
-      try {
-        await fetch(apiUrl + '/system/save_config', { method: 'POST', headers: { 'X-Token': olt.smartolt_api_key } });
-      } catch(e3) { /* ignore */ }
+      // Retry delete up to 3 times if OLT is busy
+      for (var delTry = 0; delTry < 3; delTry++) {
+        try {
+          if (delTry > 0) { await new Promise(function(r) { setTimeout(r, 3000); }); }
+          var delResp = await fetch(apiUrl + '/onu/delete/' + extId, { method: 'POST', headers: { 'X-Token': olt.smartolt_api_key } });
+          var delData = await delResp.json();
+          require('fs').appendFileSync('/tmp/isptotal.log', '[ELIMINAR-ONU] SmartOLT delete (attempt ' + (delTry+1) + '): ' + JSON.stringify(delData) + '\n');
+          if (delData.status === 'success' || delData.status === true || delData.response_code === 'success') {
+            break; // success, no more retries
+          }
+          if (delTry === 2) {
+            require('fs').appendFileSync('/tmp/isptotal.log', '[ELIMINAR-ONU] Delete failed after 3 attempts\n');
+          }
+        } catch(e2) { require('fs').appendFileSync('/tmp/isptotal.log', '[ELIMINAR-ONU] error SmartOLT: ' + (e2.message||'') + '\n'); }
+      }
+      // Save config (with retry too)
+      for (var svTry = 0; svTry < 3; svTry++) {
+        try {
+          if (svTry > 0) { await new Promise(function(r) { setTimeout(r, 3000); }); }
+          var svResp = await fetch(apiUrl + '/system/save_config', { method: 'POST', headers: { 'X-Token': olt.smartolt_api_key } });
+          var svData = await svResp.json();
+          require('fs').appendFileSync('/tmp/isptotal.log', '[ELIMINAR-ONU] save_config (attempt ' + (svTry+1) + '): ' + JSON.stringify(svData) + '\n');
+          if (svData.status === 'success' || svData.status === true || svData.response_code === 'success') {
+            break;
+          }
+        } catch(e3) { require('fs').appendFileSync('/tmp/isptotal.log', '[ELIMINAR-ONU] save_config error: ' + (e3.message||'') + '\n'); }
+      }
     }
     
     // Delete old ONU from local DB completely
-    db.prepare('DELETE FROM onu WHERE sn = ?').run(sn);
+    var delResult = db.prepare('DELETE FROM onu WHERE sn = ?').run(sn);
+    require('fs').appendFileSync('/tmp/isptotal.log', '[ELIMINAR-ONU] local DB deleted ' + (delResult ? delResult.changes : 0) + ' rows\n');
     // Delete from local onu table if exists
     db.prepare('DELETE FROM onu WHERE sn = ?').run(sn);
     
@@ -4422,6 +4465,29 @@ app.post('/api/cambio-onu/autorizar-nueva-onu', requireAuth, async (req, res) =>
       return res.json({ success: false, message: 'OLT no configurada para SmartOLT' });
     }
     const apiUrl = 'https://' + olt.smartolt_subdomain + '.smartolt.com/api';
+    
+    // Delete old ONU first (if provided)
+    if (req.body.old_sn && req.body.old_olt_id) {
+      try {
+        const oldOlt = db.prepare('SELECT * FROM olts WHERE id=? AND activo=1').get(req.body.old_olt_id);
+        if (oldOlt && oldOlt.smartolt_subdomain && oldOlt.smartolt_api_key) {
+          const oldApiUrl = 'https://' + oldOlt.smartolt_subdomain + '.smartolt.com/api';
+          const oldDetResp = await fetch(oldApiUrl + '/onu/get_onus_details_by_sn/' + req.body.old_sn, {
+            method: 'GET', headers: { 'X-Token': oldOlt.smartolt_api_key, 'Accept': 'application/json' }
+          });
+          const oldDetData = await oldDetResp.json();
+          let oldList = oldDetData.onus || oldDetData.response || [];
+          if (oldList.length > 0) {
+            var oldExtId = oldList[0].unique_external_id || oldList[0].id || oldList[0].onu_id || '';
+            if (oldExtId) {
+              await fetch(oldApiUrl + '/onu/delete/' + oldExtId, { method: 'POST', headers: { 'X-Token': oldOlt.smartolt_api_key } });
+              await fetch(oldApiUrl + '/system/save_config', { method: 'POST', headers: { 'X-Token': oldOlt.smartolt_api_key } });
+            }
+          }
+        }
+        db.prepare('DELETE FROM onu WHERE sn = ?').run(req.body.old_sn);
+      } catch(eOld) { /* best effort */ }
+    }
     
     // Get zone name from service
     let zonaName = '';
@@ -4453,13 +4519,9 @@ app.post('/api/cambio-onu/autorizar-nueva-onu', requireAuth, async (req, res) =>
       }
     }
     if (onu_type) params.append('onu_type', onu_type);
-    // Default: Routing (PPPoE). Only Bridging if explicitly set
+    // Siempre Routing a menos que el usuario envíe explícitamente 'bridge'
     var onuMode = 'Routing';
-    if (req.body.onu_mode && req.body.onu_mode.toLowerCase().includes('bridge')) onuMode = 'Bridging';
-    else if (servicio_id) {
-      var authCheck = db.prepare('SELECT auth_type FROM servicios WHERE id=?').get(servicio_id);
-      if (authCheck && authCheck.auth_type !== 'pppoe') onuMode = 'Bridging';
-    }
+    if (req.body.onu_mode && (req.body.onu_mode.toLowerCase() === 'bridging' || req.body.onu_mode.toLowerCase() === 'bridge')) onuMode = 'Bridging';
     params.append('onu_mode', onuMode);
     params.append('zone', zonaName || 'default');
     params.append('name', (cliente_nombre || serial).replace(/[^a-zA-Z0-9 @$&()\-`.+,/_\:;]/g, '').trim().substring(0, 64) || serial);
@@ -4498,18 +4560,22 @@ app.post('/api/cambio-onu/autorizar-nueva-onu', requireAuth, async (req, res) =>
     }
     
     if (data.status === 'success' || data.status === true || data.response_code === 'success') {
-      // Get external ID for configuration
+      // Get external ID (retry up to 3 times)
       let extId = '';
-      try {
-        const extResp = await fetch(apiUrl + '/onu/get_onus_details_by_sn/' + serial, {
-          method: 'GET', headers: { 'X-Token': olt.smartolt_api_key, 'Accept': 'application/json' }
-        });
-        const extData = await extResp.json();
-        let extList = extData.onus || extData.response || [];
-        if (extList.length > 0) {
-          extId = extList[0].unique_external_id || extList[0].id || extList[0].onu_id || '';
-        }
-      } catch(e) {}
+      for (var attempt = 0; attempt < 3 && !extId; attempt++) {
+        try {
+          if (attempt > 0) { await new Promise(function(r) { setTimeout(r, 2000); }); }
+          const extResp = await fetch(apiUrl + '/onu/get_onus_details_by_sn/' + serial, {
+            method: 'GET', headers: { 'X-Token': olt.smartolt_api_key, 'Accept': 'application/json' }
+          });
+          const extData = await extResp.json();
+          let extList = extData.onus || extData.response || [];
+          if (extList.length > 0) {
+            extId = extList[0].unique_external_id || extList[0].id || extList[0].onu_id || '';
+          }
+        } catch(e) {}
+      }
+      require('fs').appendFileSync('/tmp/isptotal.log', new Date().toISOString() + ' [CAMBIO-ONU] extId=' + extId + '\n');
       
       // Get plan profiles for speed
       var dlProfile = '', ulProfile = '';
@@ -4528,24 +4594,30 @@ app.post('/api/cambio-onu/autorizar-nueva-onu', requireAuth, async (req, res) =>
             var spP = new URLSearchParams();
             spP.append('upload_speed_profile_name', ulProfile);
             spP.append('download_speed_profile_name', dlProfile);
-            await fetch(apiUrl + '/onu/update_onu_speed_profiles/' + extId, { method: 'POST', headers: { 'X-Token': olt.smartolt_api_key, 'Content-Type': 'application/x-www-form-urlencoded' }, body: spP });
-          } catch(eSp) {}
+            var spRespC = await fetch(apiUrl + '/onu/update_onu_speed_profiles/' + extId, { method: 'POST', headers: { 'X-Token': olt.smartolt_api_key, 'Content-Type': 'application/x-www-form-urlencoded' }, body: spP });
+            var spDataC = await spRespC.json();
+            require('fs').appendFileSync('/tmp/isptotal.log', new Date().toISOString() + ' [CAMBIO-ONU] SpeedProfile: ' + JSON.stringify(spDataC) + '\n');
+          } catch(eSp) { require('fs').appendFileSync('/tmp/isptotal.log', new Date().toISOString() + ' [CAMBIO-ONU] SpeedProfile error: ' + (eSp.message||'') + '\n'); }
         }
         
-        // Enable TR069 first (before WAN mode)
-        try {
-          var trP = new URLSearchParams();
-          trP.append('tr069_profile', olt.tr069_profile || 'SmartOLT');
-          await fetch(apiUrl + '/onu/enable_tr069/' + extId, { method: 'POST', headers: { 'X-Token': olt.smartolt_api_key, 'Content-Type': 'application/x-www-form-urlencoded' }, body: trP });
-        } catch(eTr) {}
-        
-        // Set Mgmt IP DHCP
+        // Set Mgmt IP DHCP first (TR069 needs it)
         try {
           var mgP = new URLSearchParams();
           var mgVlan = olt.tr069_vlan || vlan || olt.vlan_default || '';
           if (mgVlan) mgP.append('vlan', mgVlan);
-          await fetch(apiUrl + '/onu/set_onu_mgmt_ip_dhcp/' + extId, { method: 'POST', headers: { 'X-Token': olt.smartolt_api_key, 'Content-Type': 'application/x-www-form-urlencoded' }, body: mgP });
-        } catch(eM) {}
+          var mgRespC = await fetch(apiUrl + '/onu/set_onu_mgmt_ip_dhcp/' + extId, { method: 'POST', headers: { 'X-Token': olt.smartolt_api_key, 'Content-Type': 'application/x-www-form-urlencoded' }, body: mgP });
+          var mgDataC = await mgRespC.json();
+          require('fs').appendFileSync('/tmp/isptotal.log', new Date().toISOString() + ' [CAMBIO-ONU] MgmtIP: ' + JSON.stringify(mgDataC) + '\n');
+        } catch(eM) { require('fs').appendFileSync('/tmp/isptotal.log', new Date().toISOString() + ' [CAMBIO-ONU] MgmtIP error: ' + (eM.message||'') + '\n'); }
+        
+        // Enable TR069 (after Mgmt IP is ready)
+        try {
+          var trP = new URLSearchParams();
+          trP.append('tr069_profile', olt.tr069_profile || 'SmartOLT');
+          var trRespC = await fetch(apiUrl + '/onu/enable_tr069/' + extId, { method: 'POST', headers: { 'X-Token': olt.smartolt_api_key, 'Content-Type': 'application/x-www-form-urlencoded' }, body: trP });
+          var trDataC = await trRespC.json();
+          require('fs').appendFileSync('/tmp/isptotal.log', new Date().toISOString() + ' [CAMBIO-ONU] TR069 response: ' + JSON.stringify(trDataC) + '\n');
+        } catch(eTr) {}
         
         // Read WAN data from DB (like TR069 does)
         if (servicio_id) {
@@ -4565,14 +4637,18 @@ app.post('/api/cambio-onu/autorizar-nueva-onu', requireAuth, async (req, res) =>
             ppP.append('password', pppoe_pass || 'changeme');
             ppP.append('configuration_method', 'TR069');
             ppP.append('ip_protocol', 'ipv4ipv6');
-            await fetch(apiUrl + '/onu/set_onu_wan_mode_pppoe/' + extId, { method: 'POST', headers: { 'X-Token': olt.smartolt_api_key, 'Content-Type': 'application/x-www-form-urlencoded' }, body: ppP });
+            var wanRespC = await fetch(apiUrl + '/onu/set_onu_wan_mode_pppoe/' + extId, { method: 'POST', headers: { 'X-Token': olt.smartolt_api_key, 'Content-Type': 'application/x-www-form-urlencoded' }, body: ppP });
+            var wanDataC = await wanRespC.json();
+            require('fs').appendFileSync('/tmp/isptotal.log', new Date().toISOString() + ' [CAMBIO-ONU] WAN mode: ' + JSON.stringify(wanDataC) + '\n');
           } else {
             var dP = new URLSearchParams();
             dP.append('configuration_method', 'OMCI');
             dP.append('ip_protocol', 'ipv4ipv6');
-            await fetch(apiUrl + '/onu/set_onu_wan_mode_dhcp/' + extId, { method: 'POST', headers: { 'X-Token': olt.smartolt_api_key, 'Content-Type': 'application/x-www-form-urlencoded' }, body: dP });
+            var dhcpRespC = await fetch(apiUrl + '/onu/set_onu_wan_mode_dhcp/' + extId, { method: 'POST', headers: { 'X-Token': olt.smartolt_api_key, 'Content-Type': 'application/x-www-form-urlencoded' }, body: dP });
+            var dhcpDataC = await dhcpRespC.json();
+            require('fs').appendFileSync('/tmp/isptotal.log', new Date().toISOString() + ' [CAMBIO-ONU] WAN DHCP: ' + JSON.stringify(dhcpDataC) + '\n');
           }
-        } catch(eW) {}
+        } catch(eW) { require('fs').appendFileSync('/tmp/isptotal.log', new Date().toISOString() + ' [CAMBIO-ONU] WAN error: ' + (eW.message||'') + '\n'); }
         
         // Set WiFi
         if (servicio_id) {

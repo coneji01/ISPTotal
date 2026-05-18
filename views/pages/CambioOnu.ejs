@@ -675,21 +675,22 @@ function ejecutarCambio() {
     el.querySelector('i').className = 'fas fa-circle';
   });
   
-  // ===== NUEVO FLUJO: Primero autorizar, luego eliminar =====
+  // ===== FLUJO: Primero eliminar vieja, luego autorizar nueva =====
   
-  // STEP 1: Authorize new ONU first
-  document.getElementById('coLoadingStatus').textContent = 'Autorizando nueva ONU...';
-  var step1 = document.querySelector('.co-loading-step[data-step="authorize"]');
+  // STEP 1: Delete old ONU first (to avoid SmartOLT save_config conflicts)
+  document.getElementById('coLoadingStatus').textContent = 'Eliminando ONU vieja...';
+  var step1 = document.querySelector('.co-loading-step[data-step="delete"]');
   step1.className = 'co-loading-step active';
   step1.querySelector('i').className = 'fas fa-spinner fa-spin';
   
-  fetch('/api/cambio-onu/autorizar-nueva-onu', {
+  fetch('/api/smartolt/onu/authorize', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       olt_id: coState.newOnuOltId,
       serial: coState.newOnuSn,
-      onu_type: coState.onuType || 'Generic',
+      model: coState.onuType || '',
+      descripcion: coState.cliente ? coState.cliente.nombre : '',
       cliente_nombre: coState.cliente ? coState.cliente.nombre : '',
       servicio_id: coState.servicio.id,
       vlan: coState.vlan || '',
@@ -697,7 +698,7 @@ function ejecutarCambio() {
       port: coState.newOnuPort || '',
       pppoe_user: coState.pppoeUser || '',
       pppoe_pass: coState.pppoePass || '',
-      onu_mode: coState.pppoeUser ? 'bridge' : 'bridge'
+      onu_mode: ''
     })
   })
   .then(function(r) { return r.json(); })
@@ -708,42 +709,12 @@ function ejecutarCambio() {
     step1.className = 'co-loading-step done';
     step1.querySelector('i').className = 'fas fa-check-circle';
     
-    // STEP 2: Verify ONU was added in SmartOLT
-    document.getElementById('coLoadingStatus').textContent = 'Verificando ONU en SmartOLT...';
-    return new Promise(function(resolve, reject) {
-      var attempts = 0;
-      var maxAttempts = 6;
-      function checkOnu() {
-        attempts++;
-        fetch('/api/cambio-onu/verificar-onu', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ olt_id: coState.newOnuOltId, serial: coState.newOnuSn })
-        })
-        .then(function(r) { return r.json(); })
-        .then(function(checkResult) {
-          if (checkResult.found) {
-            resolve(checkResult);
-          } else if (attempts >= maxAttempts) {
-            reject(new Error('La ONU no se registró en SmartOLT después de varios intentos'));
-          } else {
-            setTimeout(checkOnu, 5000);
-          }
-        })
-        .catch(function() {
-          if (attempts >= maxAttempts) reject(new Error('Error verificando ONU'));
-          else setTimeout(checkOnu, 5000);
-        });
-      }
-      setTimeout(checkOnu, 3000);
-    });
-  })
-  .then(function(verifyResult) {
-    // STEP 3: Delete old ONU (only if new one is verified)
+    // STEP 2: Delete old ONU immediately (no verificar)
     document.getElementById('coLoadingStatus').textContent = 'Eliminando ONU vieja...';
-    var step3 = document.querySelector('.co-loading-step[data-step="delete"]');
-    step3.className = 'co-loading-step active';
-    step3.querySelector('i').className = 'fas fa-spinner fa-spin';
+    document.getElementById('coLoadingStatus').textContent = 'Eliminando ONU vieja...';
+    var step2 = document.querySelector('.co-loading-step[data-step="delete"]');
+    step2.className = 'co-loading-step active';
+    step2.querySelector('i').className = 'fas fa-spinner fa-spin';
     
     return fetch('/api/cambio-onu/eliminar-onu-vieja', {
       method: 'POST',
@@ -752,16 +723,19 @@ function ejecutarCambio() {
     });
   })
   .then(function(r) { return r.json(); })
-  .then(function(deleteResult) {
-    var step3 = document.querySelector('.co-loading-step[data-step="delete"]');
-    step3.className = 'co-loading-step done';
-    step3.querySelector('i').className = 'fas fa-check-circle';
+  .then(function(authResult) {
+    if (!authResult.success) {
+      throw new Error(authResult.message || 'Error al autorizar nueva ONU');
+    }
+    var step2 = document.querySelector('.co-loading-step[data-step="authorize"]');
+    step2.className = 'co-loading-step done';
+    step2.querySelector('i').className = 'fas fa-check-circle';
     
-    // STEP 4: Create swap record
+    // STEP 3: Create swap record
     document.getElementById('coLoadingStatus').textContent = 'Registrando cambio en base de datos...';
-    var step4 = document.querySelector('.co-loading-step[data-step="register"]');
-    step4.className = 'co-loading-step active';
-    step4.querySelector('i').className = 'fas fa-spinner fa-spin';
+    var step3 = document.querySelector('.co-loading-step[data-step="register"]');
+    step3.className = 'co-loading-step active';
+    step3.querySelector('i').className = 'fas fa-spinner fa-spin';
     
     return fetch('/api/cambio-onu/crear-swap', {
       method: 'POST',
@@ -787,10 +761,10 @@ function ejecutarCambio() {
   })
   .then(function(r) { return r.json(); })
   .then(function(swapResult) {
-    var step4 = document.querySelector('.co-loading-step[data-step="register"]');
+    var step3 = document.querySelector('.co-loading-step[data-step="register"]');
     if (swapResult.success) {
-      step4.className = 'co-loading-step done';
-      step4.querySelector('i').className = 'fas fa-check-circle';
+      step3.className = 'co-loading-step done';
+      step3.querySelector('i').className = 'fas fa-check-circle';
       coState.swapId = swapResult.id;
     } else {
       step4.className = 'co-loading-step failed';

@@ -314,7 +314,7 @@ function ctShowResult(ok,msg,nid){
   document.getElementById('ctResultTitle').textContent=ok?'Cambio Exitoso':'Error';
   document.getElementById('ctResultText').textContent=msg;
   var b='<button onclick="ctReset()" style="padding:11px 22px;border-radius:7px;border:1px solid #d1d5db;background:#f8fafc;color:#475569;font-weight:600;cursor:pointer;">Nuevo Cambio</button>';
-  if(ok&&nid)b+='<button onclick="window.location.href=\'/ver-cliente/'+nid+'\'" style="padding:11px 22px;border-radius:7px;border:none;background:#2563eb;color:#fff;font-weight:600;cursor:pointer;"><i class="fas fa-user"></i> Ver Nuevo Titular</button>';
+  if(ok&&nid)b+='<button onclick="window.location.href=\'/modulo?pagina=VerCliente&id='+nid+'\'" style="padding:11px 22px;border-radius:7px;border:none;background:#2563eb;color:#fff;font-weight:600;cursor:pointer;"><i class="fas fa-user"></i> Ver Nuevo Titular</button>';
   document.getElementById('ctResultActions').innerHTML=b;document.getElementById('ctResultModal').style.display='flex';
 }
 
