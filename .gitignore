@@ -1,5 +1,5 @@
+isptotal.db
+isptotal.db-wal
+isptotal.db-shm
 node_modules/
-*.db
-*.db-shm
-*.db-wal
-.env
+/tmp/

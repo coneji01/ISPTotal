@@ -1,34 +1,276 @@
+<style>
+.tr-svc-card {
+    border:2px solid #e2e8f0; border-radius:8px; padding:12px 16px;
+    margin-bottom:8px; cursor:pointer; transition:all 0.15s;
+    display:flex; align-items:center; gap:12px;
+}
+.tr-svc-card:hover { border-color:#7c3aed; background:#faf5ff; }
+.tr-svc-card.selected { border-color:#7c3aed; background:#f5f3ff; }
+.tr-svc-badge { font-size:0.7rem; padding:2px 8px; border-radius:12px; font-weight:700; }
+.tr-svc-active { background:#dcfce7; color:#166534; }
+.tr-svc-suspended { background:#fee2e2; color:#991b1b; }
+.client-result-item { padding:14px 16px; cursor:pointer; border-bottom:1px solid #f1f5f9; }
+.client-result-item:hover { background:#faf5ff; }
+.client-result-item:last-child { border-bottom:none; }
+</style>
+
 <div class="page-header">
-  <h2><i class="fas fa-<%= pagina === 'Clientes' ? 'users' : pagina === 'Ordenes' ? 'clipboard-list' : pagina === 'Gpon' ? 'network-wired' : pagina === 'CajasNap' ? 'box' : pagina === 'Inventario' ? 'boxes' : pagina === 'Ventas' ? 'shopping-cart' : pagina === 'Proveedores' ? 'truck' : pagina === 'Empleados' ? 'id-badge' : pagina === 'PagosAdmin' ? 'coins' : pagina === 'Estadisticas' ? 'chart-bar' : pagina === 'Monitoreo' ? 'desktop' : pagina === 'RegistrarPago' ? 'money-bill' : pagina === 'NuevoCliente' ? 'user-plus' : pagina === 'BuscarOnu' ? 'search' : pagina === 'CambioOnu' ? 'exchange-alt' : pagina === 'CambioDeTitular' ? 'user-edit' : pagina === 'Traslados' ? 'truck-moving' : pagina === 'PromesaDePago' ? 'handshake' : pagina === 'CuadreCaja' ? 'cash-register' : pagina === 'Configuracion' ? 'cog' : pagina === 'Actualizaciones' ? 'sync' : 'cog' %>"></i> <%= pagina.replace(/([A-Z])/g, ' $1').trim() %></h2>
-  <div class="btn-group">
-    <% if (pagina !== 'BuscarOnu' && pagina !== 'Estadisticas' && pagina !== 'Monitoreo' && pagina !== 'Configuracion' && pagina !== 'Actualizaciones') { %>
-    <button class="btn btn-primary btn-sm" onclick="openModal('nuevoModal')"><i class="fas fa-plus"></i> Nuevo</button>
-    <% } %>
-  </div>
+    <h2 class="page-title"><i class="fas fa-truck-moving" style="color:#7c3aed;"></i> Traslado de Servicio</h2>
 </div>
 
-<div class="card">
-  <div class="card-body">
-    <div class="loading"><i class="fas fa-spinner fa-spin"></i><br>Cargando...</div>
-  </div>
-</div>
+<div class="card" style="max-width:750px; margin:0 auto; padding:28px;">
 
-<!-- Modal placeholder -->
-<div id="nuevoModal" class="modal" style="display:none">
-  <div class="modal-content">
-    <div class="modal-header"><h3><i class="fas fa-plus"></i> Nuevo</h3><span class="modal-close" onclick="closeModal('nuevoModal')">&times;</span></div>
-    <div class="modal-body">
-      <p style="color:var(--text-gray);text-align:center;padding:20px;">Módulo en construcción</p>
-      <div class="btn-group" style="justify-content:flex-end;margin-top:16px;">
-        <button class="btn btn-secondary" onclick="closeModal('nuevoModal')">Cancelar</button>
-        <button class="btn btn-primary">Guardar</button>
-      </div>
+    <h4 style="color:#2563eb; border-bottom:1px solid #eee; padding-bottom:10px; margin-bottom:18px;">
+        <i class="fas fa-search"></i> Buscar Cliente
+    </h4>
+
+    <div class="form-group" style="position:relative;">
+        <input type="text" id="trSearch" class="form-control" placeholder="Nombre, apodo, cédula o NIC..."
+               autocomplete="off" oninput="trSearchInput()" style="padding-right:38px;">
+        <i class="fas fa-search" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); color:#94a3b8; pointer-events:none;"></i>
     </div>
-  </div>
+
+    <div id="trClienteInfo" style="display:none; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:8px; padding:12px 16px; margin-bottom:18px;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div>
+                <div style="font-weight:700; color:#166534; font-size:0.97rem;" id="trClienteNombre"></div>
+                <div style="font-size:0.8rem; color:#64748b;" id="trClienteDetalle"></div>
+            </div>
+            <button onclick="trLimpiarCliente()" style="background:none; border:none; color:#94a3b8; cursor:pointer; font-size:1.1rem;" title="Cambiar cliente"><i class="fas fa-times"></i></button>
+        </div>
+    </div>
+
+    <div id="trServiciosBox" style="display:none; margin-bottom:20px;">
+        <h4 style="color:#475569; font-size:0.9rem; margin-bottom:10px;"><i class="fas fa-wifi"></i> Seleccionar Servicio a Trasladar</h4>
+        <div id="trServiciosList"></div>
+    </div>
+
+    <div id="trFormBox" style="display:none;">
+        <input type="hidden" id="trClienteId" value="">
+        <input type="hidden" id="trServiceId" value="">
+
+        <h4 style="color:#2563eb; border-bottom:1px solid #eee; padding-bottom:10px; margin:20px 0 16px;">
+            <i class="fas fa-map-marker-alt"></i> Datos del Traslado
+        </h4>
+
+        <div class="form-group">
+            <label class="form-label">Zona Nueva <span style="color:red;">*</span></label>
+            <select id="trZona" class="form-control" required>
+                <option value="">-- Seleccionar zona --</option>
+                <% (zonas || []).forEach(function(z) { %>
+                <option value="<%= z.id %>"><%= z.nombre %></option>
+                <% }); %>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Dirección Nueva <span style="color:red;">*</span></label>
+            <input type="text" id="trDireccion" class="form-control" placeholder="Calle, número, referencia..." required>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Observaciones</label>
+            <input type="text" id="trObservaciones" class="form-control" placeholder="Observaciones opcionales...">
+        </div>
+
+        <div style="text-align:right; margin-top:24px;">
+            <button type="button" onclick="trLimpiarCliente()" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Cancelar
+            </button>
+            <button type="button" id="btnTrasladar" onclick="trEnviar()" class="btn btn-primary" style="background:#7c3aed;">
+                <i class="fas fa-truck-moving"></i> Trasladar
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Búsqueda dropdown -->
+<div id="trSearchResults" style="display:none; position:fixed; background:#fff; border:1px solid #e2e8f0; border-radius:8px; max-height:340px; overflow-y:auto; z-index:99990; box-shadow:0 8px 24px rgba(0,0,0,0.15);"></div>
+
+<!-- Modal Resultado -->
+<div id="trResultModal" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:99999;display:none;align-items:center;justify-content:center;backdrop-filter:blur(2px);">
+    <div style="background:#fff;width:90%;max-width:420px;border-radius:10px;padding:30px;text-align:center;box-shadow:0 15px 30px rgba(0,0,0,0.2);border-top:4px solid #16a34a;">
+        <div style="font-size:3rem;color:#16a34a;margin-bottom:10px;"><i class="fas fa-check-circle"></i></div>
+        <div style="font-size:1.15rem;font-weight:700;color:#1e293b;margin-bottom:8px;">Traslado Registrado</div>
+        <div style="color:#475569;margin-bottom:22px;">La orden de traslado fue creada exitosamente.</div>
+        <div style="display:flex;gap:10px;justify-content:center;">
+            <button onclick="trResultCerrar()" style="padding:11px 22px;border-radius:7px;border:1px solid #d1d5db;background:#f8fafc;color:#475569;font-weight:600;cursor:pointer;font-size:0.9rem;">Cerrar</button>
+            <button onclick="window.location.href='/modulo?pagina=Ordenes'" style="padding:11px 22px;border-radius:7px;border:none;background:#16a34a;color:#fff;font-weight:600;cursor:pointer;font-size:0.9rem;"><i class="fas fa-clipboard-list"></i> Ir a Órdenes</button>
+        </div>
+    </div>
 </div>
 
 <script>
-setTimeout(function() {
-  document.querySelector('.loading').innerHTML = '<p style="color:var(--text-gray);text-align:center;padding:20px;">Datos cargados correctamente</p>';
-}, 500);
+let trSearchTimer = null;
+
+function escH(s){if(!s)return '';var d=document.createElement('div');d.textContent=s;return d.innerHTML;}
+
+function trSearchInput() {
+    clearTimeout(trSearchTimer);
+    const q = document.getElementById('trSearch').value.trim();
+    if (q.length < 2) { document.getElementById('trSearchResults').style.display = 'none'; return; }
+    trSearchTimer = setTimeout(() => trBuscarClientes(q), 300);
+}
+
+function trBuscarClientes(q) {
+    const input = document.getElementById('trSearch');
+    const box   = document.getElementById('trSearchResults');
+    const rect  = input.getBoundingClientRect();
+    box.style.top    = (rect.bottom + 4) + 'px';
+    box.style.left   = rect.left + 'px';
+    box.style.width  = rect.width + 'px';
+    box.innerHTML = '<div style="padding:14px 16px; color:#94a3b8;"><i class="fas fa-spinner fa-spin"></i> Buscando...</div>';
+    box.style.display = 'block';
+
+    fetch('/api/traslados/buscar-cliente?q=' + encodeURIComponent(q))
+    .then(r => r.json()).then(data => {
+        if (!data.length) {
+            box.innerHTML = '<div style="padding:14px 16px; color:#94a3b8; font-size:0.9rem;">Sin resultados</div>';
+            return;
+        }
+        box.innerHTML = data.map(c => '<div class="client-result-item" onclick="trSeleccionarCliente(' + c.id + ', \'' + escH(c.name).replace(/'/g,"\\'") + '\', \'' + escH(c.cedula).replace(/'/g,"\\'") + '\', \'' + escH(c.phone).replace(/'/g,"\\'") + '\')" style="padding:14px 16px;">' +
+            '<div style="font-weight:600; color:#1e293b; font-size:1rem;">' + escH(c.name) + '</div>' +
+            '<div style="font-size:0.85rem; color:#64748b; margin-top:3px;">' +
+            (c.cedula ? 'Céd: ' + escH(c.cedula) + ' &nbsp;' : '') +
+            (c.phone ? 'Tel: ' + escH(c.phone) : '') +
+            (c.nics ? ' &nbsp;NIC: ' + escH(c.nics) : '') +
+            ' &nbsp;<span style="color:#7c3aed; font-weight:600;">' + c.service_count + ' servicio(s)</span>' +
+            '</div></div>'
+        ).join('');
+    }).catch(() => { box.innerHTML = '<div style="padding:14px;color:#ef4444;">Error al buscar</div>'; });
+}
+
+function trSeleccionarCliente(id, nombre, cedula, phone) {
+    document.getElementById('trSearchResults').style.display = 'none';
+    document.getElementById('trSearch').value = nombre;
+    document.getElementById('trClienteId').value = id;
+    document.getElementById('trClienteNombre').textContent = nombre;
+    document.getElementById('trClienteDetalle').textContent = [cedula ? 'C\u00e9d: ' + cedula : '', phone ? 'Tel: ' + phone : ''].filter(Boolean).join('  \u00b7  ');
+    document.getElementById('trClienteInfo').style.display = 'block';
+    trCargarServicios(id);
+}
+
+function trCargarServicios(clientId) {
+    const list = document.getElementById('trServiciosList');
+    list.innerHTML = '<div style="padding:10px; color:#94a3b8; font-size:0.85rem;"><i class="fas fa-spinner fa-spin"></i> Cargando servicios...</div>';
+    document.getElementById('trServiciosBox').style.display = 'block';
+    document.getElementById('trFormBox').style.display = 'none';
+
+    fetch('/api/traslados/servicios/' + clientId)
+    .then(r => r.json()).then(d => {
+        if (d.status !== 'success' || !d.data.length) {
+            list.innerHTML = '<div style="padding:12px 16px; color:#ef4444; font-size:0.85rem;"><i class="fas fa-exclamation-circle"></i> Este cliente no tiene servicios activos o suspendidos.</div>';
+            return;
+        }
+        list.innerHTML = d.data.map(function(s) {
+            var badgeClass = s.status === 'active' ? 'tr-svc-active' : 'tr-svc-suspended';
+            var badgeText = s.status === 'active' ? 'Activo' : 'Suspendido';
+            return '<div class="tr-svc-card" onclick="trSeleccionarServicio(' + s.id + ', this)" data-id="' + s.id + '">' +
+                '<div style="flex:1;">' +
+                '<div style="font-weight:700; color:#334155; font-size:0.95rem;">' +
+                escH(s.plan_name || 'Sin plan') +
+                '<span class="tr-svc-badge ' + badgeClass + '" style="margin-left:6px;">' + badgeText + '</span></div>' +
+                '<div style="font-size:0.8rem; color:#64748b; margin-top:2px;">' +
+                (s.zona_nombre ? '<i class="fas fa-map-marker-alt"></i> ' + escH(s.zona_nombre) + ' &nbsp;' : '') +
+                (s.address ? escH(s.address) : 'Sin dirección registrada') +
+                '</div></div>' +
+                '<i class="fas fa-chevron-right" style="color:#c4b5fd;"></i></div>';
+        }).join('');
+    }).catch(() => { list.innerHTML = '<div style="padding:12px 16px; color:#ef4444; font-size:0.85rem;">Error al cargar servicios.</div>'; });
+}
+
+function trSeleccionarServicio(serviceId, el) {
+    document.querySelectorAll('.tr-svc-card').forEach(function(c) { c.classList.remove('selected'); });
+    el.classList.add('selected');
+    document.getElementById('trServiceId').value = serviceId;
+    document.getElementById('trFormBox').style.display = 'block';
+    document.getElementById('trFormBox').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function trLimpiarCliente() {
+    document.getElementById('trSearch').value = '';
+    document.getElementById('trClienteId').value = '';
+    document.getElementById('trServiceId').value = '';
+    document.getElementById('trClienteInfo').style.display = 'none';
+    document.getElementById('trServiciosBox').style.display = 'none';
+    document.getElementById('trFormBox').style.display = 'none';
+    document.getElementById('trZona').value = '';
+    document.getElementById('trDireccion').value = '';
+    document.getElementById('trObservaciones').value = '';
+}
+
+function trEnviar() {
+    const zona     = document.getElementById('trZona').value;
+    const direccion = document.getElementById('trDireccion').value.trim();
+    const clientId  = document.getElementById('trClienteId').value;
+    const serviceId = document.getElementById('trServiceId').value;
+
+    if (!clientId)   { trToast('Seleccione un cliente', 'error'); return; }
+    if (!serviceId)  { trToast('Seleccione un servicio', 'error'); return; }
+    if (!zona)       { trToast('La zona nueva es obligatoria', 'error'); document.getElementById('trZona').focus(); return; }
+    if (!direccion)  { trToast('La dirección nueva es obligatoria', 'error'); document.getElementById('trDireccion').focus(); return; }
+
+    trGuardarOrden();
+}
+
+function trGuardarOrden() {
+    const btn = document.getElementById('btnTrasladar');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Registrando...';
+
+    fetch('/api/traslados/guardar', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            client_id: parseInt(document.getElementById('trClienteId').value),
+            service_id: parseInt(document.getElementById('trServiceId').value),
+            sector_id: parseInt(document.getElementById('trZona').value),
+            address: document.getElementById('trDireccion').value.trim(),
+            observations: document.getElementById('trObservaciones').value.trim()
+        })
+    })
+    .then(r => r.json()).then(d => {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-truck-moving"></i> Trasladar';
+        if (d.status === 'success') {
+            document.getElementById('trResultModal').style.display = 'flex';
+        } else {
+            trToast(d.msg || 'Error al registrar traslado', 'error');
+        }
+    }).catch(function(err) {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-truck-moving"></i> Trasladar';
+        trToast('Error de red: ' + err.message, 'error');
+    });
+}
+
+function trResultCerrar() {
+    document.getElementById('trResultModal').style.display = 'none';
+    trLimpiarCliente();
+}
+
+function trToast(msg, type) {
+    const t = document.createElement('div');
+    t.style.cssText = 'position:fixed;top:20px;right:20px;z-index:99999;padding:12px 20px;border-radius:8px;font-size:0.88rem;font-weight:600;color:#fff;box-shadow:0 4px 15px rgba(0,0,0,0.15);display:flex;align-items:center;gap:8px;';
+    t.style.background = type === 'success' ? '#16a34a' : '#dc2626';
+    t.innerHTML = '<i class="fas fa-' + (type === 'success' ? 'check-circle' : 'exclamation-circle') + '"></i> ' + msg;
+    document.body.appendChild(t);
+    setTimeout(function() { t.style.opacity='0'; t.style.transition='opacity 0.3s'; setTimeout(function() { t.remove(); }, 300); }, 3000);
+}
+
+// Cerrar dropdown al hacer click fuera
+document.addEventListener('click', function(e) {
+    if (!document.getElementById('trSearch').contains(e.target) &&
+        !document.getElementById('trSearchResults').contains(e.target)) {
+        document.getElementById('trSearchResults').style.display = 'none';
+    }
+});
+
+window.addEventListener('scroll', function() {
+    const box = document.getElementById('trSearchResults');
+    if (box.style.display === 'none') return;
+    const input = document.getElementById('trSearch');
+    const rect  = input.getBoundingClientRect();
+    box.style.top  = (rect.bottom + 4) + 'px';
+    box.style.left = rect.left + 'px';
+}, true);
 </script>

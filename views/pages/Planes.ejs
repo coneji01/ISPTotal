@@ -1,0 +1,255 @@
+<style>
+.plan-actions{display:flex;gap:4px;}
+.plan-btn{width:32px;height:32px;border:none;border-radius:6px;cursor:pointer;color:#fff;font-size:0.82rem;transition:opacity 0.2s;}
+.plan-btn:hover{opacity:0.85;}
+.plan-btn-edit{background:#f59e0b;}
+.plan-btn-del{background:#ef4444;}
+.plan-code{background:#f1f5f9;padding:2px 6px;border-radius:4px;font-family:monospace;font-size:0.82rem;}
+.plan-tag{display:inline-block;padding:2px 8px;border-radius:4px;font-size:0.78rem;font-weight:600;}
+.plan-tag-all{background:#e0f2fe;color:#0369a1;}
+.plan-tag-sel{background:#fef3c7;color:#92400e;}
+.modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;justify-content:center;align-items:center;padding:16px;}
+.modal-content{background:#fff;width:95%;max-width:700px;padding:25px;border-radius:12px;box-shadow:0 20px 25px rgba(0,0,0,0.2);max-height:90vh;overflow-y:auto;}
+.modal-header{display:flex;justify-content:space-between;margin-bottom:20px;border-bottom:1px solid #eee;padding-bottom:10px;}
+.modal-header h3{margin:0;color:#1e293b;}
+.form-group{margin-bottom:14px;}
+.form-label{display:block;font-weight:600;margin-bottom:5px;color:#64748b;font-size:0.88rem;}
+.form-control{width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:6px;font-size:0.9rem;box-sizing:border-box;transition:border-color 0.2s;}
+.form-control:focus{outline:none;border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,0.1);}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.form-grid .full-w{grid-column:1/-1;}
+.section-title{font-weight:700;font-size:0.82rem;color:#475569;text-transform:uppercase;letter-spacing:0.5px;margin:18px 0 10px;padding-bottom:6px;border-bottom:1px solid #f1f5f9;grid-column:1/-1;}
+input[type="checkbox"]{width:18px;height:18px;cursor:pointer;}
+</style>
+
+<div class="page-header">
+  <h2><i class="fas fa-tachometer-alt"></i> Planes de Internet</h2>
+  <button class="btn btn-primary btn-sm" onclick="abrirModalPlan()"><i class="fas fa-plus"></i> Nuevo Plan</button>
+</div>
+
+<div class="card">
+  <div style="padding:15px 20px 10px;border-bottom:1px solid #f1f5f9;">
+    <div style="position:relative;max-width:400px;">
+      <i class="fas fa-search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#94a3b8;"></i>
+      <input type="text" id="buscarPlan" class="form-control" placeholder="Buscar por nombre o precio..." oninput="filtrarPlanes()" style="padding-left:36px;">
+    </div>
+  </div>
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th>Nombre</th><th>Código</th><th>Precio</th><th>Impuestos</th><th>Clientes</th>
+          <th>Velocidad</th><th>SmartOLT</th><th>Perfil MT</th><th>Zonas</th><th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="tablaPlanes">
+        <tr><td colspan="10" class="loading"><i class="fas fa-spinner fa-spin"></i> Cargando...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal Plan -->
+<div class="modal-overlay" id="modalPlan" style="display:none;">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 id="modalTitle">Nuevo Plan</h3>
+      <button onclick="cerrarModal()" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:#64748b;">&times;</button>
+    </div>
+    <form id="formPlan" onsubmit="return guardarPlan(event)">
+      <input type="hidden" name="accion" value="guardar">
+      <input type="hidden" name="id_plan" id="id_plan">
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Nombre Comercial</label>
+          <input type="text" name="name" id="name" class="form-control" required placeholder="Ej: Fibra 50 Megas">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Precio ($)</label>
+          <input type="number" step="0.01" name="price" id="price" class="form-control" required>
+        </div>
+        <div class="section-title">Velocidad</div>
+        <div class="form-group">
+          <label class="form-label">Subida</label>
+          <input type="text" name="upload_speed" id="upload_speed" class="form-control" placeholder="Ej: 20M">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Bajada</label>
+          <input type="text" name="download_speed" id="download_speed" class="form-control" placeholder="Ej: 50M">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Upload Burst</label>
+          <input type="text" name="upload_burst" id="upload_burst" class="form-control">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Download Burst</label>
+          <input type="text" name="download_burst" id="download_burst" class="form-control">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Burst Threshold Up</label>
+          <input type="text" name="burst_threshold_up" id="burst_threshold_up" class="form-control">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Burst Threshold Down</label>
+          <input type="text" name="burst_threshold_down" id="burst_threshold_down" class="form-control">
+        </div>
+        <div class="section-title">Perfiles</div>
+        <div class="form-group">
+          <label class="form-label">Perfil MikroTik</label>
+          <input type="text" name="mikrotik_profile" id="mikrotik_profile" class="form-control" placeholder="Ej: DIM-PLAN001">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Perfil OLT Descarga</label>
+          <input type="text" name="olt_download" id="olt_download" class="form-control" placeholder="Ej: 1G">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Perfil OLT Subida</label>
+          <input type="text" name="olt_upload" id="olt_upload" class="form-control" placeholder="Ej: 1G">
+        </div>
+        <div class="section-title">Configuración</div>
+        <div class="form-group" style="display:flex;align-items:center;gap:10px;">
+          <input type="checkbox" name="available" id="available" value="1" checked>
+          <label class="form-label" style="margin:0;">Disponible para nuevos clientes</label>
+        </div>
+        <div class="form-group full-w">
+          <label class="form-label">Zonas vinculadas</label>
+          <select name="linked_zones" id="linked_zones" class="form-control">
+            <option value="all">Todas las zonas</option>
+            <% (zonas || []).forEach(function(z) { %>
+            <option value="<%= z.id %>"><%= z.nombre %></option>
+            <% }) %>
+          </select>
+        </div>
+      </div>
+      <div id="planResult"></div>
+      <div style="text-align:right;margin-top:16px;border-top:1px solid #eee;padding-top:16px;">
+        <button type="button" class="btn btn-secondary" onclick="cerrarModal()" style="margin-right:8px;">Cancelar</button>
+        <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Guardar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function abrirModalPlan(id) {
+  if (id) {
+    fetch('/api/planes/' + id)
+      .then(r => r.json())
+      .then(p => {
+        document.getElementById('modalTitle').textContent = 'Editar: ' + (p.nombre || p.name);
+        document.getElementById('id_plan').value = p.id;
+        document.getElementById('name').value = p.nombre || p.name || '';
+        document.getElementById('price').value = p.precio || p.price || '';
+        document.getElementById('upload_speed').value = p.velocidad_subida || '';
+        document.getElementById('download_speed').value = p.velocidad_bajada || '';
+        document.getElementById('upload_burst').value = p.upload_burst || '';
+        document.getElementById('download_burst').value = p.download_burst || '';
+        document.getElementById('burst_threshold_up').value = p.burst_threshold_up || '';
+        document.getElementById('burst_threshold_down').value = p.burst_threshold_down || '';
+        document.getElementById('mikrotik_profile').value = p.perfil_mikrotik || '';
+        document.getElementById('olt_download').value = p.perfil_olt_descarga || '';
+        document.getElementById('olt_upload').value = p.perfil_olt_subida || '';
+        document.getElementById('linked_zones').value = p.zonas || 'all';
+        document.getElementById('available').checked = p.disponible !== 0;
+        document.getElementById('modalPlan').style.display = 'flex';
+      });
+  } else {
+    document.getElementById('formPlan').reset();
+    document.getElementById('modalTitle').textContent = 'Nuevo Plan';
+    document.getElementById('id_plan').value = '';
+    document.getElementById('available').checked = true;
+    document.getElementById('modalPlan').style.display = 'flex';
+  }
+}
+
+function cerrarModal() { document.getElementById('modalPlan').style.display = 'none'; }
+
+function guardarPlan(e) {
+  e.preventDefault();
+  const id = document.getElementById('id_plan').value;
+  const data = {
+    id: id || 0,
+    nombre: document.getElementById('name').value,
+    precio: parseFloat(document.getElementById('price').value) || 0,
+    velocidad_subida: document.getElementById('upload_speed').value,
+    velocidad_bajada: document.getElementById('download_speed').value,
+    upload_burst: document.getElementById('upload_burst').value,
+    download_burst: document.getElementById('download_burst').value,
+    burst_threshold_up: document.getElementById('burst_threshold_up').value,
+    burst_threshold_down: document.getElementById('burst_threshold_down').value,
+    perfil_mikrotik: document.getElementById('mikrotik_profile').value,
+    perfil_olt_descarga: document.getElementById('olt_download').value,
+    perfil_olt_subida: document.getElementById('olt_upload').value,
+    zonas: document.getElementById('linked_zones').value,
+    disponible: document.getElementById('available').checked ? 1 : 0
+  };
+  
+  const btn = e.target.querySelector('button[type="submit"]');
+  btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+  
+  fetch('/api/planes/save', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  })
+  .then(r => r.json())
+  .then(d => {
+    if (d.success) {
+      cerrarModal();
+      cargarPlanes();
+    } else {
+      document.getElementById('planResult').innerHTML = '<div style="color:#ef4444;padding:6px 0;">' + (d.message || 'Error') + '</div>';
+    }
+    btn.disabled = false; btn.innerHTML = '<i class="fas fa-save"></i> Guardar';
+  })
+  .catch(() => { btn.disabled = false; btn.innerHTML = '<i class="fas fa-save"></i> Guardar'; });
+}
+
+function cargarPlanes() {
+  fetch('/api/planes')
+    .then(r => r.json())
+    .then(planes => {
+      const tb = document.getElementById('tablaPlanes');
+      if (!planes || planes.length === 0) {
+        tb.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:40px;color:#94a3b8;">No hay planes registrados</td></tr>';
+        return;
+      }
+      let h = '';
+      planes.forEach(function(p) {
+        const codigo = 'PLAN' + String(p.id).padStart(3, '0');
+        const zonaTag = p.zonas === 'all' || !p.zonas ? '<span class="plan-tag plan-tag-all">Todas</span>' : '<span class="plan-tag plan-tag-sel">' + (p.zonas || '') + '</span>';
+        h += '<tr>';
+        h += '<td><strong>' + (p.nombre || '') + '</strong></td>';
+        h += '<td><span class="plan-code">' + codigo + '</span></td>';
+        h += '<td><strong>$' + parseFloat(p.precio || 0).toFixed(2) + '</strong></td>';
+        h += '<td style="font-size:0.82rem;color:#64748b;">' + (p.impuestos || '—') + '</td>';
+        h += '<td>' + (p.servicios_count || 0) + '</td>';
+        h += '<td>' + (p.velocidad_subida || '?') + ' | ' + (p.velocidad_bajada || '?') + '</td>';
+        h += '<td>' + (p.perfil_olt_descarga || '—') + '/' + (p.perfil_olt_subida || '—') + '</td>';
+        h += '<td style="font-size:0.82rem;color:#6366f1;">' + (p.perfil_mikrotik || '—') + '</td>';
+        h += '<td>' + zonaTag + '</td>';
+        h += '<td class="plan-actions">';
+        h += '<button class="plan-btn plan-btn-edit" onclick="abrirModalPlan(' + p.id + ')" title="Editar"><i class="fas fa-edit"></i></button>';
+        h += '<button class="plan-btn plan-btn-del" onclick="eliminarPlan(' + p.id + ')" title="Eliminar"><i class="fas fa-trash"></i></button>';
+        h += '</td></tr>';
+      });
+      tb.innerHTML = h;
+    });
+}
+
+function eliminarPlan(id) {
+  if (!confirm('Eliminar este plan?')) return;
+  fetch('/api/planes/' + id + '/delete', { method: 'POST' })
+    .then(r => r.json())
+    .then(d => { if (d.success) cargarPlanes(); });
+}
+
+function filtrarPlanes() {
+  const q = document.getElementById('buscarPlan').value.toLowerCase().trim();
+  document.querySelectorAll('#tablaPlanes tr').forEach(function(row) {
+    row.style.display = (!q || row.textContent.toLowerCase().includes(q)) ? '' : 'none';
+  });
+}
+
+document.addEventListener('DOMContentLoaded', cargarPlanes);
+</script>

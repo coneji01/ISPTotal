@@ -233,12 +233,25 @@ function empOpenForm(id){
 function empCloseForm(){document.getElementById('empFormModal').style.display='none';}
 
 function empSave(){
-    var fd=new FormData();
-    ['empFormId:id','empName:nombre','empCedula:cedula','empPhone:telefono','empSalary:salario','empPeriod:periodo','empPayDay1:dia_pago1','empPayDay2:dia_pago2','empType:tipo','empTypeOther:tipo_otro','empHireDate:fecha_ingreso','empUserId:usuario_id'].forEach(function(x){var p=x.split(':');fd.append(p[1],document.getElementById(p[0]).value);});
+    var body={
+        id: document.getElementById('empFormId').value,
+        nombre: document.getElementById('empName').value,
+        cedula: document.getElementById('empCedula').value,
+        telefono: document.getElementById('empPhone').value,
+        salario: document.getElementById('empSalary').value,
+        periodo: document.getElementById('empPeriod').value,
+        dia_pago1: document.getElementById('empPayDay1').value,
+        dia_pago2: document.getElementById('empPayDay2').value,
+        tipo: document.getElementById('empType').value,
+        tipo_otro: document.getElementById('empTypeOther').value,
+        fecha_ingreso: document.getElementById('empHireDate').value,
+        usuario_id: document.getElementById('empUserId').value
+    };
     var xhr=new XMLHttpRequest();xhr.open('POST','/api/empleados/save');
+    xhr.setRequestHeader('Content-Type','application/json');
     xhr.setRequestHeader('X-Requested-With','XMLHttpRequest');
     xhr.onload=function(){try{var d=JSON.parse(xhr.responseText);if(d.success){empCloseForm();empLoad(1);}else alert(d.message||'Error al guardar');}catch(e){alert('Error de conexión');}};
-    xhr.send(fd);
+    xhr.send(JSON.stringify(body));
 }
 
 function empOpenDetail(id){
@@ -366,21 +379,23 @@ function empOpenLoanForm(loanId){
 
 function empSaveLoan(){
     var loanId=parseInt(document.getElementById('empLoanId').value);
-    var fd=new FormData();
-    fd.append('monto',document.getElementById('empLoanAmount').value);
-    fd.append('descripcion',document.getElementById('empLoanDesc').value);
-    fd.append('fecha',document.getElementById('empLoanDate').value);
+    var body={
+        monto: document.getElementById('empLoanAmount').value,
+        descripcion: document.getElementById('empLoanDesc').value,
+        fecha: document.getElementById('empLoanDate').value
+    };
     var xhr=new XMLHttpRequest();
     if(loanId>0){
-        fd.append('loan_id',loanId);
+        body.loan_id=loanId;
         xhr.open('POST','/api/empleados/prestamo');
     } else {
-        fd.append('empleado_id',empCurrentId);
+        body.empleado_id=empCurrentId;
         xhr.open('POST','/api/empleados/prestamo');
     }
+    xhr.setRequestHeader('Content-Type','application/json');
     xhr.setRequestHeader('X-Requested-With','XMLHttpRequest');
     xhr.onload=function(){try{var d=JSON.parse(xhr.responseText);if(d.success){document.getElementById('empLoanModal').style.display='none';empLoadLoans();empLoad(1);}else alert(d.message||'Error');}catch(e){alert('Error de conexión');}};
-    xhr.send(fd);
+    xhr.send(JSON.stringify(body));
 }
 
 function empOpenPayLoan(loanId,maxAmt){
@@ -395,20 +410,22 @@ function empDoPayLoan(){
     var loanId=document.getElementById('empPayLoanId').value;
     var amount=parseFloat(document.getElementById('empPayAmount').value);
     if(!amount||amount<=0)return;
-    var fd=new FormData();fd.append('loan_id',loanId);fd.append('monto',amount);
+    var body=JSON.stringify({loan_id:loanId,monto:amount});
     var xhr=new XMLHttpRequest();xhr.open('POST','/api/empleados/prestamo/abonar');
+    xhr.setRequestHeader('Content-Type','application/json');
     xhr.setRequestHeader('X-Requested-With','XMLHttpRequest');
     xhr.onload=function(){try{var d=JSON.parse(xhr.responseText);if(d.success){document.getElementById('empPayModal').style.display='none';empLoadLoans();empLoad(1);}else alert(d.message||'Error');}catch(e){}};
-    xhr.send(fd);
+    xhr.send(body);
 }
 
 function empDeleteLoan(loanId){
     if(!confirm('Eliminar este préstamo?'))return;
-    var fd=new FormData();fd.append('loan_id',loanId);fd.append('_delete','1');
+    var body=JSON.stringify({loan_id:loanId,_delete:'1'});
     var xhr=new XMLHttpRequest();xhr.open('POST','/api/empleados/prestamo/abonar');
+    xhr.setRequestHeader('Content-Type','application/json');
     xhr.setRequestHeader('X-Requested-With','XMLHttpRequest');
     xhr.onload=function(){try{var d=JSON.parse(xhr.responseText);if(d.success){empLoadLoans();empLoad(1);}}catch(e){}};
-    xhr.send(fd);
+    xhr.send(body);
 }
 
 function empDelete(id){

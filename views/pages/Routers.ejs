@@ -66,16 +66,12 @@
 
         <div style="border-top:1px solid #e2e8f0;padding-top:16px;margin-top:16px;">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-            <label style="font-weight:600;font-size:0.9rem;">Pool Privado</label>
-            <button type="button" class="btn btn-secondary btn-sm" onclick="addPool('priv')">+ Agregar Bloque Privado</button>
+            <label style="font-weight:600;font-size:0.9rem;">Rangos IP</label>
+            <button type="button" class="btn btn-primary btn-sm" onclick="abrirModalPool()" id="btnAgregarRango">+ Agregar Rango</button>
           </div>
-          <div id="ipPrivateList" style="font-size:0.85rem;color:var(--text-gray);">Ninguno</div>
-          
-          <div style="display:flex;justify-content:space-between;align-items:center;margin:16px 0 10px;">
-            <label style="font-weight:600;font-size:0.9rem;">Pool Público</label>
-            <button type="button" class="btn btn-secondary btn-sm" onclick="addPool('public')">+ Agregar Bloque Público</button>
+          <div id="poolList" style="font-size:0.85rem;">
+            <div style="color:var(--text-gray);text-align:center;padding:10px;">Seleccione o guarde el router primero</div>
           </div>
-          <div id="ipPublicList" style="font-size:0.85rem;color:var(--text-gray);">Ninguno</div>
         </div>
 
         <div class="form-group" style="margin-top:16px;">
@@ -139,14 +135,49 @@
   </div>
 </div>
 
+<!-- Modal Pool IP -->
+<div id="modalPool" class="modal" style="display:none">
+  <div class="modal-content" style="max-width:500px;">
+    <div class="modal-header">
+      <h3><i class="fas fa-network-wired" style="color:#10b981;"></i> Nuevo Rango IP</h3>
+      <span class="modal-close" onclick="cerrarModalPool()">&times;</span>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="poolRouterId" value="0">
+      <div class="form-group">
+        <label>Red (CIDR)</label>
+        <input type="text" id="poolRed" class="form-control" placeholder="Ej: 10.0.0.0/24" oninput="calcularPool()">
+      </div>
+      <div class="form-group">
+        <label>Tipo</label>
+        <select id="poolTipo" class="form-control">
+          <option value="privada">Privada</option>
+          <option value="publica">Pública</option>
+        </select>
+      </div>
+      <div id="poolCalculo" style="background:#f0fdf4;padding:12px;border-radius:8px;margin-bottom:10px;display:none;">
+        <div style="font-size:0.85rem;"><strong>Total IPs disponibles:</strong> <span id="poolTotal">0</span></div>
+        <div style="font-size:0.85rem;"><strong>Rango:</strong> <span id="poolRango">-</span></div>
+      </div>
+      <div id="poolError" style="color:#ef4444;font-size:0.85rem;display:none;"></div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" onclick="cerrarModalPool()">Cancelar</button>
+      <button type="button" class="btn btn-primary" onclick="guardarPool()"><i class="fas fa-save"></i> Guardar Rango</button>
+    </div>
+  </div>
+</div>
+
 <script>
-let ipPriv = [];
-let ipPub = [];
+let routerActualId = 0;
 let resyncId = null;
 
 function cargarRouters() {
   fetch('/api/routers')
-    .then(r => r.json())
+    .then(r => {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    })
     .then(data => {
       if (data.length === 0) {
         document.getElementById('routersList').innerHTML = '<p style="text-align:center;padding:40px;color:var(--text-gray);"><i class="fas fa-server" style="font-size:2rem;display:block;margin-bottom:10px;"></i>No hay routers registrados<br><button class="btn btn-primary btn-sm mt-20" onclick="abrirModalCrear()"><i class="fas fa-plus"></i> Nuevo Router</button></p>';
@@ -164,6 +195,9 @@ function cargarRouters() {
       });
       html += '</tbody></table></div>';
       document.getElementById('routersList').innerHTML = html;
+    })
+    .catch(function(e) {
+      document.getElementById('routersList').innerHTML = '<p style="text-align:center;padding:30px;color:#ef4444;"><i class="fas fa-exclamation-triangle"></i> Error: ' + e.message + '</p>';
     });
 }
 
@@ -172,14 +206,16 @@ function abrirModalCrear() {
   document.getElementById('accionInput').value = 'guardar';
   document.getElementById('idRouterInput').value = '';
   document.getElementById('modalTitle').innerHTML = '<i class="fas fa-plus-circle" style="color:#10b981;"></i> Nuevo Router';
-  ipPriv = []; ipPub = [];
-  renderPools();
+  document.getElementById('poolList').innerHTML = '<div style="color:var(--text-gray);text-align:center;padding:10px;">Guarde el router primero</div>';
   document.getElementById('modalRouter').style.display = 'flex';
 }
 
 function abrirModalEditar(id) {
   fetch('/api/routers/' + id)
-    .then(r => r.json())
+    .then(r => {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    })
     .then(r => {
       document.getElementById('accionInput').value = 'editar';
       document.getElementById('idRouterInput').value = r.id;
@@ -189,13 +225,12 @@ function abrirModalEditar(id) {
       document.getElementById('routerUser').value = r.user || '';
       document.getElementById('routerPass').value = '';
       document.getElementById('modalTitle').innerHTML = '<i class="fas fa-edit" style="color:#f59e0b;"></i> Editar Router';
-      try {
-        const blocks = JSON.parse(r.ip_blocks || '[]');
-        ipPriv = blocks.filter(b => b.type === 'priv');
-        ipPub = blocks.filter(b => b.type === 'public');
-      } catch(e) { ipPriv = []; ipPub = []; }
-      renderPools();
+      routerActualId = r.id;
+      try { cargarPools(r.id); } catch(e) {}
       document.getElementById('modalRouter').style.display = 'flex';
+    })
+    .catch(function(e) {
+      showToast('Error al cargar router: ' + e.message, 'error');
     });
 }
 
@@ -203,7 +238,6 @@ function cerrarModal() { document.getElementById('modalRouter').style.display = 
 
 function guardarRouter(e) {
   e.preventDefault();
-  const allBlocks = [...ipPriv.map(b => ({...b, type: 'priv'})), ...ipPub.map(b => ({...b, type: 'public'}))];
   const data = {
     accion: document.getElementById('accionInput').value,
     id_router_edit: document.getElementById('idRouterInput').value,
@@ -214,7 +248,7 @@ function guardarRouter(e) {
     password: document.getElementById('routerPass').value,
     version: document.getElementById('routerVersion').value,
     auth_type: document.getElementById('routerAuth').value,
-    ip_blocks: JSON.stringify(allBlocks),
+    ip_blocks: '[]',
     ipv6_pd: document.getElementById('routerIpv6').value,
     suspend_ips: document.getElementById('suspendIps').checked ? 1 : 0
   };
@@ -226,17 +260,11 @@ function guardarRouter(e) {
   .then(r => r.json())
   .then(res => {
     if (res.success) { 
-      showToast('Router guardado, probando conexión...'); 
+      document.getElementById('idRouterInput').value = res.id;
+      routerActualId = res.id;
+      showToast('Router guardado'); 
       cerrarModal(); 
-      // Resync after save
-      fetch('/api/routers/' + res.id + '/resync', { method: 'POST' })
-        .then(function(r){ return r.json(); })
-        .then(function(sr) { 
-          if (sr.success) showToast('Router conectado correctamente');
-          else showToast('Router guardado pero sin conexión: ' + (sr.error || 'desconocido'), 'warning');
-          cargarRouters();
-        })
-        .catch(function(){ cargarRouters(); });
+      cargarRouters();
     }
     else showToast('Error: ' + (res.message || 'No se pudo guardar'), 'error');
   })
@@ -272,29 +300,64 @@ function abrirModalResync(id) {
 }
 function cerrarModalResync() { document.getElementById('modalResync').style.display = 'none'; }
 
-function addPool(type) {
-  const net = prompt('Ingrese la red (Ej: 192.168.1.0/24):');
-  if (net) {
-    if (type === 'priv') ipPriv.push({ network: net });
-    else ipPub.push({ network: net });
-    renderPools();
-  }
+function abrirModalPool() {
+    var id = parseInt(document.getElementById('idRouterInput').value) || 0;
+    if (!id) { showToast('Guarde el router primero', 'error'); return; }
+    routerActualId = id;
+    document.getElementById('poolRouterId').value = id;
+    document.getElementById('poolRed').value = '';
+    document.getElementById('poolTipo').value = 'privada';
+    document.getElementById('poolCalculo').style.display = 'none';
+    document.getElementById('poolError').style.display = 'none';
+    document.getElementById('modalPool').style.display = 'flex';
 }
-function removePool(type, idx) {
-  if (type === 'priv') ipPriv.splice(idx, 1);
-  else ipPub.splice(idx, 1);
-  renderPools();
+function cerrarModalPool() { document.getElementById('modalPool').style.display = 'none'; }
+function calcularPool() {
+    var red = document.getElementById('poolRed').value.trim();
+    if (!red || red.indexOf('/') === -1) { document.getElementById('poolCalculo').style.display = 'none'; return; }
+    fetch('/api/ip-pools/calcular', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({red:red}) })
+    .then(function(r){return r.json()})
+    .then(function(d){
+        if(d.success){
+            document.getElementById('poolCalculo').style.display='block';
+            document.getElementById('poolTotal').textContent=d.total;
+            document.getElementById('poolRango').textContent=d.first_ip+' - '+d.last_ip;
+        } else {
+            document.getElementById('poolCalculo').style.display='none';
+            document.getElementById('poolError').style.display='block';
+            document.getElementById('poolError').textContent=d.message;
+        }
+    });
 }
-function renderPools() {
-  const render = (arr, elId) => {
-    const div = document.getElementById(elId);
-    if (arr.length === 0) { div.innerHTML = '<span style="color:var(--text-gray);font-size:0.85rem;">Ninguno</span>'; return; }
-    let h = '';
-    arr.forEach((b, i) => { h += '<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 8px;background:#f8fafc;border-radius:4px;margin-bottom:4px;"><span>' + b.network + '</span><button class="btn btn-sm btn-danger" onclick="removePool(\'' + (elId === 'ipPrivateList' ? 'priv' : 'public') + '\',' + i + ')"><i class="fas fa-times"></i></button></div>'; });
-    div.innerHTML = h;
-  };
-  render(ipPriv, 'ipPrivateList');
-  render(ipPub, 'ipPublicList');
+function guardarPool() {
+    var rid = parseInt(document.getElementById('poolRouterId').value);
+    var red = document.getElementById('poolRed').value.trim();
+    var tipo = document.getElementById('poolTipo').value;
+    if(!rid||!red){showToast('Complete los datos','error');return;}
+    fetch('/api/ip-pools/guardar',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({router_id:rid,red:red,tipo:tipo})})
+    .then(function(r){return r.json()})
+    .then(function(d){
+        if(d.success){showToast('Rango agregado: '+d.total+' IPs');cerrarModalPool();cargarPools(rid);}
+        else showToast('Error: '+d.message,'error');
+    });
+}
+function cargarPools(rid){
+    if(!rid){document.getElementById('poolList').innerHTML='<div style="color:var(--text-gray);text-align:center;padding:10px;">Seleccione un router</div>';return;}
+    document.getElementById('poolList').innerHTML='<div style="text-align:center;padding:10px;color:var(--text-gray);"><i class="fas fa-spinner fa-spin"></i> Cargando...</div>';
+    fetch('/api/ip-pools/'+rid).then(function(r){return r.json()}).then(function(pools){
+        if(!pools||pools.length===0){document.getElementById('poolList').innerHTML='<div style="color:var(--text-gray);text-align:center;padding:10px;">Sin rangos IP</div>';return;}
+        var h='<table style="width:100%;border-collapse:collapse;font-size:0.82rem;"><tr style="background:#f8fafc;"><th style="padding:6px 8px;text-align:left;">Red</th><th style="padding:6px 8px;">Total</th><th style="padding:6px 8px;">Usadas</th><th style="padding:6px 8px;">Disp.</th><th style="padding:6px 8px;"></th></tr>';
+        for(var i=0;i<pools.length;i++){
+            var p=pools[i];
+            h+='<tr><td style="padding:6px 8px;font-family:monospace;">'+p.red+'</td><td style="padding:6px 8px;text-align:center;">'+p.total+'</td><td style="padding:6px 8px;text-align:center;">'+(p.usadas||0)+'</td><td style="padding:6px 8px;text-align:center;font-weight:700;">'+(p.disponibles||0)+'</td><td style="padding:6px 8px;text-align:center;"><button class="btn btn-sm btn-danger" onclick="eliminarPool('+p.id+')"><i class="fas fa-trash"></i></button></td></tr>';
+        }
+        h+='</table>';
+        document.getElementById('poolList').innerHTML=h;
+    });
+}
+function eliminarPool(id){
+    if(!confirm('Eliminar este rango?'))return;
+    fetch('/api/ip-pools/'+id+'/eliminar',{method:'POST'}).then(function(r){return r.json()}).then(function(d){if(d.success){showToast('Rango eliminado');cargarPools(routerActualId);}});
 }
 
 cargarRouters();

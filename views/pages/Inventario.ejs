@@ -1,34 +1,508 @@
 <div class="page-header">
-  <h2><i class="fas fa-<%= pagina === 'Clientes' ? 'users' : pagina === 'Ordenes' ? 'clipboard-list' : pagina === 'Gpon' ? 'network-wired' : pagina === 'CajasNap' ? 'box' : pagina === 'Inventario' ? 'boxes' : pagina === 'Ventas' ? 'shopping-cart' : pagina === 'Proveedores' ? 'truck' : pagina === 'Empleados' ? 'id-badge' : pagina === 'PagosAdmin' ? 'coins' : pagina === 'Estadisticas' ? 'chart-bar' : pagina === 'Monitoreo' ? 'desktop' : pagina === 'RegistrarPago' ? 'money-bill' : pagina === 'NuevoCliente' ? 'user-plus' : pagina === 'BuscarOnu' ? 'search' : pagina === 'CambioOnu' ? 'exchange-alt' : pagina === 'CambioDeTitular' ? 'user-edit' : pagina === 'Traslados' ? 'truck-moving' : pagina === 'PromesaDePago' ? 'handshake' : pagina === 'CuadreCaja' ? 'cash-register' : pagina === 'Configuracion' ? 'cog' : pagina === 'Actualizaciones' ? 'sync' : 'cog' %>"></i> <%= pagina.replace(/([A-Z])/g, ' $1').trim() %></h2>
+  <h2><i class="fas fa-boxes"></i> Inventario</h2>
   <div class="btn-group">
-    <% if (pagina !== 'BuscarOnu' && pagina !== 'Estadisticas' && pagina !== 'Monitoreo' && pagina !== 'Configuracion' && pagina !== 'Actualizaciones') { %>
-    <button class="btn btn-primary btn-sm" onclick="openModal('nuevoModal')"><i class="fas fa-plus"></i> Nuevo</button>
-    <% } %>
+    <button class="btn btn-primary btn-sm" onclick="invAbrirNuevo()"><i class="fas fa-plus"></i> Nuevo Producto</button>
+    <button class="btn btn-secondary btn-sm" onclick="invAbrirAjuste()"><i class="fas fa-exchange-alt"></i> Ajustar Stock</button>
   </div>
 </div>
 
+<!-- Filters -->
+<div class="card mb-20">
+  <div class="card-body">
+    <div class="filters" style="flex-wrap:wrap;gap:8px;align-items:center;">
+      <input type="text" id="invSearch" class="form-control" style="width:200px;" placeholder="🔍 Buscar..." onkeyup="invPage=1;invCargar()">
+      <select id="invFiltroCategoria" class="form-control" style="width:auto;" onchange="invPage=1;invCargar()">
+        <option value="">Todas las categorías</option>
+      </select>
+      <label style="display:flex;align-items:center;gap:4px;font-size:0.85rem;cursor:pointer;">
+        <input type="checkbox" id="invLowStock" onchange="invPage=1;invCargar()">
+        <i class="fas fa-exclamation-triangle" style="color:#f59e0b;"></i> Stock bajo (≤5)
+      </label>
+      <span class="badge badge-info" id="invTotalText" style="display:none;">Total: 0</span>
+    </div>
+  </div>
+</div>
+
+<!-- Products Grid -->
 <div class="card">
   <div class="card-body">
-    <div class="loading"><i class="fas fa-spinner fa-spin"></i><br>Cargando...</div>
-  </div>
-</div>
-
-<!-- Modal placeholder -->
-<div id="nuevoModal" class="modal" style="display:none">
-  <div class="modal-content">
-    <div class="modal-header"><h3><i class="fas fa-plus"></i> Nuevo</h3><span class="modal-close" onclick="closeModal('nuevoModal')">&times;</span></div>
-    <div class="modal-body">
-      <p style="color:var(--text-gray);text-align:center;padding:20px;">Módulo en construcción</p>
-      <div class="btn-group" style="justify-content:flex-end;margin-top:16px;">
-        <button class="btn btn-secondary" onclick="closeModal('nuevoModal')">Cancelar</button>
-        <button class="btn btn-primary">Guardar</button>
+    <div class="loading" id="invLoading"><i class="fas fa-spinner fa-spin"></i><br>Cargando inventario...</div>
+    <div id="invGrid" style="display:none;">
+      <div class="inv-grid" id="invItemsContainer"></div>
+      <div class="inv-pagination" id="invPagination" style="display:none;">
+        <button class="btn btn-sm btn-secondary" onclick="invCambiarPag(-1)" id="invPrevBtn"><i class="fas fa-chevron-left"></i> Anterior</button>
+        <span id="invPageInfo" style="font-weight:600;color:var(--text-muted);font-size:0.85rem;"></span>
+        <button class="btn btn-sm btn-secondary" onclick="invCambiarPag(1)" id="invNextBtn">Siguiente <i class="fas fa-chevron-right"></i></button>
       </div>
     </div>
   </div>
 </div>
 
+<!-- Modal Nuevo/Editar Producto -->
+<div id="invModalProducto" class="modal" style="display:none">
+  <div class="modal-content" style="max-width:480px;">
+    <div class="modal-header">
+      <h3 id="invModalTitle"><i class="fas fa-box"></i> Nuevo Producto</h3>
+      <span class="modal-close" onclick="invCerrarModal('invModalProducto')">&times;</span>
+    </div>
+    <div class="modal-body">
+      <form id="invFormProducto" onsubmit="event.preventDefault();invGuardarProducto()">
+        <input type="hidden" id="invEditId" value="">
+        <div class="form-group">
+          <label>Código</label>
+          <input type="text" id="invCodigo" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label>Nombre del producto</label>
+          <input type="text" id="invNombre" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label>Categoría</label>
+          <select id="invCategoria" class="form-control">
+            <option value="ONU">ONU</option>
+            <option value="Router">Router</option>
+            <option value="Caja TV">Caja TV</option>
+            <option value="Repetidor WiFi">Repetidor WiFi</option>
+            <option value="UPS">UPS</option>
+            <option value="Cable">Cable</option>
+            <option value="Conectores">Conectores</option>
+            <option value="Splitter">Splitter</option>
+            <option value="Antena">Antena</option>
+            <option value="Switch">Switch</option>
+            <option value="Micronodo">Micronodo</option>
+            <option value="Caja Nap">Caja Nap</option>
+            <option value="Manga">Manga</option>
+            <option value="Otro">Otro</option>
+          </select>
+        </div>
+        <div class="form-row" style="display:flex;gap:12px;">
+          <div class="form-group" style="flex:1;">
+            <label>Stock</label>
+            <input type="number" id="invStock" class="form-control" min="0" value="0">
+          </div>
+          <div class="form-group" style="flex:1;">
+            <label>Precio ($)</label>
+            <input type="number" id="invPrecio" class="form-control" min="0" step="0.01" value="0">
+          </div>
+        </div>
+        <div class="form-group">
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+            <input type="checkbox" id="invEsVenta" style="width:18px;height:18px;accent-color:var(--primary);">
+            <i class="fas fa-dollar-sign" style="color:#22c55e;"></i> ¿Es de venta?
+          </label>
+        </div>
+        <div class="btn-group" style="justify-content:flex-end;margin-top:16px;">
+          <button type="button" class="btn btn-secondary" onclick="invCerrarModal('invModalProducto')">Cancelar</button>
+          <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Ajuste de Stock -->
+<div id="invModalAjuste" class="modal" style="display:none">
+  <div class="modal-content" style="max-width:460px;">
+    <div class="modal-header">
+      <h3><i class="fas fa-exchange-alt"></i> Ajustar Stock</h3>
+      <span class="modal-close" onclick="invCerrarModal('invModalAjuste')">&times;</span>
+    </div>
+    <div class="modal-body">
+      <form id="invFormAjuste" onsubmit="event.preventDefault();invGuardarAjuste()">
+        <input type="hidden" id="invAjusteId" value="">
+        <div class="form-group">
+          <label>Producto</label>
+          <select id="invAjusteProducto" class="form-control" required>
+            <option value="">Seleccione un producto</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Tipo de movimiento</label>
+          <select id="invAjusteTipo" class="form-control" required>
+            <option value="">Seleccione tipo</option>
+            <option value="entrada">Entrada (aumentar stock)</option>
+            <option value="salida">Salida (reducir stock)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Cantidad</label>
+          <input type="number" id="invAjusteCantidad" class="form-control" min="1" value="1" required>
+        </div>
+        <div class="form-group">
+          <label>Técnico</label>
+          <select id="invAjusteTecnico" class="form-control">
+            <option value="">Sin técnico</option>
+            <% (empleados || []).forEach(function(e) { %>
+            <option value="<%= e.id %>"><%= e.nombre %></option>
+            <% }) %>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Oficina / Sucursal</label>
+          <input type="text" id="invAjusteOficina" class="form-control" placeholder="Ej: Oficina Principal">
+        </div>
+        <div class="btn-group" style="justify-content:flex-end;margin-top:16px;">
+          <button type="button" class="btn btn-secondary" onclick="invCerrarModal('invModalAjuste')">Cancelar</button>
+          <button type="submit" class="btn btn-primary"><i class="fas fa-check"></i> Aplicar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Confirmar -->
+<div id="invModalConfirm" class="modal" style="display:none">
+  <div class="modal-content" style="max-width:400px;">
+    <div class="modal-header">
+      <h3 id="invConfirmTitle">Confirmar</h3>
+      <span class="modal-close" onclick="invCerrarModal('invModalConfirm')">&times;</span>
+    </div>
+    <div class="modal-body">
+      <p id="invConfirmMsg" style="color:var(--text-gray);margin-bottom:16px;"></p>
+      <div class="btn-group" style="justify-content:flex-end;">
+        <button class="btn btn-secondary" onclick="invCerrarModal('invModalConfirm')">Cancelar</button>
+        <button class="btn btn-danger" id="invConfirmBtn">Eliminar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.inv-grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
+  gap:16px;
+}
+.inv-card-item {
+  background:#fff;
+  border:1px solid #e2e8f0;
+  border-radius:10px;
+  padding:16px;
+  transition:all 0.2s;
+  position:relative;
+}
+.inv-card-item:hover {
+  box-shadow:0 4px 12px rgba(0,0,0,0.08);
+  transform:translateY(-2px);
+}
+.inv-card-item .inv-cat-badge {
+  display:inline-block;
+  font-size:0.7rem;
+  font-weight:600;
+  padding:2px 8px;
+  border-radius:12px;
+  background:#e0e7ff;
+  color:#4338ca;
+  margin-bottom:8px;
+}
+.inv-card-item h4 {
+  margin:0 0 4px;
+  font-size:0.95rem;
+  font-weight:600;
+  color:var(--text-dark);
+}
+.inv-card-item .inv-code {
+  font-size:0.78rem;
+  color:var(--text-gray);
+  margin-bottom:8px;
+  font-family:monospace;
+}
+.inv-card-item .inv-stock {
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  font-size:0.9rem;
+  font-weight:700;
+  padding:4px 10px;
+  border-radius:6px;
+  margin-bottom:10px;
+}
+.inv-stock-ok { background:#dcfce7; color:#15803d; }
+.inv-stock-low { background:#fef3c7; color:#b45309; }
+.inv-stock-empty { background:#fef2f2; color:#dc2626; }
+.inv-card-item .inv-precio {
+  font-size:0.85rem;
+  color:#059669;
+  font-weight:600;
+  margin-left:8px;
+}
+.inv-card-item .inv-actions {
+  display:flex;
+  gap:4px;
+  margin-top:10px;
+  padding-top:10px;
+  border-top:1px solid #f1f5f9;
+}
+.inv-card-item .inv-actions button {
+  flex:1;
+  padding:6px;
+  border:none;
+  border-radius:6px;
+  font-size:0.78rem;
+  font-weight:500;
+  cursor:pointer;
+  transition:all 0.15s;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:4px;
+}
+.btn-inv-edit { background:#e0e7ff; color:#4338ca; }
+.btn-inv-edit:hover { background:#c7d2fe; }
+.btn-inv-stock { background:#dcfce7; color:#15803d; }
+.btn-inv-stock:hover { background:#bbf7d0; }
+.btn-inv-delete { background:#fef2f2; color:#dc2626; }
+.btn-inv-delete:hover { background:#fecaca; }
+.inv-pagination {
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  gap:16px;
+  margin-top:20px;
+  padding-top:16px;
+  border-top:1px solid #e2e8f0;
+}
+.inv-pagination button:disabled { opacity:0.4; cursor:not-allowed; }
+.inv-es-venta-tag {
+  display:inline-block;
+  font-size:0.65rem;
+  font-weight:700;
+  padding:1px 6px;
+  border-radius:4px;
+  background:#dcfce7;
+  color:#16a34a;
+  margin-left:4px;
+}
+@media(max-width:640px) {
+  .inv-grid { grid-template-columns:1fr; }
+}
+</style>
+
 <script>
-setTimeout(function() {
-  document.querySelector('.loading').innerHTML = '<p style="color:var(--text-gray);text-align:center;padding:20px;">Datos cargados correctamente</p>';
-}, 500);
+let invPage = 1, invTotalPages = 1, invTotalItems = 0, invItems = [];
+let invConfirmCallback = null;
+
+// ===== UTIL =====
+function invEsc(t) { if (t == null) return ''; return t.toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;'); }
+
+// ===== API =====
+async function invAPI(action, data, method) {
+  method = method || (data ? 'POST' : 'GET');
+  try {
+    const opts = { method, headers: {} };
+    if (data) { opts.headers['Content-Type'] = 'application/json'; opts.body = JSON.stringify(data); }
+    const url = '/modulo?pagina=Inventario&ajax=' + action + (method === 'GET' && data ? '&' + new URLSearchParams(data) : '');
+    const res = await fetch(url, opts);
+    return await res.json();
+  } catch(e) { return { success: false, message: 'Error de red: ' + e.message }; }
+}
+
+// ===== LOAD =====
+async function invCargar() {
+  const search = document.getElementById('invSearch').value.trim();
+  const category = document.getElementById('invFiltroCategoria').value;
+  const lowStock = document.getElementById('invLowStock').checked;
+  document.getElementById('invLoading').style.display = 'block';
+  document.getElementById('invGrid').style.display = 'none';
+  const res = await invAPI('list', { search, category, low_stock: lowStock ? '1' : '', page: invPage });
+  if (res.success && res.items) {
+    invItems = res.items;
+    invTotalPages = res.totalPages || 1;
+    invTotalItems = res.total || 0;
+    invRenderItems(res.items);
+    invRenderPagination();
+  } else {
+    document.getElementById('invItemsContainer').innerHTML = '<p style="text-align:center;padding:40px;color:var(--text-gray);">' + (res.message || 'Error al cargar') + '</p>';
+  }
+  document.getElementById('invLoading').style.display = 'none';
+  document.getElementById('invGrid').style.display = 'block';
+}
+
+function invRenderItems(items) {
+  const container = document.getElementById('invItemsContainer');
+  if (!items.length) {
+    container.innerHTML = '<p style="text-align:center;padding:40px;color:var(--text-gray);grid-column:1/-1;">No se encontraron productos</p>';
+    return;
+  }
+  let html = '';
+  items.forEach(function(it) {
+    const stock = parseInt(it.stock) || 0;
+    let stockClass = 'inv-stock-ok', stockLabel = stock;
+    if (stock <= 0) { stockClass = 'inv-stock-empty'; stockLabel = 'Agotado'; }
+    else if (stock <= 5) { stockClass = 'inv-stock-low'; stockLabel = stock + ' (bajo)'; }
+    const ventaBadge = it.es_venta == 1 ? '<span class="inv-es-venta-tag"><i class="fas fa-dollar-sign"></i></span>' : '';
+    const precio = parseFloat(it.precio || 0);
+    const precioStr = precio > 0 ? '<span class="inv-precio"><i class="fas fa-dollar-sign"></i> ' + precio.toFixed(2) + '</span>' : '';
+    html += '<div class="inv-card-item">'
+      + '<div class="inv-cat-badge">' + invEsc(it.categoria || 'Sin categoría') + '</div>'
+      + '<h4>' + invEsc(it.nombre) + ventaBadge + '</h4>'
+      + '<div class="inv-code">' + invEsc(it.codigo || '') + '</div>'
+      + '<div class="inv-stock ' + stockClass + '"><i class="fas fa-' + (stock <= 0 ? 'times-circle' : 'box') + '"></i> Stock: ' + stockLabel + '</div>'
+      + precioStr
+      + '<div class="inv-actions">'
+      + '<button class="btn-inv-edit" onclick="invEditarProducto(' + it.id + ')" title="Editar"><i class="fas fa-edit"></i> Editar</button>'
+      + '<button class="btn-inv-stock" onclick="invAbrirAjustePara(' + it.id + ')" title="Ajustar stock"><i class="fas fa-exchange-alt"></i> Stock</button>'
+      + '<button class="btn-inv-delete" onclick="invEliminarProducto(' + it.id + ',\'' + invEsc(it.nombre) + '\')" title="Eliminar"><i class="fas fa-trash"></i></button>'
+      + '</div></div>';
+  });
+  container.innerHTML = html;
+  const tot = document.getElementById('invTotalText');
+  if (invTotalItems > 0) { tot.style.display = 'inline'; tot.textContent = 'Total: ' + invTotalItems; }
+  else { tot.style.display = 'none'; }
+}
+
+function invRenderPagination() {
+  const pag = document.getElementById('invPagination');
+  const info = document.getElementById('invPageInfo');
+  const prev = document.getElementById('invPrevBtn');
+  const next = document.getElementById('invNextBtn');
+  if (invTotalPages <= 1) { pag.style.display = 'none'; return; }
+  pag.style.display = 'flex';
+  info.textContent = 'Página ' + invPage + ' de ' + invTotalPages;
+  prev.disabled = invPage <= 1;
+  next.disabled = invPage >= invTotalPages;
+}
+
+function invCambiarPag(d) {
+  const n = invPage + d;
+  if (n >= 1 && n <= invTotalPages) { invPage = n; invCargar(); }
+}
+
+// ===== MODAL HELPERS =====
+function invAbrirModal(id) { document.getElementById(id).style.display = 'flex'; }
+function invCerrarModal(id) { document.getElementById(id).style.display = 'none'; }
+// Close on overlay click
+document.addEventListener('click', function(e) {
+  if (e.target.classList.contains('modal')) e.target.style.display = 'none';
+});
+
+// ===== NUEVO / EDITAR PRODUCTO =====
+async function invAbrirNuevo() {
+  document.getElementById('invModalTitle').innerHTML = '<i class="fas fa-box"></i> Nuevo Producto';
+  document.getElementById('invEditId').value = '';
+  document.getElementById('invCodigo').value = '';
+  document.getElementById('invNombre').value = '';
+  document.getElementById('invCategoria').value = 'ONU';
+  document.getElementById('invStock').value = 0;
+  document.getElementById('invPrecio').value = 0;
+  document.getElementById('invEsVenta').checked = false;
+  invAbrirModal('invModalProducto');
+}
+
+async function invEditarProducto(id) {
+  const res = await invAPI('get', { id: id });
+  if (!res.success || !res.item) { alert('Error al cargar producto'); return; }
+  const it = res.item;
+  document.getElementById('invModalTitle').innerHTML = '<i class="fas fa-edit"></i> Editar Producto';
+  document.getElementById('invEditId').value = it.id;
+  document.getElementById('invCodigo').value = it.codigo || '';
+  document.getElementById('invNombre').value = it.nombre || '';
+  document.getElementById('invCategoria').value = it.categoria || 'ONU';
+  document.getElementById('invStock').value = it.stock || 0;
+  document.getElementById('invPrecio').value = it.precio || 0;
+  document.getElementById('invEsVenta').checked = it.es_venta == 1;
+  invAbrirModal('invModalProducto');
+}
+
+async function invGuardarProducto() {
+  const id = document.getElementById('invEditId').value;
+  const codigo = document.getElementById('invCodigo').value.trim();
+  const nombre = document.getElementById('invNombre').value.trim();
+  const categoria = document.getElementById('invCategoria').value;
+  const stock = parseInt(document.getElementById('invStock').value) || 0;
+  const precio = parseFloat(document.getElementById('invPrecio').value) || 0;
+  const esVenta = document.getElementById('invEsVenta').checked ? 1 : 0;
+  if (!codigo || !nombre) { alert('Código y nombre son obligatorios'); return; }
+  const res = await invAPI('save', { id: id || 0, codigo, nombre, categoria, stock, precio, es_venta: esVenta });
+  if (res.success) {
+    invCerrarModal('invModalProducto');
+    invPage = 1;
+    invCargar();
+  } else {
+    alert(res.message || 'Error al guardar');
+  }
+}
+
+// ===== ELIMINAR =====
+let invDeleteTarget = null;
+function invEliminarProducto(id, nombre) {
+  invDeleteTarget = id;
+  document.getElementById('invConfirmTitle').textContent = 'Eliminar Producto';
+  document.getElementById('invConfirmMsg').innerHTML = '¿Eliminar <strong>' + invEsc(nombre) + '</strong>? Esta acción no se puede deshacer.';
+  document.getElementById('invConfirmBtn').textContent = 'Eliminar';
+  document.getElementById('invConfirmBtn').className = 'btn btn-danger';
+  invConfirmCallback = async function() {
+    const res = await invAPI('delete', { id: invDeleteTarget });
+    if (res.success) { invCerrarModal('invModalConfirm'); invCargar(); }
+    else { alert(res.message || 'Error al eliminar'); }
+  };
+  document.getElementById('invConfirmBtn').onclick = invConfirmCallback;
+  invAbrirModal('invModalConfirm');
+}
+
+// ===== AJUSTE DE STOCK =====
+async function invCargarSelectProductos(selectedId) {
+  const sel = document.getElementById('invAjusteProducto');
+  const res = await invAPI('list', { all: '1' });
+  sel.innerHTML = '<option value="">Seleccione un producto</option>';
+  if (res.success && res.items) {
+    res.items.forEach(function(it) {
+      sel.innerHTML += '<option value="' + it.id + '"' + (it.id == selectedId ? ' selected' : '') + '>'
+        + invEsc(it.nombre) + ' (' + invEsc(it.codigo || '') + ') — Stock: ' + (parseInt(it.stock) || 0) + '</option>';
+    });
+  }
+}
+
+async function invAbrirAjuste() {
+  document.getElementById('invAjusteId').value = '';
+  document.getElementById('invAjusteTipo').value = '';
+  document.getElementById('invAjusteCantidad').value = 1;
+  document.getElementById('invAjusteTecnico').value = '';
+  document.getElementById('invAjusteOficina').value = '';
+  await invCargarSelectProductos(null);
+  invAbrirModal('invModalAjuste');
+}
+
+async function invAbrirAjustePara(id) {
+  document.getElementById('invAjusteId').value = '';
+  document.getElementById('invAjusteTipo').value = '';
+  document.getElementById('invAjusteCantidad').value = 1;
+  document.getElementById('invAjusteTecnico').value = '';
+  document.getElementById('invAjusteOficina').value = '';
+  await invCargarSelectProductos(id);
+  invAbrirModal('invModalAjuste');
+}
+
+async function invGuardarAjuste() {
+  const productoId = document.getElementById('invAjusteProducto').value;
+  const tipo = document.getElementById('invAjusteTipo').value;
+  const cantidad = parseInt(document.getElementById('invAjusteCantidad').value) || 0;
+  const tecnicoId = document.getElementById('invAjusteTecnico').value;
+  const oficina = document.getElementById('invAjusteOficina').value.trim();
+  if (!productoId || !tipo || cantidad <= 0) { alert('Complete todos los campos'); return; }
+  const res = await invAPI('adjust_stock', { inventario_id: parseInt(productoId), tipo, cantidad, tecnico_id: tecnicoId || null, oficina: oficina || null });
+  if (res.success) {
+    invCerrarModal('invModalAjuste');
+    invCargar();
+  } else {
+    alert(res.message || 'Error al ajustar stock');
+  }
+}
+
+// ===== CATEGORIAS =====
+async function invCargarCategorias() {
+  try {
+    const res = await invAPI('list', { all: '1' });
+    if (res.success && res.items) {
+      const cats = [...new Set(res.items.map(function(i) { return i.categoria; }).filter(Boolean))].sort();
+      const sel = document.getElementById('invFiltroCategoria');
+      sel.innerHTML = '<option value="">Todas las categorías</option>';
+      cats.forEach(function(c) { sel.innerHTML += '<option value="' + invEsc(c) + '">' + invEsc(c) + '</option>'; });
+    }
+  } catch(e) {}
+}
+
+// ===== INIT =====
+invCargarCategorias();
+invCargar();
 </script>

@@ -1,34 +1,300 @@
 <div class="page-header">
-  <h2><i class="fas fa-<%= pagina === 'Clientes' ? 'users' : pagina === 'Ordenes' ? 'clipboard-list' : pagina === 'Gpon' ? 'network-wired' : pagina === 'CajasNap' ? 'box' : pagina === 'Inventario' ? 'boxes' : pagina === 'Ventas' ? 'shopping-cart' : pagina === 'Proveedores' ? 'truck' : pagina === 'Empleados' ? 'id-badge' : pagina === 'PagosAdmin' ? 'coins' : pagina === 'Estadisticas' ? 'chart-bar' : pagina === 'Monitoreo' ? 'desktop' : pagina === 'RegistrarPago' ? 'money-bill' : pagina === 'NuevoCliente' ? 'user-plus' : pagina === 'BuscarOnu' ? 'search' : pagina === 'CambioOnu' ? 'exchange-alt' : pagina === 'CambioDeTitular' ? 'user-edit' : pagina === 'Traslados' ? 'truck-moving' : pagina === 'PromesaDePago' ? 'handshake' : pagina === 'CuadreCaja' ? 'cash-register' : pagina === 'Configuracion' ? 'cog' : pagina === 'Actualizaciones' ? 'sync' : 'cog' %>"></i> <%= pagina.replace(/([A-Z])/g, ' $1').trim() %></h2>
-  <div class="btn-group">
-    <% if (pagina !== 'BuscarOnu' && pagina !== 'Estadisticas' && pagina !== 'Monitoreo' && pagina !== 'Configuracion' && pagina !== 'Actualizaciones') { %>
-    <button class="btn btn-primary btn-sm" onclick="openModal('nuevoModal')"><i class="fas fa-plus"></i> Nuevo</button>
-    <% } %>
-  </div>
+  <h2><i class="fas fa-desktop"></i> Monitoreo</h2>
 </div>
 
-<div class="card">
-  <div class="card-body">
-    <div class="loading"><i class="fas fa-spinner fa-spin"></i><br>Cargando...</div>
-  </div>
-</div>
+<style>
+.mon-wrap{font-family:'Inter',sans-serif;font-size:0.9rem;}
+.mon-tabs{display:flex;gap:6px;margin-bottom:18px;flex-wrap:wrap;}
+.mon-tab{padding:8px 18px;border-radius:8px;border:1px solid #e2e8f0;background:#fff;cursor:pointer;font-size:0.84rem;font-weight:600;color:#64748b;transition:all 0.15s;}
+.mon-tab:hover{border-color:#2563eb;color:#2563eb;}
+.mon-tab.active{background:#2563eb;color:#fff;border-color:#2563eb;}
+.mon-section{display:none;}
+.mon-section.active{display:block;}
+.mon-filter-bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px;}
+.mon-select{padding:6px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:0.82rem;background:#fff;}
+.mon-card{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:16px;margin-bottom:14px;}
+.mon-empty{text-align:center;padding:40px;color:#94a3b8;}
+.mon-empty i{font-size:2rem;display:block;margin-bottom:10px;}
+.mon-stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:16px;}
+.mon-stat-box{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:14px;text-align:center;}
+.mon-stat-value{font-size:1.6rem;font-weight:800;line-height:1.2;color:#1e293b;}
+.mon-stat-label{font-size:0.75rem;color:#94a3b8;margin-top:4px;text-transform:uppercase;letter-spacing:0.5px;}
+.mon-stat-box.green .mon-stat-value{color:#16a34a;}
+.mon-stat-box.blue .mon-stat-value{color:#2563eb;}
+.mon-stat-box.orange .mon-stat-value{color:#f59e0b;}
+.mon-stat-box.red .mon-stat-value{color:#ef4444;}
+.mon-bar-bg{background:#e2e8f0;border-radius:4px;height:8px;overflow:hidden;margin-top:6px;}
+.mon-bar-fill{height:100%;border-radius:4px;transition:width 0.5s;}
+.mon-bar-fill.green{background:#16a34a;}
+.mon-bar-fill.blue{background:#2563eb;}
+.mon-bar-fill.orange{background:#f59e0b;}
+.mon-bar-fill.red{background:#ef4444;}
+.mon-lease-list{max-height:320px;overflow-y:auto;}
+.mon-lease-item{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-bottom:1px solid #f1f5f9;font-size:0.82rem;}
+.mon-lease-item:last-child{border-bottom:none;}
+.mon-lease-ip{font-family:monospace;font-weight:600;color:#1e293b;}
+.mon-lease-mac{font-family:monospace;font-size:0.75rem;color:#64748b;}
+.mon-lease-host{color:#475569;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:160px;}
+.mon-alert-item{padding:10px 14px;border-radius:8px;margin-bottom:6px;font-size:0.82rem;display:flex;align-items:flex-start;gap:10px;}
+.mon-alert-item.warning{background:#fffbeb;border:1px solid #fde68a;color:#92400e;}
+.mon-alert-item.error{background:#fef2f2;border:1px solid #fecaca;color:#991b1b;}
+.mon-alert-item.info{background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af;}
+.mon-alert-item.success{background:#f0fdf4;border:1px solid #bbf7d0;color:#166534;}
+@media(max-width:600px){.mon-tabs{gap:4px;}.mon-tab{padding:6px 12px;font-size:0.78rem;}}
+</style>
 
-<!-- Modal placeholder -->
-<div id="nuevoModal" class="modal" style="display:none">
-  <div class="modal-content">
-    <div class="modal-header"><h3><i class="fas fa-plus"></i> Nuevo</h3><span class="modal-close" onclick="closeModal('nuevoModal')">&times;</span></div>
-    <div class="modal-body">
-      <p style="color:var(--text-gray);text-align:center;padding:20px;">Módulo en construcción</p>
-      <div class="btn-group" style="justify-content:flex-end;margin-top:16px;">
-        <button class="btn btn-secondary" onclick="closeModal('nuevoModal')">Cancelar</button>
-        <button class="btn btn-primary">Guardar</button>
+<div class="mon-wrap">
+  <!-- Tabs -->
+  <div class="mon-tabs">
+    <button class="mon-tab active" id="monTabTrafico" onclick="monTab('trafico')"><i class="fas fa-chart-line"></i> Tráfico</button>
+    <button class="mon-tab" id="monTabSistema" onclick="monTab('sistema')"><i class="fas fa-server"></i> Sistema</button>
+    <button class="mon-tab" id="monTabDhcp" onclick="monTab('dhcp')"><i class="fas fa-network-wired"></i> Clientes DHCP</button>
+    <button class="mon-tab" id="monTabAlertas" onclick="monTab('alertas')"><i class="fas fa-bell"></i> Alertas</button>
+  </div>
+
+  <!-- TRÁFICO -->
+  <div class="mon-section active" id="monSecTrafico">
+    <div class="mon-filter-bar">
+      <select id="monTraficoHoras" class="mon-select" onchange="monLoadTrafico()">
+        <option value="1">1 hora</option>
+        <option value="6">6 horas</option>
+        <option value="24" selected>24 horas</option>
+        <option value="72">3 días</option>
+        <option value="168">7 días</option>
+      </select>
+      <select id="monRouterSelect" class="mon-select" onchange="monLoadTrafico()">
+        <option value="0">Todos los routers</option>
+      </select>
+    </div>
+    <div class="mon-card">
+      <div class="mon-stat-grid" id="monTraficoResumen">
+        <div class="mon-stat-box green"><div class="mon-stat-value" id="monMaxIn">-</div><div class="mon-stat-label">Máx. Descarga</div></div>
+        <div class="mon-stat-box blue"><div class="mon-stat-value" id="monMaxOut">-</div><div class="mon-stat-label">Máx. Subida</div></div>
       </div>
+      <div id="monTraficoChart" style="position:relative;height:260px;">
+        <div class="mon-empty"><i class="fas fa-spinner fa-spin" style="font-size:1.5rem;"></i><br>Cargando tráfico...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SISTEMA -->
+  <div class="mon-section" id="monSecSistema">
+    <div class="mon-card" id="monSistemaContent">
+      <div class="mon-empty"><i class="fas fa-spinner fa-spin" style="font-size:1.5rem;"></i><br>Cargando datos del sistema...</div>
+    </div>
+  </div>
+
+  <!-- DHCP -->
+  <div class="mon-section" id="monSecDhcp">
+    <div class="mon-card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <h3 style="margin:0;font-size:0.95rem;"><i class="fas fa-network-wired" style="color:#2563eb;"></i> Leases DHCP activos <span id="monDhcpCount" style="font-weight:400;color:#94a3b8;font-size:0.8rem;"></span></h3>
+        <select id="monDhcpRouter" class="mon-select" onchange="monLoadDhcp()">
+          <option value="">Seleccione router...</option>
+        </select>
+      </div>
+      <div id="monDhcpContent">
+        <div class="mon-empty"><i class="fas fa-spinner fa-spin" style="font-size:1.5rem;"></i><br>Cargando leases...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ALERTAS -->
+  <div class="mon-section" id="monSecAlertas">
+    <div class="mon-card" id="monAlertasContent">
+      <div class="mon-empty"><i class="fas fa-spinner fa-spin" style="font-size:1.5rem;"></i><br>Cargando alertas...</div>
     </div>
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
-setTimeout(function() {
-  document.querySelector('.loading').innerHTML = '<p style="color:var(--text-gray);text-align:center;padding:20px;">Datos cargados correctamente</p>';
-}, 500);
+var monChart = null;
+
+function monTab(t){
+  document.querySelectorAll('.mon-tab').forEach(function(b){ b.classList.remove('active'); });
+  document.querySelectorAll('.mon-section').forEach(function(s){ s.classList.remove('active'); });
+  document.getElementById('monTab'+t.charAt(0).toUpperCase()+t.slice(1)).classList.add('active');
+  document.getElementById('monSec'+t.charAt(0).toUpperCase()+t.slice(1)).classList.add('active');
+  if(t==='trafico') monLoadTrafico();
+  if(t==='sistema') monLoadSistema();
+  if(t==='dhcp') monLoadDhcp();
+  if(t==='alertas') monLoadAlertas();
+}
+
+function monApi(action, data){
+  var fd = new FormData();
+  if(data) Object.keys(data).forEach(function(k){ fd.append(k, data[k]); });
+  return fetch('/modulo?pagina=Monitoreo&ajax='+action, {method:'POST',body:fd}).then(function(r){ return r.json(); });
+}
+
+function monEsc(s){ var d=document.createElement('div'); d.textContent=s||''; return d.innerHTML; }
+
+function monFormatBytes(bps){
+  if(bps>=1e9) return (bps/1e9).toFixed(2)+' Gbps';
+  if(bps>=1e6) return (bps/1e6).toFixed(2)+' Mbps';
+  if(bps>=1e3) return (bps/1e3).toFixed(1)+' Kbps';
+  return Math.round(bps)+' bps';
+}
+
+// ===== TRÁFICO WAN =====
+function monLoadTrafico(){
+  if(monChart){ try{ monChart.destroy(); }catch(e){} monChart=null; }
+  var ct = document.getElementById('monTraficoChart');
+  ct.innerHTML = '<div class="mon-empty"><i class="fas fa-spinner fa-spin" style="font-size:1.5rem;"></i><br>Cargando tráfico...</div>';
+
+  var horas = document.getElementById('monTraficoHoras').value;
+  var routerId = document.getElementById('monRouterSelect').value;
+
+  monApi('traffic', {horas:horas, router_id:routerId}).then(function(d){
+    if(!d.success || !d.data || d.data.length===0){
+      ct.innerHTML = '<div class="mon-empty"><i class="fas fa-chart-line"></i>Sin datos de tráfico.<br><small style="color:#94a3b8;">Configure routers con interfaces WAN para monitorear.</small></div>';
+      document.getElementById('monMaxIn').textContent = '-';
+      document.getElementById('monMaxOut').textContent = '-';
+      return;
+    }
+    var maxIn=0, maxOut=0;
+    d.data.forEach(function(r){
+      var bi=parseFloat(r.bps_in)||0, bo=parseFloat(r.bps_out)||0;
+      if(bi>maxIn) maxIn=bi;
+      if(bo>maxOut) maxOut=bo;
+    });
+    document.getElementById('monMaxIn').textContent = monFormatBytes(maxIn);
+    document.getElementById('monMaxOut').textContent = monFormatBytes(maxOut);
+
+    var labels = d.data.map(function(r){ return r.ts; });
+    var bIn = d.data.map(function(r){ return (parseFloat(r.bps_in)/1e6).toFixed(2); });
+    var bOut = d.data.map(function(r){ return (parseFloat(r.bps_out)/1e6).toFixed(2); });
+
+    ct.innerHTML = '<canvas id="monTraficoCanvas" style="width:100%;height:100%;"></canvas>';
+    var ctx = document.getElementById('monTraficoCanvas');
+    if(!ctx) return;
+    monChart = new Chart(ctx, {
+      type:'line',
+      data:{
+        labels:labels,
+        datasets:[
+          {label:'Descarga (IN)', data:bIn, borderColor:'#16a34a', backgroundColor:'rgba(22,163,74,0.08)', fill:true, tension:0.3, pointRadius:0, borderWidth:2},
+          {label:'Subida (OUT)', data:bOut, borderColor:'#2563eb', backgroundColor:'rgba(37,99,235,0.08)', fill:true, tension:0.3, pointRadius:0, borderWidth:2}
+        ]
+      },
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        interaction:{intersect:false, mode:'index'},
+        plugins:{
+          legend:{labels:{font:{size:11},boxWidth:14,padding:10}},
+          tooltip:{
+            callbacks:{
+              label:function(ctx){
+                return ctx.dataset.label+': '+parseFloat(ctx.raw).toFixed(2)+' Mbps';
+              }
+            }
+          }
+        },
+        scales:{
+          x:{ticks:{maxTicksLimit:10,font:{size:9}}},
+          y:{beginAtZero:true,title:{display:true,text:'Mbps',font:{size:10}},ticks:{font:{size:9}}}
+        }
+      }
+    });
+  });
+}
+
+// ===== SISTEMA =====
+function monLoadSistema(){
+  var el = document.getElementById('monSistemaContent');
+  el.innerHTML = '<div class="mon-empty"><i class="fas fa-spinner fa-spin" style="font-size:1.5rem;"></i><br>Cargando...</div>';
+  monApi('system').then(function(d){
+    if(!d.success){
+      el.innerHTML = '<div class="mon-empty"><i class="fas fa-exclamation-triangle" style="color:#ef4444;"></i>Error al cargar datos del sistema</div>';
+      return;
+    }
+    var cpu = d.cpu || 0;
+    var ram = d.ram || {used:0,total:1,percent:0};
+    var disk = d.disk || {used:0,total:1,percent:0};
+    var uptime = d.uptime || 'N/A';
+    var cpuColor = cpu<50?'green':cpu<80?'orange':'red';
+    var ramColor = ram.percent<50?'green':ram.percent<80?'blue':'orange';
+    var diskColor = disk.percent<70?'green':disk.percent<85?'orange':'red';
+
+    el.innerHTML = '<div class="mon-stat-grid">'+
+      '<div class="mon-stat-box '+cpuColor+'"><div class="mon-stat-value">'+cpu.toFixed(1)+'%</div><div class="mon-stat-label">CPU</div><div class="mon-bar-bg"><div class="mon-bar-fill '+cpuColor+'" style="width:'+cpu+'%"></div></div></div>'+
+      '<div class="mon-stat-box '+ramColor+'"><div class="mon-stat-value">'+monFormatBytes(ram.used*1024*1024)+'</div><div class="mon-stat-label">RAM ('+ram.percent.toFixed(0)+'%)</div><div class="mon-bar-bg"><div class="mon-bar-fill '+ramColor+'" style="width:'+ram.percent+'%"></div></div></div>'+
+      '<div class="mon-stat-box '+diskColor+'"><div class="mon-stat-value">'+monFormatBytes(disk.used*1024*1024)+'</div><div class="mon-stat-label">Disco ('+disk.percent.toFixed(0)+'%)</div><div class="mon-bar-bg"><div class="mon-bar-fill '+diskColor+'" style="width:'+disk.percent+'%"></div></div></div>'+
+      '</div>'+
+      '<div style="display:flex;gap:20px;flex-wrap:wrap;justify-content:center;padding:8px;font-size:0.85rem;color:#475569;"><span><i class="fas fa-clock"></i> Uptime: '+monEsc(uptime)+'</span></div>';
+  });
+}
+
+// ===== DHCP LEASES =====
+function monLoadDhcp(){
+  var el = document.getElementById('monDhcpContent');
+  el.innerHTML = '<div class="mon-empty"><i class="fas fa-spinner fa-spin" style="font-size:1.5rem;"></i><br>Cargando...</div>';
+  var routerId = document.getElementById('monDhcpRouter').value;
+  monApi('dhcp_leases', {router_id:routerId}).then(function(d){
+    if(!d.success){
+      el.innerHTML = '<div class="mon-empty"><i class="fas fa-exclamation-triangle" style="color:#ef4444;"></i>'+monEsc(d.msg||'Error al cargar leases')+'</div>';
+      return;
+    }
+    var leases = d.leases || [];
+    document.getElementById('monDhcpCount').textContent = '('+leases.length+' activos)';
+    if(leases.length===0){
+      el.innerHTML = '<div class="mon-empty"><i class="fas fa-network-wired"></i>No hay leases DHCP activos</div>';
+      return;
+    }
+    var h = '<div class="mon-lease-list">';
+    leases.forEach(function(l){
+      var statusColor = (l.status||'bound')==='bound'?'#16a34a':'#f59e0b';
+      h += '<div class="mon-lease-item">'+
+        '<div><div class="mon-lease-ip">'+monEsc(l.address)+'</div><div class="mon-lease-mac">'+monEsc(l.mac_address||'-')+'</div></div>'+
+        '<div class="mon-lease-host">'+monEsc(l.host_name||'-')+'</div>'+
+        '<div><span style="color:'+statusColor+';font-weight:600;font-size:0.75rem;">'+(l.status||'bound')+'</span></div>'+
+        '</div>';
+    });
+    h += '</div>';
+    el.innerHTML = h;
+  });
+}
+
+// ===== ALERTAS =====
+function monLoadAlertas(){
+  var el = document.getElementById('monAlertasContent');
+  el.innerHTML = '<div class="mon-empty"><i class="fas fa-spinner fa-spin" style="font-size:1.5rem;"></i><br>Cargando...</div>';
+  monApi('alerts').then(function(d){
+    if(!d.success){
+      el.innerHTML = '<div class="mon-empty"><i class="fas fa-exclamation-triangle" style="color:#ef4444;"></i>Error al cargar alertas</div>';
+      return;
+    }
+    var alerts = d.alerts || [];
+    if(alerts.length===0){
+      el.innerHTML = '<div class="mon-empty"><i class="fas fa-check-circle" style="color:#16a34a;"></i>No hay alertas activas</div>';
+      return;
+    }
+    var h = '';
+    alerts.forEach(function(a){
+      var type = a.type || 'info';
+      var icon = type==='error'?'fa-times-circle':type==='warning'?'fa-exclamation-triangle':type==='success'?'fa-check-circle':'fa-info-circle';
+      h += '<div class="mon-alert-item '+type+'"><i class="fas '+icon+'" style="margin-top:2px;"></i><div>'+monEsc(a.message||'')+'<br><small style="opacity:0.6;">'+monEsc(a.created_at||'')+'</small></div></div>';
+    });
+    el.innerHTML = h;
+  });
+}
+
+// ===== INIT =====
+(function(){
+  // Cargar routers
+  fetch('/api/routers').then(function(r){ return r.json(); }).then(function(routers){
+    var selT = document.getElementById('monRouterSelect');
+    var selD = document.getElementById('monDhcpRouter');
+    routers.forEach(function(r){
+      var o1 = document.createElement('option');
+      o1.value = r.id; o1.textContent = r.name;
+      selT.appendChild(o1);
+      var o2 = document.createElement('option');
+      o2.value = r.id; o2.textContent = r.name;
+      selD.appendChild(o2);
+    });
+  }).catch(function(){});
+  monLoadTrafico();
+})();
 </script>

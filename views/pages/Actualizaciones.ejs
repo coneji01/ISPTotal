@@ -1,34 +1,190 @@
 <div class="page-header">
-  <h2><i class="fas fa-<%= pagina === 'Clientes' ? 'users' : pagina === 'Ordenes' ? 'clipboard-list' : pagina === 'Gpon' ? 'network-wired' : pagina === 'CajasNap' ? 'box' : pagina === 'Inventario' ? 'boxes' : pagina === 'Ventas' ? 'shopping-cart' : pagina === 'Proveedores' ? 'truck' : pagina === 'Empleados' ? 'id-badge' : pagina === 'PagosAdmin' ? 'coins' : pagina === 'Estadisticas' ? 'chart-bar' : pagina === 'Monitoreo' ? 'desktop' : pagina === 'RegistrarPago' ? 'money-bill' : pagina === 'NuevoCliente' ? 'user-plus' : pagina === 'BuscarOnu' ? 'search' : pagina === 'CambioOnu' ? 'exchange-alt' : pagina === 'CambioDeTitular' ? 'user-edit' : pagina === 'Traslados' ? 'truck-moving' : pagina === 'PromesaDePago' ? 'handshake' : pagina === 'CuadreCaja' ? 'cash-register' : pagina === 'Configuracion' ? 'cog' : pagina === 'Actualizaciones' ? 'sync' : 'cog' %>"></i> <%= pagina.replace(/([A-Z])/g, ' $1').trim() %></h2>
-  <div class="btn-group">
-    <% if (pagina !== 'BuscarOnu' && pagina !== 'Estadisticas' && pagina !== 'Monitoreo' && pagina !== 'Configuracion' && pagina !== 'Actualizaciones') { %>
-    <button class="btn btn-primary btn-sm" onclick="openModal('nuevoModal')"><i class="fas fa-plus"></i> Nuevo</button>
-    <% } %>
+  <h2><i class="fas fa-sync-alt"></i> Actualizaciones</h2>
+</div>
+
+<style>
+.au-wrap{max-width:550px;margin:0 auto}
+.au-head{display:flex;align-items:center;gap:12px;margin-bottom:24px}
+.au-head h2{margin:0;font-size:1.3rem;font-weight:700}
+.au-head i{font-size:1.3rem;color:#2563eb}
+.au-ver{background:#eff6ff;color:#2563eb;padding:4px 14px;border-radius:20px;font-size:.82rem;font-weight:700;font-family:monospace}
+.au-card{background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:24px;margin-bottom:16px}
+.au-btn{padding:12px 24px;border:none;border-radius:10px;font-weight:700;font-size:.9rem;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:8px;justify-content:center}
+.au-btn:disabled{opacity:.5;cursor:not-allowed}
+.au-btn-blue{background:#2563eb;color:#fff}.au-btn-blue:hover:not(:disabled){background:#1d4ed8}
+.au-btn-green{background:#16a34a;color:#fff}.au-btn-green:hover:not(:disabled){background:#15803d}
+.au-btn-outline{background:#fff;color:#475569;border:1px solid #e2e8f0}.au-btn-outline:hover{border-color:#2563eb;color:#2563eb}
+.au-ok{padding:20px;border-radius:14px;font-size:.9rem;line-height:1.5;background:#f0fdf4;border:1px solid #bbf7d0;color:#166534;text-align:center}
+.au-err{padding:20px;border-radius:14px;font-size:.9rem;line-height:1.5;background:#fef2f2;border:1px solid #fecaca;color:#991b1b;text-align:center}
+.au-new{background:linear-gradient(135deg,#eff6ff 0%,#f0fdf4 100%);border:2px solid #93c5fd;border-radius:18px;padding:30px;text-align:center}
+.au-new-tag{font-size:.75rem;color:#64748b;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px}
+.au-new-v{font-size:2.2rem;font-weight:800;color:#2563eb;font-family:monospace;margin-bottom:4px}
+.au-new-from{font-size:.85rem;color:#94a3b8;margin-bottom:20px}
+.au-cl{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:16px 20px;font-size:.9rem;white-space:pre-wrap;color:#334155;line-height:1.7;margin-bottom:22px;text-align:left}
+.au-ov{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(15,23,42,.75);backdrop-filter:blur(6px);z-index:10000;justify-content:center;align-items:center;flex-direction:column;gap:20px}
+.au-ov.on{display:flex}
+.au-sp{width:56px;height:56px;border:4px solid rgba(255,255,255,.2);border-top-color:#60a5fa;border-radius:50%;animation:auS .8s linear infinite}
+@keyframes auS{to{transform:rotate(360deg)}}
+.au-ov-t{color:#fff;font-size:1.15rem;font-weight:700}
+.au-ov-s{color:rgba(255,255,255,.55);font-size:.85rem;margin-top:-12px}
+.au-m-bg{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(15,23,42,.6);backdrop-filter:blur(4px);z-index:9999;justify-content:center;align-items:center}
+.au-m-bg.on{display:flex}
+.au-m{background:#fff;border-radius:18px;padding:32px;max-width:400px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.25);text-align:center;animation:auF .2s ease}
+@keyframes auF{from{transform:scale(.92);opacity:0}to{transform:scale(1);opacity:1}}
+.au-m-ic{width:60px;height:60px;border-radius:50%;margin:0 auto 18px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;background:#dbeafe;color:#2563eb}
+.au-m h3{font-size:1.05rem;margin-bottom:10px;color:#1e293b}
+.au-m p{font-size:.88rem;color:#64748b;line-height:1.6;margin-bottom:22px}
+.au-m p b{color:#1e293b}
+.au-m-btns{display:flex;gap:10px;justify-content:center}
+.au-m-btns .au-btn{min-width:120px}
+</style>
+
+<div class="au-wrap">
+  <div class="au-head">
+    <i class="fas fa-sync-alt"></i>
+    <h2>Actualizaciones</h2>
+    <span class="au-ver">v<%= typeof version !== 'undefined' ? version : '1.0.0' %></span>
+  </div>
+
+  <div class="au-card" style="text-align:center;">
+    <p style="color:#64748b;margin:0 0 16px;font-size:.9rem;">Verifique si hay una nueva versión disponible del sistema.</p>
+    <button class="au-btn au-btn-blue" id="auBtn" onclick="auCheck()" style="width:100%;">
+      <i class="fas fa-search"></i> Buscar Actualizaciones
+    </button>
+  </div>
+
+  <div id="auR">
+    <div class="au-ok">
+      <i class="fas fa-check-circle" style="font-size:1.3rem;display:block;margin-bottom:8px;"></i>
+      <b>El sistema está actualizado</b><br>
+      No hay nuevas versiones disponibles.
+    </div>
   </div>
 </div>
 
-<div class="card">
-  <div class="card-body">
-    <div class="loading"><i class="fas fa-spinner fa-spin"></i><br>Cargando...</div>
-  </div>
+<div class="au-ov" id="auOv">
+  <div class="au-sp"></div>
+  <div class="au-ov-t" id="auOvT">Verificando...</div>
+  <div class="au-ov-s" id="auOvS"></div>
 </div>
 
-<!-- Modal placeholder -->
-<div id="nuevoModal" class="modal" style="display:none">
-  <div class="modal-content">
-    <div class="modal-header"><h3><i class="fas fa-plus"></i> Nuevo</h3><span class="modal-close" onclick="closeModal('nuevoModal')">&times;</span></div>
-    <div class="modal-body">
-      <p style="color:var(--text-gray);text-align:center;padding:20px;">Módulo en construcción</p>
-      <div class="btn-group" style="justify-content:flex-end;margin-top:16px;">
-        <button class="btn btn-secondary" onclick="closeModal('nuevoModal')">Cancelar</button>
-        <button class="btn btn-primary">Guardar</button>
-      </div>
+<div class="au-m-bg" id="auM">
+  <div class="au-m">
+    <div class="au-m-ic"><i class="fas fa-cloud-download-alt"></i></div>
+    <h3>Instalar Actualización</h3>
+    <p id="auMp"></p>
+    <div class="au-m-btns">
+      <button class="au-btn au-btn-outline" onclick="auMC()">Cancelar</button>
+      <button class="au-btn au-btn-green" onclick="auMX()"><i class="fas fa-download"></i> Actualizar</button>
     </div>
   </div>
 </div>
 
 <script>
-setTimeout(function() {
-  document.querySelector('.loading').innerHTML = '<p style="color:var(--text-gray);text-align:center;padding:20px;">Datos cargados correctamente</p>';
-}, 500);
+(function() {
+  var A = '/modulo?pagina=Actualizaciones', P = null, CB = null;
+
+  function e(s) {
+    var d = document.createElement('div');
+    d.textContent = s || '';
+    return d.innerHTML;
+  }
+
+  function ld(t, s) {
+    document.getElementById('auOvT').textContent = t || '';
+    document.getElementById('auOvS').textContent = s || '';
+    document.getElementById('auOv').classList.add('on');
+  }
+
+  function ldOff() {
+    document.getElementById('auOv').classList.remove('on');
+  }
+
+  window.auMC = function() {
+    document.getElementById('auM').classList.remove('on');
+    CB = null;
+  };
+
+  window.auMX = function() {
+    var c = CB;
+    auMC();
+    if (c) c();
+  };
+
+  window.auCheck = function() {
+    var b = document.getElementById('auBtn');
+    b.disabled = true;
+    b.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Buscando...';
+
+    fetch(A + '&ajax=check_update')
+      .then(function(r) { return r.json(); })
+      .then(function(d) {
+        b.disabled = false;
+        b.innerHTML = '<i class="fas fa-search"></i> Buscar Actualizaciones';
+        var r = document.getElementById('auR');
+
+        if (d.status !== 'success') {
+          r.innerHTML = '<div class="au-err"><i class="fas fa-times-circle"></i> ' + e(d.msg) + '</div>';
+          return;
+        }
+
+        if (!d.data.available) {
+          r.innerHTML = '<div class="au-ok"><i class="fas fa-check-circle" style="font-size:1.3rem;display:block;margin-bottom:8px;"></i><b>El sistema está actualizado</b><br>No hay nuevas versiones disponibles.</div>';
+          return;
+        }
+
+        P = d.data;
+        var u = d.data;
+        var h = '<div class="au-new">';
+        h += '<div class="au-new-tag">Nueva versión disponible</div>';
+        h += '<div class="au-new-v">v' + e(u.version) + '</div>';
+        h += '<div class="au-new-from">Versión actual: v' + e(u.current_version) + '</div>';
+        if (u.changelog) h += '<div class="au-cl">' + e(u.changelog) + '</div>';
+        h += '<button class="au-btn au-btn-green" onclick="auInst()" style="width:100%;padding:14px;font-size:1rem;"><i class="fas fa-download"></i> Actualizar a v' + e(u.version) + '</button>';
+        h += '</div>';
+        r.innerHTML = h;
+      })
+      .catch(function() {
+        b.disabled = false;
+        b.innerHTML = '<i class="fas fa-search"></i> Buscar Actualizaciones';
+        document.getElementById('auR').innerHTML = '<div class="au-err"><i class="fas fa-times-circle"></i> Error de conexión</div>';
+      });
+  };
+
+  window.auInst = function() {
+    if (!P) return;
+    var u = P;
+    document.getElementById('auMp').innerHTML = 'Se actualizará el sistema a la versión <b>v' + e(u.version) + '</b>.<br><br>Los archivos serán reemplazados automáticamente.';
+    CB = function() {
+      ld('Descargando actualización...', 'No cierre esta ventana');
+      var fd = new FormData();
+      fd.append('update_id', u.update_id);
+      fd.append('version', u.version);
+      setTimeout(function() {
+        document.getElementById('auOvT').textContent = 'Instalando...';
+        document.getElementById('auOvS').textContent = 'Esto puede tomar unos segundos';
+      }, 3000);
+      fetch(A + '&ajax=install_update', { method: 'POST', body: fd })
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+          ldOff();
+          var r = document.getElementById('auR');
+          if (d.status === 'success') {
+            r.innerHTML = '<div class="au-ok"><i class="fas fa-check-circle" style="font-size:2rem;display:block;margin-bottom:10px;"></i><b style="font-size:1.1rem;">Actualización Exitosa</b><br><br>El sistema se actualizó a la versión v' + e(u.version) + '<br><br><button class="au-btn au-btn-blue" onclick="location.reload()"><i class="fas fa-redo"></i> Recargar</button></div>';
+            P = null;
+          } else if (d.status === 'partial') {
+            var dbg = d.debug ? '<br><br><div style="text-align:left;font-size:.75rem;background:#f1f5f9;padding:12px;border-radius:8px;max-height:200px;overflow:auto;font-family:monospace;">' + d.debug.join('<br>') + '</div>' : '';
+            r.innerHTML = '<div class="au-err"><i class="fas fa-exclamation-triangle" style="font-size:1.5rem;display:block;margin-bottom:8px;"></i><b>Actualización parcial</b><br>' + e(d.msg) + dbg + '<br><br><button class="au-btn au-btn-blue" onclick="location.reload()"><i class="fas fa-redo"></i> Recargar</button></div>';
+          } else {
+            r.innerHTML = '<div class="au-err"><i class="fas fa-times-circle"></i> ' + e(d.msg) + '</div>';
+          }
+        })
+        .catch(function() {
+          ldOff();
+          document.getElementById('auR').innerHTML = '<div class="au-err"><i class="fas fa-times-circle"></i> Error al instalar la actualización</div>';
+        });
+    };
+    document.getElementById('auM').classList.add('on');
+  };
+})();
 </script>

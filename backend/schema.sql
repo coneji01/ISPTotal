@@ -13,6 +13,10 @@ CREATE TABLE IF NOT EXISTS usuarios (
 CREATE TABLE IF NOT EXISTS zonas (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   nombre TEXT UNIQUE NOT NULL,
+  router_id INTEGER,
+  vlan_onu INTEGER,
+  smartolt_profile_id INTEGER,
+  smartolt_zone TEXT DEFAULT '',
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -55,6 +59,28 @@ CREATE TABLE IF NOT EXISTS servicios (
   FOREIGN KEY (zona_id) REFERENCES zonas(id)
 );
 
+CREATE TABLE IF NOT EXISTS billing_cycles (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  billing_type TEXT DEFAULT 'postpago',
+  invoice_day INTEGER DEFAULT 25,
+  suspend_day INTEGER DEFAULT 11,
+  tolerance_months INTEGER DEFAULT 1,
+  suspend_weekends INTEGER DEFAULT 0,
+  notify_day_1 INTEGER DEFAULT 0,
+  notify_day_2 INTEGER DEFAULT 0,
+  notify_day_3 INTEGER DEFAULT 0,
+  reconnection_fee_active INTEGER DEFAULT 0,
+  reconnection_amount REAL DEFAULT 0,
+  invoice_suspended INTEGER DEFAULT 0,
+  prorate_first_invoice INTEGER DEFAULT 1,
+  grace_days INTEGER DEFAULT 0,
+  notify_on_suspend INTEGER DEFAULT 0,
+  notify_on_payment INTEGER DEFAULT 0,
+  is_default INTEGER DEFAULT 0,
+  name TEXT,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE TABLE IF NOT EXISTS facturas (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   servicio_id INTEGER NOT NULL,
@@ -89,14 +115,13 @@ CREATE TABLE IF NOT EXISTS pagos (
 CREATE TABLE IF NOT EXISTS promesas_pago (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   cliente_id INTEGER NOT NULL,
-  servicio_id INTEGER,
+  servicio_ids TEXT,
   fecha_limite DATE,
   notas TEXT,
   estado TEXT DEFAULT 'activa',
   usuario_id INTEGER,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (cliente_id) REFERENCES clientes(id),
-  FOREIGN KEY (servicio_id) REFERENCES servicios(id),
   FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
 );
 
@@ -287,6 +312,37 @@ CREATE TABLE IF NOT EXISTS facturas_compra (
   FOREIGN KEY (proveedor_id) REFERENCES proveedores(id) ON DELETE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS proveedores_servicios (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  proveedor_id INTEGER NOT NULL,
+  nombre_servicio TEXT NOT NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (proveedor_id) REFERENCES proveedores(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS proveedores_contactos (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  proveedor_id INTEGER NOT NULL,
+  nombre_contacto TEXT NOT NULL,
+  telefono TEXT,
+  email TEXT,
+  cargo TEXT,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (proveedor_id) REFERENCES proveedores(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS pagos_compra (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  factura_id INTEGER NOT NULL,
+  monto REAL NOT NULL,
+  metodo TEXT,
+  referencia TEXT,
+  notas TEXT,
+  fecha_pago DATE DEFAULT (date('now')),
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (factura_id) REFERENCES facturas_compra(id) ON DELETE CASCADE
+);
+
 CREATE TABLE IF NOT EXISTS gastos (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   concepto TEXT NOT NULL,
@@ -310,9 +366,65 @@ CREATE TABLE IF NOT EXISTS cuadre_caja (
   FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
 );
 
+CREATE TABLE IF NOT EXISTS cambio_onu_swaps (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  cliente_id INTEGER,
+  servicio_id INTEGER,
+  old_sn TEXT,
+  new_sn TEXT,
+  old_olt_id INTEGER,
+  new_olt_id INTEGER,
+  pppoe_user TEXT DEFAULT '',
+  pppoe_pass TEXT DEFAULT '',
+  wifi_ssid_24 TEXT DEFAULT '',
+  wifi_pass_24 TEXT DEFAULT '',
+  wifi_ssid_5 TEXT DEFAULT '',
+  wifi_pass_5 TEXT DEFAULT '',
+  vlan TEXT DEFAULT '',
+  onu_type TEXT DEFAULT '',
+  change_reason TEXT DEFAULT '',
+  estado TEXT DEFAULT 'completado',
+  created_by INTEGER,
+  completed_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS ventas (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  cliente_id INTEGER,
+  cliente_nombre TEXT,
+  total REAL NOT NULL DEFAULT 0,
+  itbis REAL DEFAULT 0,
+  modo TEXT NOT NULL DEFAULT 'contado',
+  metodo_pago TEXT DEFAULT 'EFECTIVO',
+  nota TEXT,
+  usuario_id INTEGER,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (cliente_id) REFERENCES clientes(id),
+  FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
+);
+
+CREATE TABLE IF NOT EXISTS ventas_items (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  venta_id INTEGER NOT NULL,
+  inventario_id INTEGER NOT NULL,
+  cantidad INTEGER NOT NULL DEFAULT 1,
+  precio_unitario REAL NOT NULL,
+  FOREIGN KEY (venta_id) REFERENCES ventas(id) ON DELETE CASCADE,
+  FOREIGN KEY (inventario_id) REFERENCES inventario(id)
+);
+
 CREATE TABLE IF NOT EXISTS configuracion (
   key TEXT PRIMARY KEY,
   value TEXT
+);
+
+CREATE TABLE IF NOT EXISTS templates (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  template_key TEXT UNIQUE NOT NULL,
+  template_name TEXT NOT NULL,
+  content TEXT,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Seed data

@@ -109,6 +109,12 @@
     </div>
     <div class="so-card-body" style="padding:12px 18px; border-bottom:1px solid var(--so-border);">
       <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+        <select id="soFilterOlt" class="so-input" style="width:200px;" onchange="filterSoOnus()">
+          <option value="">Todas las OLTs</option>
+          <% (olts || []).forEach(function(o) { %>
+          <option value="<%= o.nombre %>"><%= o.nombre %></option>
+          <% }) %>
+        </select>
         <input type="text" id="soSearchOnu" class="so-input" style="width:250px; max-width:100%;" placeholder="Buscar por SN, nombre, cliente..." oninput="filterSoOnus()">
         <select id="soFilterEstado" class="so-input" style="width:150px;" onchange="filterSoOnus()">
           <option value="">Todos los estados</option>
@@ -567,8 +573,8 @@ function loadSoOnus() {
         var signalHtml = '<span class="so-signal-val" style="color:var(--so-gray);">N/A</span>';
         if (sigClass) signalHtml = '<div class="so-signal-bar"><div class="so-signal-fill ' + sigClass + '" style="width:' + sigPct + '%"></div><span class="so-signal-val">' + o.senial + ' dBm</span></div>';
         
-        h += '<tr class="so-onu-row" data-sn="' + (o.sn || '') + '" data-estado="' + (o.estado || '') + '">';
-        h += '<td><code style="background:#f1f5f9;padding:2px 6px;border-radius:4px;font-size:0.78rem;">' + (o.sn || '-') + '</code></td>';
+        h += '<tr class="so-onu-row" data-sn="' + (o.sn || '') + '" data-estado="' + (o.estado || '') + '" data-olt="' + (o.olt_nombre || '') + '">';
+        h += '<td><a href="/modulo?pagina=VerOnu&sn=' + (o.sn || '') + '&olt_id=' + (o.olt_id || '') + '" style="text-decoration:none;"><code style="background:#eef2ff;padding:2px 6px;border-radius:4px;font-size:0.78rem;color:#4338ca;font-weight:600;">' + (o.sn || '-') + '</code></a></td>';
         h += '<td><strong>' + (o.nombre || 'Sin nombre') + '</strong></td>';
         h += '<td>' + (o.puerto_olt || '-') + '</td>';
         h += '<td>' + (o.cliente_nombre || '<span style="color:#94a3b8;">Sin cliente</span>') + '</td>';
@@ -594,13 +600,16 @@ function loadSoOnus() {
 function filterSoOnus() {
   var q = document.getElementById('soSearchOnu').value.toLowerCase().trim();
   var estadoFiltro = document.getElementById('soFilterEstado').value;
+  var oltFiltro = document.getElementById('soFilterOlt').value;
   var rows = document.querySelectorAll('#soOnuBody tr.so-onu-row');
   rows.forEach(function(row) {
     var texto = row.textContent.toLowerCase();
     var estado = row.getAttribute('data-estado') || '';
+    var olt = row.getAttribute('data-olt') || '';
     var matchSearch = !q || texto.includes(q);
     var matchEstado = !estadoFiltro || estado === estadoFiltro;
-    row.style.display = (matchSearch && matchEstado) ? '' : 'none';
+    var matchOlt = !oltFiltro || olt === oltFiltro;
+    row.style.display = (matchSearch && matchEstado && matchOlt) ? '' : 'none';
   });
 }
 

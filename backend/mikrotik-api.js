@@ -268,6 +268,35 @@ class MikroTikAPI {
     }
   }
 
+  // Get DHCP pools from router
+  static async getPools(host, port, username, password) {
+    const api = new MikroTikAPI(host, port);
+    try {
+      await api.connect();
+      await api.login(username, password);
+      const result = await api.exec('/ip/pool/print');
+      api.disconnect();
+      
+      const pools = [];
+      for (const sentence of result) {
+        if (sentence[0] === '!re') {
+          const pool = {};
+          for (const word of sentence) {
+            if (word.startsWith('=')) {
+              const eq = word.indexOf('=', 1);
+              if (eq > 0) pool[word.substring(1, eq)] = word.substring(eq + 1);
+            }
+          }
+          pools.push(pool);
+        }
+      }
+      return { success: true, pools };
+    } catch (err) {
+      if (api) api.disconnect();
+      return { success: false, error: err.message };
+    }
+  }
+
   // Get DHCP Leases
   static async getDHCPLeases(host, port, username, password) {
     const api = new MikroTikAPI(host, port);
@@ -294,6 +323,268 @@ class MikroTikAPI {
     } catch (err) {
       if (api) api.disconnect();
       return { success: false, error: err.message };
+    }
+  }
+
+  // Add DHCP lease (IPoE client)
+  static async addDHCPLease(host, port, username, password, params) {
+    const api = new MikroTikAPI(host, port);
+    try {
+      await api.connect();
+      await api.login(username, password);
+      
+      const words = ['/ip/dhcp-server/lease/add'];
+      if (params.address) words.push('=address=' + params.address);
+      if (params['mac-address']) words.push('=mac-address=' + params['mac-address']);
+      if (params.comment) words.push('=comment=' + params.comment);
+      if (params.server) words.push('=server=' + params.server);
+      // Always reserve the lease
+      words.push('=always-broadcast=no');
+      
+      const result = await api.exec(...words);
+      api.disconnect();
+      
+      // Check for success
+      for (const sentence of result) {
+        if (sentence[0] === '!trap') {
+          const msg = sentence.find(w => w.startsWith('=message='));
+          return { success: false, error: msg ? msg.split('=', 3).slice(2).join('=') : 'Error al agregar lease DHCP' };
+        }
+      }
+      
+      return { success: true, message: 'Lease DHCP agregado' };
+    } catch (err) {
+      if (api) api.disconnect();
+      return { success: false, error: err.message };
+    }
+  }
+
+  // Remove DHCP lease
+  static async removeDHCPLease(host, port, username, password, macAddress) {
+    const api = new MikroTikAPI(host, port);
+    try {
+      await api.connect();
+      await api.login(username, password);
+      
+      // Find lease by MAC first
+      const searchResult = await api.exec('/ip/dhcp-server/lease/print', '?mac-address=' + macAddress);
+      let leaseId = null;
+      for (const sentence of searchResult) {
+        if (sentence[0] === '!re') {
+          for (const word of sentence) {
+            if (word.startsWith('=.id=')) {
+              leaseId = word.split('=')[2];
+              break;
+            }
+          }
+        }
+      }
+      
+      if (!leaseId) {
+        api.disconnect();
+        return { success: false, error: 'Lease no encontrado' };
+      }
+      
+      // Remove the lease
+      await api.exec('/ip/dhcp-server/lease/remove', '=.id=' + leaseId);
+      api.disconnect();
+      return { success: true, message: 'Lease DHCP eliminado' };
+    } catch (err) {
+      if (api) api.disconnect();
+      return { success: false, error: err.message };
+    }
+  }
+
+  // Suspend/disable DHCP lease (disable, don't remove)
+  static async setDHCPLeaseDisabled(host, port, username, password, macAddress, disabled) {
+    const api = new MikroTikAPI(host, port);
+    try {
+      await api.connect();
+      await api.login(username, password);
+      
+      // Find lease by MAC
+      const searchResult = await api.exec('/ip/dhcp-server/lease/print', '?mac-address=' + macAddress);
+      let leaseId = null;
+      for (const sentence of searchResult) {
+        if (sentence[0] === '!re') {
+          for (const word of sentence) {
+            if (word.startsWith('=.id=')) {
+              leaseId = word.split('=')[2];
+              break;
+            }
+          }
+        }
+      }
+      
+      if (!leaseId) {
+        api.disconnect();
+        return { success: false, error: 'Lease no encontrado' };
+      }
+      
+      await api.exec('/ip/dhcp-server/lease/set', '=.id=' + leaseId, '=disabled=' + (disabled ? 'yes' : 'no'));
+      api.disconnect();
+      return { success: true, message: disabled ? 'Cliente suspendido' : 'Cliente activado' };
+    } catch (err) {
+      if (api) api.disconnect();
+      return { success: false, error: err.message };
+    }
+  }
+
+  // Get PPP profiles from router (for PPPoE)
+  static async getPPPProfiles(host, port, username, password) {
+    const api = new MikroTikAPI(host, port);
+    try {
+      await api.connect();
+      await api.login(username, password);
+      const result = await api.exec('/ppp/profile/print');
+      api.disconnect();
+      const profiles = [];
+      for (const sentence of result) {
+        if (sentence[0] === '!re') {
+          const profile = {};
+          for (const word of sentence) {
+            if (word.startsWith('=')) {
+              const eq = word.indexOf('=', 1);
+              if (eq > 0) profile[word.substring(1, eq)] = word.substring(eq + 1);
+            }
+          }
+          profiles.push(profile);
+        }
+      }
+      return { success: true, profiles };
+    } catch (err) {
+      if (api) api.disconnect();
+      return { success: false, error: err.message };
+    }
+  }
+
+  // Add PPPoE secret to router
+  static async addPPPSecret(host, port, username, password, params) {
+    const api = new MikroTikAPI(host, port);
+    try {
+      await api.connect();
+      await api.login(username, password);
+      
+      const words = ['/ppp/secret/add'];
+      if (params.name) words.push('=name=' + params.name);
+      if (params.password) words.push('=password=' + params.password);
+      if (params.profile) words.push('=profile=' + params.profile);
+      if (params.service) words.push('=service=' + params.service);
+      if (params['remote-address']) words.push('=remote-address=' + params['remote-address']);
+      if (params.comment) words.push('=comment=' + params.comment);
+      
+      const result = await api.exec(...words);
+      api.disconnect();
+      
+      for (const sentence of result) {
+        if (sentence[0] === '!trap') {
+          const msg = sentence.find(w => w.startsWith('=message='));
+          return { success: false, error: msg ? msg.split('=', 3).slice(2).join('=') : 'Error al crear secreto PPP' };
+        }
+      }
+      
+      return { success: true, message: 'Secreto PPP agregado' };
+    } catch (err) {
+      if (api) api.disconnect();
+      return { success: false, error: err.message };
+    }
+  }
+
+  // Get available (unused) IP from a pool or IP range
+  static async getAvailableIP(host, port, username, password, poolName) {
+    const api = new MikroTikAPI(host, port);
+    try {
+      await api.connect();
+      await api.login(username, password);
+      
+      // Get all used IPs from leases
+      const leasesResult = await api.exec('/ip/dhcp-server/lease/print', '.proplist=address');
+      const usedIPs = new Set();
+      for (const sentence of leasesResult) {
+        if (sentence[0] === '!re') {
+          for (const word of sentence) {
+            if (word.startsWith('=address=')) {
+              usedIPs.add(word.split('=')[2]);
+            }
+          }
+        }
+      }
+      
+      // Get pool info to find the range
+      if (poolName) {
+        const poolResult = await api.exec('/ip/pool/print', '?name=' + poolName);
+        let poolRange = '';
+        for (const sentence of poolResult) {
+          if (sentence[0] === '!re') {
+            for (const word of sentence) {
+              if (word.startsWith('=ranges=')) {
+                poolRange = word.split('=').slice(2).join('=');
+              }
+            }
+          }
+        }
+        
+        // Parse the range (e.g., "192.168.1.2-192.168.1.254")
+        if (poolRange) {
+          const parts = poolRange.split('-');
+          if (parts.length >= 2) {
+            const startIP = parts[0].trim();
+            const endIP = parts[parts.length - 1].trim();
+            
+            const startParts = startIP.split('.').map(Number);
+            const endParts = endIP.split('.').map(Number);
+            
+            // Try to find the first unused IP in the range
+            for (let a = startParts[0]; a <= endParts[0]; a++) {
+              for (let b = (a === startParts[0] ? startParts[1] : 0); b <= (a === endParts[0] ? endParts[1] : 255); b++) {
+                for (let c = (a === startParts[0] && b === startParts[1] ? startParts[2] : 0); c <= (a === endParts[0] && b === endParts[1] ? endParts[2] : 255); c++) {
+                  for (let d = (a === startParts[0] && b === startParts[1] && c === startParts[2] ? startParts[3] : 1); d <= (a === endParts[0] && b === endParts[1] && c === endParts[2] ? endParts[3] : 254); d++) {
+                    const ip = a + '.' + b + '.' + c + '.' + d;
+                    if (!usedIPs.has(ip)) {
+                      api.disconnect();
+                      return { success: true, ip: ip };
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+      
+      api.disconnect();
+      return { success: false, error: 'No hay IPs disponibles en el pool' };
+    } catch (err) {
+      if (api) api.disconnect();
+      return { success: false, error: err.message };
+    }
+  }
+
+  // Get WAN interface traffic (bps in/out)
+  static async getTraffic(host, port, username, password, interfaceName) {
+    const api = new MikroTikAPI(host, port);
+    try {
+      await api.connect();
+      await api.login(username, password);
+      const result = await api.exec('/interface/monitor-traffic', '=interface=' + (interfaceName || 'ether1'), '=once=');
+      api.disconnect();
+
+      let bps_in = 0, bps_out = 0;
+      for (const sentence of result) {
+        if (sentence[0] === '!re') {
+          for (const word of sentence) {
+            if (word.startsWith('=rx-bits-per-second=')) {
+              bps_in = parseFloat(word.split('=')[2]) || 0;
+            } else if (word.startsWith('=tx-bits-per-second=')) {
+              bps_out = parseFloat(word.split('=')[2]) || 0;
+            }
+          }
+        }
+      }
+      return { success: true, bps_in, bps_out };
+    } catch (err) {
+      if (api) api.disconnect();
+      return { success: false, message: err.message };
     }
   }
 }

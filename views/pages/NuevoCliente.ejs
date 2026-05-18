@@ -104,40 +104,73 @@
             </h4>
 
             <div class="form-grid">
-                <div class="form-group">
-                    <label class="form-label">Tipo de Facturación <span style="color:red">*</span></label>
-                    <select name="billing_type" id="billingTypeSelect" class="form-control" required onchange="mostrarInfoCiclo()">
-                        <option value="">-- Seleccione --</option>
-                        <option value="postpago">POSTPAGO</option>
-                        <option value="prepago">PREPAGO</option>
+                <div class="form-group" style="grid-column:span 2;">
+                    <label class="form-label">Plantilla de Facturación <span style="color:red">*</span></label>
+                    <select name="ciclo_id" id="cicloSelect" class="form-control" required onchange="onCicloChange()">
+                        <option value="">-- Seleccione una plantilla --</option>
+                        <option value="custom"><i class="fas fa-cog"></i> Personalizada (definir fechas manualmente)</option>
+                        <% if (typeof ciclos !== 'undefined' && ciclos) { ciclos.forEach(function(c) { %>
+                        <option value="<%= c.id %>"
+                            data-type="<%= c.billing_type %>"
+                            data-invoice="<%= c.invoice_day %>"
+                            data-suspend="<%= c.suspend_day %>"
+                            data-tolerance="<%= c.tolerance_months %>"
+                            data-grace="<%= c.grace_days %>">
+                            <%= c.name || (c.billing_type.toUpperCase() + ' | Gen: Día ' + c.invoice_day + ' | Corte: Día ' + c.suspend_day) %>
+                        </option>
+                        <% }); } %>
                     </select>
+                    <small style="color:var(--text-gray);font-size:0.75rem;margin-top:4px;display:block;">
+                        Seleccione una plantilla o elija "Personalizada" para definir fechas manualmente.
+                    </small>
                 </div>
-                <div class="form-group">
-                    <label class="form-label">Día de Generación <span style="color:red">*</span></label>
-                    <select name="dia_generacion" id="diaGeneracion" class="form-control">
-                        <% for(var d=1; d<=31; d++) { %>
-                        <option value="<%= d %>" <%= d===25?'selected':'' %>>Día <%= d %></option>
-                        <% } %>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Día de Corte <span style="color:red">*</span></label>
-                    <select name="dia_corte" id="diaCorte" class="form-control">
-                        <% for(var d=1; d<=31; d++) { %>
-                        <option value="<%= d %>" <%= d===11?'selected':'' %>>Día <%= d %></option>
-                        <% } %>
-                    </select>
-                </div>
-                <div class="form-group" id="divInfoCiclo" style="display:none;">
-                    <label class="form-label">Resumen</label>
-                    <div id="infoCicloBox" style="display:flex;gap:10px;align-items:center;padding:8px 0;flex-wrap:wrap;">
-                        <span id="badgeTipo" style="padding:4px 10px;border-radius:5px;font-size:0.78rem;font-weight:700;"></span>
-                        <span id="badgeGen" style="padding:4px 10px;border-radius:5px;font-size:0.78rem;font-weight:600;background:#e0f2fe;color:#0369a1;display:none;">
+                <div id="divCicloPreset" style="display:none;grid-column:span 2;">
+                    <div id="resumenCiclo" style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:12px 16px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;">
+                        <span id="badgeTipo" style="padding:4px 12px;border-radius:5px;font-size:0.82rem;font-weight:700;"></span>
+                        <span id="badgeGen" style="padding:4px 12px;border-radius:5px;font-size:0.82rem;font-weight:600;background:#e0f2fe;color:#0369a1;">
                             <i class="fas fa-file-invoice"></i> Gen: Día <span id="txtGen"></span>
                         </span>
-                        <span id="badgeCorte" style="padding:4px 10px;border-radius:5px;font-size:0.78rem;font-weight:600;background:#fee2e2;color:#991b1b;display:none;">
+                        <span id="badgeCorte" style="padding:4px 12px;border-radius:5px;font-size:0.82rem;font-weight:600;background:#fee2e2;color:#991b1b;">
                             <i class="fas fa-ban"></i> Corte: Día <span id="txtCorte"></span>
                         </span>
+                        <span id="badgeTol" style="padding:4px 12px;border-radius:5px;font-size:0.78rem;font-weight:600;background:#fef3c7;color:#92400e;">
+                            <i class="fas fa-clock"></i> <span id="txtTol"></span> mes(es) tolerancia
+                        </span>
+                        <span id="badgeGrace" style="display:none;padding:4px 12px;border-radius:5px;font-size:0.78rem;font-weight:600;background:#e0e7ff;color:#3730a3;">
+                            <i class="fas fa-hourglass-half"></i> <span id="txtGrace"></span> días gracia
+                        </span>
+                    </div>
+                </div>
+                <div id="divCicloCustom" style="display:none;grid-column:span 2;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:16px;">
+                    <div class="form-grid" style="margin:0;">
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label class="form-label">Tipo <span style="color:red">*</span></label>
+                            <select name="billing_type" id="billingTypeSelect" class="form-control" onchange="mostrarInfoCiclo()">
+                                <option value="">-- Seleccione --</option>
+                                <option value="postpago">POSTPAGO</option>
+                                <option value="prepago">PREPAGO</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label class="form-label">Día de Generación (factura) <span style="color:red">*</span></label>
+                            <select name="dia_generacion" id="diaGeneracion" class="form-control">
+                                <% for(var d=1; d<=31; d++) { %>
+                                <option value="<%= d %>" <%= d===25?'selected':'' %>>Día <%= d %></option>
+                                <% } %>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label class="form-label">Día de Corte (suspensión) <span style="color:red">*</span></label>
+                            <select name="dia_corte" id="diaCorte" class="form-control">
+                                <% for(var d=1; d<=31; d++) { %>
+                                <option value="<%= d %>" <%= d===11?'selected':'' %>>Día <%= d %></option>
+                                <% } %>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label class="form-label">Tolerancia (meses vencidos)</label>
+                            <input type="number" name="tolerance_months" id="toleranceMonths" class="form-control" min="1" max="12" value="1">
+                        </div>
                     </div>
                 </div>
             </div>
@@ -228,6 +261,42 @@
 <script>
 var clienteConfirmado = null;
 var planesCache = {};
+
+function onCicloChange() {
+    var sel = document.getElementById('cicloSelect');
+    var val = sel.value;
+    var pres = document.getElementById('divCicloPreset');
+    var cust = document.getElementById('divCicloCustom');
+    if (val === 'custom') {
+        pres.style.display = 'none';
+        cust.style.display = 'block';
+    } else if (val && val !== '') {
+        cust.style.display = 'none';
+        pres.style.display = 'block';
+        var opt = sel.options[sel.selectedIndex];
+        var tipo = opt.getAttribute('data-type');
+        var inv = opt.getAttribute('data-invoice');
+        var susp = opt.getAttribute('data-suspend');
+        var tol = opt.getAttribute('data-tolerance');
+        var grace = opt.getAttribute('data-grace');
+        document.getElementById('badgeTipo').textContent = tipo.toUpperCase();
+        document.getElementById('badgeTipo').style.background = tipo === 'postpago' ? '#fef3c7' : '#dcfce7';
+        document.getElementById('badgeTipo').style.color = tipo === 'postpago' ? '#92400e' : '#166534';
+        document.getElementById('txtGen').textContent = inv;
+        document.getElementById('txtCorte').textContent = susp;
+        document.getElementById('txtTol').textContent = tol;
+        var graceBadge = document.getElementById('badgeGrace');
+        if (grace && parseInt(grace) > 0) {
+            document.getElementById('txtGrace').textContent = grace;
+            graceBadge.style.display = 'inline-flex';
+        } else {
+            graceBadge.style.display = 'none';
+        }
+    } else {
+        pres.style.display = 'none';
+        cust.style.display = 'none';
+    }
+}
 
 // Cargar todos los planes disponibles
 <% (planes || []).forEach(function(p) { %>

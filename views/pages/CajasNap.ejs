@@ -1,34 +1,813 @@
-<div class="page-header">
-  <h2><i class="fas fa-<%= pagina === 'Clientes' ? 'users' : pagina === 'Ordenes' ? 'clipboard-list' : pagina === 'Gpon' ? 'network-wired' : pagina === 'CajasNap' ? 'box' : pagina === 'Inventario' ? 'boxes' : pagina === 'Ventas' ? 'shopping-cart' : pagina === 'Proveedores' ? 'truck' : pagina === 'Empleados' ? 'id-badge' : pagina === 'PagosAdmin' ? 'coins' : pagina === 'Estadisticas' ? 'chart-bar' : pagina === 'Monitoreo' ? 'desktop' : pagina === 'RegistrarPago' ? 'money-bill' : pagina === 'NuevoCliente' ? 'user-plus' : pagina === 'BuscarOnu' ? 'search' : pagina === 'CambioOnu' ? 'exchange-alt' : pagina === 'CambioDeTitular' ? 'user-edit' : pagina === 'Traslados' ? 'truck-moving' : pagina === 'PromesaDePago' ? 'handshake' : pagina === 'CuadreCaja' ? 'cash-register' : pagina === 'Configuracion' ? 'cog' : pagina === 'Actualizaciones' ? 'sync' : 'cog' %>"></i> <%= pagina.replace(/([A-Z])/g, ' $1').trim() %></h2>
-  <div class="btn-group">
-    <% if (pagina !== 'BuscarOnu' && pagina !== 'Estadisticas' && pagina !== 'Monitoreo' && pagina !== 'Configuracion' && pagina !== 'Actualizaciones') { %>
-    <button class="btn btn-primary btn-sm" onclick="openModal('nuevoModal')"><i class="fas fa-plus"></i> Nuevo</button>
+<!-- Cajas NAP - ISP Total -->
+<style>
+:root {
+  --nap-primary: #6366f1;
+  --nap-success: #16a34a;
+  --nap-warning: #d97706;
+  --nap-danger: #ef4444;
+  --nap-bg: #f8fafc;
+  --nap-border: #e2e8f0;
+  --nap-text: #1e293b;
+  --nap-gray: #64748b;
+}
+
+/* Port grid */
+.cn-port-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+  padding: 4px;
+}
+.cn-port-item {
+  border: 2px solid var(--nap-border);
+  border-radius: 10px;
+  padding: 12px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+  min-height: 100px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+.cn-port-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+.cn-port-item.free {
+  border-color: #dbeafe;
+  background: #f0f7ff;
+}
+.cn-port-item.free:hover {
+  border-color: #93c5fd;
+  background: #dbeafe;
+}
+.cn-port-item.occupied {
+  border-color: #bbf7d0;
+  background: #f0fdf4;
+}
+.cn-port-item.occupied:hover {
+  border-color: #4ade80;
+}
+.cn-port-number {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--nap-text);
+}
+.cn-port-status {
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 8px;
+}
+.cn-port-status.free { background: #dbeafe; color: #1e40af; }
+.cn-port-status.occupied { background: #dcfce7; color: #166534; }
+.cn-port-onu-name {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--nap-text);
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cn-port-client {
+  font-size: 0.72rem;
+  color: var(--nap-gray);
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cn-port-signal {
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+.cn-signal-good { color: var(--nap-success); }
+.cn-signal-warn { color: var(--nap-warning); }
+.cn-signal-bad { color: var(--nap-danger); }
+.cn-port-actions {
+  margin-top: 4px;
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+}
+
+/* Caja card in list */
+.cn-card {
+  background: #fff;
+  border: 1px solid var(--nap-border);
+  border-radius: 10px;
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.cn-card:hover {
+  border-color: var(--nap-primary);
+  box-shadow: 0 2px 12px rgba(99,102,241,0.1);
+}
+.cn-card-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--nap-text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.cn-card-sub {
+  font-size: 0.82rem;
+  color: var(--nap-gray);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.cn-card-stats {
+  display: flex;
+  gap: 16px;
+  margin-top: 4px;
+}
+.cn-card-stat {
+  font-size: 0.78rem;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--nap-text);
+}
+.cn-card-actions {
+  margin-top: 6px;
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+/* Detail header */
+.cn-detail-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  background: #fff;
+  border: 1px solid var(--nap-border);
+  border-radius: 10px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.cn-detail-info {
+  flex: 1;
+  min-width: 200px;
+}
+.cn-detail-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.cn-detail-meta {
+  font-size: 0.82rem;
+  color: var(--nap-gray);
+  margin-top: 2px;
+}
+.cn-detail-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* Assigned ONU card inside port */
+.cn-assigned-onu {
+  width: 100%;
+}
+
+/* Responsive grid for caja list */
+.cn-cajas-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 14px;
+}
+
+/* Side-by-side layout for detail view */
+.cn-detail-layout {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.cn-detail-main {
+  flex: 1;
+  min-width: 300px;
+}
+.cn-detail-side {
+  width: 320px;
+  flex-shrink: 0;
+}
+
+/* ONU selection list */
+.cn-onu-list {
+  max-height: 300px;
+  overflow-y: auto;
+  border: 1px solid var(--nap-border);
+  border-radius: 8px;
+}
+.cn-onu-list-item {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--nap-border);
+  cursor: pointer;
+  transition: background 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.cn-onu-list-item:hover {
+  background: #f1f5f9;
+}
+.cn-onu-list-item.selected {
+  background: #eef2ff;
+  border-left: 3px solid var(--nap-primary);
+}
+.cn-onu-list-item:last-child {
+  border-bottom: none;
+}
+
+/* Back button */
+.cn-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--nap-primary);
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+  transition: opacity 0.2s;
+}
+.cn-back:hover { opacity: 0.7; }
+</style>
+
+<div id="cnListView">
+  <div class="page-header">
+    <h2><i class="fas fa-box" style="color:var(--nap-primary)"></i> Cajas NAP</h2>
+    <div class="btn-group">
+      <button class="btn btn-primary btn-sm" onclick="cnOpenCreate()"><i class="fas fa-plus"></i> Nueva Caja</button>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="card" style="margin-bottom:16px;">
+    <div class="card-body" style="padding:12px 16px;">
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+        <input type="text" id="cnSearch" class="form-control" style="width:250px;max-width:100%;" placeholder="Buscar por nombre..." oninput="cnFilterList()">
+        <select id="cnFilterZona" class="form-control" style="width:180px;" onchange="cnFilterList()">
+          <option value="">Todas las zonas</option>
+          <% (zonas || []).forEach(function(z) { %>
+          <option value="<%= z.id %>"><%= z.nombre %></option>
+          <% }) %>
+        </select>
+        <span id="cnCount" style="font-size:0.82rem;color:var(--nap-gray);margin-left:auto;"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cajas Grid -->
+  <div class="cn-cajas-grid" id="cnCajasContainer">
+    <% if (cajas && cajas.length > 0) { %>
+      <% cajas.forEach(function(c) { %>
+      <div class="cn-card" data-id="<%= c.id %>" data-zona="<%= c.zona_id || '' %>" data-name="<%= c.nombre.toLowerCase() %>" onclick="cnOpenDetail(<%= c.id %>)" style="<%= pagina !== 'CajasNap' ? 'display:none;' : '' %>">
+        <div class="cn-card-title">
+          <i class="fas fa-box" style="color:var(--nap-primary);font-size:1rem;"></i>
+          <%= c.nombre %>
+        </div>
+        <div class="cn-card-sub">
+          <i class="fas fa-map-marker-alt" style="color:var(--nap-gray);"></i>
+          <%= c.zona_nombre || '<span style="color:#94a3b8;">Sin zona</span>' %>
+          <% if (c.lat) { %><span style="color:#94a3b8;">|</span> <%= parseFloat(c.lat).toFixed(4) %>, <%= parseFloat(c.lng).toFixed(4) %><% } %>
+        </div>
+        <div class="cn-card-stats">
+          <span class="cn-card-stat"><i class="fas fa-plug"></i> <%= c.puertos || 0 %> puertos</span>
+          <span class="cn-card-stat"><i class="fas fa-wifi"></i> <%= c.onus_count || 0 %> ONUs</span>
+        </div>
+        <div class="cn-card-actions">
+          <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();cnOpenEdit(<%= c.id %>,'<%= c.nombre.replace(/'/g,"\\'") %>',<%= c.puertos %>,<%= c.zona_id || 'null' %>,<%= c.lat || 'null' %>,<%= c.lng || 'null' %>)"><i class="fas fa-pencil-alt"></i></button>
+          <button class="btn btn-danger btn-sm" onclick="event.stopPropagation();cnDelete(<%= c.id %>,'<%= c.nombre.replace(/'/g,"\\'") %>')"><i class="fas fa-trash"></i></button>
+        </div>
+      </div>
+      <% }) %>
+    <% } else { %>
+      <div style="grid-column:1/-1;text-align:center;padding:60px 20px;color:var(--nap-gray);">
+        <i class="fas fa-box" style="font-size:3rem;opacity:0.3;margin-bottom:12px;display:block;"></i>
+        <p style="font-size:1rem;font-weight:500;">No hay cajas NAP registradas</p>
+        <p style="font-size:0.85rem;">Cree una nueva caja NAP para comenzar</p>
+      </div>
     <% } %>
   </div>
 </div>
 
-<div class="card">
-  <div class="card-body">
-    <div class="loading"><i class="fas fa-spinner fa-spin"></i><br>Cargando...</div>
-  </div>
-</div>
+<!-- Detail View (hidden initially) -->
+<div id="cnDetailView" style="display:none;">
+  <div class="cn-back" onclick="cnBackToList()"><i class="fas fa-arrow-left"></i> Volver a lista</div>
 
-<!-- Modal placeholder -->
-<div id="nuevoModal" class="modal" style="display:none">
-  <div class="modal-content">
-    <div class="modal-header"><h3><i class="fas fa-plus"></i> Nuevo</h3><span class="modal-close" onclick="closeModal('nuevoModal')">&times;</span></div>
-    <div class="modal-body">
-      <p style="color:var(--text-gray);text-align:center;padding:20px;">Módulo en construcción</p>
-      <div class="btn-group" style="justify-content:flex-end;margin-top:16px;">
-        <button class="btn btn-secondary" onclick="closeModal('nuevoModal')">Cancelar</button>
-        <button class="btn btn-primary">Guardar</button>
+  <div class="cn-detail-header">
+    <div class="cn-detail-info">
+      <div class="cn-detail-title" id="cnDetailTitle">
+        <i class="fas fa-box" style="color:var(--nap-primary);"></i>
+        <span id="cnDetailName"></span>
+        <span class="badge badge-info" id="cnDetailZone" style="font-size:0.72rem;"></span>
+      </div>
+      <div class="cn-detail-meta">
+        <span id="cnDetailPorts"></span> &middot;
+        <span id="cnDetailOnus"></span>
+        <% if (cajasNap && cajasNap.length > 0) { %> &middot;
+        <span id="cnDetailCoords"></span><% } %>
+      </div>
+    </div>
+    <div class="cn-detail-actions">
+      <button class="btn btn-secondary btn-sm" onclick="cnOpenEditFromDetail()"><i class="fas fa-pencil-alt"></i> Editar</button>
+      <button class="btn btn-danger btn-sm" onclick="cnDeleteFromDetail()"><i class="fas fa-trash"></i> Eliminar</button>
+    </div>
+  </div>
+
+  <!-- Port Grid -->
+  <div class="card">
+    <div class="card-header">
+      <span><i class="fas fa-th"></i> Puertos de la Caja NAP</span>
+      <span id="cnPortSummary" style="font-size:0.8rem;color:var(--nap-gray);"></span>
+    </div>
+    <div class="card-body">
+      <div class="cn-port-grid" id="cnPortGrid">
+        <div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--nap-gray);">
+          <i class="fas fa-spinner fa-spin"></i> Cargando puertos...
+        </div>
       </div>
     </div>
   </div>
 </div>
 
+<!-- MODAL: Crear/Editar Caja NAP -->
+<div id="cnModalCaja" class="modal" style="display:none;">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 id="cnModalCajaTitle"><i class="fas fa-plus"></i> <span>Nueva Caja NAP</span></h3>
+      <span class="modal-close" onclick="closeModal('cnModalCaja')">&times;</span>
+    </div>
+    <form id="cnFormCaja" onsubmit="return cnSaveCaja(event)">
+      <div class="modal-body">
+        <input type="hidden" id="cnCajaId" value="0">
+        <div class="form-group">
+          <label>Nombre de la Caja NAP</label>
+          <input type="text" id="cnCajaNombre" class="form-control" placeholder="Ej: NAP-001" required>
+        </div>
+        <div class="form-group">
+          <label>Zona</label>
+          <select id="cnCajaZona" class="form-control">
+            <option value="">Sin zona</option>
+            <% (zonas || []).forEach(function(z) { %>
+            <option value="<%= z.id %>"><%= z.nombre %></option>
+            <% }) %>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Número de Puertos</label>
+          <select id="cnCajaPuertos" class="form-control">
+            <% for (var p = 4; p <= 64; p *= 2) { %>
+            <option value="<%= p %>" <%= p === 8 ? 'selected' : '' %>><%= p %> puertos</option>
+            <% } %>
+          </select>
+        </div>
+        <div style="display:flex;gap:12px;">
+          <div class="form-group" style="flex:1;">
+            <label>Latitud</label>
+            <input type="number" id="cnCajaLat" class="form-control" step="any" placeholder="18.5000">
+          </div>
+          <div class="form-group" style="flex:1;">
+            <label>Longitud</label>
+            <input type="number" id="cnCajaLng" class="form-control" step="any" placeholder="-69.9000">
+          </div>
+        </div>
+        <div id="cnCajaResult"></div>
+      </div>
+      <div class="modal-footer" style="padding:12px 20px;border-top:1px solid var(--nap-border);display:flex;gap:8px;justify-content:flex-end;">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('cnModalCaja')">Cancelar</button>
+        <button type="submit" class="btn btn-primary" id="cnBtnSaveCaja"><i class="fas fa-save"></i> Guardar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL: Asignar ONU a Puerto -->
+<div id="cnModalAssign" class="modal" style="display:none;">
+  <div class="modal-content" style="max-width:520px;">
+    <div class="modal-header">
+      <h3><i class="fas fa-plug"></i> Asignar ONU al Puerto <span id="cnAssignPuertoLabel"></span></h3>
+      <span class="modal-close" onclick="closeModal('cnModalAssign')">&times;</span>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="cnAssignCajaId" value="0">
+      <input type="hidden" id="cnAssignPuerto" value="0">
+      <p style="font-size:0.85rem;color:var(--nap-gray);margin-bottom:12px;">
+        Seleccione una ONU disponible para asignar al puerto <strong>#<span id="cnAssignPuertoNum"></span></strong>:
+      </p>
+      <div class="form-group">
+        <input type="text" id="cnAssignSearch" class="form-control" placeholder="Buscar ONU por SN o cliente..." oninput="cnFilterOnuList()">
+      </div>
+      <div class="cn-onu-list" id="cnAssignOnuList">
+        <div style="padding:20px;text-align:center;color:var(--nap-gray);">
+          <i class="fas fa-spinner fa-spin"></i> Cargando ONUs disponibles...
+        </div>
+      </div>
+      <div id="cnAssignResult"></div>
+    </div>
+    <div class="modal-footer" style="padding:12px 20px;border-top:1px solid var(--nap-border);display:flex;gap:8px;justify-content:flex-end;">
+      <button type="button" class="btn btn-secondary" onclick="closeModal('cnModalAssign')">Cancelar</button>
+      <button type="button" class="btn btn-primary" id="cnBtnAssign" onclick="cnDoAssign()" disabled><i class="fas fa-check"></i> Asignar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Confirmar Desasignar ONU -->
+<div id="cnModalUnassign" class="modal" style="display:none;">
+  <div class="modal-content" style="max-width:420px;">
+    <div class="modal-header">
+      <h3><i class="fas fa-unlink"></i> Desasignar ONU</h3>
+      <span class="modal-close" onclick="closeModal('cnModalUnassign')">&times;</span>
+    </div>
+    <div class="modal-body">
+      <p>¿Está seguro de desasignar la ONU del puerto <strong>#<span id="cnUnassignPuerto"></span></strong>?</p>
+      <p style="font-size:0.85rem;color:var(--nap-gray);margin-bottom:12px;">
+        La ONU quedará disponible para ser asignada a otro puerto.
+      </p>
+      <div id="cnUnassignResult"></div>
+    </div>
+    <div class="modal-footer" style="padding:12px 20px;border-top:1px solid var(--nap-border);display:flex;gap:8px;justify-content:flex-end;">
+      <button type="button" class="btn btn-secondary" onclick="closeModal('cnModalUnassign')">Cancelar</button>
+      <button type="button" class="btn btn-danger" onclick="cnDoUnassign()"><i class="fas fa-unlink"></i> Desasignar</button>
+    </div>
+  </div>
+</div>
+
 <script>
-setTimeout(function() {
-  document.querySelector('.loading').innerHTML = '<p style="color:var(--text-gray);text-align:center;padding:20px;">Datos cargados correctamente</p>';
-}, 500);
+var cnCurrentId = 0;
+var cnOnusDisponibles = [];
+var cnOnuSelectedId = 0;
+
+// ==================== LIST VIEW ====================
+function cnFilterList() {
+  var q = document.getElementById('cnSearch').value.toLowerCase().trim();
+  var z = document.getElementById('cnFilterZona').value;
+  var cards = document.querySelectorAll('#cnCajasContainer .cn-card');
+  var visible = 0;
+  cards.forEach(function(c) {
+    var matchName = !q || c.getAttribute('data-name').includes(q);
+    var matchZona = !z || c.getAttribute('data-zona') === z;
+    var show = matchName && matchZona;
+    c.style.display = show ? '' : 'none';
+    if (show) visible++;
+  });
+  document.getElementById('cnCount').textContent = visible + ' caja' + (visible !== 1 ? 's' : '');
+}
+
+// ==================== CREATE / EDIT MODAL ====================
+function cnOpenCreate() {
+  document.getElementById('cnCajaId').value = '0';
+  document.getElementById('cnModalCajaTitle').querySelector('span').textContent = 'Nueva Caja NAP';
+  document.getElementById('cnCajaNombre').value = '';
+  document.getElementById('cnCajaZona').value = '';
+  document.getElementById('cnCajaPuertos').value = '8';
+  document.getElementById('cnCajaLat').value = '';
+  document.getElementById('cnCajaLng').value = '';
+  document.getElementById('cnCajaResult').innerHTML = '';
+  document.getElementById('cnBtnSaveCaja').innerHTML = '<i class="fas fa-save"></i> Guardar';
+  openModal('cnModalCaja');
+}
+
+function cnOpenEdit(id, nombre, puertos, zona_id, lat, lng) {
+  document.getElementById('cnCajaId').value = id;
+  document.getElementById('cnModalCajaTitle').querySelector('span').textContent = 'Editar Caja NAP';
+  document.getElementById('cnCajaNombre').value = nombre || '';
+  document.getElementById('cnCajaZona').value = zona_id || '';
+  document.getElementById('cnCajaPuertos').value = puertos || 8;
+  document.getElementById('cnCajaLat').value = lat || '';
+  document.getElementById('cnCajaLng').value = lng || '';
+  document.getElementById('cnCajaResult').innerHTML = '';
+  document.getElementById('cnBtnSaveCaja').innerHTML = '<i class="fas fa-save"></i> Guardar Cambios';
+  openModal('cnModalCaja');
+}
+
+function cnSaveCaja(e) {
+  e.preventDefault();
+  var id = document.getElementById('cnCajaId').value;
+  var nombre = document.getElementById('cnCajaNombre').value.trim();
+  var puertos = document.getElementById('cnCajaPuertos').value;
+  var zona_id = document.getElementById('cnCajaZona').value;
+  var lat = document.getElementById('cnCajaLat').value;
+  var lng = document.getElementById('cnCajaLng').value;
+
+  if (!nombre) {
+    document.getElementById('cnCajaResult').innerHTML = '<div style="color:#ef4444;padding:6px 0;font-size:0.88rem;"><i class="fas fa-exclamation-circle"></i> El nombre es obligatorio</div>';
+    return;
+  }
+
+  var btn = document.getElementById('cnBtnSaveCaja');
+  btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+
+  var data = new URLSearchParams();
+  data.append('id', id);
+  data.append('nombre', nombre);
+  data.append('puertos', puertos);
+  data.append('zona_id', zona_id || '');
+  data.append('lat', lat || '');
+  data.append('lng', lng || '');
+
+  fetch('/modulo?pagina=CajasNap&ajax=save', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: data.toString()
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    btn.disabled = false; btn.innerHTML = id ? '<i class="fas fa-save"></i> Guardar Cambios' : '<i class="fas fa-save"></i> Guardar';
+    if (d.status === 'success') {
+      document.getElementById('cnCajaResult').innerHTML = '<div style="color:#16a34a;padding:8px 10px;background:#f0fdf4;border-radius:6px;font-weight:600;"><i class="fas fa-check-circle"></i> ' + d.msg + '</div>';
+      setTimeout(function() { closeModal('cnModalCaja'); location.reload(); }, 1000);
+    } else {
+      document.getElementById('cnCajaResult').innerHTML = '<div style="color:#ef4444;padding:8px 10px;background:#fef2f2;border-radius:6px;">' + (d.msg || 'Error al guardar') + '</div>';
+    }
+  })
+  .catch(function(e) {
+    btn.disabled = false; btn.innerHTML = id ? '<i class="fas fa-save"></i> Guardar Cambios' : '<i class="fas fa-save"></i> Guardar';
+    document.getElementById('cnCajaResult').innerHTML = '<div style="color:#ef4444;padding:6px 0;">Error: ' + e.message + '</div>';
+  });
+  return false;
+}
+
+// ==================== DELETE ====================
+function cnDelete(id, nombre) {
+  if (!confirm('¿Eliminar la caja NAP "' + nombre + '"?\n\nSe desasignarán todas las ONUs asociadas.')) return;
+  fetch('/modulo?pagina=CajasNap&ajax=delete', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: 'id=' + id
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    if (d.status === 'success') {
+      showToast(d.msg, 'success');
+      location.reload();
+    } else {
+      showToast(d.msg || 'Error al eliminar', 'error');
+    }
+  })
+  .catch(function(e) {
+    showToast('Error: ' + e.message, 'error');
+  });
+}
+
+// ==================== DETAIL VIEW ====================
+function cnOpenDetail(id) {
+  cnCurrentId = id;
+  document.getElementById('cnListView').style.display = 'none';
+  document.getElementById('cnDetailView').style.display = 'block';
+  document.getElementById('cnPortGrid').innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--nap-gray);"><i class="fas fa-spinner fa-spin"></i> Cargando puertos...</div>';
+
+  fetch('/modulo?pagina=CajasNap&ajax=get&id=' + id)
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (d.status !== 'success') {
+        document.getElementById('cnPortGrid').innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:20px;color:#ef4444;"><i class="fas fa-exclamation-triangle"></i> ' + (d.msg || 'Error al cargar') + '</div>';
+        return;
+      }
+
+      var caja = d.data;
+      var puertos = d.puertos || [];
+      cnOnusDisponibles = d.onusDisponibles || [];
+
+      // Update header
+      document.getElementById('cnDetailName').textContent = caja.nombre;
+      document.getElementById('cnDetailZone').textContent = caja.zona_nombre || 'Sin zona';
+      document.getElementById('cnDetailPorts').textContent = caja.puertos + ' puertos';
+      var ocupados = puertos.filter(function(p) { return !p.libre; }).length;
+      document.getElementById('cnDetailOnus').textContent = ocupados + ' ONU' + (ocupados !== 1 ? 's' : '') + ' conectada' + (ocupados !== 1 ? 's' : '');
+      if (caja.lat && caja.lng) {
+        document.getElementById('cnDetailCoords').textContent = '(' + parseFloat(caja.lat).toFixed(4) + ', ' + parseFloat(caja.lng).toFixed(4) + ')';
+      } else {
+        document.getElementById('cnDetailCoords').textContent = '';
+      }
+      document.getElementById('cnPortSummary').textContent = ocupados + '/' + caja.puertos + ' ocupados';
+
+      // Render port grid
+      var html = '';
+      puertos.forEach(function(p) {
+        html += '<div class="cn-port-item ' + (p.libre ? 'free' : 'occupied') + '" ' + (p.libre ? 'onclick="cnOpenAssign(' + caja.id + ',' + p.numero + ')"' : '') + '>';
+        html += '<div class="cn-port-number">#' + p.numero + '</div>';
+        html += '<div class="cn-port-status ' + (p.libre ? 'free' : 'occupied') + '">' + (p.libre ? 'LIBRE' : 'OCUPADO') + '</div>';
+        if (!p.libre && p.onu) {
+          html += '<div class="cn-assigned-onu">';
+          html += '<div class="cn-port-onu-name" title="' + (p.onu.sn || '') + '"><i class="fas fa-microchip" style="font-size:0.7rem;"></i> ' + (p.onu.onu_nombre || p.onu.sn || 'ONU') + '</div>';
+          if (p.onu.cliente_nombre) {
+            html += '<div class="cn-port-client" title="' + p.onu.cliente_nombre + '"><i class="fas fa-user" style="font-size:0.65rem;"></i> ' + p.onu.cliente_nombre + '</div>';
+          }
+          if (p.onu.senial !== null && p.onu.senial !== undefined) {
+            var sigVal = parseFloat(p.onu.senial);
+            var sigClass = sigVal >= -20 ? 'cn-signal-good' : (sigVal >= -25 ? 'cn-signal-warn' : 'cn-signal-bad');
+            html += '<div class="cn-port-signal ' + sigClass + '">' + sigVal + ' dBm</div>';
+          }
+          html += '<div class="cn-port-actions">';
+          html += '<button class="btn btn-danger btn-sm" style="font-size:0.7rem;padding:2px 6px;" onclick="event.stopPropagation();cnOpenUnassign(' + caja.id + ',' + p.numero + ')"><i class="fas fa-unlink"></i> Desasignar</button>';
+          html += '</div>';
+          html += '</div>';
+        }
+        html += '</div>';
+      });
+      document.getElementById('cnPortGrid').innerHTML = html;
+    })
+    .catch(function(e) {
+      document.getElementById('cnPortGrid').innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:20px;color:#ef4444;"><i class="fas fa-exclamation-triangle"></i> Error: ' + e.message + '</div>';
+    });
+}
+
+function cnBackToList() {
+  document.getElementById('cnDetailView').style.display = 'none';
+  document.getElementById('cnListView').style.display = 'block';
+  cnCurrentId = 0;
+}
+
+function cnOpenEditFromDetail() {
+  var nameEl = document.getElementById('cnDetailName');
+  if (!nameEl || !cnCurrentId) return;
+  // Re-fetch to get edit data
+  fetch('/modulo?pagina=CajasNap&ajax=get&id=' + cnCurrentId)
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (d.status === 'success') {
+        var c = d.data;
+        cnOpenEdit(c.id, c.nombre, c.puertos, c.zona_id, c.lat, c.lng);
+      }
+    })
+    .catch(function() {});
+}
+
+function cnDeleteFromDetail() {
+  var nameEl = document.getElementById('cnDetailName');
+  if (nameEl && cnCurrentId) {
+    cnDelete(cnCurrentId, nameEl.textContent);
+  }
+}
+
+// ==================== ASSIGN ONU ====================
+function cnOpenAssign(cajaId, puerto) {
+  document.getElementById('cnAssignCajaId').value = cajaId;
+  document.getElementById('cnAssignPuerto').value = puerto;
+  document.getElementById('cnAssignPuertoLabel').textContent = '#' + puerto;
+  document.getElementById('cnAssignPuertoNum').textContent = puerto;
+  document.getElementById('cnAssignSearch').value = '';
+  document.getElementById('cnAssignResult').innerHTML = '';
+  document.getElementById('cnBtnAssign').disabled = true;
+  cnOnuSelectedId = 0;
+
+  // Load ONUs
+  var list = document.getElementById('cnAssignOnuList');
+  fetch('/modulo?pagina=CajasNap&ajax=get&id=' + cajaId)
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (d.status !== 'success') {
+        list.innerHTML = '<div style="padding:20px;text-align:center;color:#ef4444;">Error al cargar ONUs</div>';
+        return;
+      }
+      var onus = d.onusDisponibles || [];
+      cnOnusDisponibles = onus;
+      cnRenderOnuList(onus, '');
+    })
+    .catch(function(e) {
+      list.innerHTML = '<div style="padding:20px;text-align:center;color:#ef4444;">Error: ' + e.message + '</div>';
+    });
+
+  openModal('cnModalAssign');
+}
+
+function cnRenderOnuList(onus, filter) {
+  var list = document.getElementById('cnAssignOnuList');
+  var q = (filter || '').toLowerCase().trim();
+  if (onus.length === 0) {
+    list.innerHTML = '<div style="padding:30px;text-align:center;color:var(--nap-gray);"><i class="fas fa-microchip" style="font-size:2rem;opacity:0.3;display:block;margin-bottom:8px;"></i>No hay ONUs disponibles<br><small>Todas las ONUs ya están asignadas a cajas NAP</small></div>';
+    return;
+  }
+  var html = '';
+  var count = 0;
+  onus.forEach(function(o) {
+    var texto = ((o.sn || '') + ' ' + (o.onu_nombre || '') + ' ' + (o.cliente_nombre || '')).toLowerCase();
+    if (q && !texto.includes(q)) return;
+    count++;
+    var selected = cnOnuSelectedId === o.id ? ' selected' : '';
+    html += '<div class="cn-onu-list-item' + selected + '" onclick="cnSelectOnu(' + o.id + ', this)">';
+    html += '<i class="fas fa-microchip" style="color:var(--nap-gray);"></i>';
+    html += '<div style="flex:1;">';
+    html += '<div style="font-size:0.85rem;font-weight:600;">' + (o.onu_nombre || o.sn || 'ONU #' + o.id) + '</div>';
+    if (o.sn) html += '<div style="font-size:0.75rem;color:var(--nap-gray);"><code>' + o.sn + '</code></div>';
+    if (o.cliente_nombre) html += '<div style="font-size:0.75rem;color:var(--nap-gray);"><i class="fas fa-user"></i> ' + o.cliente_nombre + '</div>';
+    html += '</div>';
+    html += '</div>';
+  });
+  if (count === 0) {
+    html = '<div style="padding:20px;text-align:center;color:var(--nap-gray);">No se encontraron ONUs con ese criterio</div>';
+  }
+  list.innerHTML = html;
+}
+
+function cnFilterOnuList() {
+  cnRenderOnuList(cnOnusDisponibles, document.getElementById('cnAssignSearch').value);
+}
+
+function cnSelectOnu(id, el) {
+  cnOnuSelectedId = id;
+  document.querySelectorAll('.cn-onu-list-item').forEach(function(e) { e.classList.remove('selected'); });
+  el.classList.add('selected');
+  document.getElementById('cnBtnAssign').disabled = false;
+}
+
+function cnDoAssign() {
+  var cajaId = document.getElementById('cnAssignCajaId').value;
+  var puerto = document.getElementById('cnAssignPuerto').value;
+  if (!cnOnuSelectedId || !cajaId || !puerto) return;
+
+  var btn = document.getElementById('cnBtnAssign');
+  btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Asignando...';
+
+  var data = new URLSearchParams();
+  data.append('caja_nap_id', cajaId);
+  data.append('puerto', puerto);
+  data.append('onu_id', cnOnuSelectedId);
+
+  fetch('/modulo?pagina=CajasNap&ajax=assign_onu', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: data.toString()
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    btn.disabled = false; btn.innerHTML = '<i class="fas fa-check"></i> Asignar';
+    if (d.status === 'success') {
+      document.getElementById('cnAssignResult').innerHTML = '<div style="color:#16a34a;padding:8px 10px;background:#f0fdf4;border-radius:6px;font-weight:600;"><i class="fas fa-check-circle"></i> ' + d.msg + '</div>';
+      setTimeout(function() {
+        closeModal('cnModalAssign');
+        cnOpenDetail(parseInt(cajaId));
+      }, 800);
+    } else {
+      document.getElementById('cnAssignResult').innerHTML = '<div style="color:#ef4444;padding:8px 10px;background:#fef2f2;border-radius:6px;">' + (d.msg || 'Error al asignar') + '</div>';
+    }
+  })
+  .catch(function(e) {
+    btn.disabled = false; btn.innerHTML = '<i class="fas fa-check"></i> Asignar';
+    document.getElementById('cnAssignResult').innerHTML = '<div style="color:#ef4444;padding:6px 0;">Error: ' + e.message + '</div>';
+  });
+}
+
+// ==================== UNASSIGN ONU ====================
+function cnOpenUnassign(cajaId, puerto) {
+  document.getElementById('cnUnassignPuerto').textContent = '#' + puerto;
+  document.getElementById('cnUnassignResult').innerHTML = '';
+  // Store data in data attributes
+  document.getElementById('cnModalUnassign').setAttribute('data-caja-id', cajaId);
+  document.getElementById('cnModalUnassign').setAttribute('data-puerto', puerto);
+  openModal('cnModalUnassign');
+}
+
+function cnDoUnassign() {
+  var modal = document.getElementById('cnModalUnassign');
+  var cajaId = modal.getAttribute('data-caja-id');
+  var puerto = modal.getAttribute('data-puerto');
+  if (!cajaId || !puerto) return;
+
+  var data = new URLSearchParams();
+  data.append('caja_nap_id', cajaId);
+  data.append('puerto', puerto);
+
+  fetch('/modulo?pagina=CajasNap&ajax=unassign_onu', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: data.toString()
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    if (d.status === 'success') {
+      document.getElementById('cnUnassignResult').innerHTML = '<div style="color:#16a34a;padding:8px 10px;background:#f0fdf4;border-radius:6px;font-weight:600;"><i class="fas fa-check-circle"></i> ' + d.msg + '</div>';
+      setTimeout(function() {
+        closeModal('cnModalUnassign');
+        cnOpenDetail(parseInt(cajaId));
+      }, 800);
+    } else {
+      document.getElementById('cnUnassignResult').innerHTML = '<div style="color:#ef4444;padding:8px 10px;background:#fef2f2;border-radius:6px;">' + (d.msg || 'Error al desasignar') + '</div>';
+    }
+  })
+  .catch(function(e) {
+    document.getElementById('cnUnassignResult').innerHTML = '<div style="color:#ef4444;padding:6px 0;">Error: ' + e.message + '</div>';
+  });
+}
+
+// ==================== INIT ====================
+document.addEventListener('DOMContentLoaded', function() {
+  cnFilterList();
+});
 </script>

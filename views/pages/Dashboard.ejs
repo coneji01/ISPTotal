@@ -1,72 +1,551 @@
+<style>
+/* Body font: Inter (matching DomISP) */
+body { font-family: 'Inter', sans-serif; }
+
+    :root {
+        --dash-primary: #4e54c8;
+        --dash-success: #10b981;
+        --dash-warning: #f59e0b;
+        --dash-danger: #ef4444;
+        --dash-dark: #1e293b;
+        --dash-gray: #64748b;
+    }
+
+    /* Grid de Tarjetas */
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 20px;
+        margin-bottom: 20px;
+        margin-top: 45px;
+    }
+
+    /* Estilo Compacto de Cards */
+    .dash-card {
+        background: #ffffff;
+        border-radius: 12px;
+        padding: 15px 20px;
+        position: relative;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        border: 1px solid rgba(0,0,0,0.02);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        height: 120px;
+    }
+
+    .dash-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.06);
+    }
+
+    /* Iconos Flotantes */
+    .card-icon-bg {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        opacity: 0.15;
+    }
+    .card-icon-fg {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+    }
+
+    /* Tipograf a Card */
+    .card-label { 
+        font-size: 0.8rem; 
+        font-weight: 600; 
+        color: var(--dash-gray); 
+        margin-bottom: 5px; 
+        text-transform: uppercase; 
+        letter-spacing: 0.5px; 
+    }
+    .card-value { 
+        font-size: 1.8rem;
+        font-weight: 800; 
+        color: var(--dash-dark); 
+        letter-spacing: -0.5px;
+        line-height: 1.2;
+    }
+    
+    /* Footer de la Card */
+    .card-footer { display: flex; align-items: center; gap: 5px; margin-top: auto; flex-wrap: wrap; }
+    
+    .trend-badge { 
+        padding: 2px 8px; border-radius: 15px; font-size: 0.7rem; font-weight: 700; 
+        display: flex; align-items: center; gap: 3px; white-space: nowrap;
+    }
+    .trend-up { background: rgba(16, 185, 129, 0.15); color: var(--dash-success); }
+    .trend-down { background: rgba(239, 68, 68, 0.15); color: var(--dash-danger); }
+    .trend-neutral { background: rgba(245, 158, 11, 0.15); color: var(--dash-warning); }
+    
+    .trend-info { background: rgba(78, 84, 200, 0.1); color: var(--dash-primary); }
+
+    /* Colores por tipo */
+    .card-clients .card-icon-bg, .card-clients .card-icon-fg { color: var(--dash-primary); background: currentColor; }
+    .card-clients .card-icon-fg { background: transparent; }
+    
+    .card-money .card-icon-bg, .card-money .card-icon-fg { color: var(--dash-success); background: currentColor; }
+    .card-money .card-icon-fg { background: transparent; }
+
+    .card-orders .card-icon-bg, .card-orders .card-icon-fg { color: var(--dash-warning); background: currentColor; }
+    .card-orders .card-icon-fg { background: transparent; }
+
+    /* Widget Grafico */
+    .chart-card {
+        background: #ffffff;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+        border: 1px solid rgba(0,0,0,0.02);
+        margin-bottom: 20px;
+    }
+    .chart-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+    .chart-title {
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--dash-dark);
+    }
+    .chart-legend {
+        display: flex;
+        gap: 15px;
+    }
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.8rem;
+        color: var(--dash-gray);
+    }
+    .legend-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 3px;
+    }
+    .legend-dot.purple { background: var(--dash-primary); }
+    .legend-dot.red { background: var(--dash-danger); }
+
+    /* Grafico de Barras */
+    .bar-chart {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        height: 180px;
+        padding: 20px 5px 0;
+        border-bottom: 1px solid #e2e8f0;
+        overflow: visible;
+    }
+    .bar-group {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        flex: 1;
+        max-width: 60px;
+    }
+    .bars-container {
+        display: flex;
+        align-items: flex-end;
+        gap: 3px;
+        height: 150px;
+    }
+    .bar {
+        width: 14px;
+        border-radius: 3px 3px 0 0;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        position: relative;
+    }
+    .bar:hover {
+        opacity: 0.8;
+        transform: scaleY(1.02);
+    }
+    .bar.purple { background: linear-gradient(180deg, #4e54c8 0%, #3b40a0 100%); }
+    .bar.red { background: linear-gradient(180deg, #ef4444 0%, #dc2626 100%); }
+    .bar-label {
+        font-size: 0.7rem;
+        color: var(--dash-gray);
+        margin-top: 8px;
+        font-weight: 500;
+    }
+    .bar-value {
+        font-size: 0.65rem;
+        font-weight: 700;
+        color: var(--dash-dark);
+        margin-bottom: 3px;
+        text-align: center;
+    }
+    .bar-tooltip {
+        position: absolute;
+        bottom: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        background: var(--dash-dark);
+        color: white;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 0.7rem;
+        white-space: nowrap;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.2s;
+    }
+    .bar:hover .bar-tooltip {
+        opacity: 1;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .bar-chart {
+            height: 150px;
+            overflow-x: auto;
+            overflow-y: visible;
+            justify-content: flex-start;
+            gap: 5px;
+            padding-top: 20px;
+            padding-bottom: 10px;
+        }
+        .bar-group {
+            min-width: 45px;
+        }
+        .bars-container {
+            height: 120px;
+        }
+        .bar {
+            width: 12px;
+        }
+        .chart-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+        }
+    }
+</style>
 <div class="dashboard-grid">
-  <div class="stat-card stat-blue">
-    <div class="stat-icon"><i class="fas fa-wifi"></i></div>
-    <div class="stat-info">
-      <div class="stat-value"><%= servicios || 0 %></div>
-      <div class="stat-label">Servicios Totales</div>
-      <div class="stat-sub"><span class="text-green"><%= activos || 0 %> Act.</span> · <span class="text-orange"><%= suspendidos || 0 %> Susp.</span></div>
+  <!-- Card 1: Servicios Totales -->
+  <div class="dash-card card-clients" onclick="location.href='/modulo?pagina=Clientes'" style="cursor:pointer">
+    <div class="card-icon-bg"></div>
+    <div class="card-icon-fg"><i class="fas fa-users"></i></div>
+    <div class="card-label">Servicios Totales</div>
+    <div class="card-value"><%= servicios || 0 %></div>
+    <div class="card-footer">
+      <span class="trend-badge trend-up"><i class="fas fa-check"></i> <%= activos || 0 %> Act.</span>
+      <span class="trend-badge trend-down"><i class="fas fa-pause"></i> <%= suspendidos || 0 %> Susp.</span>
+      <span class="trend-badge trend-info">+<%= ultimoMes || 0 %> este mes</span>
     </div>
   </div>
-  <div class="stat-card stat-green">
-    <div class="stat-icon"><i class="fas fa-dollar-sign"></i></div>
-    <div class="stat-info">
-      <div class="stat-value">$<%= (pagosHoy || 0).toFixed(0) %></div>
-      <div class="stat-label">Cobrado Hoy</div>
-      <a href="/modulo?pagina=RegistrarPago" class="stat-link">Ver detalle de pagos</a>
+
+  <!-- Card 2: Cobrado Hoy -->
+  <div class="dash-card card-money" onclick="location.href='/modulo?pagina=RegistrarPago'" style="cursor:pointer">
+    <div class="card-icon-bg"></div>
+    <div class="card-icon-fg"><i class="fas fa-dollar-sign"></i></div>
+    <div class="card-label">Cobrado Hoy</div>
+    <div class="card-value">$<%= (pagosHoy || 0).toFixed(0) %></div>
+    <div class="card-footer">
+      <span class="trend-badge trend-neutral" style="font-size:0.7rem; color:var(--dash-gray);"><i class="fas fa-list"></i> Ver detalle de pagos</span>
     </div>
   </div>
-  <div class="stat-card stat-orange">
-    <div class="stat-icon"><i class="fas fa-clipboard-list"></i></div>
-    <div class="stat-info">
-      <div class="stat-value"><%= pendientes || 0 %></div>
-      <div class="stat-label">Órdenes pendientes</div>
-      <div class="stat-sub"><%= instalaciones || 0 %> Instalaciones</div>
+
+  <!-- Card 3: Órdenes pendientes -->
+  <div class="dash-card card-orders" onclick="location.href='/modulo?pagina=Ordenes'" style="cursor:pointer">
+    <div class="card-icon-bg"></div>
+    <div class="card-icon-fg"><i class="fas fa-clipboard-list"></i></div>
+    <div class="card-label">Órdenes pendientes</div>
+    <div class="card-value"><%= pendientes || 0 %></div>
+    <div class="card-footer">
+      <span class="trend-badge trend-neutral"><i class="fas fa-tools"></i> <%= instalaciones || 0 %> Instalaciones</span>
     </div>
   </div>
-  <div class="stat-card stat-purple" onclick="openModal('perfilModal')" style="cursor:pointer">
-    <div class="stat-icon"><i class="fas fa-user"></i></div>
-    <div class="stat-info">
-      <div class="stat-value"><%= user.nombre || user.username %></div>
-      <div class="stat-label">Mi Perfil</div>
-      <div class="stat-sub"><i class="fas fa-chevron-right"></i> Click para editar</div>
+
+  <!-- Card 4: Perfil -->
+  <div class="dash-card card-profile" onclick="openModal('perfilModal')" style="cursor:pointer">
+    <div class="card-icon-bg"></div>
+    <div class="card-icon-fg"><i class="fas fa-user"></i></div>
+    <div class="card-label">Mi Perfil</div>
+    <div class="card-value" style="font-size:1.2rem;"><%= user.nombre || user.username %></div>
+    <div class="card-footer">
+      <span class="trend-badge trend-info"><i class="fas fa-chevron-right"></i> Click para editar</span>
     </div>
   </div>
 </div>
 
-<div class="card mt-20">
-  <div class="card-header"><i class="fas fa-chart-line"></i> Instalados vs Retirados (12 meses)</div>
-  <div class="card-body" style="height:200px;display:flex;align-items:center;justify-content:center;color:#888">
-    <canvas id="chartInstalaciones"></canvas>
+<!-- Chart Card: Instalados vs Retirados -->
+<div class="chart-card">
+  <div class="chart-header">
+    <div class="chart-title"><i class="fas fa-chart-bar"></i> Instalados vs Retirados (12 meses)</div>
+    <div class="chart-legend">
+      <span class="legend-item"><span class="legend-dot purple"></span> Instalados</span>
+      <span class="legend-item"><span class="legend-dot red"></span> Retirados</span>
+    </div>
   </div>
+  <div class="bar-chart" id="barChart"></div>
 </div>
 
-<div class="card mt-20">
-  <div class="card-header"><i class="fas fa-tachometer-alt"></i> Tráfico WAN Total (24h)</div>
-  <div class="card-body">
-    <div class="traffic-grid">
-      <div class="traffic-item"><span class="text-green">▼ Descarga</span> <strong>-- Mbps</strong></div>
-      <div class="traffic-item"><span class="text-blue">▲ Subida</span> <strong>-- Mbps</strong></div>
-      <div class="traffic-item"><span class="text-gray">Máx Descarga</span> <strong>-- Mbps</strong></div>
-      <div class="traffic-item"><span class="text-gray">Máx Subida</span> <strong>-- Mbps</strong></div>
+<!-- WAN Traffic Card -->
+<div class="chart-card">
+  <div class="chart-header">
+    <div class="chart-title"><i class="fas fa-tachometer-alt"></i> Tráfico WAN Total (24h)</div>
+    <div style="display:flex;gap:8px;">
+      <div class="chart-legend">
+        <span class="legend-item"><span class="legend-dot" style="background:#2563eb;"></span> Descarga</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#10b981;"></span> Subida</span>
+      </div>
+      <button class="btn btn-sm btn-primary" onclick="recargarTrafico()" id="btnRecargarTrafico"><i class="fas fa-sync"></i></button>
+    </div>
+  </div>
+  <div>
+    <div id="wanStats" style="display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:16px;">
+      <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:10px;">
+        <div style="font-size:0.68rem; font-weight:600; color:#64748b; text-transform:uppercase; letter-spacing:.3px;"><i class="fas fa-arrow-down" style="color:#2563eb; font-size:0.6rem;"></i> Descarga Actual</div>
+        <div style="font-size:1.1rem; font-weight:800; color:#2563eb; margin-top:2px;" id="wanDownload">--</div>
+      </div>
+      <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:10px;">
+        <div style="font-size:0.68rem; font-weight:600; color:#64748b; text-transform:uppercase; letter-spacing:.3px;"><i class="fas fa-arrow-up" style="color:#10b981; font-size:0.6rem;"></i> Subida Actual</div>
+        <div style="font-size:1.1rem; font-weight:800; color:#10b981; margin-top:2px;" id="wanUpload">--</div>
+      </div>
+      <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:10px;">
+        <div style="font-size:0.68rem; font-weight:600; color:#64748b; text-transform:uppercase; letter-spacing:.3px;"><i class="fas fa-arrow-down" style="color:#2563eb; font-size:0.6rem;"></i> Máx Descarga</div>
+        <div style="font-size:1.1rem; font-weight:800; color:#7c3aed; margin-top:2px;" id="wanMaxDownload">--</div>
+      </div>
+      <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:10px;">
+        <div style="font-size:0.68rem; font-weight:600; color:#64748b; text-transform:uppercase; letter-spacing:.3px;"><i class="fas fa-arrow-up" style="color:#10b981; font-size:0.6rem;"></i> Máx Subida</div>
+        <div style="font-size:1.1rem; font-weight:800; color:#ca8a04; margin-top:2px;" id="wanMaxUpload">--</div>
+      </div>
+    </div>
+    <div style="margin-top:16px; height:120px; position:relative;">
+      <canvas id="wanTrafficChart"></canvas>
     </div>
   </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-fetch('/api/stats').then(r=>r.json()).then(d=>{
-  if(d.pagosMes && document.getElementById('chartInstalaciones')){
-    new Chart(document.getElementById('chartInstalaciones'), {
-      type:'bar',
-      data:{
-        labels:['Ene','Feb','Mar','Abr','May','Jun'],
-        datasets:[
-          {label:'Instalados',data:[0,5,7,1,0,0],backgroundColor:'#22c55e'},
-          {label:'Retirados',data:[0,1,0,0,0,0],backgroundColor:'#ef4444'}
-        ]
-      },
-      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top'}}}
-    });
+// Helper to get month abbreviations
+var MONTHS = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+
+// Bar chart for Instalados vs Retirados
+(function() {
+  // Get data from server-side EJS variables
+  var instalados = <%- JSON.stringify(instalados_meses || []) %>;
+  var retirados = <%- JSON.stringify(retirados_meses || []) %>;
+
+  // Build 12-month lookup
+  var now = new Date();
+  var labels = [];
+  var instData = [];
+  var retData = [];
+
+  for (var i = 11; i >= 0; i--) {
+    var d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    var key = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+    var label = MONTHS[d.getMonth()];
+    labels.push(label);
+
+    // Find matching data
+    var instVal = 0;
+    for (var j = 0; j < instalados.length; j++) {
+      if (instalados[j].mes === key) {
+        instVal = instalados[j].total;
+        break;
+      }
+    }
+    var retVal = 0;
+    for (var j = 0; j < retirados.length; j++) {
+      if (retirados[j].mes === key) {
+        retVal = retirados[j].total;
+        break;
+      }
+    }
+    instData.push(instVal);
+    retData.push(retVal);
   }
+
+  // Build bar chart HTML
+  var maxInst = Math.max(...instData, 1);
+  var maxRet = Math.max(...retData, 1);
+  var maxVal = Math.max(maxInst, maxRet, 1);
+
+  var container = document.getElementById('barChart');
+  if (container) {
+    var html = '';
+    for (var i = 0; i < labels.length; i++) {
+      var instH = Math.round((instData[i] / maxVal) * 150);
+      var retH = Math.round((retData[i] / maxVal) * 150);
+      if (instH < 2 && instData[i] > 0) instH = 2;
+      if (retH < 2 && retData[i] > 0) retH = 2;
+
+      html += '<div class="bar-group">';
+      html += '  <div class="bars-container">';
+      html += '    <div class="bar purple" style="height:' + instH + 'px">';
+      html += '      <div class="bar-tooltip">Instalados: ' + instData[i] + '</div>';
+      html += '    </div>';
+      html += '    <div class="bar red" style="height:' + retH + 'px">';
+      html += '      <div class="bar-tooltip">Retirados: ' + retData[i] + '</div>';
+      html += '    </div>';
+      html += '  </div>';
+      html += '  <div class="bar-label">' + labels[i] + '</div>';
+      html += '</div>';
+    }
+    container.innerHTML = html;
+  }
+})();
+
+// WAN Traffic
+var chartRendered = false;
+
+document.addEventListener('DOMContentLoaded', function() {
+  setTimeout(cargarTraficoWAN, 500);
+  setInterval(cargarTraficoWAN, 5000);
 });
+
+function cargarTraficoWAN() {
+  fetch('/api/dashboard/wan-traffic')
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    if (!d.success) return;
+    if (d.current) {
+      document.getElementById('wanDownload').textContent = formatBps(d.current.bps_in);
+      document.getElementById('wanUpload').textContent = formatBps(d.current.bps_out);
+    }
+    var allData = (d.history || []).slice();
+    if (d.current) {
+      allData.push({ ts: new Date().toISOString(), bps_in: d.current.bps_in, bps_out: d.current.bps_out });
+    }
+    if (allData.length > 0) {
+      var maxIn = Math.max(...allData.map(function(h) { return h.bps_in; }));
+      var maxOut = Math.max(...allData.map(function(h) { return h.bps_out; }));
+      document.getElementById('wanMaxDownload').textContent = formatBps(maxIn);
+      document.getElementById('wanMaxUpload').textContent = formatBps(maxOut);
+      if (!chartRendered) {
+        chartRendered = true;
+        renderWanChart(allData);
+      }
+    }
+  })
+  .catch(function() {});
+}
+
+function formatBps(bps) {
+  bps = parseFloat(bps) || 0;
+  if (bps >= 1000000000) return (bps / 1000000000).toFixed(1) + ' Gbps';
+  if (bps >= 1000000) return (bps / 1000000).toFixed(1) + ' Mbps';
+  if (bps >= 1000) return (bps / 1000).toFixed(1) + ' Kbps';
+  return bps.toFixed(0) + ' bps';
+}
+
+var wanChart = null;
+var wanDataCache = [];  // Cache all data points
+
+function cargarTraficoWAN() {
+  fetch('/api/dashboard/wan-traffic')
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    if (!d.success) return;
+    
+    // Update current numbers
+    if (d.current) {
+      document.getElementById('wanDownload').textContent = formatBps(d.current.bps_in);
+      document.getElementById('wanUpload').textContent = formatBps(d.current.bps_out);
+    }
+    
+    // Build combined data
+    var allData = (d.history || []).slice();
+    if (d.current) {
+      allData.push({ ts: new Date().toISOString(), bps_in: d.current.bps_in, bps_out: d.current.bps_out });
+    }
+    
+    if (allData.length > 0) {
+      var maxIn = Math.max(...allData.map(function(h) { return h.bps_in; }));
+      var maxOut = Math.max(...allData.map(function(h) { return h.bps_out; }));
+      document.getElementById('wanMaxDownload').textContent = formatBps(maxIn);
+      document.getElementById('wanMaxUpload').textContent = formatBps(maxOut);
+    }
+    
+    // Chart: smooth animation with new data
+    if (!chartRendered && allData.length > 0) {
+      chartRendered = true;
+      wanDataCache = allData.slice();
+      renderWanChart(wanDataCache);
+    } else if (chartRendered && d.current && wanChart) {
+      // Smooth update: add new point, scroll left
+      var ts = new Date().toISOString();
+      wanDataCache.push({ ts: ts, bps_in: d.current.bps_in, bps_out: d.current.bps_out });
+      if (wanDataCache.length > 100) wanDataCache.shift();  // Keep max 100 points
+      updateWanChart();
+    }
+  })
+  .catch(function() {});
+}
+
+function renderWanChart(data) {
+  var ctx = document.getElementById('wanTrafficChart');
+  if (!ctx) return;
+  var points = data.slice(-100);
+  var labels = points.map(function(p) { return p.ts.substring(11,16); });
+  var inData = points.map(function(p) { return p.bps_in / 1000000; });
+  var outData = points.map(function(p) { return p.bps_out / 1000000; });
+  if (wanChart) { wanChart.destroy(); }
+  var maxVal = Math.max(10, ...inData, ...outData);
+  wanChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [
+        { label: 'Descarga', data: inData, borderColor: '#2563eb', backgroundColor: 'rgba(37,99,235,0.08)', fill: true, tension: 0.3, pointRadius: 0, borderWidth: 1.5 },
+        { label: 'Subida', data: outData, borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.06)', fill: true, tension: 0.3, pointRadius: 0, borderWidth: 1.5 }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      animation: { duration: 800, easing: 'easeInOutQuart' },
+      transitions: { active: { animation: { duration: 300 } } },
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { display: true, ticks: { maxTicksLimit: 12, font: { size: 10 }, maxRotation: 0 } },
+        y: { beginAtZero: true, max: maxVal * 1.2, ticks: { callback: function(v) { return v.toFixed(0) + ' Mbps'; }, font: { size: 10 } } }
+      }
+    }
+  });
+}
+
+function updateWanChart() {
+  if (!wanChart) return;
+  var points = wanDataCache.slice(-100);
+  var labels = points.map(function(p) { return p.ts.substring(11,16); });
+  var inData = points.map(function(p) { return p.bps_in / 1000000; });
+  var outData = points.map(function(p) { return p.bps_out / 1000000; });
+  var maxVal = Math.max(10, ...inData, ...outData);
+  
+  wanChart.data.labels = labels;
+  wanChart.data.datasets[0].data = inData;
+  wanChart.data.datasets[1].data = outData;
+  wanChart.options.scales.y.max = maxVal * 1.2;
+  wanChart.update('none');  // Smooth update without full animation
+}
+
+function recargarTrafico() {
+  var btn = document.getElementById('btnRecargarTrafico');
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+  cargarTraficoWAN();
+  setTimeout(function() { btn.innerHTML = '<i class="fas fa-sync"></i>'; }, 1000);
+}
 </script>

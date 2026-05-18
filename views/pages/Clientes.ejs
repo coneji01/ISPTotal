@@ -196,7 +196,11 @@
     <div class="modal-body" style="text-align:center;">
       <p style="color:#64748b;margin-bottom:16px;">Lo ideal es retirar servicios para no perder la información del cliente.</p>
       <p style="color:#991b1b;font-weight:600;margin-bottom:16px;">¿Estás seguro que deseas eliminar completamente?</p>
-      <p style="font-size:0.85rem;color:#64748b;margin-bottom:20px;">Esta acción es irrevocable y borrará todos los servicios del MikroTik.</p>
+      <p style="font-size:0.85rem;color:#64748b;margin-bottom:16px;">Esta acción es irrevocable y borrará todos los servicios del MikroTik.</p>
+      <label style="display:flex;align-items:center;gap:8px;justify-content:center;margin-bottom:16px;cursor:pointer;font-size:0.88rem;color:#475569;">
+        <input type="checkbox" id="chkEliminarOnuSmartolt" style="width:18px;height:18px;accent-color:#7c3aed;">
+        <span>Eliminar también la ONU de <strong>SmartOLT</strong></span>
+      </label>
       <div class="btn-group" style="justify-content:center;">
         <button class="btn btn-secondary" onclick="cerrarModal('modalConfirmDelete')">Cancelar</button>
         <button class="btn btn-danger" onclick="confirmarEliminar()">Sí, Eliminar Todo</button>
@@ -366,7 +370,12 @@ let deleteId = null;
 function borrarCliente(id) { deleteId = id; abrirModal('modalConfirmDelete'); }
 function confirmarEliminar() {
   if (deleteId) {
-    fetch('/api/clientes/' + deleteId + '/delete', { method: 'POST' })
+    var eliminarOnu = document.getElementById('chkEliminarOnuSmartolt').checked;
+    fetch('/api/clientes/' + deleteId + '/delete', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ eliminar_onu_smartolt: eliminarOnu })
+    })
       .then(r => r.json()).then(res => {
         if (res.success) { showToast('Cliente eliminado'); deleteId = null; cerrarModal('modalConfirmDelete'); cargarTabla(); }
       });

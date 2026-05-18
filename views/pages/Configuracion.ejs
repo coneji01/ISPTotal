@@ -24,12 +24,12 @@
     <div class="config-title">VPN</div>
   </div>
   <!-- OLT -->
-  <div class="config-card" onclick="openConfig('olt')">
+  <div class="config-card" onclick="window.location.href='/modulo?pagina=Smartolt'">
     <div class="config-icon-box"><i class="fas fa-network-wired"></i></div>
     <div class="config-title">OLT</div>
   </div>
   <!-- TR069 -->
-  <div class="config-card" onclick="openConfig('tr069')">
+  <div class="config-card" onclick="window.location.href='/modulo?pagina=TR069'">
     <div class="config-icon-box"><i class="fas fa-project-diagram"></i></div>
     <div class="config-title">TR069</div>
   </div>
@@ -39,12 +39,12 @@
     <div class="config-title">Zonas</div>
   </div>
   <!-- Planes -->
-  <div class="config-card" onclick="openConfig('planes')">
+  <div class="config-card" onclick="window.location.href='/modulo?pagina=Planes'">
     <div class="config-icon-box"><i class="fas fa-tachometer-alt"></i></div>
     <div class="config-title">Planes</div>
   </div>
   <!-- Facturación -->
-  <div class="config-card" onclick="openConfig('facturacion')">
+  <div class="config-card" onclick="window.location.href='/modulo?pagina=Facturacion'">
     <div class="config-icon-box"><i class="fas fa-file-invoice-dollar"></i></div>
     <div class="config-title">Facturación</div>
   </div>
@@ -64,7 +64,7 @@
     <div class="config-title">Presets</div>
   </div>
   <!-- Editor de Plantillas -->
-  <div class="config-card" onclick="openConfig('plantillas')">
+  <div class="config-card" onclick="window.location.href='/modulo?pagina=Plantillas'">
     <div class="config-icon-box"><i class="fas fa-edit"></i></div>
     <div class="config-title">Editor de<br>Plantillas</div>
   </div>
@@ -170,7 +170,7 @@ const configSections = {
     icon: 'fa-network-wired',
     fields: [
       { label: 'Subdominio SmartOLT', name: 'smartolt_subdomain', type: 'text' },
-      { label: 'API Key', name: 'smartolt_apikey', type: 'password' },
+      { label: 'API Key', name: 'smartolt_api_key', type: 'password' },
       { label: 'ID de la OLT', name: 'smartolt_olt_id', type: 'number' },
       { label: 'Sincronización automática', name: 'smartolt_autosync', type: 'select', options: ['Cada 5 min', 'Cada 15 min', 'Cada 30 min', 'Cada 1 hora', 'Manual'] }
     ]
@@ -430,26 +430,82 @@ function openConfig(sectionId) {
   }
   
   document.getElementById('configSectionBody').innerHTML = html;
+  
+  // Cargar valores guardados para todas las secciones con fields (excepto routerPanel y table)
+  if (section.fields && !section.routerPanel && !section.table && !section.textarea) {
+    loadConfigValues(sectionId);
+  }
 }
 
 function closeConfigSection() {
   document.getElementById('configSectionContainer').style.display = 'none';
 }
 
-function saveConfig(e, sectionId) {
+async function saveConfig(e, sectionId) {
   e.preventDefault();
   const form = document.getElementById('configForm');
   const data = new FormData(form);
   const obj = Object.fromEntries(data);
-  
+
+  // Para OLT, también guardar en el endpoint específico de SmartOLT
+  // (usa SMARTOLT_API_KEY con guiones entre palabras, correcto)
+  if (sectionId === 'olt') {
+    fetch('/api/smartolt/config/save', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        subdomain: obj.smartolt_subdomain || '',
+        api_key: obj.smartolt_api_key || '',
+        olt_id: obj.smartolt_olt_id || ''
+      })
+    }).catch(() => {});
+  }
+
   fetch('/api/config/save', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ section: sectionId, data: obj })
   }).then(r => r.json()).then(res => {
-    if (res.success) showToast('Configuración guardada');
+    if (res.success) {
+      showToast('Configuración guardada');
+      // Recargar los valores guardados para que el formulario los muestre
+      if (sectionId !== 'routers' && sectionId !== 'zonas' && sectionId !== 'planes' && sectionId !== 'log') {
+        setTimeout(function() { loadConfigValues(sectionId); }, 100);
+      }
+    }
     else showToast('Error al guardar', 'error');
   }).catch(() => showToast('Error de conexión', 'error'));
+}
+
+function loadConfigValues(sectionId) {
+  fetch('/api/config/get')
+    .then(r => r.json())
+    .then(config => {
+      const section = configSections[sectionId];
+      if (!section || !section.fields) return;
+
+      section.fields.forEach(f => {
+        const el = document.querySelector('[name="' + f.name + '"]');
+        if (!el) return;
+        const savedVal = config[f.name];
+        if (savedVal !== undefined && savedVal !== null && savedVal !== '') {
+          if (el.tagName === 'SELECT') {
+            for (let opt of el.options) {
+              const optVal = opt.value;
+              if (optVal === savedVal || optVal === savedVal.toString()) {
+                el.value = optVal;
+                break;
+              }
+            }
+          } else if (el.type === 'color') {
+            el.value = savedVal || '#000000';
+          } else if (el.type !== 'password' && el.type !== 'file' && !el.readOnly) {
+            el.value = savedVal;
+          }
+        }
+      });
+    })
+    .catch(() => {});
 }
 
 function generateToken() {

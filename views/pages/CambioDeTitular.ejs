@@ -1,34 +1,329 @@
+<style>
+.ct-step-header{display:flex;align-items:center;gap:14px;padding:18px 20px;border-bottom:1px solid #e2e8f0;background:#f8fafc;border-radius:12px 12px 0 0}
+.ct-step-num{width:36px;height:36px;border-radius:50%;background:#2563eb;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1rem;flex-shrink:0}
+.ct-step-title{font-weight:700;font-size:1.05rem;color:#1e293b}.ct-step-desc{font-size:0.82rem;color:#64748b;margin-top:2px}
+.ct-client{border:1px solid #e2e8f0;border-radius:10px;margin-bottom:8px;overflow:hidden;}
+.ct-client-header{padding:12px 14px;background:#f8fafc;display:flex;justify-content:space-between;align-items:center;cursor:pointer;}
+.ct-client-header:hover{background:#f0f9ff;}
+.ct-svc-card{padding:12px 14px;border:1px solid #e2e8f0;border-radius:8px;margin:4px 0;display:flex;align-items:center;gap:12px;cursor:pointer;transition:all .15s}
+.ct-svc-card:hover{border-color:#93c5fd;background:#f0f9ff}
+.ct-svc-card.selected{border-color:#2563eb;background:#eff6ff;box-shadow:0 0 0 2px rgba(37,99,235,0.15)}
+.ct-svc-check{width:20px;height:20px;border-radius:4px;border:2px solid #cbd5e1;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;color:transparent;font-size:0.7rem}
+.ct-svc-card.selected .ct-svc-check{background:#2563eb;border-color:#2563eb;color:#fff}
+.ct-badge{padding:3px 8px;border-radius:5px;font-size:0.72rem;font-weight:700}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media(max-width:768px){.form-grid{grid-template-columns:1fr}}
+@media(max-width:600px){.doc-row{flex-wrap:wrap!important}.doc-row select,.doc-row input,.doc-row button{width:100%!important}}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes popIn{from{opacity:0;transform:scale(0.9)}to{opacity:1;transform:scale(1)}}
+.ct-modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;display:none;align-items:center;justify-content:center;backdrop-filter:blur(2px)}
+.ct-modal{background:white;width:90%;max-width:520px;border-radius:10px;padding:25px;text-align:center;box-shadow:0 15px 30px rgba(0,0,0,0.2);animation:popIn 0.3s ease;border-top:5px solid #7c3aed}
+.btn-modal{padding:10px 20px;border-radius:5px;font-weight:600;cursor:pointer;border:none;font-size:0.9rem}.btn-yes{background:#10b981;color:white}.btn-no{background:#e2e8f0;color:#64748b}
+</style>
+
 <div class="page-header">
-  <h2><i class="fas fa-<%= pagina === 'Clientes' ? 'users' : pagina === 'Ordenes' ? 'clipboard-list' : pagina === 'Gpon' ? 'network-wired' : pagina === 'CajasNap' ? 'box' : pagina === 'Inventario' ? 'boxes' : pagina === 'Ventas' ? 'shopping-cart' : pagina === 'Proveedores' ? 'truck' : pagina === 'Empleados' ? 'id-badge' : pagina === 'PagosAdmin' ? 'coins' : pagina === 'Estadisticas' ? 'chart-bar' : pagina === 'Monitoreo' ? 'desktop' : pagina === 'RegistrarPago' ? 'money-bill' : pagina === 'NuevoCliente' ? 'user-plus' : pagina === 'BuscarOnu' ? 'search' : pagina === 'CambioOnu' ? 'exchange-alt' : pagina === 'CambioDeTitular' ? 'user-edit' : pagina === 'Traslados' ? 'truck-moving' : pagina === 'PromesaDePago' ? 'handshake' : pagina === 'CuadreCaja' ? 'cash-register' : pagina === 'Configuracion' ? 'cog' : pagina === 'Actualizaciones' ? 'sync' : 'cog' %>"></i> <%= pagina.replace(/([A-Z])/g, ' $1').trim() %></h2>
-  <div class="btn-group">
-    <% if (pagina !== 'BuscarOnu' && pagina !== 'Estadisticas' && pagina !== 'Monitoreo' && pagina !== 'Configuracion' && pagina !== 'Actualizaciones') { %>
-    <button class="btn btn-primary btn-sm" onclick="openModal('nuevoModal')"><i class="fas fa-plus"></i> Nuevo</button>
-    <% } %>
-  </div>
+  <h2 class="page-title"><i class="fas fa-exchange-alt"></i> Cambio de Titular</h2>
 </div>
 
-<div class="card">
-  <div class="card-body">
-    <div class="loading"><i class="fas fa-spinner fa-spin"></i><br>Cargando...</div>
+<!-- PASO 1 -->
+<div class="card" id="paso1Card" style="max-width:800px; margin:0 auto;">
+  <div class="ct-step-header">
+    <span class="ct-step-num">1</span>
+    <div><div class="ct-step-title">Buscar Titular Actual</div><div class="ct-step-desc">Busque por nombre, cédula, apodo o NIC</div></div>
   </div>
-</div>
-
-<!-- Modal placeholder -->
-<div id="nuevoModal" class="modal" style="display:none">
-  <div class="modal-content">
-    <div class="modal-header"><h3><i class="fas fa-plus"></i> Nuevo</h3><span class="modal-close" onclick="closeModal('nuevoModal')">&times;</span></div>
-    <div class="modal-body">
-      <p style="color:var(--text-gray);text-align:center;padding:20px;">Módulo en construcción</p>
-      <div class="btn-group" style="justify-content:flex-end;margin-top:16px;">
-        <button class="btn btn-secondary" onclick="closeModal('nuevoModal')">Cancelar</button>
-        <button class="btn btn-primary">Guardar</button>
+  <div style="padding:20px;">
+    <div style="position:relative;">
+      <input type="text" id="searchInput" class="form-control" placeholder="Escriba para buscar..." autocomplete="off" style="padding-left:38px;font-size:1rem;" oninput="ctDoSearch()">
+      <i class="fas fa-search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#94a3b8;"></i>
+    </div>
+    <div id="searchResults" style="margin-top:10px;max-height:400px;overflow-y:auto;"></div>
+    <!-- Servicios del cliente -->
+    <div id="serviciosPanel" style="display:none;margin-top:16px;">
+      <div style="padding:14px 16px;background:linear-gradient(135deg,#f0f9ff,#eff6ff);border:1px solid #bfdbfe;border-radius:10px;margin-bottom:14px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <div style="font-weight:700;color:#1e40af;font-size:1.05rem;"><i class="fas fa-user"></i> <span id="selClientName"></span></div>
+            <div style="font-size:0.82rem;color:#64748b;margin-top:2px;"><span id="selClientInfo"></span></div>
+          </div>
+          <button type="button" onclick="ctCancelSelect()" style="background:none;border:none;color:#94a3b8;cursor:pointer;font-size:1.1rem;"><i class="fas fa-times"></i></button>
+        </div>
+      </div>
+      <div style="font-weight:700;font-size:0.88rem;color:#475569;margin-bottom:10px;">Seleccione los servicios a transferir:</div>
+      <div id="serviciosList"></div>
+      <div style="margin-top:16px;">
+        <button type="button" class="btn-primary" id="btnContinuar" onclick="ctGoPaso2()" style="background:#2563eb;" disabled>
+          <i class="fas fa-arrow-right"></i> Continuar
+        </button>
       </div>
     </div>
   </div>
 </div>
 
+<!-- PASO 2 -->
+<div class="card" id="paso2Card" style="max-width:800px;margin:20px auto 0;display:none;">
+  <div class="ct-step-header">
+    <span class="ct-step-num">2</span>
+    <div><div class="ct-step-title">Nuevo Titular</div><div class="ct-step-desc">Ingrese los datos del nuevo titular</div></div>
+  </div>
+  <div style="padding:20px;">
+    <div id="resumenTransfer" style="padding:12px 16px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;margin-bottom:20px;font-size:0.85rem;color:#475569;"></div>
+    <input type="hidden" id="hExistingClientId" value="0">
+    <h4 style="color:#2563eb;border-bottom:1px solid #eee;padding-bottom:10px;margin-bottom:20px;"><i class="fas fa-id-card"></i> Identificación del Nuevo Titular</h4>
+    <div class="form-group">
+      <label class="form-label">Documento de Identidad <span style="color:red">*</span></label>
+      <div class="doc-row" style="display:flex;gap:10px;">
+        <select id="tipoDoc" class="form-control" style="width:130px;flex-shrink:0;"><option value="cedula">Cédula</option><option value="pasaporte">Pasaporte</option><option value="rnc">RNC</option></select>
+        <input type="text" id="inputCedula" class="form-control" placeholder="Escriba el número..." autocomplete="off" oninput="this.value=this.value.replace(/[^a-zA-Z0-9]/g,'')">
+        <button type="button" class="btn-primary" id="btnConfirmarDoc" onclick="ctValidarDoc()" style="background:#10b981;flex-shrink:0;">Confirmar <i class="fas fa-check"></i></button>
+      </div>
+      <small style="color:#64748b;font-size:0.75rem;margin-top:5px;display:block;">Sin guiones.</small>
+    </div>
+    <fieldset id="restoFormulario" disabled style="border:none;padding:0;margin:0;opacity:0.6;transition:opacity 0.3s;">
+      <div class="form-grid" style="margin-top:20px;">
+        <div class="form-group"><label class="form-label">Nombre Completo <span style="color:red">*</span></label><input type="text" id="inputName" class="form-control" placeholder="Ej: JUAN PEREZ" oninput="this.value=this.value.replace(/[^a-zA-Z0-9\s]/g,'').toUpperCase()" style="text-transform:uppercase;"></div>
+        <div class="form-group"><label class="form-label">Apodo</label><input type="text" id="inputAlias" class="form-control" placeholder="Ej: El Rubio"></div>
+        <div class="form-group"><label class="form-label">Teléfono <span style="color:red">*</span></label><input type="text" id="inputPhone" class="form-control" placeholder="8090000000" oninput="this.value=this.value.replace(/[^0-9]/g,'')"></div>
+      </div>
+      <div style="margin-top:30px;border-top:1px solid #eee;padding-top:20px;display:flex;gap:10px;justify-content:flex-end;">
+        <button type="button" class="btn-primary" onclick="ctBackPaso1()" style="background:#94a3b8;padding:12px 24px;"><i class="fas fa-arrow-left"></i> Volver</button>
+        <button type="button" id="btnEjecutar" class="btn-primary" onclick="ctEjecutar()" style="background:#7c3aed;padding:12px 30px;font-size:1rem;"><i class="fas fa-exchange-alt"></i> Cambiar Titular</button>
+      </div>
+    </fieldset>
+  </div>
+</div>
+
+<div class="ct-modal-overlay" id="ctModal"><div class="ct-modal"><div id="ctModalIcon" style="font-size:2.5rem;margin-bottom:10px;"></div><div id="ctModalTitle" style="font-size:1.15rem;font-weight:700;color:#1e293b;margin-bottom:10px;"></div><div id="ctModalText" style="color:#475569;margin-bottom:22px;line-height:1.5;font-size:0.95rem;text-align:left;"></div><div id="ctModalActions" style="display:flex;gap:10px;justify-content:center;"></div></div></div>
+
+<div id="ctResultModal" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:99999;display:none;align-items:center;justify-content:center;backdrop-filter:blur(2px);">
+<div id="ctResultBorder" style="background:#fff;width:90%;max-width:460px;border-radius:12px;padding:30px;text-align:center;box-shadow:0 15px 30px rgba(0,0,0,0.2);border-top:5px solid #16a34a;animation:popIn 0.3s ease;">
+<div id="ctResultIcon" style="font-size:3rem;margin-bottom:10px;"></div><div id="ctResultTitle" style="font-size:1.15rem;font-weight:700;color:#1e293b;margin-bottom:8px;"></div><div id="ctResultText" style="color:#475569;margin-bottom:22px;line-height:1.5;font-size:0.92rem;"></div><div id="ctResultActions" style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;"></div>
+</div></div>
+
 <script>
-setTimeout(function() {
-  document.querySelector('.loading').innerHTML = '<p style="color:var(--text-gray);text-align:center;padding:20px;">Datos cargados correctamente</p>';
-}, 500);
+var _ctTimer=null;
+var ctSelectedClient=null;
+var ctClientServices=[];
+var ctSelectedSvcIds=[];
+var _ctConfirmCb=null;
+
+function escH(s){var d=document.createElement('div');d.textContent=s;return d.innerHTML;}
+
+// ===== BUSCAR =====
+function ctDoSearch(){
+  clearTimeout(_ctTimer);
+  var term=document.getElementById('searchInput').value.trim();
+  var box=document.getElementById('searchResults');
+  if(term.length<2){box.innerHTML='';return;}
+  _ctTimer=setTimeout(function(){
+    box.innerHTML='<div style="padding:14px;text-align:center;color:#94a3b8;"><i class="fas fa-spinner fa-spin"></i> Buscando...</div>';
+    fetch('/api/cambio-titular/buscar',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({term:term})})
+    .then(function(r){return r.json();})
+    .then(function(data){
+      if(!data||data.length===0){
+        box.innerHTML='<div style="padding:14px;text-align:center;color:#94a3b8;">No se encontraron resultados</div>';
+        return;
+      }
+      window._ctSearchResults=data;
+      var h='';
+      data.forEach(function(c,idx){
+        var aliasH=c.alias?' <span style="color:#64748b;font-style:italic;font-size:0.85rem;">('+escH(c.alias)+')</span>':'';
+        var svcCount=c.services?c.services.length:0;
+        h+='<div class="ct-client">';
+        h+='<div class="ct-client-header" onclick="ctSelectClient('+idx+')">';
+        h+='<div><div style="font-weight:600;color:#1e293b;font-size:0.92rem;">'+escH(c.name)+aliasH+'</div>';
+        h+='<div style="font-size:0.78rem;color:#64748b;margin-top:2px;">C\u00e9d: '+(c.cedula||'-')+' | Tel: '+(c.phone||'-')+' | '+svcCount+' servicio'+(svcCount!==1?'s':'')+'</div></div>';
+        h+='<i class="fas fa-chevron-right" style="color:#cbd5e1;"></i>';
+        h+='</div></div>';
+      });
+      box.innerHTML=h;
+    })
+    .catch(function(e){
+      console.error('Error buscando:',e);
+      box.innerHTML='<div style="padding:14px;text-align:center;color:#ef4444;"><i class="fas fa-exclamation-triangle"></i> Error al buscar</div>';
+    });
+  },300);
+}
+
+// ===== SELECCIONAR CLIENTE =====
+function ctSelectClient(idx){
+  var c=window._ctSearchResults[idx];
+  ctSelectedClient=c;
+  ctClientServices=c.services||[];
+  ctSelectedSvcIds=[];
+  document.getElementById('searchResults').innerHTML='';
+  document.getElementById('searchInput').value='';
+  document.getElementById('selClientName').textContent=c.name||'';
+  document.getElementById('selClientInfo').innerHTML='C\u00e9d: '+(c.cedula||'-')+' &nbsp;|&nbsp; Tel: '+(c.phone||'-');
+  document.getElementById('serviciosPanel').style.display='block';
+  document.getElementById('btnContinuar').disabled=true;
+
+  if(ctClientServices.length===0){
+    document.getElementById('serviciosList').innerHTML='<div style="padding:14px;text-align:center;color:#f59e0b;">No tiene servicios activos.</div>';
+    return;
+  }
+
+  var h='';
+  if(ctClientServices.length>1){
+    h+='<div class="ct-svc-card" id="ctSvcAll" onclick="ctToggleAll()">';
+    h+='<div class="ct-svc-check"><i class="fas fa-check"></i></div>';
+    h+='<div style="flex:1;"><div style="font-weight:700;color:#1e293b;">Todos los servicios ('+ctClientServices.length+')</div>';
+    h+='<div style="font-size:0.78rem;color:#64748b;">Transferir todos al nuevo titular</div></div></div>';
+  }
+  ctClientServices.forEach(function(s){
+    var st=s.svc_status||'active';
+    var stL={active:'Activo',suspended:'Suspendido',activo:'Activo'}[st]||st;
+    var stC=st==='active'||st==='activo'?'background:#dcfce7;color:#166534':(st==='suspended'?'background:#fef2f2;color:#991b1b':'background:#f1f5f9;color:#64748b');
+    var auto=ctClientServices.length===1?' selected':'';
+    h+='<div class="ct-svc-card'+auto+'" id="ctSvc'+s.service_id+'" onclick="ctToggleSvc('+s.service_id+')">';
+    h+='<div class="ct-svc-check"><i class="fas fa-check"></i></div>';
+    h+='<div style="flex:1;"><div style="font-weight:600;color:#334155;font-size:0.9rem;">NIC: '+(s.nic||'-')+' \u2014 '+(s.plan_name||'Sin plan')+' ($'+parseFloat(s.plan_price||0).toFixed(0)+')</div>';
+    h+='<div style="font-size:0.78rem;color:#64748b;">'+(s.zone_name||'')+(s.svc_address?' \u2022 '+s.svc_address:'')+(s.ip_address?' \u2022 IP: '+s.ip_address:'')+'</div></div>';
+    h+='<span class="ct-badge" style="'+stC+'">'+stL+'</span></div>';
+  });
+  document.getElementById('serviciosList').innerHTML=h;
+  if(ctClientServices.length===1){ctSelectedSvcIds=[ctClientServices[0].service_id];ctUpdateBtn();}
+}
+
+function ctToggleSvc(id){var i=ctSelectedSvcIds.indexOf(id);if(i>=0)ctSelectedSvcIds.splice(i,1);else ctSelectedSvcIds.push(id);ctUpdateUI();}
+function ctToggleAll(){if(ctSelectedSvcIds.length===ctClientServices.length)ctSelectedSvcIds=[];else ctSelectedSvcIds=ctClientServices.map(function(s){return s.service_id;});ctUpdateUI();}
+function ctUpdateUI(){
+  ctClientServices.forEach(function(s){var el=document.getElementById('ctSvc'+s.service_id);if(el){if(ctSelectedSvcIds.indexOf(s.service_id)>=0)el.classList.add('selected');else el.classList.remove('selected');}});
+  var ae=document.getElementById('ctSvcAll');if(ae){if(ctSelectedSvcIds.length===ctClientServices.length)ae.classList.add('selected');else ae.classList.remove('selected');}
+  ctUpdateBtn();
+}
+function ctUpdateBtn(){document.getElementById('btnContinuar').disabled=ctSelectedSvcIds.length===0;}
+function ctCancelSelect(){ctSelectedClient=null;ctClientServices=[];ctSelectedSvcIds=[];document.getElementById('serviciosPanel').style.display='none';}
+
+// ===== PASO 2 =====
+function ctGoPaso2(){
+  if(!ctSelectedClient||ctSelectedSvcIds.length===0)return;
+  var r='<b>De:</b> '+escH(ctSelectedClient.name)+' &nbsp;|&nbsp; <b>Servicios:</b> ';
+  if(ctSelectedSvcIds.length===ctClientServices.length&&ctClientServices.length>1)r+='Todos ('+ctClientServices.length+')';
+  else{var ns=[];ctClientServices.forEach(function(s){if(ctSelectedSvcIds.indexOf(s.service_id)>=0)ns.push('NIC:'+s.nic);});r+=ns.join(', ');}
+  document.getElementById('resumenTransfer').innerHTML=r;
+  document.getElementById('paso1Card').style.display='none';document.getElementById('paso2Card').style.display='block';document.getElementById('paso2Card').style.animation='fadeIn 0.4s';
+  ctResetPaso2();
+}
+function ctBackPaso1(){document.getElementById('paso2Card').style.display='none';document.getElementById('paso1Card').style.display='block';}
+function ctResetPaso2(){
+  document.getElementById('inputCedula').value='';document.getElementById('inputCedula').readOnly=false;document.getElementById('inputCedula').style.background='';document.getElementById('inputCedula').style.borderColor='';
+  document.getElementById('tipoDoc').disabled=false;document.getElementById('btnConfirmarDoc').style.display='';
+  document.getElementById('inputName').value='';document.getElementById('inputAlias').value='';document.getElementById('inputPhone').value='';
+  document.getElementById('hExistingClientId').value='0';
+  var fs=document.getElementById('restoFormulario');fs.disabled=true;fs.style.opacity='0.6';
+  ['inputName','inputAlias','inputPhone'].forEach(function(id){document.getElementById(id).readOnly=false;document.getElementById(id).style.backgroundColor='';});
+}
+
+// ===== MODAL =====
+function ctShowModal(type,title,text,showCancel,cb){
+  document.getElementById('ctModalTitle').innerHTML=title;document.getElementById('ctModalText').innerHTML=text;_ctConfirmCb=cb||null;
+  var ic=document.getElementById('ctModalIcon'),bd=document.querySelector('.ct-modal');
+  if(type==='error'){ic.innerHTML='<i class="fas fa-times-circle"></i>';ic.style.color='#ef4444';bd.style.borderTopColor='#ef4444';}
+  else if(type==='warning'){ic.innerHTML='<i class="fas fa-exclamation-triangle"></i>';ic.style.color='#f59e0b';bd.style.borderTopColor='#f59e0b';}
+  else{ic.innerHTML='<i class="fas fa-check-circle"></i>';ic.style.color='#7c3aed';bd.style.borderTopColor='#7c3aed';}
+  document.getElementById('ctModalActions').innerHTML=showCancel?
+    '<button class="btn-modal btn-no" onclick="ctCloseModal()">Cancelar</button><button class="btn-modal btn-yes" onclick="ctConfirmModal()">S\u00ed, Continuar</button>':
+    '<button class="btn-modal btn-yes" onclick="ctCloseModal()">Aceptar</button>';
+  document.getElementById('ctModal').style.display='flex';
+}
+function ctCloseModal(){document.getElementById('ctModal').style.display='none';}
+function ctConfirmModal(){if(_ctConfirmCb)_ctConfirmCb();ctCloseModal();}
+
+// ===== VALIDAR DOCUMENTO =====
+function ctValidarDoc(){
+  var tipo=document.getElementById('tipoDoc').value,inp=document.getElementById('inputCedula'),val=inp.value.trim(),len=val.length;
+  if(!val){ctShowModal('error','Campo Vac\u00edo','Escriba el documento.');return;}
+  if(ctSelectedClient&&ctSelectedClient.cedula&&val===ctSelectedClient.cedula){ctShowModal('error','Mismo Titular','Ese documento pertenece al titular actual.');return;}
+  var ok=false,msg='';
+  if(tipo==='cedula'){if(len===11&&!isNaN(val))ok=true;else msg='La c\u00e9dula debe tener <b>11 d\u00edgitos</b>.';}
+  else if(tipo==='rnc'){if(len===9&&!isNaN(val))ok=true;else msg='El RNC debe tener <b>9 d\u00edgitos</b>.';}
+  else{if(len>=6)ok=true;else msg='El pasaporte parece muy corto.';}
+  if(ok)ctCheckDup(val);else{ctShowModal('error','Formato Inv\u00e1lido',msg);inp.focus();}
+}
+
+function ctCheckDup(ced){
+  var btn=document.getElementById('btnConfirmarDoc');btn.innerHTML='<i class="fas fa-spinner fa-spin"></i>';btn.disabled=true;
+  fetch('/api/cambio-titular/verificar-cedula',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cedula:ced})})
+  .then(function(r){return r.json();})
+  .then(function(d){
+    btn.innerHTML='Confirmar <i class="fas fa-check"></i>';btn.disabled=false;
+    if(d.exists){
+      if(d.id==ctSelectedClient.id){ctShowModal('error','Mismo Titular','Ese documento pertenece al titular actual.');return;}
+      ctShowModal('warning','Cliente Existente','Este documento pertenece a <b>'+d.name+'</b>.<br>Los servicios ser\u00e1n transferidos a este cliente.',true,function(){
+        document.getElementById('hExistingClientId').value=d.id;ctUnlockForm(true);
+        document.getElementById('inputName').value=(d.name||'').replace(/[^a-zA-Z0-9\s]/g,'').toUpperCase();
+        document.getElementById('inputAlias').value=d.alias||'';document.getElementById('inputPhone').value=(d.phone||'').replace(/[^0-9]/g,'');
+      });
+    }else{
+      document.getElementById('hExistingClientId').value='0';
+      ctUnlockForm(false);
+    }
+  })
+  .catch(function(){btn.disabled=false;btn.innerText='Error';});
+}
+
+function ctUnlockForm(existe){
+  var fs=document.getElementById('restoFormulario');fs.disabled=false;fs.style.opacity='1';
+  document.getElementById('inputCedula').readOnly=true;document.getElementById('inputCedula').style.background='#f0fdf4';document.getElementById('inputCedula').style.borderColor='#10b981';
+  document.getElementById('tipoDoc').disabled=true;document.getElementById('btnConfirmarDoc').style.display='none';
+  ['inputName','inputAlias','inputPhone'].forEach(function(id){document.getElementById(id).readOnly=existe;document.getElementById(id).style.backgroundColor=existe?'#f3f4f6':'';});
+  if(!existe)document.getElementById('inputName').focus();
+}
+
+// ===== EJECUTAR =====
+function ctEjecutar(){
+  var nombre=document.getElementById('inputName').value.trim(),phone=document.getElementById('inputPhone').value.trim();
+  if(!nombre){ctShowModal('error','Nombre Requerido','Ingrese el nombre.');return;}
+  if(phone.length<10){ctShowModal('error','Tel\u00e9fono','M\u00ednimo <b>10 d\u00edgitos</b>.');return;}
+  var n=ctSelectedSvcIds.length;
+  ctShowModal('warning','Confirmar Cambio',
+    '<div style="text-align:center;"><div style="display:flex;align-items:center;justify-content:center;gap:12px;margin:10px 0;">'+
+    '<div style="padding:8px 14px;background:#fef2f2;border-radius:8px;font-weight:600;color:#991b1b;">'+escH(ctSelectedClient.name)+'</div>'+
+    '<i class="fas fa-arrow-right" style="color:#7c3aed;font-size:1.2rem;"></i>'+
+    '<div style="padding:8px 14px;background:#f0fdf4;border-radius:8px;font-weight:600;color:#166534;">'+escH(nombre)+'</div></div>'+
+    '<div style="font-size:0.85rem;color:#64748b;">'+n+' servicio(s) con todas sus facturas.</div></div>',
+    true,function(){ctSend();}
+  );
+}
+
+function ctSend(){
+  var btn=document.getElementById('btnEjecutar');btn.disabled=true;btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> Procesando...';
+  fetch('/api/cambio-titular/transferir',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      service_ids:JSON.stringify(ctSelectedSvcIds),
+      old_client_id:ctSelectedClient.id,
+      cedula:document.getElementById('inputCedula').value.trim(),
+      nombre:document.getElementById('inputName').value.trim(),
+      alias:document.getElementById('inputAlias').value.trim(),
+      phone:document.getElementById('inputPhone').value.trim(),
+      existing_client_id:parseInt(document.getElementById('hExistingClientId').value)||0
+    })})
+  .then(function(r){return r.json();})
+  .then(function(d){
+    btn.disabled=false;btn.innerHTML='<i class="fas fa-exchange-alt"></i> Cambiar Titular';
+    if(d.status==='success')ctShowResult(true,d.msg,d.new_client_id);
+    else ctShowModal('error','Error',d.msg||'Error al procesar.');
+  })
+  .catch(function(e){btn.disabled=false;btn.innerHTML='<i class="fas fa-exchange-alt"></i> Cambiar Titular';ctShowModal('error','Error',e.message);});
+}
+
+function ctShowResult(ok,msg,nid){
+  document.getElementById('ctResultIcon').innerHTML=ok?'<i class="fas fa-check-circle"></i>':'<i class="fas fa-times-circle"></i>';
+  document.getElementById('ctResultIcon').style.color=ok?'#16a34a':'#ef4444';
+  document.getElementById('ctResultBorder').style.borderTopColor=ok?'#16a34a':'#ef4444';
+  document.getElementById('ctResultTitle').textContent=ok?'Cambio Exitoso':'Error';
+  document.getElementById('ctResultText').textContent=msg;
+  var b='<button onclick="ctReset()" style="padding:11px 22px;border-radius:7px;border:1px solid #d1d5db;background:#f8fafc;color:#475569;font-weight:600;cursor:pointer;">Nuevo Cambio</button>';
+  if(ok&&nid)b+='<button onclick="window.location.href=\'/ver-cliente/'+nid+'\'" style="padding:11px 22px;border-radius:7px;border:none;background:#2563eb;color:#fff;font-weight:600;cursor:pointer;"><i class="fas fa-user"></i> Ver Nuevo Titular</button>';
+  document.getElementById('ctResultActions').innerHTML=b;document.getElementById('ctResultModal').style.display='flex';
+}
+
+function ctReset(){
+  document.getElementById('ctResultModal').style.display='none';
+  ctSelectedClient=null;ctClientServices=[];ctSelectedSvcIds=[];
+  document.getElementById('serviciosPanel').style.display='none';
+  document.getElementById('searchInput').value='';document.getElementById('searchResults').innerHTML='';
+  document.getElementById('paso2Card').style.display='none';document.getElementById('paso1Card').style.display='block';
+  ctResetPaso2();
+}
 </script>
