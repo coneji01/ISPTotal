@@ -119,6 +119,7 @@ function renderPage(req, res, page, data = {}) {
     { type: 'category', id: 'admin', nombre: 'Administrativo', icon: 'fa-cogs', items: [
       { id: 'Proveedores', icon: 'fa-truck', nombre: 'Proveedores' },
       { id: 'Empleados', icon: 'fa-id-badge', nombre: 'Empleados' },
+      { id: 'PagosPendientes', icon: 'fa-hourglass-half', nombre: 'Pagos Pendientes' },
       { id: 'PagosAdmin', icon: 'fa-file-invoice-dollar', nombre: 'Pagos' },
       { id: 'Estadisticas', icon: 'fa-chart-bar', nombre: 'Estadísticas' }
     ]},
@@ -1453,6 +1454,23 @@ app.all('/modulo', requireAuth, (req, res) => {
         FROM empleados e ORDER BY e.id DESC
       `).all();
       data.usuarios = db.prepare('SELECT id, username, nombre, rol FROM usuarios WHERE activo=1').all();
+      break;
+    }
+    case 'PagosPendientes': {
+      data.pendientes = db.prepare(`
+        SELECT f.id as factura_id, c.id as cliente_id, c.nombre as cliente_nombre, c.telefono,
+          p.nombre as plan_name, f.monto, f.fecha_vencimiento,
+          COALESCE((SELECT SUM(pg.monto) FROM pagos pg WHERE pg.factura_id=f.id),0) as pagado,
+          s.id as servicio_id, s.direccion
+        FROM facturas f
+        JOIN servicios s ON s.id=f.servicio_id
+        JOIN clientes c ON c.id=s.cliente_id
+        LEFT JOIN planes p ON p.id=s.plan_id
+        WHERE f.estado='pendiente' AND f.monto > COALESCE((SELECT SUM(pg.monto) FROM pagos pg WHERE pg.factura_id=f.id),0)
+        ORDER BY c.nombre ASC
+        LIMIT 100
+      `).all();
+      data.zonas = db.prepare('SELECT * FROM zonas ORDER BY nombre').all();
       break;
     }
     case 'PagosAdmin': {
