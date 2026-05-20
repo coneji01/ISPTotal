@@ -28,3 +28,7 @@ backups/
 # Postman collections (may contain secrets)
 *.sw_col.json
 *.postman_collection.json
+
+# Stale dev files
+wa-*.png
+wa-*.html

@@ -39,9 +39,9 @@ app.use(express.static(path.join(__dirname, '..', 'frontend')));
 app.use(express.static(path.join(__dirname, '..')));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-// SQLite session store (persistente a través de reinicios)
-const SQLiteStore3 = require('better-sqlite3');
-const sessionStoreDb = new SQLiteStore3(path.join(__dirname, '..', 'isptotal.db'));
+// SQLite session store (persistente a través de reinicios - misma DB que database.js)
+const sessionStoreDb = new (require('better-sqlite3'))(path.join(__dirname, '..', 'isptotal.db'));
+sessionStoreDb.pragma('journal_mode = WAL');
 sessionStoreDb.exec('CREATE TABLE IF NOT EXISTS sessions (sid TEXT PRIMARY KEY, session TEXT, expires DATETIME)');
 
 function SqliteSessionStore() {
@@ -58,7 +58,7 @@ SqliteSessionStore.prototype.get = function(sid, cb) {
 };
 SqliteSessionStore.prototype.set = function(sid, session, cb) {
   try {
-    var maxAge = session && session.cookie ? session.cookie.maxAge : 86400000;
+    var maxAge = session && session.cookie && session.cookie.maxAge ? session.cookie.maxAge : 86400000;
     var expires = new Date(Date.now() + maxAge).toISOString();
     sessionStoreDb.prepare('INSERT OR REPLACE INTO sessions (sid, session, expires) VALUES (?,?,?)').run(sid, JSON.stringify(session), expires);
     if (cb) cb(null);
@@ -77,8 +77,8 @@ app.use(fileUpload());
 app.use(session({
   store: sessionStore,
   secret: 'isptotal-secret-key-2026',
-  resave: true,
-  saveUninitialized: true,
+  resave: false,
+  saveUninitialized: false,
   cookie: { maxAge: 24 * 60 * 60 * 1000 }
 }));
 
