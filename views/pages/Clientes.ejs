@@ -579,8 +579,8 @@ function ejecutarBulk(action) {
           html += '</label>';
         });
       });
-      html += '</div><div style="margin-top:8px;"><button class="btn btn-sm" onclick="document.querySelectorAll('.svc-suspender-check').forEach(function(c){c.checked=true})">Seleccionar todos</button>';
-      html += '<button class="btn btn-sm" onclick="document.querySelectorAll('.svc-suspender-check').forEach(function(c){c.checked=false})">Deseleccionar todos</button></div>';
+      html += '</div><div style="margin-top:8px;"><button class="btn btn-sm" onclick=\"document.querySelectorAll(\'.svc-suspender-check\').forEach(function(c){c.checked=true})\">Seleccionar todos</button>';
+      html += '<button class="btn btn-sm" onclick=\"document.querySelectorAll(\'.svc-suspender-check\').forEach(function(c){c.checked=false})\">Deseleccionar todos</button></div>';
       document.getElementById('bulkSuspenderContent').innerHTML = html;
       btn.style.display = 'inline-flex'; btn.textContent = 'Sí, Suspender seleccionados';
       _bulkServicioIds = [];
