@@ -1,5 +1,30 @@
 isptotal.db
 isptotal.db-wal
 isptotal.db-shm
+database.sqlite
 node_modules/
 /tmp/
+
+# managed by open-wa
+**.data.json
+**.node-persist**
+**_IGNORE_**
+# end managed by open-wa
+
+# OpenWa
+openwa-sessions/
+openwa-qr.png
+qr-capture.png
+qr-check.png
+qr-from-page.png
+qr-from-puppeteer.png
+openwa.log
+backend/.wwebjs_cache/
+backend/.node-persist/
+
+# Backups
+backups/
+
+# Postman collections (may contain secrets)
+*.sw_col.json
+*.postman_collection.json

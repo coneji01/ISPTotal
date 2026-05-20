@@ -587,6 +587,59 @@ class MikroTikAPI {
       return { success: false, message: err.message };
     }
   }
+
+  // Add or remove IP from address list
+  static async setAddressList(host, port, username, password, ipAddress, listName, add) {
+    const api = new MikroTikAPI(host, port);
+    try {
+      await api.connect();
+      await api.login(username, password);
+      
+      if (add) {
+        // Check if already exists
+        const searchResult = await api.exec('/ip/firewall/address-list/print', '?address=' + ipAddress, '?list=' + listName);
+        var found = false;
+        for (var s of searchResult) {
+          if (s[0] === '!re') {
+            for (var w of s) {
+              if (w === '=address=' + ipAddress || w.startsWith('=address=' + ipAddress)) {
+                found = true;
+                break;
+              }
+            }
+          }
+          if (found) break;
+        }
+        
+        if (!found) {
+          await api.exec('/ip/firewall/address-list/add', '=address=' + ipAddress, '=list=' + listName, '=comment=ISP_Total');
+        }
+      } else {
+        // Remove from list
+        const searchResult = await api.exec('/ip/firewall/address-list/print', '?address=' + ipAddress, '?list=' + listName);
+        for (var s of searchResult) {
+          if (s[0] === '!re') {
+            var id = null;
+            for (var w of s) {
+              if (w.startsWith('=.id=')) {
+                id = w.substring(5);
+                break;
+              }
+            }
+            if (id) {
+              await api.exec('/ip/firewall/address-list/remove', '=.id=' + id);
+            }
+          }
+        }
+      }
+      
+      api.disconnect();
+      return { success: true };
+    } catch (err) {
+      if (api) api.disconnect();
+      return { success: false, message: err.message };
+    }
+  }
 }
 
 module.exports = MikroTikAPI;

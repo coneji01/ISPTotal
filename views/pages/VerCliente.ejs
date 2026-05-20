@@ -38,6 +38,18 @@
 .vc-badge-err{background:#fef2f2;color:#991b1b;}
 .vc-empty{text-align:center;padding:30px;color:var(--vc-gray);font-size:0.88rem;}
 
+/* Mensajeria */
+.vc-msj-container{max-height:400px;overflow-y:auto;padding:12px;}
+.vc-msj-card{display:flex;gap:12px;padding:12px 14px;margin-bottom:8px;border-radius:8px;border-left:4px solid #e2e8f0;font-size:0.85rem;transition:all 0.2s;}
+.vc-msj-card:hover{box-shadow:0 2px 8px rgba(0,0,0,0.06);}
+.vc-msj-icon{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:0.85rem;}
+.vc-msj-body{flex:1;min-width:0;}
+.vc-msj-text{color:var(--vc-text);line-height:1.4;white-space:pre-wrap;word-break:break-word;}
+.vc-msj-meta{display:flex;gap:12px;margin-top:4px;font-size:0.72rem;color:var(--vc-gray);}
+.vc-msj-empty{padding:40px 20px;text-align:center;color:var(--vc-gray);}
+.vc-msj-form{padding:16px 18px;border-top:1px solid var(--vc-border);}
+.vc-msj-form .f-group{margin-bottom:10px;}
+
 /* Modal */
 .cli-modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.4);z-index:9999;justify-content:center;align-items:center;padding:16px;}
 .cli-modal-box{background:#fff;border-radius:14px;width:600px;max-width:100%;max-height:90vh;overflow-y:auto;padding:24px 28px;box-shadow:0 20px 60px rgba(0,0,0,0.15);position:relative;}
@@ -52,6 +64,73 @@
 .f-input{padding:9px 12px;border:1px solid #cbd5e1;border-radius:6px;font-size:0.88rem;outline:none;transition:border-color 0.2s;}
 .f-input:focus{border-color:var(--vc-primary);box-shadow:0 0 0 3px rgba(37,99,235,0.1);}
 .btn-gen{background:#f0fdf4;color:#16a34a;border:1px solid #86efac;padding:6px 14px;border-radius:6px;font-weight:600;font-size:0.82rem;cursor:pointer;}
+.cfg-card{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:16px 18px;margin-bottom:12px;transition:all 0.2s;cursor:pointer;}
+.cfg-card:hover{border-color:#cbd5e1;box-shadow:0 2px 8px rgba(0,0,0,0.04);}
+.cfg-card-header{display:flex;justify-content:space-between;align-items:center;}
+.cfg-card-title{font-weight:600;font-size:0.9rem;color:#1e293b;display:flex;align-items:center;gap:8px;}
+.cfg-card-desc{font-size:0.78rem;color:#64748b;margin-top:4px;}
+.cfg-toggle{position:relative;display:inline-block;width:42px;height:22px;flex-shrink:0;}
+.cfg-toggle input{opacity:0;width:0;height:0;}
+.cfg-toggle-slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:#cbd5e1;border-radius:22px;transition:0.3s;}
+.cfg-toggle input:checked + .cfg-toggle-slider{background:#2563eb;}
+.cfg-toggle-slider:before{content:"";position:absolute;height:16px;width:16px;left:3px;bottom:3px;background:white;border-radius:50%;transition:0.3s;}
+.cfg-toggle input:checked + .cfg-toggle-slider:before{transform:translateX(20px);}
+.cfg-svc-item{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-bottom:1px solid #f1f5f9;font-size:0.85rem;}
+.cfg-svc-item:hover{background:#f8fafc;}
+.cfg-svc-item .cfg-svc-name{font-weight:600;color:#1e293b;}
+.cfg-svc-item .cfg-svc-status{font-size:0.72rem;color:#64748b;} 
+.cfg-input-discount{width:80px;padding:4px 8px;border:1px solid #cbd5e1;border-radius:6px;font-size:0.82rem;text-align:right;} 
+.cfg-input-discount:focus{border-color:#8b5cf6;outline:none;box-shadow:0 0 0 2px rgba(139,92,246,0.15);}
+
+/* ===== SERVICIOS CARDS (DomISP-style expand/collapse) ===== */
+.svc-card{background:#fff;border:1px solid var(--vc-border);border-radius:10px;overflow:hidden;margin-bottom:8px;transition:box-shadow 0.2s;}
+.svc-card:hover{box-shadow:0 2px 8px rgba(0,0,0,0.06);}
+.svc-summary{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;cursor:pointer;gap:10px;user-select:none;transition:background 0.15s;}
+.svc-summary:hover{background:#f8fafc;}
+.svc-summary-left{display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-width:0;}
+.svc-summary-right{display:flex;align-items:center;gap:8px;flex-shrink:0;margin-left:auto;}
+.svc-plan-name{font-weight:700;color:#334155;font-size:0.92rem;white-space:nowrap;}
+.svc-expand-icon{width:22px;height:22px;display:flex;align-items:center;justify-content:center;border-radius:4px;background:#f1f5f9;color:#64748b;font-size:0.65rem;transition:all 0.25s;flex-shrink:0;}
+.svc-expand-icon.open{transform:rotate(180deg);background:#dbeafe;color:var(--vc-primary);}
+.svc-nic{font-size:0.75rem;color:#64748b;background:#f1f5f9;padding:2px 8px;border-radius:4px;font-weight:600;white-space:nowrap;}
+.svc-ip-badge{font-size:0.75rem;color:#1e40af;font-weight:700;background:#eff6ff;padding:2px 8px;border-radius:4px;font-family:monospace;white-space:nowrap;}
+.svc-zona{font-size:0.78rem;color:#94a3b8;}
+
+/* Status Badges (DomISP style colors) */
+.svc-badge{display:inline-block;padding:3px 10px;border-radius:10px;font-size:0.7rem;font-weight:700;text-transform:capitalize;white-space:nowrap;}
+.svc-badge-activo{background:#dcfce7;color:#16a34a;border:1px solid #bbf7d0;}
+.svc-badge-suspendido{background:#fef3c7;color:#d97706;border:1px solid #fde68a;}
+.svc-badge-retirado{background:#f1f5f9;color:#94a3b8;border:1px solid #e2e8f0;}
+.svc-badge-inactivo{background:#f1f5f9;color:#94a3b8;border:1px solid #e2e8f0;}
+
+/* Detail section (expandable) */
+.svc-detail{border-top:1px solid var(--vc-border);padding:14px 16px;background:#fafbff;}
+.svc-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px 24px;margin-bottom:14px;}
+@media(max-width:600px){.svc-detail-grid{grid-template-columns:1fr;}}
+.svc-detail-item{display:flex;flex-direction:column;gap:1px;}
+.svc-detail-label{font-size:0.68rem;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.2px;}
+.svc-detail-value{font-size:0.85rem;font-weight:600;color:#1e293b;}
+.svc-mono{font-family:monospace;font-size:0.82rem;}
+
+/* Actions toolbar */
+.svc-actions{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 12px;background:#fff;border:1px solid #e2e8f0;border-radius:8px;}
+.svc-actions-left,.svc-actions-right{display:flex;gap:6px;flex-wrap:wrap;align-items:center;}
+.svc-btn{padding:6px 12px;border:none;border-radius:6px;font-size:0.75rem;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:5px;transition:all 0.15s;white-space:nowrap;}
+.svc-btn:hover{opacity:0.85;transform:translateY(-1px);}
+.svc-btn-suspender{background:#fef3c7;color:#92400e;border:1px solid #fde68a;}
+.svc-btn-suspender:hover{background:#fde68a;}
+.svc-btn-activar{background:#dcfce7;color:#166534;border:1px solid #bbf7d0;}
+.svc-btn-activar:hover{background:#bbf7d0;}
+.svc-btn-retirar{background:#fef2f2;color:#991b1b;border:1px solid #fecaca;}
+.svc-btn-retirar:hover{background:#fecaca;}
+.svc-btn-onu{background:#eff6ff;color:#1e40af;border:1px solid #bfdbfe;}
+.svc-btn-onu:hover{background:#bfdbfe;}
+.svc-btn-tr069{background:#f5f3ff;color:#5b21b6;border:1px solid #ddd6fe;}
+.svc-btn-tr069:hover{background:#ddd6fe;}
+.svc-btn-edit{background:#f1f5f9;color:#334155;border:1px solid #e2e8f0;}
+.svc-btn-edit:hover{background:#e2e8f0;}
+.svc-btn-danger{background:#ef4444;color:#fff;}
+.svc-btn-danger:hover{background:#dc2626;}
 </style>
 
 <div class="vc-header">
@@ -229,45 +308,116 @@
 <div class="vc-tabs">
   <div class="vc-tab active" data-tab="servicios" onclick="switchVcTab('servicios')"><i class="fas fa-wifi"></i> Servicios</div>
   <div class="vc-tab" data-tab="facturas" onclick="switchVcTab('facturas')"><i class="fas fa-file-invoice"></i> Facturas</div>
-  <div class="vc-tab" data-tab="pagos" onclick="switchVcTab('pagos')"><i class="fas fa-hand-holding-usd"></i> Pagos</div>
+  <!-- Pagos tab removed - now shown within Facturas tab -->
   <div class="vc-tab" data-tab="ordenes" onclick="switchVcTab('ordenes')"><i class="fas fa-clipboard-list"></i> Órdenes</div>
   <div class="vc-tab" data-tab="promesas" onclick="switchVcTab('promesas')"><i class="fas fa-handshake"></i> Promesas</div>
+  <div class="vc-tab" data-tab="mensajes" onclick="switchVcTab('mensajes');loadMensajes()"><i class="fas fa-comment-dots"></i> Mensajería</div>
+  <div class="vc-tab" data-tab="configuracion" onclick="switchVcTab('configuracion');loadClientConfig()"><i class="fas fa-cog"></i> Configuración</div>
 </div>
 
 <!-- Tab Servicios -->
 <div id="vcTab-servicios" class="vc-tab-content">
   <div class="vc-card">
-    <div class="vc-card-head"><h3><i class="fas fa-wifi"></i> Servicios Contratados</h3><button class="vc-btn vc-btn-primary vc-btn-sm" onclick="openNuevoServicio()"><i class="fas fa-plus"></i> Agregar un Servicio</button></div>
+    <div class="vc-card-head"><h3><i class="fas fa-wifi"></i> Servicios Contratados</h3><div style="display:flex;gap:8px;"><button class="vc-btn vc-btn-success vc-btn-sm" onclick="openNuevoServicio()"><i class="fas fa-plus"></i> Nuevo Informal</button></div></div>
     <div class="vc-card-body">
       <% if (servicios.length === 0) { %>
         <div class="vc-empty"><i class="fas fa-wifi" style="font-size:2rem;opacity:0.3;display:block;margin-bottom:8px;"></i>No tiene servicios contratados.</div>
       <% } else { %>
         <% servicios.forEach(function(s) { %>
-        <div class="svc-card" style="margin-bottom:10px;">
-          <div class="svc-summary" onclick="toggleSvcDetail(<%= s.id %>)" style="cursor:pointer;padding:12px 16px;border:1px solid #e2e8f0;border-radius:8px;background:#fff;">
-            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-              <span style="font-weight:700;color:#334155;font-size:0.95rem;"><%= s.plan_nombre || 'Sin plan' %></span>
-              <span class="vc-badge <%= s.estado==='activo'?'vc-badge-ok':'vc-badge-err' %>"><%= s.estado %></span>
-              <% if (s.ip) { %><span style="font-size:0.8rem;color:#1e40af;font-weight:700;background:#eff6ff;padding:2px 8px;border-radius:4px;font-family:monospace;">IP: <%= s.ip %></span><% } %>
-              <span style="font-size:0.8rem;color:#64748b;margin-left:auto;"><%= s.zona_nombre || '' %> <i class="fas fa-chevron-down" style="font-size:0.7rem;margin-left:6px;"></i></span>
+        <div class="svc-card" data-svc-id="<%= s.id %>">
+          <div class="svc-summary" onclick="toggleSvcDetail(<%= s.id %>)">
+            <div class="svc-summary-left">
+              <div class="svc-expand-icon" id="svcIcon_<%= s.id %>"><i class="fas fa-chevron-down"></i></div>
+              <span class="svc-plan-name"><%= s.plan_nombre || 'Sin plan' %></span>
+              <span class="svc-badge svc-badge-<%= s.estado==='activo'?'activo':s.estado==='suspendido'?'suspendido':'retirado' %>"><%= s.estado.charAt(0).toUpperCase()+s.estado.slice(1) %></span>
+              <span class="svc-nic">NIC: <%= s.id %></span>
+            </div>
+            <div class="svc-summary-right">
+              <% if (s.ip) { %><span class="svc-ip-badge"><%= s.ip %></span><% } %>
+              <span class="svc-zona"><%= s.zona_nombre || '' %></span>
             </div>
           </div>
-          <div id="svcDetail_<%= s.id %>" class="svc-details" style="display:none;padding:12px 16px;border:1px solid #e2e8f0;border-top:0;border-radius:0 0 8px 8px;background:#f8fafc;">
-            <div class="action-toolbar" style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
-              <div style="display:flex;gap:6px;">
-                <button class="vc-btn vc-btn-primary vc-btn-sm" onclick="openAddOnuModal(<%= s.id %>,<%= cliente.id %>,'<%= (s.plan_nombre||'').replace(/'/g,"\\'") %>','<%= (s.auth_type||'dhcp') %>','<%= (s.pppoe_user||'').replace(/'/g,"\\'") %>','<%= (s.pppoe_pass||'').replace(/'/g,"\\'") %>')"><i class="fas fa-plus-circle"></i> Añadir ONU</button>
-                <button class="vc-btn vc-btn-secondary vc-btn-sm" onclick="openEditServicio(<%= s.id %>,'<%= (s.plan_nombre||'').replace(/'/g,"\\'") %>','<%= (s.ip||'').replace(/'/g,"\\'") %>','<%= (s.pppoe_user||'').replace(/'/g,"\\'") %>','<%= (s.pppoe_pass||'').replace(/'/g,"\\'") %>','<%= (s.wifi_ssid||'').replace(/'/g,"\\'") %>','<%= (s.wifi_pass||'').replace(/'/g,"\\'") %>','<%= (s.auth_type||'dhcp') %>','<%= s.plan_id||'' %>','<%= (s.direccion||'').replace(/'/g,"\\'") %>','<%= (s.tipo_servicio||'internet') %>','<%= s.ciclo_id||'' %>','<%= (s.netflix_email||'').replace(/'/g,"\\'") %>','<%= (s.netflix_password||'').replace(/'/g,"\\'") %>','<%= (s.netflix_perfil||'').replace(/'/g,"\\'") %>','<%= (s.netflix_vencimiento||'') %>','<%= (s.descripcion_servicio||'').replace(/'/g,"\\'") %>','<%= s.precio_servicio||'' %>')"><i class="fas fa-pencil-alt"></i> Editar Servicio</button>
-                <button class="vc-btn vc-btn-secondary vc-btn-sm" onclick="openTransferModal(<%= s.id %>,'<%= (cliente.nombre||'').replace(/'/g,"\\'") %>')"><i class="fas fa-user-friends"></i> Cambiar Titular</button>
+          <div id="svcDetail_<%= s.id %>" class="svc-detail" style="display:none;">
+            <div class="svc-detail-grid">
+              <div>
+                <div class="svc-detail-item">
+                  <span class="svc-detail-label">IP del Servicio</span>
+                  <span class="svc-detail-value"><%= s.ip || '—' %></span>
+                </div>
+                <div class="svc-detail-item">
+                  <span class="svc-detail-label">Fecha Activaci&oacute;n</span>
+                  <span class="svc-detail-value"><%= s.fecha_activacion ? new Date(s.fecha_activacion+'T00:00:00').toLocaleDateString('es-DO',{day:'numeric',month:'short',year:'numeric'}) : '—' %></span>
+                </div>
+                <div class="svc-detail-item">
+                  <span class="svc-detail-label">Plan</span>
+                  <span class="svc-detail-value"><%= s.plan_nombre || '—' %></span>
+                </div>
+                <div class="svc-detail-item">
+                  <span class="svc-detail-label">Tipo Conexi&oacute;n</span>
+                  <span class="svc-detail-value"><%= (s.auth_type||'dhcp').toUpperCase() %></span>
+                </div>
+                <% if (s.pppoe_user) { %>
+                <div class="svc-detail-item">
+                  <span class="svc-detail-label">PPPoE Usuario</span>
+                  <span class="svc-detail-value svc-mono"><%= s.pppoe_user %></span>
+                </div>
+                <% } %>
+                <% if (s.pppoe_pass) { %>
+                <div class="svc-detail-item">
+                  <span class="svc-detail-label">PPPoE Contrase&ntilde;a</span>
+                  <span class="svc-detail-value svc-mono"><%= s.pppoe_pass %></span>
+                </div>
+                <% } %>
               </div>
-              <div style="display:flex;gap:6px;">
-                <button class="vc-btn vc-btn-warning vc-btn-sm" onclick="if(confirm('Suspender servicio?'))accionServicio(<%= s.id %>,'suspender')"><i class="fas fa-pause"></i> Suspender</button>
-                <button class="vc-btn vc-btn-secondary vc-btn-sm" onclick="enviarTR069(<%= s.id %>)" style="background:#7c3aed;color:#fff;"><i class="fas fa-satellite-dish"></i> TR069</button>
-                <button class="vc-btn vc-btn-danger vc-btn-sm" onclick="eliminarOnuSmartolt(<%= s.id %>)" style="background:#dc2626;color:#fff;"><i class="fas fa-microchip"></i> Reset+Eliminar ONU</button>
-                <button class="vc-btn vc-btn-danger vc-btn-sm" onclick="if(confirm('Eliminar servicio?'))accionServicio(<%= s.id %>,'eliminar')"><i class="fas fa-trash-alt"></i> Eliminar</button>
+              <div>
+                <div class="svc-detail-item">
+                  <span class="svc-detail-label">Ciclo Facturaci&oacute;n</span>
+                  <span class="svc-detail-value"><%= s.ciclo_name ? s.ciclo_name : (s.ciclo_tipo ? (s.ciclo_tipo.toUpperCase()+' | Gen: Día '+s.ciclo_factura_dia+' | Corte: Día '+s.ciclo_corte_dia) : '—') %></span>
+                </div>
+                <div class="svc-detail-item">
+                  <span class="svc-detail-label">Direcci&oacute;n</span>
+                  <span class="svc-detail-value"><%= s.direccion || '—' %></span>
+                </div>
+                <% if (s.onu_sn) { %>
+                <div class="svc-detail-item">
+                  <span class="svc-detail-label">ONU Serial</span>
+                  <span class="svc-detail-value svc-mono"><%= s.onu_sn %></span>
+                </div>
+                <div class="svc-detail-item">
+                  <span class="svc-detail-label">ONU Modelo</span>
+                  <span class="svc-detail-value"><%= s.onu_nombre || '—' %></span>
+                </div>
+                <div class="svc-detail-item">
+                  <span class="svc-detail-label">OLT</span>
+                  <span class="svc-detail-value"><%= s.olt_nombre || '—' %></span>
+                </div>
+                <% if (s.onu_senial) { %>
+                <div class="svc-detail-item">
+                  <span class="svc-detail-label">Se&ntilde;al &Oacute;ptica</span>
+                  <span class="svc-detail-value"><%= s.onu_senial %> dBm</span>
+                </div>
+                <% } %>
+                <% } %>
               </div>
             </div>
-            <div style="font-size:0.82rem;color:#64748b;padding:8px;background:#fff;border-radius:6px;">
-              <strong>IP:</strong> <%= s.ip || '—' %> | <strong>Plan:</strong> <%= s.plan_nombre || '—' %> | <strong>Zona:</strong> <%= s.zona_nombre || '—' %>
+            <div class="svc-actions">
+              <div class="svc-actions-left">
+                <button class="svc-btn svc-btn-onu" onclick="openAddOnuModal(<%= s.id %>,<%= cliente.id %>,'<%= (s.plan_nombre||'').replace(/'/g,"\\'") %>','<%= (s.auth_type||'dhcp') %>','<%= (s.pppoe_user||'').replace(/'/g,"\\'") %>','<%= (s.pppoe_pass||'').replace(/'/g,"\\'") %>')"><i class="fas fa-plus-circle"></i> ONU</button>
+                <button class="svc-btn svc-btn-edit" onclick="openEditServicio(<%= s.id %>,'<%= (s.plan_nombre||'').replace(/'/g,"\\'") %>','<%= (s.ip||'').replace(/'/g,"\\'") %>','<%= (s.pppoe_user||'').replace(/'/g,"\\'") %>','<%= (s.pppoe_pass||'').replace(/'/g,"\\'") %>','<%= (s.wifi_ssid||'').replace(/'/g,"\\'") %>','<%= (s.wifi_pass||'').replace(/'/g,"\\'") %>','<%= (s.auth_type||'dhcp') %>','<%= s.plan_id||'' %>','<%= (s.direccion||'').replace(/'/g,"\\'") %>','<%= (s.tipo_servicio||'internet') %>','<%= s.ciclo_id||'' %>','<%= (s.netflix_email||'').replace(/'/g,"\\'") %>','<%= (s.netflix_password||'').replace(/'/g,"\\'") %>','<%= (s.netflix_perfil||'').replace(/'/g,"\\'") %>','<%= (s.netflix_vencimiento||'') %>','<%= (s.descripcion_servicio||'').replace(/'/g,"\\'") %>','<%= s.precio_servicio||'' %>')"><i class="fas fa-pencil-alt"></i> Editar</button>
+                <button class="svc-btn svc-btn-edit" onclick="openTransferModal(<%= s.id %>,'<%= (cliente.nombre||'').replace(/'/g,"\\'") %>')"><i class="fas fa-user-friends"></i> Titular</button>
+              </div>
+              <div class="svc-actions-right">
+                <% if (s.estado === 'activo') { %>
+                <button class="svc-btn svc-btn-suspender" onclick="if(confirm('Suspender servicio #<%= s.id %>?'))accionServicio(<%= s.id %>,'suspender')"><i class="fas fa-pause"></i> Suspender</button>
+                <% } else if (s.estado === 'suspendido') { %>
+                <button class="svc-btn svc-btn-activar" onclick="accionServicio(<%= s.id %>,'activar')"><i class="fas fa-play"></i> Reactivar</button>
+                <% } %>
+                <% if (s.estado !== 'retirado') { %>
+                <button class="svc-btn svc-btn-retirar" onclick="if(confirm('Retirar servicio #<%= s.id %>?'))accionServicio(<%= s.id %>,'retirar')"><i class="fas fa-minus-circle"></i> Retirar</button>
+                <% } %>
+                <button class="svc-btn svc-btn-tr069" onclick="enviarTR069(<%= s.id %>)"><i class="fas fa-satellite-dish"></i> TR069</button>
+                <button class="svc-btn svc-btn-danger" onclick="if(confirm('Eliminar servicio #<%= s.id %> permanentemente?'))accionServicio(<%= s.id %>,'eliminar')"><i class="fas fa-trash-alt"></i> Eliminar</button>
+              </div>
             </div>
           </div>
         </div>
@@ -278,18 +428,266 @@
 </div>
 
 <!-- Tab Facturas -->
-<div id="vcTab-facturas" class="vc-tab-content" style="display:none;">...</div>
-<!-- Tab Pagos -->
-<div id="vcTab-pagos" class="vc-tab-content" style="display:none;">...</div>
+<div id="vcTab-facturas" class="vc-tab-content" style="display:none;">
+  <div class="vc-card">
+    <div class="vc-card-head"><h3><i class="fas fa-file-invoice"></i> Facturas</h3></div>
+    <div class="vc-card-body">
+      <% if (!facturas || facturas.length === 0) { %>
+        <div class="vc-empty"><i class="fas fa-file-invoice" style="font-size:2rem;opacity:0.3;display:block;margin-bottom:8px;"></i>No tiene facturas registradas.</div>
+      <% } else { %>
+        <div class="table-container" style="overflow-x:auto;">
+          <table class="vc-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Periodo</th>
+                <th>Plan / Servicio</th>
+                <th>Vencimiento</th>
+                <th>Monto</th>
+                <th>Pagado</th>
+                <th>Saldo</th>
+                <th>Estado</th>
+                <th style="width:120px;">Pagos</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% var totalPendiente = 0, totalCobrado = 0, totalFacturado = 0; %>
+              <% facturas.forEach(function(f) { %>
+                <%
+                  var remaining = parseFloat(f.remaining || f.monto);
+                  var paid = parseFloat(f.paid_amount || 0);
+                  totalCobrado += paid;
+                  totalFacturado += parseFloat(f.monto || 0);
+                  var estado = remaining <= 0.01 ? 'pagada' : (f.estado === 'pagada' ? 'pagada' : 'pendiente');
+                  var badgeClass = estado === 'pagada' ? 'vc-badge-ok' : 'vc-badge-err';
+                  var badgeLabel = estado === 'pagada' ? 'Pagada' : 'Pendiente';
+                  if (remaining <= 0.01) totalPendiente += 0;
+                  else totalPendiente += remaining;
+                  var periodo = f.periodo || '';
+                  var dueDate = f.fecha_vencimiento ? new Date(f.fecha_vencimiento+'T00:00:00').toLocaleDateString('es-DO',{day:'numeric',month:'short',year:'numeric'}) : '—';
+                %>
+                <tr>
+                  <td style="font-weight:600;"><%= f.id %></td>
+                  <td><%= periodo %></td>
+                  <td><%= f.plan_name || 'Servicio #' + f.servicio_id %></td>
+                  <td><%= dueDate %></td>
+                  <td style="font-weight:600;">$<%= parseFloat(f.monto).toFixed(2) %></td>
+                  <td style="color:#16a34a;font-weight:600;">$<%= paid.toFixed(2) %></td>
+                  <td style="font-weight:600;color:<%= remaining > 0.01 ? '#dc2626' : '#16a34a' %>;">$<%= remaining.toFixed(2) %></td>
+                  <td><span class="vc-badge <%= badgeClass %>"><%= badgeLabel %></span></td>
+                  <td>
+                    <%
+                      var pagosFactura = pagos ? pagos.filter(function(p) { return p.factura_id == f.id; }) : [];
+                    %>
+                    <% if (pagosFactura.length > 0) { %>
+                      <div style="font-size:0.75rem;line-height:1.6;">
+                        <% pagosFactura.forEach(function(p) { %>
+                          <div style="display:flex;justify-content:space-between;gap:6px;padding:1px 0;">
+                            <span style="color:#64748b;"><%= new Date(p.created_at).toLocaleDateString('es-DO',{day:'numeric',month:'short'}) %></span>
+                            <span style="color:#16a34a;font-weight:600;">$<%= parseFloat(p.monto).toFixed(2) %></span>
+                            <span style="color:#94a3b8;font-size:0.7rem;"><%= p.metodo || '' %></span>
+                          </div>
+                        <% }) %>
+                      </div>
+                    <% } else { %>
+                      <span style="color:#94a3b8;font-size:0.75rem;">—</span>
+                    <% } %>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+            <tfoot>
+              <tr style="background:#f0fdf4;font-weight:700;">
+                <td colspan="4" style="text-align:right;color:#166534;">✅ Total Cobrado:</td>
+                <td style="color:#16a34a;font-size:1rem;">$<%= totalCobrado.toFixed(2) %></td>
+                <td colspan="5"></td>
+              </tr>
+              <tr style="background:#fef2f2;font-weight:700;">
+                <td colspan="4" style="text-align:right;color:#991b1b;">⚠️ Total Pendiente:</td>
+                <td style="color:#dc2626;font-size:1rem;">$<%= totalPendiente.toFixed(2) %></td>
+                <td colspan="5"></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      <% } %>
+    </div>
+  </div>
+</div>
 <!-- Tab Ordenes -->
 <div id="vcTab-ordenes" class="vc-tab-content" style="display:none;">...</div>
 <!-- Tab Promesas -->
 <div id="vcTab-promesas" class="vc-tab-content" style="display:none;">...</div>
 
+
+<!-- Tab Configuración -->
+<div id="vcTab-configuracion" class="vc-tab-content" style="display:none;">
+  <div class="vc-card">
+    <div class="vc-card-head"><h3><i class="fas fa-cog"></i> Configuración del Cliente</h3></div>
+    <div class="vc-card-body" style="padding:18px;">
+      <!-- 1. Cliente Gratis -->
+      <div class="cfg-card" onclick="openSvcConfigModal('free')">
+        <div class="cfg-card-header">
+          <div class="cfg-card-title"><span style="font-size:1.1rem;">🎁</span> Cliente Gratis</div>
+          <span style="font-size:0.78rem;color:#64748b;"><i class="fas fa-chevron-right"></i></span>
+        </div>
+        <div class="cfg-card-desc" id="cfg-free-desc">Ninguno</div>
+        <div style="font-size:0.68rem;color:#94a3b8;margin-top:4px;">Seleccionar servicios que no generan facturas ni se suspenden.</div>
+      </div>
+
+      <!-- 2. No Suspender -->
+      <div class="cfg-card" onclick="openSvcConfigModal('nosuspend')">
+        <div class="cfg-card-header">
+          <div class="cfg-card-title"><span style="font-size:1.1rem;">🛡️</span> No Suspender</div>
+          <span style="font-size:0.78rem;color:#64748b;"><i class="fas fa-chevron-right"></i></span>
+        </div>
+        <div class="cfg-card-desc" id="cfg-nosuspend-desc">Ninguno</div>
+        <div style="font-size:0.68rem;color:#94a3b8;margin-top:4px;">Seleccionar servicios que no se suspenden aunque tengan facturas vencidas.</div>
+      </div>
+
+      <!-- 3. Facturación -->
+      <div class="cfg-card" onclick="openSvcConfigModal('billing')">
+        <div class="cfg-card-header">
+          <div class="cfg-card-title"><span style="font-size:1.1rem;">📄</span> Facturación</div>
+          <span style="font-size:0.78rem;color:#64748b;"><i class="fas fa-chevron-right"></i></span>
+        </div>
+        <div class="cfg-card-desc">Configurar plantilla de facturación y día de corte por servicio.</div>
+        <div style="font-size:0.68rem;color:#94a3b8;margin-top:4px;">Ciclo de facturación y condiciones de pago.</div>
+      </div>
+
+      <!-- 4. Descuentos -->
+      <div class="cfg-card" onclick="openSvcConfigModal('discount')">
+        <div class="cfg-card-header">
+          <div class="cfg-card-title"><span style="font-size:1.1rem;">🏷️</span> Descuentos</div>
+          <span style="font-size:0.78rem;color:#64748b;"><i class="fas fa-chevron-right"></i></span>
+        </div>
+        <div class="cfg-card-desc" id="cfg-discount-desc">Ninguno</div>
+        <div style="font-size:0.68rem;color:#94a3b8;margin-top:4px;">Aplicar un descuento fijo en pesos a la factura de cada servicio.</div>
+      </div>
+
+      <!-- 5. Notificar Facturas -->
+      <div class="cfg-card" style="cursor:default;">
+        <div class="cfg-card-header">
+          <div class="cfg-card-title"><span style="font-size:1.1rem;">🔔</span> Notificar Facturas</div>
+          <label class="cfg-toggle">
+            <input type="checkbox" id="cfg-notificar-facturas" onchange="toggleClienteConfig('notificar_facturas', this.checked)">
+            <span class="cfg-toggle-slider"></span>
+          </label>
+        </div>
+        <div class="cfg-card-desc">Enviar notificaciones automáticas al cliente sobre facturas pendientes.</div>
+      </div>
+
+      <!-- 6. Comprobantes Fiscales -->
+      <div class="cfg-card" style="cursor:default;">
+        <div class="cfg-card-header">
+          <div class="cfg-card-title"><span style="font-size:1.1rem;">📜</span> Comprobantes Fiscales</div>
+        </div>
+        <div style="display:flex;gap:16px;margin-top:8px;flex-wrap:wrap;">
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+            <input type="radio" name="cfg-comprobante" value="e31" onchange="toggleClienteConfig('comprobante_fiscal','e31')" style="accent-color:#2563eb;width:16px;height:16px;">
+            <span style="font-size:0.8rem;color:#1e293b;font-weight:500;">Crédito Fiscal E31</span>
+          </label>
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+            <input type="radio" name="cfg-comprobante" value="e45" onchange="toggleClienteConfig('comprobante_fiscal','e45')" style="accent-color:#2563eb;width:16px;height:16px;">
+            <span style="font-size:0.8rem;color:#1e293b;font-weight:500;">Gubernamental E45</span>
+          </label>
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+            <input type="radio" name="cfg-comprobante" value="ninguno" onchange="toggleClienteConfig('comprobante_fiscal','ninguno')" checked style="accent-color:#2563eb;width:16px;height:16px;">
+            <span style="font-size:0.8rem;color:#1e293b;font-weight:500;">Ninguno</span>
+          </label>
+        </div>
+        <div class="cfg-card-desc" style="margin-top:6px;">Seleccionar el tipo de comprobante fiscal para este cliente.</div>
+      </div>
+
+      <!-- 7. Facturar Consolidado -->
+      <div class="cfg-card" style="cursor:default;">
+        <div class="cfg-card-header">
+          <div class="cfg-card-title"><span style="font-size:1.1rem;">📦</span> Facturar Consolidado</div>
+          <label class="cfg-toggle">
+            <input type="checkbox" id="cfg-facturar-consolidado" onchange="toggleClienteConfig('facturar_consolidado', this.checked)">
+            <span class="cfg-toggle-slider"></span>
+          </label>
+        </div>
+        <div class="cfg-card-desc">Agrupar todos los servicios en una sola factura mensual.</div>
+      </div>
+
+      <!-- 8. Guardar Cambios -->
+      <button class="vc-btn vc-btn-primary" onclick="guardarConfigGlobal()" style="margin-top:12px;width:100%;justify-content:center;">
+        <i class="fas fa-save"></i> Guardar Cambios
+      </button>
+      <div id="cfg-saved-msg" style="display:none;margin-top:8px;text-align:center;color:#16a34a;font-weight:600;">✓ Guardado</div>
+    </div>
+  </div>
+</div>
+<!-- Tab Mensajería -->
+<div id="vcTab-mensajes" class="vc-tab-content" style="display:none;">
+  <div class="vc-card">
+    <div class="vc-card-head"><h3><i class="fas fa-comment-dots"></i> Historial de Mensajes</h3></div>
+    <div class="vc-card-body">
+      <div id="msjContainer" class="vc-msj-container">
+        <div class="vc-msj-empty"><i class="fas fa-spinner fa-spin" style="font-size:1.5rem;display:block;margin-bottom:8px;"></i>Cargando mensajes...</div>
+      </div>
+      <div class="vc-msj-form">
+        <div class="f-group">
+          <label>Tipo de Mensaje</label>
+          <select id="msjTipo" class="f-input">
+            <option value="nota">📝 Nota interna</option>
+            <option value="whatsapp">💬 WhatsApp</option>
+            <option value="email">✉️ Email</option>
+            <option value="sms">📱 SMS</option>
+          </select>
+        </div>
+        <div class="f-group">
+          <label>Mensaje</label>
+          <textarea id="msjTexto" class="f-input" rows="3" placeholder="Escriba su mensaje aquí..."></textarea>
+        </div>
+        <div id="msjWhatsappAlert" style="display:none;margin-bottom:10px;padding:10px 14px;background:#f0fdf4;border:1px solid #86efac;border-radius:8px;font-size:0.82rem;color:#166534;font-weight:600;">
+          <i class="fab fa-whatsapp"></i> Se abrirá WhatsApp Web al enviar
+        </div>
+        <div style="text-align:right;">
+          <button class="vc-btn vc-btn-primary" onclick="enviarMensaje()"><i class="fas fa-paper-plane"></i> Enviar Mensaje</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Configuración de Servicios -->
+<div class="cli-modal-overlay" id="modalSvcConfig" style="display:none;">
+  <div class="cli-modal-box" style="max-width:500px;border-top:5px solid #2563eb;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <h3 class="cli-modal-title" id="svcConfigModalTitle"><i class="fas fa-cog"></i> Configurar</h3>
+      <span onclick="closeModal('modalSvcConfig')" style="cursor:pointer;font-size:1.5rem;color:#94a3b8;">&times;</span>
+    </div>
+    <p id="svcConfigModalDesc" style="font-size:0.85rem;color:#64748b;margin-bottom:14px;"></p>
+    <div id="svcConfigList" style="max-height:320px;overflow-y:auto;">
+      <div style="padding:30px;text-align:center;color:#94a3b8;">Cargando servicios...</div>
+    </div>
+    <div id="svcConfigDiscountFields" style="display:none;margin-top:10px;padding:12px;background:#f5f3ff;border-radius:8px;border:1px solid #e9d5ff;">
+      <label style="font-weight:600;font-size:0.85rem;color:#6b21a8;">Monto de descuento (RD$)</label>
+      <input type="number" id="svcDiscountAmount" class="f-input" step="0.01" min="0" placeholder="0.00" style="margin-top:4px;">
+    </div>
+    <div id="svcConfigBillingFields" style="display:none;margin-top:10px;padding:12px;background:#eff6ff;border-radius:8px;border:1px solid #dbeafe;">
+      <label style="font-weight:600;font-size:0.85rem;color:#1e40af;">Ciclo de Facturación</label>
+      <select id="svcBillingCiclo" class="f-input" style="margin-top:4px;">
+        <option value="">-- Sin asignar --</option>
+        <% if (typeof ciclos !== 'undefined' && ciclos) { ciclos.forEach(function(c) { %>
+        <option value="<%= c.id %>" data-type="<%= c.billing_type %>" data-invoice="<%= c.invoice_day %>" data-suspend="<%= c.suspend_day %>"><%= c.name || (c.billing_type.toUpperCase()+' | Gen: Día '+c.invoice_day+' | Corte: Día '+c.suspend_day) %></option>
+        <% }); } %>
+      </select>
+      <div id="svcBillingCicloInfo" style="margin-top:6px;font-size:0.8rem;font-weight:600;color:#1e40af;display:none;"></div>
+    </div>
+    <div class="cli-modal-footer">
+      <button type="button" onclick="closeModal('modalSvcConfig')" class="cli-btn-cancel">Cerrar</button>
+      <button type="button" onclick="saveSvcConfigAction()" class="cli-btn-confirm"><i class="fas fa-save"></i> Guardar</button>
+    </div>
+    <input type="hidden" id="svcConfigTipo" value="">
+  </div>
+</div>
 <!-- Modal Nuevo Servicio Informal -->
 <div class="cli-modal-overlay" id="modalNuevoSrv" style="display:none;">
   <div class="cli-modal-box" style="max-width:600px;border-top:5px solid #2563eb;">
-    <h3 class="cli-modal-title" style="color:#1e40af;"><i class="fas fa-plus-circle"></i> Agregar un Servicio</h3>
+    <h3 class="cli-modal-title" style="color:#1e40af;"><i class="fas fa-plus-circle"></i> Nuevo Servicio Informal</h3>
     <p style="font-size:0.85rem;color:#64748b;margin-bottom:18px;">Nuevo servicio para <b><%= cliente.nombre %></b></p>
     
     <!-- Tipo de Servicio -->
@@ -364,6 +762,19 @@
         </select>
         <small id="nsIpMsg" style="color:#64748b;font-size:0.75rem;margin-top:3px;display:block;"></small>
       </div>
+        <!-- WiFi Fields -->
+        <div id="nsWifiFields">
+          <div class="form-grid" style="margin-top:8px;background:#faf5ff;padding:12px;border-radius:8px;border:1px solid #e9d5ff;">
+            <div class="f-group">
+              <label><i class="fas fa-wifi" style="color:#7c3aed;"></i> Nombre WiFi (SSID)</label>
+              <input type="text" id="nsWifiSsid" class="f-input" placeholder="Ej: ISP_Total_Fibra">
+            </div>
+            <div class="f-group">
+              <label><i class="fas fa-lock" style="color:#7c3aed;"></i> Contraseña WiFi</label>
+              <input type="text" id="nsWifiPass" class="f-input" minlength="8" placeholder="Mín. 8 caracteres">
+            </div>
+          </div>
+        </div>
         <div class="f-group full-w" style="margin-top:8px;">
           <label>Dirección Exacta</label>
           <input type="text" id="nsAddress" class="f-input" placeholder="Dirección del servicio">
@@ -569,15 +980,22 @@ function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
 function loadNsRouters() {
   fetch('/api/routers')
-    .then(r => r.json())
-    .then(routers => {
-      nsRoutersCache = routers;
+    .then(function(r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+    .then(function(routers) {
+      nsRoutersCache = Array.isArray(routers) ? routers : [];
       const sel = document.getElementById('nsRouter');
       sel.innerHTML = '<option value="">-- Seleccionar --</option>';
-      routers.forEach(function(r) {
+      nsRoutersCache.forEach(function(r) {
         const auth = r.auth_type || 'dhcp';
         sel.innerHTML += '<option value="' + r.id + '" data-auth="' + auth.toLowerCase() + '">' + r.name + '</option>';
       });
+      if (nsRoutersCache.length > 0) {
+        sel.value = nsRoutersCache[0].id;
+        nsOnRouterChange();
+      }
+    })
+    .catch(function(e) {
+      nsRoutersCache = [];
     });
 }
 
@@ -667,6 +1085,12 @@ function nsLoadPools() {
           var disp = p.disponibles || 0;
           poolSel.innerHTML += '<option value="' + p.id + '">' + p.red + ' (' + p.total + ' IPs, ' + disp + ' disponibles)</option>';
         });
+        // Auto-seleccionar el primer pool con IPs disponibles
+        var firstWithIps = pools.find(function(p) { return (p.disponibles || 0) > 0; });
+        if (firstWithIps) {
+          poolSel.value = firstWithIps.id;
+          nsOnPoolChange();
+        }
       } else {
         poolSel.innerHTML = '<option value="">-- Sin rangos configurados --</option>';
         ipSel.innerHTML = '<option value=""></option>';
@@ -693,7 +1117,8 @@ function nsOnPoolChange() {
         for (var i = 0; i < data.disponibles.length; i++) {
           ipSel.innerHTML += '<option value="' + data.disponibles[i] + '">' + data.disponibles[i] + '</option>';
         }
-        // Auto-calc gateway if static
+        // Auto-seleccionar la primera IP disponible
+        ipSel.value = data.disponibles[0];
         nsOnIpSelectChange();
       } else {
         ipSel.innerHTML = '<option value="">No hay IPs disponibles</option>';
@@ -743,9 +1168,17 @@ function nsOnCicloChange() {
 }
 
 function nsGenerateCredentials() {
-  function r() { return Math.random().toString(36).substring(2, 8); }
-  document.getElementById('nsPppoeUser').value = 'CLI' + Math.random().toString(36).substring(2, 8).toUpperCase();
-  document.getElementById('nsPppoePass').value = r() + r();
+  // Obtener nombre del cliente
+  var nombre = '<%= (cliente.nombre || "").replace(/'/g, "\\'") %>';
+  if (nombre) {
+    var parts = nombre.trim().split(/\s+/);
+    var userParts = parts.map(function(p) { return p.charAt(0).toUpperCase() + p.slice(1).toLowerCase(); });
+    var user = userParts.join('').replace(/[^a-zA-Z0-9]/g, '');
+    document.getElementById('nsPppoeUser').value = user;
+  } else {
+    document.getElementById('nsPppoeUser').value = 'CLI' + Math.random().toString(36).substring(2, 8).toUpperCase();
+  }
+  document.getElementById('nsPppoePass').value = '1320';
 }
 
 function nsGuardar() {
@@ -778,6 +1211,10 @@ function nsGuardar() {
     data.pppoe_user = document.getElementById('nsPppoeUser').value;
     data.pppoe_pass = document.getElementById('nsPppoePass').value;
   }
+  
+  // WiFi fields (para todos los servicios de internet)
+  data.wifi_ssid = document.getElementById('nsWifiSsid') ? document.getElementById('nsWifiSsid').value : '';
+  data.wifi_pass = document.getElementById('nsWifiPass') ? document.getElementById('nsWifiPass').value : '';
   
   if (metodo === 'static') {
     data.ip = document.getElementById('nsIpSelect').value;
@@ -945,6 +1382,139 @@ function saveEditServicio() {
 }
 </script>
 
+<!-- ========== MENSAJERÍA JS ========== -->
+<script>
+function loadMensajes() {
+  const container = document.getElementById('msjContainer');
+  if (!container) return;
+  container.innerHTML = '<div class="vc-msj-empty"><i class="fas fa-spinner fa-spin" style="font-size:1.5rem;display:block;margin-bottom:8px;"></i>Cargando mensajes...</div>';
+  
+  const clienteId = <%= cliente.id %>;
+  fetch('/api/clientes/' + clienteId + '/mensajes')
+    .then(function(r) { return r.json(); })
+    .then(function(res) {
+      if (!res.success || !res.data || res.data.length === 0) {
+        container.innerHTML = '<div class="vc-msj-empty"><i class="fas fa-comment-dots" style="font-size:2rem;opacity:0.3;display:block;margin-bottom:8px;"></i>No hay mensajes registrados</div>';
+        return;
+      }
+      
+      var tipos = {
+        nota: { icon: 'fa-sticky-note', color: '#64748b', bg: '#f8fafc', border: '#e2e8f0' },
+        whatsapp: { icon: 'fab fa-whatsapp', color: '#16a34a', bg: '#f0fdf4', border: '#86efac' },
+        email: { icon: 'fa-envelope', color: '#2563eb', bg: '#eff6ff', border: '#bfdbfe' },
+        sms: { icon: 'fa-sms', color: '#d97706', bg: '#fefce8', border: '#fde68a' }
+      };
+      
+      var etiquetas = { nota: 'Nota interna', whatsapp: 'WhatsApp', email: 'Email', sms: 'SMS' };
+      
+      var html = '';
+      res.data.forEach(function(m) {
+        var tipo = tipos[m.tipo] || tipos.nota;
+        var fecha = '';
+        if (m.created_at) {
+          try {
+            var d = new Date(m.created_at.replace(' ', 'T'));
+            if (!isNaN(d.getTime())) {
+              fecha = d.toLocaleDateString('es-DO', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+            } else {
+              fecha = m.created_at;
+            }
+          } catch(e) { fecha = m.created_at; }
+        }
+        
+        html += '<div class="vc-msj-card" style="background:' + tipo.bg + ';border-left-color:' + tipo.border + ';">';
+        html += '  <div class="vc-msj-icon" style="background:' + tipo.bg + ';color:' + tipo.color + ';"><i class="' + tipo.icon + '"></i></div>';
+        html += '  <div class="vc-msj-body">';
+        html += '    <div class="vc-msj-text">' + escapeHtml(m.mensaje) + '</div>';
+        html += '    <div class="vc-msj-meta">';
+        html += '      <span style="color:' + tipo.color + ';font-weight:600;">' + (etiquetas[m.tipo] || m.tipo) + '</span>';
+        html += '      <span>' + fecha + '</span>';
+        if (m.enviado_por_nombre) {
+          html += '      <span>Por: ' + escapeHtml(m.enviado_por_nombre) + '</span>';
+        }
+        html += '    </div>';
+        html += '  </div>';
+        html += '</div>';
+      });
+      container.innerHTML = html;
+    })
+    .catch(function() {
+      container.innerHTML = '<div class="vc-msj-empty" style="color:#ef4444;"><i class="fas fa-exclamation-triangle" style="font-size:1.5rem;display:block;margin-bottom:8px;"></i>Error al cargar mensajes</div>';
+    });
+}
+
+function enviarMensaje() {
+  var tipo = document.getElementById('msjTipo').value;
+  var mensaje = document.getElementById('msjTexto').value.trim();
+  
+  if (!mensaje) {
+    showToast('El mensaje no puede estar vacío', 'error');
+    return;
+  }
+  
+  var clienteId = <%= cliente.id %>;
+  var btn = document.querySelector('#vcTab-mensajes .vc-btn-primary');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+  
+  fetch('/api/clientes/' + clienteId + '/mensajes', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ tipo: tipo, mensaje: mensaje })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(res) {
+    if (res.success) {
+      showToast('Mensaje enviado correctamente');
+      document.getElementById('msjTexto').value = '';
+      
+      // Si es WhatsApp, abrir WhatsApp Web
+      if (tipo === 'whatsapp') {
+        var telefono = '<%= (cliente.telefono || "").replace(/[^\d]/g, "") %>';
+        if (telefono) {
+          var url = 'https://wa.me/' + telefono + '?text=' + encodeURIComponent(mensaje);
+          window.open(url, '_blank');
+        } else {
+          showToast('El cliente no tiene teléfono registrado', 'error');
+        }
+      }
+      
+      // Recargar historial
+      loadMensajes();
+    } else {
+      showToast('Error: ' + (res.message || 'desconocido'), 'error');
+    }
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-paper-plane"></i> Enviar Mensaje';
+  })
+  .catch(function(e) {
+    showToast('Error de conexión: ' + e.message, 'error');
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-paper-plane"></i> Enviar Mensaje';
+  });
+}
+
+// Mostrar alerta de WhatsApp cuando se selecciona ese tipo
+document.addEventListener('change', function(e) {
+  if (e.target && e.target.id === 'msjTipo') {
+    var alertEl = document.getElementById('msjWhatsappAlert');
+    if (alertEl) {
+      alertEl.style.display = e.target.value === 'whatsapp' ? 'block' : 'none';
+    }
+  }
+});
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+</script>
+
 <!-- Modal Añadir ONU -->
 <div class="cli-modal-overlay" id="modalAddOnu" style="display:none;">
   <div class="cli-modal-box" style="max-width:600px;border-top:5px solid #2563eb;">
@@ -1072,14 +1642,27 @@ function saveEditServicio() {
 <script>
 function toggleSvcDetail(id) {
   const el = document.getElementById('svcDetail_' + id);
-  if (el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
+  const icon = document.getElementById('svcIcon_' + id);
+  if (!el) return;
+  const isOpen = el.style.display !== 'none';
+  el.style.display = isOpen ? 'none' : 'block';
+  if (icon) {
+    icon.classList.toggle('open', !isOpen);
+  }
 }
 
 function accionServicio(id, accion) {
   fetch('/api/servicios/' + id + '/' + accion, { method: 'POST' })
     .then(r => r.json())
-    .then(d => { if (d.success) { showToast('Acción ejecutada'); location.reload(); } else showToast('Error: ' + (d.message || 'desconocido'), 'error'); })
-    .catch(e => showToast('Error de conexión', 'error'));
+    .then(d => {
+      if (d.success) {
+        showToast('✅ ' + d.message);
+        location.reload();
+      } else {
+        showToast('❌ Error: ' + (d.message || 'desconocido'), 'error');
+      }
+    })
+    .catch(e => showToast('❌ Error de conexión: ' + e.message, 'error'));
 }
 
 function enviarTR069(servicioId) {
@@ -1355,33 +1938,330 @@ function openTransferModal(srvId, currentOwner) {
 var tfSearchTimeout = null;
 function searchTransferClients() {
   if (tfSearchTimeout) clearTimeout(tfSearchTimeout);
-  const q = document.getElementById('tfSearch').value.trim();
+  var q = document.getElementById('tfSearch').value.trim();
   if (q.length < 2) {
     document.getElementById('tfResults').innerHTML = '<div style="padding:20px;text-align:center;color:#94a3b8;">Escriba al menos 2 caracteres para buscar</div>';
     return;
   }
   tfSearchTimeout = setTimeout(function() {
     fetch('/api/clientes/buscar?q=' + encodeURIComponent(q))
-      .then(r => r.json())
-      .then(clientes => {
-        const el = document.getElementById('tfResults');
+      .then(function(r) { return r.json(); })
+      .then(function(clientes) {
+        var h = '';
         if (!clientes || clientes.length === 0) {
-          el.innerHTML = '<div style="padding:20px;text-align:center;color:#94a3b8;">No se encontraron clientes</div>';
-          return;
+          h = '<div style="padding:20px;text-align:center;color:#94a3b8;">No se encontraron clientes</div>';
+        } else {
+          for (var ci = 0; ci < clientes.length; ci++) {
+            var cl = clientes[ci];
+            var nom = (cl.nombre || '').replace(/'/g, '');
+          h += '<div class="tf-result-item" onclick="selectTransferClient.call(this, ' + cl.id + ')" data-nombre="' + nom + '" style="padding:10px 14px;cursor:pointer;border-bottom:1px solid #f1f5f9;">';
+            h += '<div style="font-weight:600;">' + nom + '</div>';
+            h += '<div style="font-size:0.78rem;color:#64748b;">' + (cl.cedula || '') + ' | ' + (cl.telefono || '') + '</div>';
+            h += '</div>';
+          }
         }
-        let h = '';
-        clientes.forEach(function(c) {
-          h += '<div class="tf-result-item" onclick="selectTransferClient(' + c.id + ',\'' + (c.nombre||'').replace(/'/g,'\\\'') + '\')" style="padding:10px 14px;cursor:pointer;border-bottom:1px solid #f1f5f9;" onmouseover="this.style.background=\'#eff6ff\'" onmouseout="this.style.background=\'\'">';
-          h += '<div style="font-weight:600;color:#1e293b;">' + c.nombre + '</div>';
-          h += '<div style="font-size:0.8rem;color:#64748b;">' + (c.cedula || '') + ' | ' + (c.telefono || '') + '</div>';
-          h += '</div>';
-        });
-        el.innerHTML = h;
+        document.getElementById('tfResults').innerHTML = h;
+      })
+      .catch(function() {
+        document.getElementById('tfResults').innerHTML = '<div style="padding:20px;text-align:center;color:#ef4444;">Error de conexion</div>';
       });
   }, 300);
+}// ========== CONFIGURACIÓN ==========
+var clientConfigCache = null;
+
+function loadClientConfig() {
+  var cid = <%= cliente.id %>;
+  fetch('/api/clientes/' + cid + '/config')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (!data.success) return;
+      clientConfigCache = data;
+
+      // Update free services description
+      var freeSvc = data.gratis || [];
+      document.getElementById('cfg-free-desc').textContent = freeSvc.length > 0
+        ? freeSvc.map(function(s) { return s.plan_nombre || ('Svc #' + s.id); }).join(', ')
+        : 'Ninguno';
+
+      // Update no-suspend services description
+      var noSuspSvc = data.no_suspend || [];
+      document.getElementById('cfg-nosuspend-desc').textContent = noSuspSvc.length > 0
+        ? noSuspSvc.map(function(s) { return s.plan_nombre || ('Svc #' + s.id); }).join(', ')
+        : 'Ninguno';
+
+      // Update discounts description
+      var descSvc = data.descuentos || [];
+      document.getElementById('cfg-discount-desc').textContent = descSvc.length > 0
+        ? descSvc.map(function(s) { return (s.plan_nombre || 'Svc #' + s.id) + ' ($' + parseFloat(s.descuento_monto).toFixed(2) + ')'; }).join(', ')
+        : 'Ninguno';
+
+      // Notificar facturas toggle
+      document.getElementById('cfg-notificar-facturas').checked = data.cliente.notificar_facturas === 1 || data.cliente.notificar_facturas === true;
+
+      // Facturar consolidado toggle
+      document.getElementById('cfg-facturar-consolidado').checked = data.cliente.facturar_consolidado === 1 || data.cliente.facturar_consolidado === true;
+
+      // Comprobante fiscal
+      var cf = data.cliente.comprobante_fiscal || 'ninguno';
+      var radios = document.querySelectorAll('input[name="cfg-comprobante"]');
+      radios.forEach(function(r) { r.checked = (r.value === cf); });
+    })
+    .catch(function(e) {
+      showToast('Error al cargar configuración: ' + e.message, 'error');
+    });
 }
 
+function openSvcConfigModal(tipo) {
+  var cid = <%= cliente.id %>;
+  var titleEl = document.getElementById('svcConfigModalTitle');
+  var descEl = document.getElementById('svcConfigModalDesc');
+  var tipoEl = document.getElementById('svcConfigTipo');
+  var listEl = document.getElementById('svcConfigList');
+  var discountFields = document.getElementById('svcConfigDiscountFields');
+  var billingFields = document.getElementById('svcConfigBillingFields');
+
+  tipoEl.value = tipo;
+  discountFields.style.display = 'none';
+  billingFields.style.display = 'none';
+
+  var titles = {
+    free: '<span style="color:#10b981;">🎁</span> Cliente Gratis',
+    nosuspend: '<span style="color:#f59e0b;">🛡️</span> No Suspender',
+    billing: '<span style="color:#2563eb;">📄</span> Facturación',
+    discount: '<span style="color:#8b5cf6;">🏷️</span> Descuentos'
+  };
+  var descs = {
+    free: 'Selecciona los servicios que serán gratis (no generan factura ni se suspenden).',
+    nosuspend: 'Selecciona los servicios protegidos contra suspensión automática.',
+    billing: 'Configura el ciclo de facturación para cada servicio.',
+    discount: 'Aplica un descuento fijo en RD$ a la factura de cada servicio.'
+  };
+
+  titleEl.innerHTML = titles[tipo] || 'Configurar';
+  descEl.textContent = descs[tipo] || '';
+
+  if (tipo === 'discount') {
+    discountFields.style.display = 'block';
+  }
+  if (tipo === 'billing') {
+    billingFields.style.display = 'block';
+    // Update the ciclo select with available cycles
+    var cicloSel = document.getElementById('svcBillingCiclo');
+    // Keep existing options from EJS rendering
+  }
+
+  // Fetch config to get services
+  fetch('/api/clientes/' + cid + '/config')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (!data.success) { listEl.innerHTML = '<div style="padding:20px;color:#ef4444;">Error al cargar servicios</div>'; return; }
+      var servicios = data.servicios || [];
+      if (servicios.length === 0) {
+        listEl.innerHTML = '<div style="padding:20px;text-align:center;color:#94a3b8;">Este cliente no tiene servicios</div>';
+        return;
+      }
+      var html = '';
+      servicios.forEach(function(s) {
+        var isActive = false;
+        var extraHtml = '';
+        if (tipo === 'free') {
+          isActive = s.es_gratis === 1;
+        } else if (tipo === 'nosuspend') {
+          isActive = s.no_suspender === 1;
+        } else if (tipo === 'discount') {
+          isActive = parseFloat(s.descuento_monto || 0) > 0;
+          extraHtml = isActive ? ' ($' + parseFloat(s.descuento_monto).toFixed(2) + ')' : '';
+        } else if (tipo === 'billing') {
+          // Show cycle info
+          var cicloId = s.ciclo_id || '';
+          extraHtml = cicloId ? ' | Ciclo: #' + cicloId : '';
+        }
+        var statusBadge = s.estado === 'activo' ? '<span class="vc-badge vc-badge-ok">Activo</span>'
+          : s.estado === 'suspendido' ? '<span class="vc-badge vc-badge-err">Susp.</span>'
+          : '<span class="vc-badge vc-badge-warn">' + (s.estado || '—') + '</span>';
+        html += '<div class="cfg-svc-item" data-svc-id="' + s.id + '">';
+        html += '<div><div class="cfg-svc-name">' + (s.plan_nombre || 'Servicio #' + s.id) + '</div><div class="cfg-svc-status">' + statusBadge + extraHtml + '</div></div>';
+        if (tipo === 'discount') {
+          html += '<div><input type="number" class="cfg-input-discount" data-svc-id="' + s.id + '" value="' + (parseFloat(s.descuento_monto || 0).toFixed(2)) + '" min="0" step="0.01" placeholder="0.00"></div>';
+        } else if (tipo === 'billing') {
+          html += '<div><span style="font-size:0.78rem;color:#64748b;">Configura el ciclo en <strong>Editar Servicio</strong></span></div>';
+        } else {
+          html += '<label class="cfg-toggle"><input type="checkbox" class="svc-config-check" data-svc-id="' + s.id + '" ' + (isActive ? 'checked' : '') + '><span class="cfg-toggle-slider"></span></label>';
+        }
+        html += '</div>';
+      });
+      listEl.innerHTML = html;
+
+      // For billing, update the ciclo select info
+      if (tipo === 'billing') {
+        var cicloSel = document.getElementById('svcBillingCiclo');
+        if (cicloSel) {
+          cicloSel.onchange = function() {
+            var opt = cicloSel.options[cicloSel.selectedIndex];
+            var info = document.getElementById('svcBillingCicloInfo');
+            if (opt && opt.value) {
+              info.style.display = 'block';
+              info.innerHTML = '📄 Gen: Día ' + (opt.getAttribute('data-invoice') || '—') + ' | Corte: Día ' + (opt.getAttribute('data-suspend') || '—');
+            } else {
+              info.style.display = 'none';
+            }
+          };
+        }
+      }
+    })
+    .catch(function(e) {
+      listEl.innerHTML = '<div style="padding:20px;color:#ef4444;">Error: ' + e.message + '</div>';
+    });
+
+  openModal('modalSvcConfig');
+}
+
+function saveSvcConfigAction() {
+  var tipo = document.getElementById('svcConfigTipo').value;
+  var cid = <%= cliente.id %>;
+  var promises = [];
+
+  if (tipo === 'discount') {
+    // Collect discount amounts
+    var inputs = document.querySelectorAll('#svcConfigList .cfg-input-discount');
+    inputs.forEach(function(inp) {
+      var svcId = parseInt(inp.getAttribute('data-svc-id'));
+      var monto = parseFloat(inp.value) || 0;
+      promises.push(
+        fetch('/api/clientes/' + cid + '/config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tipo: 'discount', servicio_id: svcId, valor: monto })
+        }).then(function(r) { return r.json(); })
+      );
+    });
+  } else if (tipo === 'billing') {
+    // Use the current ciclo selection from the modal
+    var cicloSel = document.getElementById('svcBillingCiclo');
+    if (cicloSel && cicloSel.value) {
+      var cicloId = cicloSel.value;
+      var allSvcIds = [];
+      document.querySelectorAll('#svcConfigList .cfg-svc-item').forEach(function(item) {
+        allSvcIds.push(parseInt(item.getAttribute('data-svc-id')));
+      });
+      allSvcIds.forEach(function(svcId) {
+        promises.push(
+          fetch('/api/clientes/' + cid + '/config', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ tipo: 'billing', servicio_id: svcId, ciclo_id: cicloId })
+          }).then(function(r) { return r.json(); })
+        );
+      });
+    }
+  } else {
+    // Collect checkboxes
+    var checks = document.querySelectorAll('#svcConfigList .svc-config-check');
+    checks.forEach(function(chk) {
+      var svcId = parseInt(chk.getAttribute('data-svc-id'));
+      var valor = chk.checked ? 1 : 0;
+      promises.push(
+        fetch('/api/clientes/' + cid + '/config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tipo: tipo, servicio_id: svcId, valor: valor })
+        }).then(function(r) { return r.json(); })
+      );
+    });
+  }
+
+  // Also handle the global discount/billing fields in the modal
+  if (tipo === 'discount' && document.getElementById('svcConfigDiscountFields').style.display === 'block') {
+    var globalAmount = parseFloat(document.getElementById('svcDiscountAmount').value) || 0;
+    if (globalAmount > 0) {
+      // Apply to all services without individual discounts
+      document.querySelectorAll('#svcConfigList .cfg-input-discount').forEach(function(inp) {
+        var svcId = parseInt(inp.getAttribute('data-svc-id'));
+        var currentVal = parseFloat(inp.value) || 0;
+        if (currentVal === 0) {
+          promises.push(
+            fetch('/api/clientes/' + cid + '/config', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ tipo: 'discount', servicio_id: svcId, valor: globalAmount })
+            }).then(function(r) { return r.json(); })
+          );
+        }
+      });
+    }
+  }
+
+  Promise.all(promises).then(function() {
+    showToast('Configuración guardada');
+    closeModal('modalSvcConfig');
+    loadClientConfig();
+  }).catch(function(e) {
+    showToast('Error al guardar: ' + e.message, 'error');
+  });
+}
+
+function toggleClienteConfig(campo, valor) {
+  var cid = <%= cliente.id %>;
+  fetch('/api/clientes/' + cid + '/toggle', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ campo: campo, valor: valor })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    if (data.success) {
+      showToast('Configuración actualizada');
+    } else {
+      showToast('Error: ' + (data.message || 'desconocido'), 'error');
+    }
+  })
+  .catch(function(e) {
+    showToast('Error de conexión: ' + e.message, 'error');
+  });
+}
+
+function guardarConfigGlobal() {
+  // Gather all toggles state and save
+  var cid = <%= cliente.id %>;
+  var notif = document.getElementById('cfg-notificar-facturas').checked ? 1 : 0;
+  var consolidado = document.getElementById('cfg-facturar-consolidado').checked ? 1 : 0;
+  var comprobante = document.querySelector('input[name="cfg-comprobante"]:checked');
+  var cfVal = comprobante ? comprobante.value : 'ninguno';
+
+  var btn = document.querySelector('#vcTab-configuracion .vc-btn-primary');
+  btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+
+  var p1 = fetch('/api/clientes/' + cid + '/toggle', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ campo: 'notificar_facturas', valor: notif })
+  }).then(function(r) { return r.json(); });
+
+  var p2 = fetch('/api/clientes/' + cid + '/toggle', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ campo: 'facturar_consolidado', valor: consolidado })
+  }).then(function(r) { return r.json(); });
+
+  var p3 = fetch('/api/clientes/' + cid + '/toggle', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ campo: 'comprobante_fiscal', valor: cfVal })
+  }).then(function(r) { return r.json(); });
+
+  Promise.all([p1, p2, p3]).then(function() {
+    btn.disabled = false; btn.innerHTML = '<i class="fas fa-save"></i> Guardar Cambios';
+    var msg = document.getElementById('cfg-saved-msg');
+    msg.style.display = 'block';
+    setTimeout(function() { msg.style.display = 'none'; }, 2000);
+    showToast('✓ Configuración guardada');
+  }).catch(function(e) {
+    btn.disabled = false; btn.innerHTML = '<i class="fas fa-save"></i> Guardar Cambios';
+    showToast('Error: ' + e.message, 'error');
+  });
+}
 function selectTransferClient(id, nombre) {
+  if (typeof nombre === "undefined" && this && this.dataset) nombre = this.dataset.nombre;
   tfSelectedClient = { id: id, nombre: nombre };
   document.getElementById('tfConfirmBtn').disabled = false;
   document.getElementById('tfResultMsg').innerHTML = '<div style="padding:8px;background:#f0fdf4;border-radius:6px;color:#166534;font-weight:600;">Cliente seleccionado: <strong>' + nombre + '</strong></div>';

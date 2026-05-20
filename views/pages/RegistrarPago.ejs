@@ -1,85 +1,82 @@
 <style>
-.search-results {
-    position: absolute; top: 100%; left: 0; right: 0; background: white;
-    border: 1px solid #ddd; border-top: none; border-radius: 0 0 6px 6px;
-    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); max-height: 250px; overflow-y: auto; z-index: 1000; display: none;
-}
-.search-item { padding: 12px 15px; cursor: pointer; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; }
-.search-item:hover { background-color: #f8fafc; }
-.search-item strong { display: block; font-size: 1rem; }
+    .search-results {
+        position: absolute; top: 100%; left: 0; right: 0; background: white;
+        border: 1px solid #ddd; border-top: none; border-radius: 0 0 6px 6px;
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); max-height: 250px; overflow-y: auto; z-index: 1000; display: none;
+    }
+    .search-item { padding: 12px 15px; cursor: pointer; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; }
+    .search-item:hover { background-color: #f8fafc; }
+    .search-item strong { display: block; font-size: 1rem; }
+    
+    .rp-client-card { display:flex; justify-content:space-between; align-items:center; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:18px 20px; margin-bottom:20px; }
+    .rp-total-badge { font-size:1.8rem; font-weight:700; }
+    .rp-total-badge.has-debt { color:#ef4444; }
+    .rp-total-badge.no-debt { color:#10b981; }
+    .rp-step-title { font-size:1rem; font-weight:700; color:#1e293b; margin-bottom:12px; display:flex; align-items:center; gap:8px; }
+    
+    .rp-svc-card { border:2px solid #e2e8f0; border-radius:10px; padding:14px 16px; margin-bottom:8px; cursor:pointer; transition:all 0.2s; display:flex; justify-content:space-between; align-items:center; }
+    .rp-svc-card:hover { border-color:#93c5fd; background:#f0f9ff; }
+    .rp-svc-card.selected { border-color:#2563eb; background:#eff6ff; }
+    .rp-svc-left { flex:1; min-width:0; }
+    .rp-svc-plan { font-weight:700; color:#1e293b; font-size:0.95rem; }
+    .rp-svc-detail { font-size:0.82rem; color:#64748b; margin-top:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .rp-svc-pending { font-weight:700; color:#ef4444; font-size:1rem; text-align:right; margin:0 12px; white-space:nowrap; }
+    .rp-svc-pending.zero { color:#10b981; }
+    .check-icon { width:24px; height:24px; border:2px solid #cbd5e1; border-radius:6px; display:flex; align-items:center; justify-content:center; color:transparent; transition:all 0.2s; flex-shrink:0; }
+    .rp-svc-card.selected .check-icon { background:#2563eb; border-color:#2563eb; color:white; }
+    
+    .rp-btn-todos { padding:8px 16px; background:#2563eb; color:white; border:none; border-radius:8px; font-weight:600; cursor:pointer; font-size:0.85rem; }
+    .rp-btn-todos:hover { background:#1d4ed8; }
+    .rp-btn-continue { padding:10px 20px; background:#2563eb; color:white; border:none; border-radius:8px; font-weight:600; cursor:pointer; font-size:0.9rem; flex:1; }
+    .rp-btn-continue:hover { background:#1d4ed8; }
+    .rp-btn-continue:disabled { background:#94a3b8; cursor:not-allowed; }
+    .rp-btn-back { padding:6px 14px; background:#f1f5f9; color:#475569; border:1px solid #e2e8f0; border-radius:6px; cursor:pointer; font-size:0.85rem; font-weight:600; }
+    .rp-btn-back:hover { background:#e2e8f0; }
+    .rp-btn-pay { width:100%; padding:14px; background:#16a34a; color:white; border:none; border-radius:10px; font-size:1.15rem; font-weight:700; cursor:pointer; }
+    .rp-btn-pay:hover { background:#15803d; }
+    .rp-btn-pay:disabled { background:#94a3b8; cursor:not-allowed; }
+    
+    .rp-inv-group { margin-bottom:16px; }
+    .rp-inv-group-title { font-weight:600; color:#475569; font-size:0.88rem; padding:8px 0; border-bottom:1px solid #e2e8f0; margin-bottom:6px; display:flex; align-items:center; gap:6px; }
+    .rp-inv-row { display:flex; align-items:center; padding:8px 10px; border-radius:6px; margin-bottom:4px; transition:background 0.15s; }
+    .rp-inv-row:hover { background:#f8fafc; }
+    .rp-inv-check { margin-right:10px; transform:scale(1.2); cursor:pointer; accent-color:#2563eb; }
+    .rp-inv-info { flex:1; }
+    .rp-inv-id { font-size:0.78rem; color:#94a3b8; font-weight:600; }
+    .rp-inv-dates { font-size:0.82rem; color:#475569; }
+    .rp-inv-amount { font-weight:700; color:#1e293b; font-size:0.95rem; white-space:nowrap; }
+    .rp-inv-badge { padding:2px 8px; border-radius:12px; font-size:0.72rem; font-weight:600; margin-left:6px; }
+    .rp-inv-badge.pending { background:#fef9c3; color:#854d0e; }
+    .rp-inv-badge.overdue { background:#fef2f2; color:#991b1b; }
+    .rp-inv-badge.partial { background:#dbeafe; color:#1e40af; }
+    
+    .rp-resumen { background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:14px 18px; margin-top:16px; }
+    .rp-resumen-row { display:flex; justify-content:space-between; color:#64748b; font-size:0.9rem; margin-bottom:6px; }
+    .rp-resumen-total { display:flex; justify-content:space-between; font-size:1.3rem; font-weight:700; color:#1e293b; padding-top:8px; border-top:2px solid #e2e8f0; }
+    
+    @keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+    
+    .rcp-row { display:flex; align-items:center; padding:12px 14px; border:1px solid #f1f5f9; border-radius:8px; margin-bottom:6px; transition:all 0.15s; cursor:pointer; gap:12px; }
+    .rcp-row:hover { border-color:#93c5fd; background:#f0f9ff; }
+    .rcp-row-id { font-size:0.75rem; color:#94a3b8; font-weight:600; min-width:50px; }
+    .rcp-row-info { flex:1; min-width:0; }
+    .rcp-row-name { font-weight:600; color:#1e293b; font-size:0.92rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .rcp-row-concept { font-size:0.78rem; color:#64748b; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .rcp-row-right { text-align:right; flex-shrink:0; }
+    .rcp-row-amount { font-weight:700; color:#16a34a; font-size:0.95rem; }
+    .rcp-row-date { font-size:0.75rem; color:#94a3b8; margin-top:2px; }
+    .rcp-row-btn { width:32px; height:32px; border:none; background:#eff6ff; color:#2563eb; border-radius:6px; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:all 0.15s; }
+    .rcp-row-btn:hover { background:#2563eb; color:#fff; }
+    .rcp-pag-btn { padding:6px 12px; border:1px solid #e2e8f0; background:#fff; color:#475569; border-radius:6px; cursor:pointer; font-size:0.82rem; font-weight:600; transition:all 0.15s; }
+    .rcp-pag-btn:hover { background:#eff6ff; border-color:#93c5fd; }
+    .rcp-pag-btn:disabled { opacity:0.4; cursor:not-allowed; }
+    .rcp-pag-btn.active { background:#2563eb; color:#fff; border-color:#2563eb; }
+    .rcp-empty { text-align:center; padding:40px 20px; color:#94a3b8; }
+    .rcp-empty i { font-size:2rem; margin-bottom:10px; display:block; opacity:0.4; }
+    .rcp-loading { text-align:center; padding:30px; color:#94a3b8; }
 
-.rp-client-card { display:flex; justify-content:space-between; align-items:center; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:18px 20px; margin-bottom:20px; }
-.rp-total-badge { font-size:1.8rem; font-weight:700; }
-.rp-total-badge.has-debt { color:#ef4444; }
-.rp-total-badge.no-debt { color:#10b981; }
-.rp-step-title { font-size:1rem; font-weight:700; color:#1e293b; margin-bottom:12px; display:flex; align-items:center; gap:8px; }
-
-.rp-svc-card { border:2px solid #e2e8f0; border-radius:10px; padding:14px 16px; margin-bottom:8px; cursor:pointer; transition:all 0.2s; display:flex; justify-content:space-between; align-items:center; }
-.rp-svc-card:hover { border-color:#93c5fd; background:#f0f9ff; }
-.rp-svc-card.selected { border-color:#2563eb; background:#eff6ff; }
-.rp-svc-left { flex:1; min-width:0; }
-.rp-svc-plan { font-weight:700; color:#1e293b; font-size:0.95rem; }
-.rp-svc-detail { font-size:0.82rem; color:#64748b; margin-top:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.rp-svc-pending { font-weight:700; color:#ef4444; font-size:1rem; text-align:right; margin:0 12px; white-space:nowrap; }
-.rp-svc-pending.zero { color:#10b981; }
-.check-icon { width:24px; height:24px; border:2px solid #cbd5e1; border-radius:6px; display:flex; align-items:center; justify-content:center; color:transparent; transition:all 0.2s; flex-shrink:0; }
-.rp-svc-card.selected .check-icon { background:#2563eb; border-color:#2563eb; color:white; }
-
-.rp-btn-todos { padding:8px 16px; background:#2563eb; color:white; border:none; border-radius:8px; font-weight:600; cursor:pointer; font-size:0.85rem; }
-.rp-btn-todos:hover { background:#1d4ed8; }
-.rp-btn-continue { padding:10px 20px; background:#2563eb; color:white; border:none; border-radius:8px; font-weight:600; cursor:pointer; font-size:0.9rem; flex:1; }
-.rp-btn-continue:hover { background:#1d4ed8; }
-.rp-btn-continue:disabled { background:#94a3b8; cursor:not-allowed; }
-.rp-btn-back { padding:6px 14px; background:#f1f5f9; color:#475569; border:1px solid #e2e8f0; border-radius:6px; cursor:pointer; font-size:0.85rem; font-weight:600; }
-.rp-btn-back:hover { background:#e2e8f0; }
-.rp-btn-pay { width:100%; padding:14px; background:#16a34a; color:white; border:none; border-radius:10px; font-size:1.15rem; font-weight:700; cursor:pointer; }
-.rp-btn-pay:hover { background:#15803d; }
-.rp-btn-pay:disabled { background:#94a3b8; cursor:not-allowed; }
-
-.rp-inv-group { margin-bottom:16px; }
-.rp-inv-group-title { font-weight:600; color:#475569; font-size:0.88rem; padding:8px 0; border-bottom:1px solid #e2e8f0; margin-bottom:6px; display:flex; align-items:center; gap:6px; }
-.rp-inv-row { display:flex; align-items:center; padding:8px 10px; border-radius:6px; margin-bottom:4px; transition:background 0.15s; }
-.rp-inv-row:hover { background:#f8fafc; }
-.rp-inv-check { margin-right:10px; transform:scale(1.2); cursor:pointer; accent-color:#2563eb; }
-.rp-inv-info { flex:1; }
-.rp-inv-id { font-size:0.78rem; color:#94a3b8; font-weight:600; }
-.rp-inv-dates { font-size:0.82rem; color:#475569; }
-.rp-inv-amount { font-weight:700; color:#1e293b; font-size:0.95rem; white-space:nowrap; }
-.rp-inv-badge { padding:2px 8px; border-radius:12px; font-size:0.72rem; font-weight:600; margin-left:6px; }
-.rp-inv-badge.pending { background:#fef9c3; color:#854d0e; }
-.rp-inv-badge.overdue { background:#fef2f2; color:#991b1b; }
-.rp-inv-badge.partial { background:#dbeafe; color:#1e40af; }
-
-.rp-resumen { background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:14px 18px; margin-top:16px; }
-.rp-resumen-row { display:flex; justify-content:space-between; color:#64748b; font-size:0.9rem; margin-bottom:6px; }
-.rp-resumen-total { display:flex; justify-content:space-between; font-size:1.3rem; font-weight:700; color:#1e293b; padding-top:8px; border-top:2px solid #e2e8f0; }
-
-@keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
-
-.rcp-row { display:flex; align-items:center; padding:12px 14px; border:1px solid #f1f5f9; border-radius:8px; margin-bottom:6px; transition:all 0.15s; cursor:pointer; gap:12px; }
-.rcp-row:hover { border-color:#93c5fd; background:#f0f9ff; }
-.rcp-row-id { font-size:0.75rem; color:#94a3b8; font-weight:600; min-width:50px; }
-.rcp-row-info { flex:1; min-width:0; }
-.rcp-row-name { font-weight:600; color:#1e293b; font-size:0.92rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.rcp-row-concept { font-size:0.78rem; color:#64748b; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.rcp-row-right { text-align:right; flex-shrink:0; }
-.rcp-row-amount { font-weight:700; color:#16a34a; font-size:0.95rem; }
-.rcp-row-date { font-size:0.75rem; color:#94a3b8; margin-top:2px; }
-.rcp-row-btn { width:32px; height:32px; border:none; background:#eff6ff; color:#2563eb; border-radius:6px; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:all 0.15s; }
-.rcp-row-btn:hover { background:#2563eb; color:#fff; }
-.rcp-pag-btn { padding:6px 12px; border:1px solid #e2e8f0; background:#fff; color:#475569; border-radius:6px; cursor:pointer; font-size:0.82rem; font-weight:600; transition:all 0.15s; }
-.rcp-pag-btn:hover { background:#eff6ff; border-color:#93c5fd; }
-.rcp-pag-btn:disabled { opacity:0.4; cursor:not-allowed; }
-.rcp-pag-btn.active { background:#2563eb; color:#fff; border-color:#2563eb; }
-.rcp-empty { text-align:center; padding:40px 20px; color:#94a3b8; }
-.rcp-empty i { font-size:2rem; margin-bottom:10px; display:block; opacity:0.4; }
-.rcp-loading { text-align:center; padding:30px; color:#94a3b8; }
-
-.modal-overlay {
-    position:fixed; inset:0; background:rgba(0,0,0,0.44); z-index:9000;
-    display:none; align-items:center; justify-content:center; padding:16px;
-}
-.modal-overlay.open { display:flex; }
+/* Modal overlay - centrado en medio de la pantalla */
+.modal-overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.4); z-index:9999; justify-content:center; align-items:center; }
 </style>
 
 <div class="page-header">
@@ -93,7 +90,7 @@
         <div style="display:flex; gap:10px;">
             <input type="text" id="inputBuscador" class="form-control" 
                    placeholder="Escriba nombre, apodo o cedula..." autocomplete="off" style="font-size:1.1rem; padding:12px;">
-            <button class="btn btn-primary" onclick="limpiarFormulario()" title="Limpiar" style="width: auto; padding: 0 15px;">
+            <button class="btn-primary" onclick="limpiarFormulario()" title="Limpiar" style="width: auto; padding: 0 15px;">
                 <i class="fas fa-eraser"></i>
             </button>
         </div>
@@ -155,9 +152,13 @@
         </div>
 
         <div style="margin:15px 0; background:#fff; padding:12px; border:1px solid #e2e8f0; border-radius:6px;">
-            <label style="font-weight:600; color:#475569; display:block; margin-bottom:8px;"><i class="fas fa-credit-card" style="color:#15803d; margin-right:6px;"></i>Método de Pago</label>
-            <select id="selectMetodoPago" onchange="rpToggleTransactionField('selectMetodoPago','divTransactionNumber','inputTransactionNumber')" 
-                    style="width:100%; padding:10px 12px; border:1px solid #d1d5db; border-radius:6px; font-size:0.95rem; font-weight:600; color:#1e293b; background:#f8fafc; cursor:pointer;">
+            <label style="font-weight:600; color:#475569; display:block; margin-bottom:8px;"><i class="fas fa-calendar-alt" style="color:#2563eb; margin-right:6px;"></i>Fecha del Pago</label>
+            <input type="date" id="inputFechaPago" class="form-control"
+                   style="width:100%; padding:10px 12px; border:1px solid #d1d5db; border-radius:6px; font-size:0.95rem; font-weight:600; color:#1e293b; background:#f8fafc; box-sizing:border-box;">
+        </div>
+        <div style="margin:15px 0; background:#fff; padding:12px; border:1px solid #e2e8f0; border-radius:6px;">
+            <label style="font-weight:600; color:#475569; display:block; margin-bottom:8px;"><i class="fas fa-credit-card" style="color:#15803d; margin-right:6px;"></i>M&eacute;todo de Pago</label>
+            <select id="selectMetodoPago" onchange="rpToggleTransactionField('selectMetodoPago','divTransactionNumber','inputTransactionNumber')" style="width:100%; padding:10px 12px; border:1px solid #d1d5db; border-radius:6px; font-size:0.95rem; font-weight:600; color:#1e293b; background:#f8fafc; cursor:pointer; accent-color:#15803d;">
                 <option value="EFECTIVO">EFECTIVO</option>
                 <option value="TARJETA">TARJETA</option>
                 <option value="RECOGER EN CASA">RECOGER EN CASA</option>
@@ -166,14 +167,12 @@
                 <option value="POPULAR">POPULAR</option>
             </select>
         </div>
-        
         <div id="divTransactionNumber" style="margin:0 0 15px; background:#fff; padding:12px; border:1px solid #e2e8f0; border-radius:6px; display:none;">
-            <label style="font-weight:600; color:#475569; display:block; margin-bottom:8px;"><i class="fas fa-hashtag" style="color:#2563eb; margin-right:6px;"></i>Número de Transacción</label>
+            <label style="font-weight:600; color:#475569; display:block; margin-bottom:8px;"><i class="fas fa-hashtag" style="color:#2563eb; margin-right:6px;"></i>N&uacute;mero de Transacci&oacute;n</label>
             <input type="text" id="inputTransactionNumber" placeholder="Ej: 123456789" autocomplete="off"
                 style="width:100%; padding:10px 12px; border:1px solid #d1d5db; border-radius:6px; font-size:0.95rem; font-weight:600; color:#1e293b; background:#f8fafc; box-sizing:border-box;"
                 oninput="this.value=this.value.replace(/\s/g,'')">
         </div>
-        
         <div style="margin:15px 0; background:#fff; padding:12px; border:1px solid #e2e8f0; border-radius:6px;">
             <label style="font-weight:600; color:#475569; display:block; margin-bottom:8px;">Imprimir Recibo?</label>
             <div style="display:flex; gap:20px;">
@@ -181,7 +180,6 @@
                 <label style="cursor:pointer; display:flex; align-items:center; gap:6px; font-weight:600;"><input type="radio" name="rp_imprimir" value="no"> NO</label>
             </div>
         </div>
-        
         <div style="margin:0 0 15px; background:#fff; padding:12px; border:1px solid #e2e8f0; border-radius:6px;">
             <label style="font-weight:600; color:#475569; display:block; margin-bottom:8px;">Activar al pagar?</label>
             <div style="display:flex; gap:20px;">
@@ -199,8 +197,11 @@
     <div id="msgInicial" style="text-align:center; color:#94a3b8; margin-top:50px;">
         <i class="fas fa-search" style="font-size:3rem; margin-bottom:15px; opacity:0.3;"></i>
         <p>Busque un cliente para comenzar el proceso de cobro.</p>
-        <button onclick="showReceipts()" class="btn btn-primary" style="margin-top:25px;">
+        <button onclick="showReceipts()" style="margin-top:25px; padding:12px 28px; background:#2563eb; color:white; border:none; border-radius:10px; font-size:1rem; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:8px; transition:background 0.2s;">
             <i class="fas fa-receipt"></i> Recibos
+        </button>
+        <button onclick="window.location.href='/modulo?pagina=ReportesDePago'" style="margin-top:10px; padding:12px 28px; background:#16a34a; color:white; border:none; border-radius:10px; font-size:1rem; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:8px; transition:background 0.2s;">
+            <i class="fas fa-file-invoice-dollar"></i> Reporte De Pago
         </button>
     </div>
 
@@ -232,7 +233,10 @@
             </button>
         </div>
 
+        <!-- Lista -->
         <div id="rcpList" style="min-height:200px;"></div>
+
+        <!-- Paginacion -->
         <div id="rcpPagination" style="display:flex; justify-content:space-between; align-items:center; margin-top:14px; padding-top:12px; border-top:1px solid #e2e8f0;"></div>
     </div>
 
@@ -274,9 +278,13 @@
         </div>
 
         <div style="margin:15px 0; background:#fff; padding:12px; border:1px solid #e2e8f0; border-radius:6px;">
-            <label style="font-weight:600; color:#475569; display:block; margin-bottom:8px;"><i class="fas fa-credit-card" style="color:#15803d; margin-right:6px;"></i>Método de Pago</label>
-            <select id="selectMetodoPagoAdv" onchange="rpToggleTransactionField('selectMetodoPagoAdv','divTransactionNumberAdv','inputTransactionNumberAdv')" 
-                    style="width:100%; padding:10px 12px; border:1px solid #d1d5db; border-radius:6px; font-size:0.95rem; font-weight:600; color:#1e293b; background:#f8fafc; cursor:pointer;">
+            <label style="font-weight:600; color:#475569; display:block; margin-bottom:8px;"><i class="fas fa-calendar-alt" style="color:#2563eb; margin-right:6px;"></i>Fecha del Pago</label>
+            <input type="date" id="inputFechaPagoAdv" class="form-control"
+                   style="width:100%; padding:10px 12px; border:1px solid #d1d5db; border-radius:6px; font-size:0.95rem; font-weight:600; color:#1e293b; background:#f8fafc; box-sizing:border-box;">
+        </div>
+        <div style="margin:15px 0; background:#fff; padding:12px; border:1px solid #e2e8f0; border-radius:6px;">
+            <label style="font-weight:600; color:#475569; display:block; margin-bottom:8px;"><i class="fas fa-credit-card" style="color:#15803d; margin-right:6px;"></i>M&eacute;todo de Pago</label>
+            <select id="selectMetodoPagoAdv" onchange="rpToggleTransactionField('selectMetodoPagoAdv','divTransactionNumberAdv','inputTransactionNumberAdv')" style="width:100%; padding:10px 12px; border:1px solid #d1d5db; border-radius:6px; font-size:0.95rem; font-weight:600; color:#1e293b; background:#f8fafc; cursor:pointer;">
                 <option value="EFECTIVO">EFECTIVO</option>
                 <option value="TARJETA">TARJETA</option>
                 <option value="RECOGER EN CASA">RECOGER EN CASA</option>
@@ -285,14 +293,12 @@
                 <option value="POPULAR">POPULAR</option>
             </select>
         </div>
-        
         <div id="divTransactionNumberAdv" style="margin:0 0 15px; background:#fff; padding:12px; border:1px solid #e2e8f0; border-radius:6px; display:none;">
-            <label style="font-weight:600; color:#475569; display:block; margin-bottom:8px;"><i class="fas fa-hashtag" style="color:#2563eb; margin-right:6px;"></i>Número de Transacción</label>
+            <label style="font-weight:600; color:#475569; display:block; margin-bottom:8px;"><i class="fas fa-hashtag" style="color:#2563eb; margin-right:6px;"></i>N&uacute;mero de Transacci&oacute;n</label>
             <input type="text" id="inputTransactionNumberAdv" placeholder="Ej: 123456789" autocomplete="off"
                 style="width:100%; padding:10px 12px; border:1px solid #d1d5db; border-radius:6px; font-size:0.95rem; font-weight:600; color:#1e293b; background:#f8fafc; box-sizing:border-box;"
                 oninput="this.value=this.value.replace(/\s/g,'')">
         </div>
-        
         <div style="margin:15px 0; background:#fff; padding:12px; border:1px solid #e2e8f0; border-radius:6px;">
             <label style="font-weight:600; color:#475569; display:block; margin-bottom:8px;">Imprimir Recibo?</label>
             <div style="display:flex; gap:20px;">
@@ -300,7 +306,6 @@
                 <label style="cursor:pointer; display:flex; align-items:center; gap:6px; font-weight:600;"><input type="radio" name="adv_imprimir" value="no"> NO</label>
             </div>
         </div>
-        
         <div style="margin:0 0 15px; background:#fff; padding:12px; border:1px solid #e2e8f0; border-radius:6px;">
             <label style="font-weight:600; color:#475569; display:block; margin-bottom:8px;">Activar al pagar?</label>
             <div style="display:flex; gap:20px;">
@@ -316,47 +321,47 @@
 </div>
 
 <!-- Modal Alerta Generica -->
-<div id="modalAlerta" class="modal-overlay" style="z-index:3500;">
-    <div class="modal-content" style="max-width:400px; text-align:center; background:#fff; border-radius:16px; padding:24px 20px; box-shadow:0 20px 60px rgba(0,0,0,0.18);">
+<div id="modalAlerta" class="modal-overlay" style="display:none; z-index:3500;">
+    <div class="modal-content" style="width:400px; text-align:center;">
         <div id="alertaIcon" style="font-size:3rem; margin-bottom:15px; color:#f59e0b;">
             <i class="fas fa-exclamation-circle"></i>
         </div>
         <h3 id="alertaTitulo" style="margin:0 0 10px 0; color:#1e293b;">Aviso</h3>
         <p id="alertaMsg" style="color:#64748b; font-size:1rem; margin-bottom:20px;"></p>
-        <button class="btn btn-primary" style="width:100%; padding:12px; font-size:1rem;" onclick="cerrarAlerta()">Aceptar</button>
+        <button class="btn-primary" style="width:100%; padding:12px; font-size:1rem;" onclick="cerrarAlerta()">Aceptar</button>
     </div>
 </div>
 
 <!-- Modal procesando -->
-<div id="modalProcessing" class="modal-overlay" style="z-index:3000;">
-    <div class="modal-content" style="max-width:400px; text-align:center; background:#fff; border-radius:16px; padding:24px 20px; box-shadow:0 20px 60px rgba(0,0,0,0.18);">
-        <div id="procIcon" style="font-size:3rem; margin-bottom:15px;">
-            <i class="fas fa-spinner fa-spin" style="color:#2563eb;"></i>
+<div id="modalProcessing" class="modal-overlay" style="display:none; z-index:3000;">
+    <div class="modal-content" style="width:400px; text-align:center;">
+        <div id="procIcon" style="font-size:3rem; margin-bottom:15px; color:#2563eb;">
+            <i class="fas fa-spinner fa-spin"></i>
         </div>
         <h3 id="procTitle" style="margin:0 0 8px 0;">Procesando pago...</h3>
         <p id="procMsg" style="color:#64748b; margin-bottom:15px;">Espere un momento</p>
-        <button id="procBtn" class="btn btn-primary" style="width:100%; display:none;" onclick="cerrarProcesando()">Aceptar</button>
+        <button id="procBtn" class="btn-primary" style="width:100%; display:none;" onclick="cerrarProcesando()">Aceptar</button>
     </div>
 </div>
 
 <!-- Modal alerta multiples servicios -->
-<div id="modalMultiSvc" class="modal-overlay" style="z-index:2500;">
-    <div class="modal-content" style="max-width:430px; text-align:center; background:#fff; border-radius:16px; padding:24px 20px; box-shadow:0 20px 60px rgba(0,0,0,0.18);">
+<div id="modalMultiSvc" class="modal-overlay" style="display:none; z-index:2500;">
+    <div class="modal-content" style="width:430px; text-align:center;">
         <div style="font-size:3rem; margin-bottom:12px; color:#f59e0b;">
             <i class="fas fa-exclamation-triangle"></i>
         </div>
-        <h3 style="margin:0 0 10px 0; color:#1e293b;">Múltiples Servicios</h3>
+        <h3 style="margin:0 0 10px 0; color:#1e293b;">M&uacute;ltiples Servicios</h3>
         <p style="color:#64748b; font-size:1.05rem; margin-bottom:20px;">
             El cliente cuenta con <strong id="lblMultiCount">0</strong> servicios.<br>
-            Verifique cuáles desea pagar.
+            Verifique cu&aacute;les desea pagar.
         </p>
-        <button class="btn btn-primary" style="width:100%; padding:12px; font-size:1.05rem;" onclick="closeMultiSvcAlert()">De acuerdo</button>
+        <button class="btn-primary" style="width:100%; padding:12px; font-size:1.05rem;" onclick="closeMultiSvcAlert()">De acuerdo</button>
     </div>
 </div>
 
 <!-- Modal confirmar pago -->
-<div id="modalConfirmPay" class="modal-overlay" style="z-index:2500;">
-    <div class="modal-content" style="max-width:430px; text-align:center; background:#fff; border-radius:16px; padding:24px 20px; box-shadow:0 20px 60px rgba(0,0,0,0.18);">
+<div id="modalConfirmPay" class="modal-overlay" style="display:none; z-index:2500;">
+    <div class="modal-content" style="width:430px; text-align:center;">
         <div style="font-size:3rem; margin-bottom:12px; color:#2563eb;">
             <i class="fas fa-cash-register"></i>
         </div>
@@ -366,47 +371,46 @@
         </p>
         <p style="color:#94a3b8; font-size:0.9rem; margin-bottom:20px;" id="lblConfirmDetail">0 factura(s)</p>
         <div style="display:flex; gap:10px;">
-            <button class="btn btn-primary" style="flex:1; background:#e2e8f0; color:#475569; padding:12px;" onclick="document.getElementById('modalConfirmPay').style.display='none'">Cancelar</button>
-            <button class="btn btn-primary" style="flex:1; background:#16a34a; padding:12px;" onclick="ejecutarPago()">Confirmar</button>
+            <button class="btn-primary" style="flex:1; background:#e2e8f0; color:#475569; padding:12px;" onclick="document.getElementById('modalConfirmPay').style.display='none'">Cancelar</button>
+            <button class="btn-primary" style="flex:1; background:#16a34a; padding:12px;" onclick="ejecutarPago()">Confirmar</button>
         </div>
     </div>
 </div>
 
 <!-- Modal sin facturas pendientes / adelanto -->
-<div id="modalNoDebt" class="modal-overlay" style="z-index:2500;">
-    <div class="modal-content" style="max-width:430px; text-align:center; background:#fff; border-radius:16px; padding:24px 20px; box-shadow:0 20px 60px rgba(0,0,0,0.18);">
+<div id="modalNoDebt" class="modal-overlay" style="display:none; z-index:2500;">
+    <div class="modal-content" style="width:430px; text-align:center;">
         <div style="font-size:3rem; margin-bottom:12px; color:#10b981;">
             <i class="fas fa-check-circle"></i>
         </div>
         <h3 style="margin:0 0 10px 0; color:#1e293b;">Sin Facturas Pendientes</h3>
         <p style="color:#64748b; font-size:1.05rem; margin-bottom:20px;">
             El cliente no posee facturas pendientes.<br>
-            <strong>¿Desea pagar por adelantado?</strong>
+            <strong>&iquest;Desea pagar por adelantado?</strong>
         </p>
         <div style="display:flex; gap:10px;">
-            <button class="btn btn-primary" style="flex:1; background:#e2e8f0; color:#475569; padding:12px;" onclick="closeNoDebt(false)">No, Cancelar</button>
-            <button class="btn btn-primary" style="flex:1; background:#2563eb; padding:12px;" onclick="closeNoDebt(true)">Sí, Adelantar</button>
+            <button class="btn-primary" style="flex:1; background:#e2e8f0; color:#475569; padding:12px;" onclick="closeNoDebt(false)">No, Cancelar</button>
+            <button class="btn-primary" style="flex:1; background:#2563eb; padding:12px;" onclick="closeNoDebt(true)">S&iacute;, Adelantar</button>
         </div>
     </div>
 </div>
 
 <!-- Modal alerta multiples servicios (adelanto) -->
-<div id="modalMultiSvcAdv" class="modal-overlay" style="z-index:2500;">
-    <div class="modal-content" style="max-width:430px; text-align:center; background:#fff; border-radius:16px; padding:24px 20px; box-shadow:0 20px 60px rgba(0,0,0,0.18);">
+<div id="modalMultiSvcAdv" class="modal-overlay" style="display:none; z-index:2500;">
+    <div class="modal-content" style="width:430px; text-align:center;">
         <div style="font-size:3rem; margin-bottom:12px; color:#f59e0b;">
             <i class="fas fa-exclamation-triangle"></i>
         </div>
-        <h3 style="margin:0 0 10px 0; color:#1e293b;">Múltiples Servicios</h3>
+        <h3 style="margin:0 0 10px 0; color:#1e293b;">M&uacute;ltiples Servicios</h3>
         <p style="color:#64748b; font-size:1.05rem; margin-bottom:20px;">
             El cliente cuenta con <strong id="lblMultiCountAdv">0</strong> servicios.<br>
-            Verifique cuáles desea adelantar.
+            Verifique cu&aacute;les desea adelantar.
         </p>
-        <button class="btn btn-primary" style="width:100%; padding:12px; font-size:1.05rem;" onclick="closeMultiSvcAdvAlert()">De acuerdo</button>
+        <button class="btn-primary" style="width:100%; padding:12px; font-size:1.05rem;" onclick="closeMultiSvcAdvAlert()">De acuerdo</button>
     </div>
 </div>
 
 <script>
-(function(){
     let selectedClient = null;
     let clientServices = [];
     let selectedServiceIds = [];
@@ -414,33 +418,39 @@
     let pendingInvoices = [];
     let _rpSearchTimer = null;
     let _rpAutoSelectNicServiceId = null;
-    let advSelectedServiceIds = [];
-    let totalAdeudado = 0;
-    let minFactura = 0;
-    let montoPagar = 0;
-    let rcpSearchTimer = null;
-    const rpIsAdmin = true;
-    const BASE_URL = '/modulo?pagina=RegistrarPago';
+    
+    // Permiso de pagos por adelantado (default true para administradores y usuarios sin override)
+    const RP_CAN_PAGO_ADELANTADO = true;
 
-    // ============ ALERTA ============
-    window.mostrarAlerta = function(mensaje, tipo, titulo) {
-        tipo = tipo || 'warning';
-        titulo = titulo || 'Aviso';
+    // ============ FUNCION ALERTA PERSONALIZADA ============
+    function mostrarAlerta(mensaje, tipo, titulo) {
+        if (typeof tipo === 'undefined') tipo = 'warning';
+        if (typeof titulo === 'undefined') titulo = 'Aviso';
         const modal = document.getElementById('modalAlerta');
         const icon = document.getElementById('alertaIcon');
         const tit = document.getElementById('alertaTitulo');
         const msg = document.getElementById('alertaMsg');
+        
         tit.innerText = titulo;
         msg.innerHTML = mensaje;
-        if (tipo === 'error') { icon.innerHTML = '<i class="fas fa-times-circle"></i>'; icon.style.color = '#ef4444'; }
-        else if (tipo === 'success') { icon.innerHTML = '<i class="fas fa-check-circle"></i>'; icon.style.color = '#10b981'; }
-        else { icon.innerHTML = '<i class="fas fa-exclamation-circle"></i>'; icon.style.color = '#f59e0b'; }
+        
+        if (tipo === 'error') {
+            icon.innerHTML = '<i class="fas fa-times-circle"></i>';
+            icon.style.color = '#ef4444';
+        } else if (tipo === 'success') {
+            icon.innerHTML = '<i class="fas fa-check-circle"></i>';
+            icon.style.color = '#10b981';
+        } else {
+            icon.innerHTML = '<i class="fas fa-exclamation-circle"></i>';
+            icon.style.color = '#f59e0b';
+        }
+        
         modal.style.display = 'flex';
-    };
-
-    window.cerrarAlerta = function() {
+    }
+    
+    function cerrarAlerta() {
         document.getElementById('modalAlerta').style.display = 'none';
-    };
+    }
 
     // ============ BUSCADOR ============
     const inputBuscador = document.getElementById('inputBuscador');
@@ -451,16 +461,20 @@
         const val = this.value.trim();
         clearTimeout(_rpSearchTimer);
         if (val.length < 3) { listaResultados.style.display = 'none'; listaResultados.innerHTML = ''; return; }
+        // Cancelar peticion anterior si aun esta en vuelo
         if (_rpAbortCtrl) { try { _rpAbortCtrl.abort(); } catch(e){} }
         _rpSearchTimer = setTimeout(() => {
             _rpAbortCtrl = new AbortController();
-            fetch(BASE_URL + '&ajax=search_clients&q=' + encodeURIComponent(val), {signal: _rpAbortCtrl.signal})
-            .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
-            .then(d => {
+            fetch('/modulo?pagina=RegistrarPago&ajax=search&term=' + encodeURIComponent(val), {signal: _rpAbortCtrl.signal})
+            .then(function(r) { if (!r.ok) throw new Error('HTTP '+r.status); return r.text(); })
+            .then(function(txt) { try { return JSON.parse(txt); } catch(e) { console.error('JSON parse error:', txt.substring(0,200)); throw e; } })
+            .then(function(d) {
                 listaResultados.innerHTML = '';
                 if (!d.data || d.data.length === 0) { listaResultados.style.display = 'none'; return; }
+
+                // Si hay match exacto de NIC, auto-seleccionar cliente y servicio
                 if (d.nic_match && d.data.length >= 1) {
-                    var matchClient = d.data.find(c => c.id == d.nic_match.client_id);
+                    var matchClient = d.data.find(function(c) { return c.id == d.nic_match.client_id; });
                     if (matchClient) {
                         listaResultados.style.display = 'none';
                         inputBuscador.value = matchClient.name;
@@ -469,14 +483,14 @@
                         return;
                     }
                 }
-                d.data.forEach(c => {
+
+                d.data.forEach(function(c) {
                     const div = document.createElement('div');
                     div.className = 'search-item';
                     const pending = parseFloat(c.total_pending) || 0;
                     const colorDeuda = pending > 0 ? '#ef4444' : '#10b981';
                     const aliasTag = c.alias ? '<small style="color:#2563eb; margin-left:6px;">(' + c.alias + ')</small>' : '';
-                    div.innerHTML = '<div><strong>' + c.name + '</strong>' + aliasTag + '<small style="color:#94a3b8; margin-left:6px;">' + (c.cedula || '') + '</small></div>' +
-                        '<div style="text-align:right;"><div style="font-weight:bold; color:' + colorDeuda + ';">$' + pending.toFixed(2) + '</div><small style="color:#94a3b8;">' + c.svc_count + ' servicio(s)</small></div>';
+                    div.innerHTML = '<div><strong>' + c.name + '</strong>' + aliasTag + '<small style="color:#94a3b8; margin-left:6px;">' + (c.cedula || '') + '</small></div><div style="text-align:right;"><div style="font-weight:bold; color:' + colorDeuda + ';">$' + pending.toFixed(2) + '</div><small style="color:#94a3b8;">' + c.svc_count + ' servicio(s)</small></div>';
                     div.addEventListener('click', function() {
                         seleccionarCliente(c);
                         listaResultados.style.display = 'none';
@@ -485,7 +499,7 @@
                     listaResultados.appendChild(div);
                 });
                 listaResultados.style.display = 'block';
-            }).catch(e => { if (e.name !== 'AbortError') console.error('Search error:', e); });
+            }).catch(function(e) { if (e.name !== 'AbortError') { console.error('Search error:', e); listaResultados.style.display = 'none'; } });
         }, 450);
     });
 
@@ -497,15 +511,24 @@
     function seleccionarCliente(cliente) {
         selectedClient = cliente;
         selectedServiceIds = [];
+        // Set default date to today if not already set
+        var fechaInput = document.getElementById('inputFechaPago');
+        if (fechaInput && !fechaInput.value) fechaInput.value = new Date().toISOString().slice(0,10);
+        var fechaAdv = document.getElementById('inputFechaPagoAdv');
+        if (fechaAdv && !fechaAdv.value) fechaAdv.value = new Date().toISOString().slice(0,10);
+        
         document.getElementById('lblNombre').innerText = cliente.name;
         document.getElementById('lblCedula').innerText = 'Cedula: ' + (cliente.cedula || 'N/A');
+        
         const totalPending = parseFloat(cliente.total_pending) || 0;
         const lblTotal = document.getElementById('lblTotalPendiente');
         lblTotal.innerText = '$' + totalPending.toFixed(2);
         lblTotal.className = 'rp-total-badge ' + (totalPending > 0 ? 'has-debt' : 'no-debt');
+        
         document.getElementById('clienteInfo').style.display = 'block';
         document.getElementById('msgInicial').style.display = 'none';
         document.getElementById('stepFacturas').style.display = 'none';
+        
         loadClientServices(cliente.id);
     }
 
@@ -515,44 +538,66 @@
         document.getElementById('stepServicios').style.display = 'none';
         document.getElementById('stepFacturas').style.display = 'none';
         document.getElementById('btnContinuar').disabled = true;
-
-        fetch(BASE_URL + '&ajax=get_client_services&client_id=' + clientId)
-        .then(r => r.json()).then(d => {
-            if (d.status !== 'success') {
+        
+        fetch('/modulo?pagina=RegistrarPago&ajax=get_services&client_id=' + clientId)
+        .then(function(r) { return r.json(); }).then(function(d) {
+            if (d.status !== 'success') { 
                 document.getElementById('stepServicios').style.display = 'block';
-                container.innerHTML = '<div style="color:#ef4444; padding:15px;">' + d.msg + '</div>';
-                return;
+                container.innerHTML = '<div style="color:#ef4444; padding:15px;">' + d.msg + '</div>'; 
+                return; 
             }
             clientServices = d.data || [];
             isConsolidatedClient = d.consolidated === 1;
+            
+            // Limpiar estado - se llenara al seleccionar servicios
             document.getElementById('lblServiciosStatus').innerHTML = '';
-
+            
             if (!clientServices.length) {
                 document.getElementById('stepServicios').style.display = 'block';
                 container.innerHTML = '<div style="padding:20px; text-align:center; color:#94a3b8;">Este cliente no tiene servicios activos ni facturas pendientes</div>';
                 return;
             }
-
+            
+            // Verificar si hay deuda en algun servicio
             const totalDeuda = clientServices.reduce(function(sum, s) { return sum + (parseFloat(s.pending_total) || 0); }, 0);
-
+            
             if (isConsolidatedClient) {
+                // CONSOLIDADO: seleccionar todo excepto gratis
                 const nonFreeServices = clientServices.filter(function(s) { return parseInt(s.free_service || 0) !== 1; });
                 selectedServiceIds = nonFreeServices.map(function(s) { return parseInt(s.id); });
                 advSelectedServiceIds = nonFreeServices.filter(function(s) { return parseInt(s.id) > 0; }).map(function(s) { return parseInt(s.id); });
                 updateStatusBadges();
-                document.getElementById('stepServicios').style.display = 'block';
-                renderServices();
-                if (totalDeuda > 0) { continueToInvoices(); return; }
-                showAdvanceStep();
+                if (totalDeuda <= 0) {
+                    // Sin deuda: validar permiso de pagos por adelantado
+                    if (!RP_CAN_PAGO_ADELANTADO) {
+                        mostrarAlerta('El cliente no posee facturas pendientes y no tienes permiso para realizar pagos por adelantado.', 'warning', 'Sin Permiso');
+                        return;
+                    }
+                    // Sin deuda: directo a adelanto sin modal
+                    showAdvanceStep();
+                } else {
+                    // Con deuda: directo a facturas
+                    document.getElementById('stepServicios').style.display = 'block';
+                    renderServices();
+                    continueToInvoices();
+                }
                 return;
             }
-
+            
             if (totalDeuda <= 0) {
+                // Sin deuda: si no tiene permiso, mostrar mensaje y cerrar
+                if (!RP_CAN_PAGO_ADELANTADO) {
+                    renderServices();
+                    document.getElementById('modalNoDebt').style.display = 'flex';
+                    return;
+                }
+                // Sin deuda: mostrar modal de adelanto
                 renderServices();
                 document.getElementById('modalNoDebt').style.display = 'flex';
                 return;
             }
-
+            
+            // Solo 1 servicio: seleccionar automaticamente
             if (clientServices.length === 1) {
                 selectedServiceIds = [parseInt(clientServices[0].id)];
                 updateStatusBadges();
@@ -563,6 +608,7 @@
                 return;
             }
 
+            // NIC exacto: auto-seleccionar ese servicio especifico
             if (_rpAutoSelectNicServiceId) {
                 var nicSid = parseInt(_rpAutoSelectNicServiceId);
                 _rpAutoSelectNicServiceId = null;
@@ -576,24 +622,33 @@
                     return;
                 }
             }
-
+            
+            // Multiples servicios con deuda: mostrar alerta primero
             renderServices();
             document.getElementById('lblMultiCount').innerText = clientServices.length;
             document.getElementById('modalMultiSvc').style.display = 'flex';
-        }).catch(function(e) {
+            
+        }).catch(function(e) { 
             document.getElementById('stepServicios').style.display = 'block';
-            container.innerHTML = '<div style="color:#ef4444; padding:15px;">Error: ' + e.message + '</div>';
+            container.innerHTML = '<div style="color:#ef4444; padding:15px;">Error: ' + e.message + '</div>'; 
         });
     }
-
-    window.closeMultiSvcAlert = function() {
+    
+    function closeMultiSvcAlert() {
         document.getElementById('modalMultiSvc').style.display = 'none';
         document.getElementById('stepServicios').style.display = 'block';
-    };
+    }
 
-    window.closeNoDebt = function(wantsAdvance) {
+    // ============ ADELANTO ============
+    let advSelectedServiceIds = [];
+
+    function closeNoDebt(wantsAdvance) {
         document.getElementById('modalNoDebt').style.display = 'none';
-        if (!wantsAdvance) { limpiarFormulario(); return; }
+        if (!wantsAdvance) {
+            limpiarFormulario();
+            return;
+        }
+        // Consolidado: seleccionar todos y directo al adelanto
         if (isConsolidatedClient) {
             advSelectedServiceIds = clientServices.filter(function(s) { return parseInt(s.id) > 0 && parseInt(s.free_service || 0) !== 1; }).map(function(s) { return parseInt(s.id); });
             showAdvanceStep();
@@ -604,53 +659,60 @@
             advSelectedServiceIds = [clientServices[0].id];
             showAdvanceStep();
         }
-    };
+    }
 
-    window.closeMultiSvcAdvAlert = function() {
+    function closeMultiSvcAdvAlert() {
         document.getElementById('modalMultiSvcAdv').style.display = 'none';
         advSelectedServiceIds = [];
         showAdvanceStep();
-    };
+    }
 
     function showAdvanceStep() {
         document.getElementById('stepServicios').style.display = 'none';
         document.getElementById('stepFacturas').style.display = 'none';
         document.getElementById('advMonths').value = 1;
-        var todosBtn = document.querySelector('#stepAdelanto .rp-btn-todos');
-        if (todosBtn) todosBtn.style.display = (isConsolidatedClient || advSelectedServiceIds.length > 0) ? 'none' : '';
+        // Ocultar boton Todos en modo consolidado o si hay servicios pre-seleccionados
+        const consolMode = (isConsolidatedClient);
+        const hasPreSelected = advSelectedServiceIds.length > 0;
+        const todosBtn = document.querySelector('#stepAdelanto .rp-btn-todos');
+        if (todosBtn) todosBtn.style.display = (consolMode || hasPreSelected) ? 'none' : '';
         renderAdvServices();
         document.getElementById('stepAdelanto').style.display = 'block';
     }
 
-    window.toggleAdvService = function(svcId) {
-        var idx = advSelectedServiceIds.indexOf(svcId);
+    function toggleAdvService(svcId) {
+        const idx = advSelectedServiceIds.indexOf(svcId);
         if (idx >= 0) advSelectedServiceIds.splice(idx, 1);
         else advSelectedServiceIds.push(svcId);
         renderAdvServices();
-    };
+    }
 
-    window.selectAllAdvServices = function() {
-        if (advSelectedServiceIds.length === clientServices.length) { advSelectedServiceIds = []; }
-        else { advSelectedServiceIds = clientServices.map(function(s) { return s.id; }); }
+    function selectAllAdvServices() {
+        if (advSelectedServiceIds.length === clientServices.length) {
+            advSelectedServiceIds = [];
+        } else {
+            advSelectedServiceIds = clientServices.map(function(s) { return s.id; });
+        }
         renderAdvServices();
-    };
+    }
 
     function renderAdvServices() {
-        var container = document.getElementById('advServicesList');
-        var months = parseInt(document.getElementById('advMonths').value) || 1;
-        var html = '';
-        var totalGeneral = 0;
-        var countSelected = 0;
+        const container = document.getElementById('advServicesList');
+        const months = parseInt(document.getElementById('advMonths').value) || 1;
+        let html = '';
+        let totalGeneral = 0;
+        let countSelected = 0;
+        const consolMode = (isConsolidatedClient);
 
-        if (isConsolidatedClient) {
+        if (consolMode) {
             advSelectedServiceIds = clientServices.filter(function(s) { return parseInt(s.id) > 0 && parseInt(s.free_service || 0) !== 1; }).map(function(s) { return parseInt(s.id); });
             countSelected = advSelectedServiceIds.length;
-            var desglose = '';
+            let desglose = '';
             clientServices.forEach(function(svc) {
                 if (parseInt(svc.id) <= 0 || parseInt(svc.free_service || 0) === 1) return;
-                var priceBase = parseFloat(svc.plan_price) || 0;
-                var disc = parseFloat(svc.discount) || 0;
-                var price = Math.max(0, priceBase - disc);
+                const priceBase = parseFloat(svc.plan_price) || 0;
+                const disc = parseFloat(svc.discount) || 0;
+                const price = Math.max(0, priceBase - disc);
                 if (price <= 0) return;
                 totalGeneral += months * price;
                 var discNote = disc > 0 ? ' <span style="color:#8b5cf6;font-size:0.72rem;">(Desc. -$' + disc.toFixed(2) + ')</span>' : '';
@@ -658,85 +720,114 @@
                     '<span><i class="fas fa-wifi" style="color:#2563eb;margin-right:4px;font-size:0.7rem;"></i>' + (svc.plan_name || 'Sin plan') + discNote + '</span>' +
                     '<span style="font-weight:600;">$' + price.toFixed(2) + '/mes</span></div>';
             });
-            html = '<div class="rp-svc-card selected" style="cursor:default;"><div style="width:100%;">' +
+            html = '<div class="rp-svc-card selected" style="cursor:default;">' +
+                '<div style="width:100%;">' +
                 '<div class="rp-svc-plan" style="margin-bottom:8px;"><i class="fas fa-layer-group" style="color:#2563eb; margin-right:6px;"></i>Factura Consolidada <span style="font-weight:400; color:#64748b; font-size:0.82rem;">(' + countSelected + ' servicios)</span></div>' +
                 desglose +
                 '<div style="display:flex;justify-content:space-between;padding:8px 0 0;font-weight:700;color:#1e293b;font-size:0.95rem;">' +
-                '<span>Total x ' + months + ' mes(es):</span><span style="color:#2563eb;">$' + totalGeneral.toFixed(2) + '</span></div></div></div>';
+                '<span>Total x ' + months + ' mes(es):</span>' +
+                '<span style="color:#2563eb;">$' + totalGeneral.toFixed(2) + '</span></div></div></div>';
         } else {
-            var locked = advSelectedServiceIds.length > 0;
-            var svcsToRender = locked ? clientServices.filter(function(s) { return advSelectedServiceIds.indexOf(parseInt(s.id)) >= 0; }) : clientServices;
+            const locked = advSelectedServiceIds.length > 0;
+            const svcsToRender = locked ? clientServices.filter(function(s) { return advSelectedServiceIds.includes(parseInt(s.id)); }) : clientServices;
+
             svcsToRender.forEach(function(svc) {
-                var priceBase = parseFloat(svc.plan_price) || 0;
-                var disc = parseFloat(svc.discount) || 0;
-                var price = Math.max(0, priceBase - disc);
-                var svcTotal = months * price;
-                var selected = advSelectedServiceIds.indexOf(svc.id) >= 0;
+                const priceBase = parseFloat(svc.plan_price) || 0;
+                const disc = parseFloat(svc.discount) || 0;
+                const price = Math.max(0, priceBase - disc);
+                const svcTotal = months * price;
+                const selected = advSelectedServiceIds.includes(svc.id);
                 if (selected && price > 0) { totalGeneral += svcTotal; countSelected++; }
+
                 var details = [];
                 if (svc.address) details.push(svc.address);
                 if (svc.zone_name) details.push('Zona: ' + svc.zone_name);
                 if (svc.observations) details.push(svc.observations);
-                var st = String(svc.status || 'active').toLowerCase();
-                var stBdg = st === 'suspended'
-                    ? ' <span style="font-size:0.85rem;padding:3px 10px;border-radius:5px;background:#fef2f2;color:#dc2626;font-weight:700;border:1px solid #fecaca;margin-left:8px;"><i class="fas fa-ban" style="margin-right:4px;"></i>Suspendido</span>'
-                    : ' <span style="font-size:0.85rem;padding:3px 10px;border-radius:5px;background:#f0fdf4;color:#16a34a;font-weight:700;border:1px solid #bbf7d0;margin-left:8px;"><i class="fas fa-check-circle" style="margin-right:4px;"></i>Activo</span>';
-                var clickHandler = locked ? '' : ' onclick="toggleAdvService(' + svc.id + ')"';
-                var selClass = selected ? ' selected' : '';
-                html += '<div class="rp-svc-card' + selClass + '"' + clickHandler + ' style="' + (locked ? 'cursor:default;' : '') + '">' +
-                    '<div class="rp-svc-left"><div class="rp-svc-plan"><i class="fas fa-wifi" style="color:#2563eb; margin-right:6px;"></i>' + (svc.plan_name || 'Sin plan') + stBdg +
-                    ' <span style="font-weight:400; color:#64748b; font-size:0.82rem;">($' + price.toFixed(2) + '/mes)</span></div>' +
-                    '<div class="rp-svc-detail">' + (details.join(' &bull; ') || 'Sin detalles') + '</div></div>' +
-                    '<div class="rp-svc-pending" style="color:#2563eb;">$' + svcTotal.toFixed(2) +
-                    '<div style="font-size:0.72rem; font-weight:400; color:#94a3b8;">' + months + ' mes(es)</div></div>' +
-                    '<div class="check-icon"><i class="fas fa-check" style="font-size:0.75rem;"></i></div></div>';
+                var detailText = details.length > 0 ? details.join(' &bull; ') : 'Sin detalles';
+
+                if (locked) {
+                    var _advSt = String(svc.status || 'active').toLowerCase();
+                    var _advStBadge = _advSt === 'suspended'
+                        ? ' <span style="font-size:0.85rem;padding:3px 10px;border-radius:5px;background:#fef2f2;color:#dc2626;font-weight:700;border:1px solid #fecaca;margin-left:8px;"><i class="fas fa-ban" style="margin-right:4px;"></i>Suspendido</span>'
+                        : ' <span style="font-size:0.85rem;padding:3px 10px;border-radius:5px;background:#f0fdf4;color:#16a34a;font-weight:700;border:1px solid #bbf7d0;margin-left:8px;"><i class="fas fa-check-circle" style="margin-right:4px;"></i>Activo</span>';
+                    html += '<div class="rp-svc-card selected" style="cursor:default;">' +
+                        '<div class="rp-svc-left">' +
+                        '<div class="rp-svc-plan"><i class="fas fa-wifi" style="color:#2563eb; margin-right:6px;"></i>' + (svc.plan_name || 'Sin plan') + _advStBadge + ' <span style="font-weight:400; color:#64748b; font-size:0.82rem;">($' + price.toFixed(2) + '/mes)</span></div>' +
+                        '<div class="rp-svc-detail">' + detailText + '</div></div>' +
+                        '<div class="rp-svc-pending" style="color:#2563eb;">$' + svcTotal.toFixed(2) +
+                        '<div style="font-size:0.72rem; font-weight:400; color:#94a3b8;">' + months + ' mes(es)</div></div>' +
+                        '<div class="check-icon"><i class="fas fa-check" style="font-size:0.75rem;"></i></div></div>';
+                } else {
+                    var _advSt2 = String(svc.status || 'active').toLowerCase();
+                    var _advStBadge2 = _advSt2 === 'suspended'
+                        ? ' <span style="font-size:0.85rem;padding:3px 10px;border-radius:5px;background:#fef2f2;color:#dc2626;font-weight:700;border:1px solid #fecaca;margin-left:8px;"><i class="fas fa-ban" style="margin-right:4px;"></i>Suspendido</span>'
+                        : ' <span style="font-size:0.85rem;padding:3px 10px;border-radius:5px;background:#f0fdf4;color:#16a34a;font-weight:700;border:1px solid #bbf7d0;margin-left:8px;"><i class="fas fa-check-circle" style="margin-right:4px;"></i>Activo</span>';
+                    html += '<div class="rp-svc-card' + (selected ? ' selected' : '') + '" onclick="toggleAdvService(' + svc.id + ')">' +
+                        '<div class="rp-svc-left">' +
+                        '<div class="rp-svc-plan"><i class="fas fa-wifi" style="color:#2563eb; margin-right:6px;"></i>' + (svc.plan_name || 'Sin plan') + _advStBadge2 + ' <span style="font-weight:400; color:#64748b; font-size:0.82rem;">($' + price.toFixed(2) + '/mes)</span></div>' +
+                        '<div class="rp-svc-detail">' + detailText + '</div></div>' +
+                        '<div class="rp-svc-pending" style="color:#2563eb;">$' + svcTotal.toFixed(2) +
+                        '<div style="font-size:0.72rem; font-weight:400; color:#94a3b8;">' + months + ' mes(es)</div></div>' +
+                        '<div class="check-icon"><i class="fas fa-check" style="font-size:0.75rem;"></i></div></div>';
+                }
             });
         }
+
         container.innerHTML = html;
         document.getElementById('lblAdvSvcCount').innerText = countSelected;
         document.getElementById('lblAdvMonths').innerText = months;
         document.getElementById('lblAdvTotal').innerText = '$' + totalGeneral.toFixed(2);
         document.getElementById('inputAdvMonto').value = totalGeneral.toFixed(2);
         document.getElementById('inputAdvMonto').max = totalGeneral.toFixed(2);
-        var montoEditable = months === 1;
+        // Solo editable si es 1 mes
+        const montoEditable = months === 1;
         document.getElementById('inputAdvMonto').readOnly = !montoEditable;
         document.getElementById('inputAdvMonto').style.background = montoEditable ? '#fff' : '#f1f5f9';
         document.getElementById('inputAdvMonto').style.cursor = montoEditable ? 'text' : 'not-allowed';
-        document.getElementById('msgAdvMonto').innerHTML = !montoEditable ? '<span style="color:#64748b;">Monto fijo para múltiples meses</span>' : '';
+        document.getElementById('msgAdvMonto').innerHTML = !montoEditable ? '<span style="color:#64748b;">Monto fijo para m&uacute;ltiples meses</span>' : '';
         document.getElementById('btnAdvPay').disabled = countSelected === 0;
         updateStatusBadges();
     }
 
-    window.validarAdvMonto = function() {
-        var input = document.getElementById('inputAdvMonto');
-        var monto = parseFloat(input.value) || 0;
-        var max = parseFloat(input.max) || 0;
-        var msg = document.getElementById('msgAdvMonto');
-        if (monto > max) { msg.innerHTML = '<span style="color:#ef4444;">No puede exceder $' + max.toFixed(2) + '</span>'; }
-        else if (monto < max && monto > 0) { msg.innerHTML = '<span style="color:#f59e0b;">Abono parcial: se crearán facturas con estado "abonado"</span>'; }
-        else { msg.innerHTML = ''; }
-    };
+    function validarAdvMonto() {
+        const input = document.getElementById('inputAdvMonto');
+        const monto = parseFloat(input.value) || 0;
+        const max = parseFloat(input.max) || 0;
+        const msg = document.getElementById('msgAdvMonto');
+        if (monto > max) {
+            msg.innerHTML = '<span style="color:#ef4444;">No puede exceder $' + max.toFixed(2) + '</span>';
+        } else if (monto < max && monto > 0) {
+            msg.innerHTML = '<span style="color:#f59e0b;">Abono parcial: se crear&aacute;n facturas con estado "abonado"</span>';
+        } else {
+            msg.innerHTML = '';
+        }
+    }
 
-    window.confirmarAdelanto = function() {
+    function confirmarAdelanto() {
         if (!advSelectedServiceIds.length) return;
-        var months = parseInt(document.getElementById('advMonths').value) || 0;
+        const months = parseInt(document.getElementById('advMonths').value) || 0;
         if (months < 1) { mostrarAlerta('Indique al menos 1 mes', 'warning', 'Meses requeridos'); return; }
-        var totalOriginal = 0;
-        var prices = {};
+
+        let totalOriginal = 0;
+        const prices = {};
         advSelectedServiceIds.forEach(function(sid) {
-            var svc = clientServices.find(function(s) { return s.id === sid; });
-            var pBase = parseFloat(svc.plan_price) || 0;
-            var disc = parseFloat(svc.discount) || 0;
-            var p = Math.max(0, pBase - disc);
+            const svc = clientServices.find(function(s) { return s.id === sid; });
+            const pBase = parseFloat(svc.plan_price) || 0;
+            const disc = parseFloat(svc.discount) || 0;
+            const p = Math.max(0, pBase - disc);
             prices[sid] = p;
             totalOriginal += months * p;
         });
+
         if (totalOriginal <= 0) { mostrarAlerta('Los servicios seleccionados no tienen precio de plan asignado', 'error', 'Sin precio'); return; }
-        var montoInput = document.getElementById('inputAdvMonto');
-        var total = parseFloat(montoInput.value) || totalOriginal;
+
+        // Usar monto editado si existe
+        const montoInput = document.getElementById('inputAdvMonto');
+        let total = parseFloat(montoInput.value) || totalOriginal;
         if (total <= 0) { mostrarAlerta('Monto invalido', 'error'); return; }
         if (total > totalOriginal) { mostrarAlerta('El monto no puede ser mayor al total ($' + totalOriginal.toFixed(2) + ')', 'error'); return; }
 
+        // Mostrar modal procesando
         document.getElementById('modalProcessing').style.display = 'flex';
         document.getElementById('procIcon').innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
         document.getElementById('procIcon').style.color = '#2563eb';
@@ -744,14 +835,15 @@
         document.getElementById('procMsg').innerText = 'Generando facturas para ' + advSelectedServiceIds.length + ' servicio(s)...';
         document.getElementById('procBtn').style.display = 'none';
 
-        var imprimir = document.querySelector('input[name="adv_imprimir"]:checked').value;
-        var activar = document.querySelector('input[name="adv_activar"]:checked').value;
-        var advMetodo = document.getElementById('selectMetodoPagoAdv').value;
-        var advTxn = (document.getElementById('inputTransactionNumberAdv').value || '').trim();
+        const imprimir = document.querySelector('input[name="adv_imprimir"]:checked').value;
+        const activar = document.querySelector('input[name="adv_activar"]:checked').value;
+        const advMetodo = document.getElementById('selectMetodoPagoAdv').value;
+        const advTxn = (document.getElementById('inputTransactionNumberAdv').value || '').trim();
 
         function _doConfirmarAdelanto() {
-            var fd = new FormData();
+            const fd = new FormData();
             fd.append('client_id', selectedClient.id);
+            fd.append('client_name', selectedClient.name);
             fd.append('service_ids', JSON.stringify(advSelectedServiceIds));
             fd.append('months', months);
             fd.append('prices', JSON.stringify(prices));
@@ -759,15 +851,19 @@
             fd.append('activar', activar);
             fd.append('payment_method', advMetodo);
             fd.append('transaction_number', advTxn);
-            fetch(BASE_URL + '&ajax=advance_payment', {method:'POST', body:fd})
-            .then(function(r) { return r.json(); })
-            .then(function(d) {
+            fd.append('fecha_pago', document.getElementById('inputFechaPagoAdv').value || new Date().toISOString().slice(0,10));
+
+            fetch('/modulo?pagina=RegistrarPago&ajax=advance_payment', {method:'POST', body:fd})
+            .then(function(r) { return r.json(); }).then(function(d) {
                 if (d.status === 'success') {
                     document.getElementById('procIcon').innerHTML = '<i class="fas fa-check-circle"></i>';
                     document.getElementById('procIcon').style.color = '#16a34a';
                     document.getElementById('procTitle').innerText = 'Adelanto Registrado';
                     document.getElementById('procMsg').innerHTML = advSelectedServiceIds.length + ' servicio(s) x ' + months + ' mes(es) = <b>$' + total.toFixed(2) + '</b>';
                     document.getElementById('procBtn').style.display = 'block';
+                    if (imprimir === 'si' && d.payment_ids && d.payment_ids.length > 0) {
+                        printReceiptByIds(d.payment_ids);
+                    }
                 } else {
                     document.getElementById('procIcon').innerHTML = '<i class="fas fa-times-circle"></i>';
                     document.getElementById('procIcon').style.color = '#ef4444';
@@ -785,46 +881,52 @@
         }
 
         if (advMetodo !== 'EFECTIVO' && advTxn) {
-            var fdChk = new FormData();
+            const fdChk = new FormData();
             fdChk.append('transaction_number', advTxn);
-            fetch(BASE_URL + '&ajax=check_transaction', {method:'POST', body:fdChk})
-            .then(function(r) { return r.json(); })
-            .then(function(chk) {
+            fetch('/modulo?pagina=RegistrarPago&ajax=check_transaction', {method:'POST', body:fdChk})
+            .then(function(r) { return r.json(); }).then(function(chk) {
                 if (chk.status === 'duplicate') {
                     document.getElementById('modalProcessing').style.display = 'none';
-                    mostrarAlerta('Ya se registró un pago con este número de transacción', 'error', 'Número duplicado');
-                } else { _doConfirmarAdelanto(); }
+                    mostrarAlerta('Ya se registr\u00f3 un pago con este n\u00famero de transacci\u00f3n', 'error', 'N\u00famero duplicado');
+                } else {
+                    _doConfirmarAdelanto();
+                }
             }).catch(function() { _doConfirmarAdelanto(); });
-        } else { _doConfirmarAdelanto(); }
-    };
+        } else {
+            _doConfirmarAdelanto();
+        }
+    }
 
     function renderServices() {
-        var container = document.getElementById('serviciosList');
-        var html = '';
+        const container = document.getElementById('serviciosList');
+        let html = '';
+        
         if (isConsolidatedClient) {
-            var totalPending = 0;
-            var totalFacturas = 0;
-            var desglose = '';
+            // Consolidado: mostrar un solo bloque con desglose
+            let totalPending = 0;
+            let totalFacturas = 0;
+            let desglose = '';
             clientServices.forEach(function(svc) {
-                var pending = parseFloat(svc.pending_total) || 0;
-                var count = parseInt(svc.pending_count) || 0;
+                const pending = parseFloat(svc.pending_total) || 0;
+                const count = parseInt(svc.pending_count) || 0;
                 totalPending += pending;
                 totalFacturas += count;
                 desglose += '<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:0.82rem;color:#475569;border-bottom:1px solid #f1f5f9;">' +
-                    '<span><i class="fas fa-wifi" style="color:#2563eb;margin-right:4px;font-size:0.7rem;"></i>' + (svc.plan_name || 'Sin plan') +
-                    ' <span style="color:#94a3b8;font-size:0.75rem;">$' + (parseFloat(svc.plan_price)||0).toFixed(2) + '/mes</span></span>' +
-                    '<span style="font-weight:600;' + (pending > 0 ? 'color:#dc2626;' : 'color:#10b981;') + '">' + (pending > 0 ? '$' + pending.toFixed(2) : 'Al dia') + '</span></div>';
+                    '<span><i class="fas fa-wifi" style="color:#2563eb;margin-right:4px;font-size:0.7rem;"></i>' + (svc.plan_name || 'Sin plan') + ' <span style="color:#94a3b8;font-size:0.75rem;">$' + (parseFloat(svc.plan_price)||0).toFixed(2) + '/mes</span></span>' +
+                    '<span style="font-weight:600;' + (pending > 0 ? 'color:#dc2626;' : 'color:#10b981;') + '">' + (pending > 0 ? '$'+pending.toFixed(2) : 'Al dia') + '</span></div>';
             });
-            html = '<div class="rp-svc-card selected" style="cursor:default;"><div style="width:100%;">' +
+            html = '<div class="rp-svc-card selected" style="cursor:default;">' +
+                '<div style="width:100%;">' +
                 '<div class="rp-svc-plan" style="margin-bottom:8px;"><i class="fas fa-layer-group" style="color:#2563eb;margin-right:6px;"></i>Factura Consolidada <span style="font-weight:400;color:#64748b;font-size:0.82rem;">(' + clientServices.length + ' servicios)</span></div>' +
                 desglose +
                 '<div style="display:flex;justify-content:space-between;padding:8px 0 0;font-weight:700;font-size:0.95rem;">' +
-                '<span>Total pendiente:</span><span style="color:' + (totalPending > 0 ? '#dc2626' : '#10b981') + ';">' + (totalPending > 0 ? '$' + totalPending.toFixed(2) : 'Al dia') +
-                ' <span style="font-weight:400;font-size:0.75rem;color:#94a3b8;">' + totalFacturas + ' factura(s)</span></span></div></div></div>';
+                '<span>Total pendiente:</span>' +
+                '<span style="color:' + (totalPending > 0 ? '#dc2626' : '#10b981') + ';">' + (totalPending > 0 ? '$'+totalPending.toFixed(2) : 'Al dia') + ' <span style="font-weight:400;font-size:0.75rem;color:#94a3b8;">' + totalFacturas + ' factura(s)</span></span></div></div></div>';
             container.innerHTML = html;
             document.getElementById('btnContinuar').disabled = false;
             return;
         }
+        
         for (var _idx = 0; _idx < clientServices.length; _idx++) {
             var svc = clientServices[_idx];
             var pending = parseFloat(svc.pending_total) || 0;
@@ -836,37 +938,62 @@
             if (svc.address) details.push(svc.address);
             if (svc.zone_name) details.push('Zona: ' + svc.zone_name);
             if (svc.observations) details.push(svc.observations);
+            
             var label = svc.plan_name || 'Sin plan';
-            var detailText = details.join(' &bull; ') || 'Sin detalles';
+            var detailText = details.length > 0 ? details.join(' &bull; ') : 'Sin detalles';
+            var libreNote = svc.has_libre ? ' <span style="font-size:0.7rem; padding:1px 5px; border-radius:3px; background:#f3e8ff; color:#7c3aed; font-weight:600;">+ LIBRES</span>' : '';
             var freeBadge = isFree ? ' <span style="font-size:0.7rem; padding:1px 5px; border-radius:3px; background:#dcfce7; color:#166534; font-weight:600;">GRATIS</span>' : '';
-            var st = String(svc.status || 'active').toLowerCase();
-            var stBadge = st === 'suspended'
-                ? ' <span style="font-size:0.85rem;padding:3px 10px;border-radius:5px;background:#fef2f2;color:#dc2626;font-weight:700;border:1px solid #fecaca;margin-left:8px;"><i class="fas fa-ban" style="margin-right:4px;"></i>Suspendido</span>'
-                : ' <span style="font-size:0.85rem;padding:3px 10px;border-radius:5px;background:#f0fdf4;color:#16a34a;font-weight:700;border:1px solid #bbf7d0;margin-left:8px;"><i class="fas fa-check-circle" style="margin-right:4px;"></i>Activo</span>';
-            if (isFree) {
-                html += '<div class="rp-svc-card" style="opacity:0.5;cursor:not-allowed;" onclick="mostrarAlerta(\'Este servicio es gratis, no se puede registrar pago\',\'error\',\'Servicio Gratis\')">' +
-                    '<div class="rp-svc-left"><div class="rp-svc-plan"><i class="fas fa-gift" style="color:#10b981; margin-right:6px;"></i>' + label + freeBadge + '</div>' +
-                    '<div class="rp-svc-detail">' + detailText + '</div></div>' +
-                    '<div class="rp-svc-pending zero"><span style="color:#10b981;">Gratis</span></div></div>';
+            
+            // Badge de estado del servicio
+            var svcSt = String(svc.status || 'active').toLowerCase();
+            var stBadge = '';
+            if (svcSt === 'suspended') {
+                stBadge = ' <span style="font-size:0.85rem;padding:3px 10px;border-radius:5px;background:#fef2f2;color:#dc2626;font-weight:700;border:1px solid #fecaca;margin-left:8px;"><i class="fas fa-ban" style="margin-right:4px;"></i>Suspendido</span>';
             } else {
-                html += '<div class="rp-svc-card' + selected + '" id="svcCard_' + svcId + '" onclick="toggleService(' + svcId + ')">' +
-                    '<div class="rp-svc-left"><div class="rp-svc-plan"><i class="fas fa-wifi" style="color:#2563eb; margin-right:6px;"></i>' + label + stBadge + '</div>' +
-                    '<div class="rp-svc-detail">' + detailText + '</div></div>' +
-                    '<div class="rp-svc-pending ' + pendingClass + '">' + (pending > 0 ? '$' + pending.toFixed(2) : '<span style="color:#10b981;">Al dia</span>') +
-                    '<div style="font-size:0.75rem; font-weight:400; color:#94a3b8;">' + (parseInt(svc.pending_count) || 0) + ' factura(s)</div></div>' +
-                    '<div class="check-icon"><i class="fas fa-check" style="font-size:0.75rem;"></i></div></div>';
+                stBadge = ' <span style="font-size:0.85rem;padding:3px 10px;border-radius:5px;background:#f0fdf4;color:#16a34a;font-weight:700;border:1px solid #bbf7d0;margin-left:8px;"><i class="fas fa-check-circle" style="margin-right:4px;"></i>Activo</span>';
+            }
+            
+            if (isFree) {
+                html += '<div class="rp-svc-card" style="opacity:0.5;cursor:not-allowed;" onclick="mostrarAlerta(\'Este servicio es gratis, no se puede registrar pago\',\'error\',\'Servicio Gratis\')">';
+                html += '<div class="rp-svc-left">';
+                html += '<div class="rp-svc-plan"><i class="fas fa-gift" style="color:#10b981; margin-right:6px;"></i>' + label + freeBadge + (svc.nic ? ' <span style="font-size:0.72rem;color:#94a3b8;">NIC:' + svc.nic + '</span>' : '') + '</div>';
+                html += '<div class="rp-svc-detail">' + detailText + '</div>';
+                html += '</div>';
+                html += '<div class="rp-svc-pending zero"><span style="color:#10b981;">Gratis</span></div>';
+                html += '</div>';
+            } else {
+                html += '<div class="rp-svc-card' + selected + '" id="svcCard_' + svcId + '" onclick="toggleService(' + svcId + ')">';
+                html += '<div class="rp-svc-left">';
+                html += '<div class="rp-svc-plan"><i class="fas fa-wifi" style="color:#2563eb; margin-right:6px;"></i>' + label + stBadge + libreNote + (svc.nic ? ' <span style="font-size:0.72rem;color:#94a3b8;">NIC:' + svc.nic + '</span>' : '') + '</div>';
+                html += '<div class="rp-svc-detail">' + detailText + '</div>';
+                html += '</div>';
+                html += '<div class="rp-svc-pending ' + pendingClass + '">';
+                html += (pending > 0 ? '$' + pending.toFixed(2) : '<span style="color:#10b981;">Al dia</span>');
+                html += '<div style="font-size:0.75rem; font-weight:400; color:#94a3b8;">' + (parseInt(svc.pending_count) || 0) + ' factura(s)</div>';
+                html += '</div>';
+                html += '<div class="check-icon"><i class="fas fa-check" style="font-size:0.75rem;"></i></div>';
+                html += '</div>';
             }
         }
         container.innerHTML = html;
         document.getElementById('btnContinuar').disabled = selectedServiceIds.length === 0;
+        // Actualizar badges de estado en la cabecera del cliente
         updateStatusBadges();
     }
 
     function updateStatusBadges() {
         var container = document.getElementById('lblServiciosStatus');
-        if (!container || !clientServices || !clientServices.length) { container.innerHTML = ''; return; }
+        if (!container) return;
+        if (!clientServices || !clientServices.length) {
+            container.innerHTML = '';
+            return;
+        }
+        // Usar advSelectedServiceIds si estamos en modo adelanto y no hay seleccion normal
         var idsToShow = selectedServiceIds && selectedServiceIds.length > 0 ? selectedServiceIds : advSelectedServiceIds;
-        if (!idsToShow || !idsToShow.length) { container.innerHTML = ''; return; }
+        if (!idsToShow || !idsToShow.length) {
+            container.innerHTML = '';
+            return;
+        }
         var html = '';
         for (var i = 0; i < idsToShow.length; i++) {
             var sid = idsToShow[i];
@@ -876,7 +1003,7 @@
             }
             if (!svc || parseInt(svc.id) === 0) continue;
             var st = String(svc.status || 'active').toLowerCase();
-            var nicLabel = svc.nic ? svc.nic : 'SVC-' + svc.id;
+            var nicLabel = svc.nic ? svc.nic : 'SVC-'+svc.id;
             if (st === 'suspended') {
                 html += '<span style="display:inline-flex;align-items:center;font-size:0.88rem;padding:4px 12px;border-radius:5px;background:#fef2f2;color:#dc2626;font-weight:600;border:1px solid #fecaca;margin-right:6px;margin-bottom:4px;"><i class="fas fa-ban" style="margin-right:5px;font-size:0.78rem;"></i>' + nicLabel + ' Suspendido</span>';
             } else {
@@ -886,120 +1013,169 @@
         container.innerHTML = html;
     }
 
-    window.toggleService = function(svcId) {
+    function toggleService(svcId) {
         svcId = parseInt(svcId);
-        var svc = clientServices.find(function(s) { return parseInt(s.id) === svcId; });
+        // No permitir seleccionar servicios gratis
+        const svc = clientServices.find(function(s) { return parseInt(s.id) === svcId; });
         if (svc && parseInt(svc.free_service || 0) === 1) return;
-        var idx = selectedServiceIds.indexOf(svcId);
+        const idx = selectedServiceIds.indexOf(svcId);
         if (idx >= 0) selectedServiceIds.splice(idx, 1);
         else selectedServiceIds.push(svcId);
         renderServices();
         updateSelectedTotal();
-    };
+    }
 
-    window.selectAllServices = function() {
-        var nonFree = clientServices.filter(function(s) { return parseInt(s.free_service || 0) !== 1; });
-        if (selectedServiceIds.length === nonFree.length) { selectedServiceIds = []; }
-        else { selectedServiceIds = nonFree.map(function(s) { return parseInt(s.id); }); }
+    function selectAllServices() {
+        const nonFree = clientServices.filter(function(s) { return parseInt(s.free_service || 0) !== 1; });
+        if (selectedServiceIds.length === nonFree.length) {
+            selectedServiceIds = [];
+        } else {
+            selectedServiceIds = nonFree.map(function(s) { return parseInt(s.id); });
+        }
         renderServices();
         updateSelectedTotal();
-    };
+    }
 
     function updateSelectedTotal() {
-        var total = 0;
-        var nics = [];
+        let total = 0;
+        let nics = [];
         if (selectedServiceIds.length === 0) {
+            // Nada seleccionado: mostrar total de todos
             clientServices.forEach(function(s) { total += parseFloat(s.pending_total) || 0; });
         } else {
             selectedServiceIds.forEach(function(sid) {
-                var svc = clientServices.find(function(s) { return parseInt(s.id) === sid; });
-                if (svc) { total += parseFloat(svc.pending_total) || 0; if (svc.nic) nics.push(svc.nic); }
+                const svc = clientServices.find(function(s) { return parseInt(s.id) === sid; });
+                if (svc) {
+                    total += parseFloat(svc.pending_total) || 0;
+                    if (svc.nic) nics.push(svc.nic);
+                }
             });
         }
-        var lbl = document.getElementById('lblTotalPendiente');
+        const lbl = document.getElementById('lblTotalPendiente');
         lbl.innerText = '$' + total.toFixed(2);
         lbl.className = 'rp-total-badge ' + (total > 0 ? 'has-debt' : 'no-debt');
-        var nicLabel = document.getElementById('lblNicSelected');
+        // Mostrar NICs seleccionados
+        const nicLabel = document.getElementById('lblNicSelected');
         if (nicLabel) nicLabel.innerText = nics.length > 0 ? 'NIC: ' + nics.join(', ') : '';
     }
 
     // ============ PASO 2: FACTURAS ============
-    window.continueToInvoices = function() {
+    function continueToInvoices() {
         if (!selectedServiceIds.length) return;
+        
         document.getElementById('stepServicios').style.display = 'none';
         document.getElementById('stepFacturas').style.display = 'block';
-        var list = document.getElementById('facturasList');
+        
+        const list = document.getElementById('facturasList');
         list.innerHTML = '<div style="text-align:center; padding:20px; color:#94a3b8;"><i class="fas fa-spinner fa-spin"></i> Cargando facturas...</div>';
-
-        fetch(BASE_URL + '&ajax=get_pending_invoices&client_id=' + selectedClient.id + '&service_ids=' + JSON.stringify(selectedServiceIds))
-        .then(function(r) { return r.json(); })
-        .then(function(d) {
+        
+        fetch('/modulo?pagina=RegistrarPago&ajax=get_invoices&client_id=' + selectedClient.id + '&service_ids=' + JSON.stringify(selectedServiceIds))
+        .then(function(r) { return r.json(); }).then(function(d) {
             if (d.status !== 'success') { list.innerHTML = '<div style="color:#ef4444; padding:15px;">' + d.msg + '</div>'; return; }
             pendingInvoices = d.data || [];
+            
             if (!pendingInvoices.length) {
+                // Sin facturas pendientes: ir directo al adelanto
                 advSelectedServiceIds = selectedServiceIds.filter(function(id) { return id > 0; });
                 showAdvanceStep();
                 return;
             }
-            var grouped = {};
-            var firstRealSvcId = null;
+            
+            // Agrupar por servicio (libres van con service_id=0 pero se muestran dentro del grupo)
+            const grouped = {};
+            let firstRealSvcId = null;
             pendingInvoices.forEach(function(inv) {
-                var key = inv.service_id || 0;
+                const key = inv.service_id || 0;
                 if (key > 0 && firstRealSvcId === null) firstRealSvcId = key;
                 if (!grouped[key]) grouped[key] = { plan: inv.plan_name, address: inv.svc_address, invoices: [], isLibre: (key == 0 || inv.is_libre) };
                 grouped[key].invoices.push(inv);
             });
+            
+            // Mover facturas libres al primer servicio real
             if (grouped[0] && firstRealSvcId !== null && grouped[firstRealSvcId]) {
                 grouped[firstRealSvcId].invoices = grouped[firstRealSvcId].invoices.concat(grouped[0].invoices);
                 delete grouped[0];
             }
-            var html = '';
-            if (isConsolidatedClient) {
-                var allInvs = [];
-                Object.keys(grouped).forEach(function(svcId) { allInvs.push.apply(allInvs, grouped[svcId].invoices); });
+            
+            let html = '';
+            const consolMode = (isConsolidatedClient);
+            
+            if (consolMode) {
+                // Consolidado: agrupar todo bajo un solo titulo
+                const allInvs = [];
+                Object.keys(grouped).forEach(function(svcId) { Array.prototype.push.apply(allInvs, grouped[svcId].invoices); });
                 allInvs.sort(function(a,b) { return new Date(a.due_date) - new Date(b.due_date); });
-                html += '<div class="rp-inv-group"><div class="rp-inv-group-title"><i class="fas fa-layer-group" style="color:#2563eb;"></i> Factura Consolidada (' + Object.keys(grouped).length + ' servicios)</div>';
+                
+                html += '<div class="rp-inv-group">' +
+                    '<div class="rp-inv-group-title"><i class="fas fa-layer-group" style="color:#2563eb;"></i> Factura Consolidada (' + Object.keys(grouped).length + ' servicios)</div>';
+                
                 allInvs.forEach(function(inv) {
-                    var due = new Date(inv.due_date + 'T00:00:00').toLocaleDateString('es-DO', {day:'2-digit', month:'short', year:'numeric'});
-                    var total = parseFloat(inv.total) || 0;
-                    var paid = parseFloat(inv.paid_amount) || 0;
-                    var remaining = parseFloat(inv.remaining) || 0;
-                    var badgeClass = 'pending', badgeText = 'Pendiente';
-                    if (inv.status === 'overdue') { badgeClass = 'overdue'; badgeText = 'Vencida'; }
-                    else if (inv.status === 'partial') { badgeClass = 'partial'; badgeText = 'Abonado'; }
-                    var notesText = inv.notes ? '<div style="font-size:0.75rem; color:#64748b; margin-top:2px;">' + inv.notes + '</div>' : '';
-                    html += '<div class="rp-inv-row"><div class="rp-inv-info" style="flex:1;">' +
-                        '<span class="rp-inv-id">#' + inv.id + '</span><span class="rp-inv-badge ' + badgeClass + '">' + badgeText + '</span>' +
-                        '<div class="rp-inv-dates">Vence: ' + due + '</div>' + notesText + '</div>' +
-                        '<div class="rp-inv-amounts" style="text-align:right;"><div style="font-weight:700; color:#1e293b;">$' + remaining.toFixed(2) + '</div>' +
-                        (paid > 0 ? '<div style="font-size:0.75rem; color:#64748b;">Pagado: $' + paid.toFixed(2) + ' / $' + total.toFixed(2) + '</div>' : '') + '</div></div>';
+                    const due = new Date(inv.due_date + 'T00:00:00').toLocaleDateString('es-DO', {day:'2-digit', month:'short', year:'numeric'});
+                    const total = parseFloat(inv.total) || 0;
+                    const paid = parseFloat(inv.paid_amount) || 0;
+                    const remaining = parseFloat(inv.remaining) || 0;
+                    
+                    var _badgeClass = 'pending', _badgeText = 'Pendiente';
+                    if (inv.status === 'overdue') { _badgeClass = 'overdue'; _badgeText = 'Vencida'; }
+                    else if (inv.status === 'partial') { _badgeClass = 'partial'; _badgeText = 'Abonado'; }
+                    
+                    const svcLabel = inv.plan_name ? '<span style="font-size:0.72rem;color:#64748b;"> (' + inv.plan_name + (inv.nic ? ' NIC:'+inv.nic : '') + ')</span>' : '';
+                    const notesText = inv.notes ? '<div style="font-size:0.75rem; color:#64748b; margin-top:2px;">' + inv.notes + svcLabel + '</div>' : (svcLabel ? '<div style="font-size:0.75rem; color:#64748b; margin-top:2px;">' + svcLabel + '</div>' : '');
+                    
+                    html += '<div class="rp-inv-row">' +
+                        '<div class="rp-inv-info" style="flex:1;">' +
+                        '<span class="rp-inv-id">#' + inv.id + '</span>' +
+                        '<span class="rp-inv-badge ' + _badgeClass + '">' + _badgeText + '</span>' +
+                        '<div class="rp-inv-dates">Vence: ' + due + '</div>' +
+                        notesText +
+                        '</div>' +
+                        '<div class="rp-inv-amounts" style="text-align:right;">' +
+                        '<div style="font-weight:700; color:#1e293b;">$' + remaining.toFixed(2) + '</div>' +
+                        (paid > 0 ? '<div style="font-size:0.75rem; color:#64748b;">Pagado: $' + paid.toFixed(2) + ' / $' + total.toFixed(2) + '</div>' : '') +
+                        '</div></div>';
                 });
                 html += '</div>';
             } else {
                 Object.keys(grouped).forEach(function(svcId) {
-                    var g = grouped[svcId];
-                    var title = (g.plan || 'Servicio') + (g.address ? ' - ' + g.address : '');
-                    html += '<div class="rp-inv-group"><div class="rp-inv-group-title"><i class="fas fa-wifi" style="color:#2563eb;"></i> ' + title + '</div>';
+                    const g = grouped[svcId];
+                    const title = (g.plan || 'Servicio') + (g.address ? ' - ' + g.address : '');
+                    html += '<div class="rp-inv-group">' +
+                        '<div class="rp-inv-group-title"><i class="fas fa-wifi" style="color:#2563eb;"></i> ' + title + '</div>';
+                    
                     g.invoices.forEach(function(inv) {
-                        var due = new Date(inv.due_date + 'T00:00:00').toLocaleDateString('es-DO', {day:'2-digit', month:'short', year:'numeric'});
-                        var total = parseFloat(inv.total) || 0;
-                        var paid = parseFloat(inv.paid_amount) || 0;
-                        var remaining = parseFloat(inv.remaining) || 0;
-                        var badgeClass = 'pending', badgeText = 'Pendiente';
-                        if (inv.status === 'overdue') { badgeClass = 'overdue'; badgeText = 'Vencida'; }
-                        else if (inv.status === 'partial') { badgeClass = 'partial'; badgeText = 'Abonado'; }
-                        var notesText = inv.notes ? '<div style="font-size:0.75rem; color:#64748b; margin-top:2px;">' + inv.notes + '</div>' : '';
-                        html += '<div class="rp-inv-row"><div class="rp-inv-info" style="flex:1;">' +
-                            '<span class="rp-inv-id">#' + inv.id + '</span><span class="rp-inv-badge ' + badgeClass + '">' + badgeText + '</span>' +
-                            '<div class="rp-inv-dates">Vence: ' + due + '</div>' + notesText + '</div>' +
-                            '<div style="text-align:right;"><div style="font-size:0.8rem; color:#64748b;">Total: $' + total.toFixed(2) + '</div>' +
+                        const due = new Date(inv.due_date + 'T00:00:00').toLocaleDateString('es-DO', {day:'2-digit', month:'short', year:'numeric'});
+                        const total = parseFloat(inv.total) || 0;
+                        const paid = parseFloat(inv.paid_amount) || 0;
+                        const remaining = parseFloat(inv.remaining) || 0;
+                        const esLibre = (inv.service_id == null || inv.service_id == 0 || inv.is_libre);
+                        
+                        var _badgeClass = 'pending', _badgeText = 'Pendiente';
+                        if (inv.status === 'overdue') { _badgeClass = 'overdue'; _badgeText = 'Vencida'; }
+                        else if (inv.status === 'partial') { _badgeClass = 'partial'; _badgeText = 'Abonado'; }
+                        
+                        const libreBadge = esLibre ? '<span style="font-size:0.65rem; padding:1px 5px; border-radius:3px; background:#f3e8ff; color:#7c3aed; font-weight:600; margin-left:4px;">LIBRE</span>' : '';
+                        const notesText = inv.notes ? '<div style="font-size:0.75rem; color:#64748b; margin-top:2px;">' + inv.notes + '</div>' : '';
+                        
+                        html += '<div class="rp-inv-row">' +
+                            '<div class="rp-inv-info" style="flex:1;">' +
+                            '<span class="rp-inv-id">#' + inv.id + '</span>' +
+                            '<span class="rp-inv-badge ' + _badgeClass + '">' + _badgeText + '</span>' + libreBadge +
+                            '<div class="rp-inv-dates">Vence: ' + due + '</div>' +
+                            notesText +
+                            '</div>' +
+                            '<div style="text-align:right;">' +
+                            '<div style="font-size:0.8rem; color:#64748b;">Total: $' + total.toFixed(2) + '</div>' +
                             (paid > 0 ? '<div style="font-size:0.75rem; color:#16a34a;">Pagado: $' + paid.toFixed(2) + '</div>' : '') +
-                            '<div class="rp-inv-amount" style="color:#dc2626;">Debe: $' + remaining.toFixed(2) + '</div></div></div>';
+                            '<div class="rp-inv-amount" style="color:#dc2626;">Debe: $' + remaining.toFixed(2) + '</div>' +
+                            '</div></div>';
                     });
                     html += '</div>';
                 });
             }
+            
             list.innerHTML = html;
+            
+            // Guardar total adeudado y setear en input
             totalAdeudado = d.total_adeudado || 0;
             minFactura = (pendingInvoices.length > 1) ? Math.min.apply(null, pendingInvoices.map(function(inv) { return parseFloat(inv.remaining) || 0; })) : 0;
             document.getElementById('lblFactCount').innerText = pendingInvoices.length;
@@ -1008,68 +1184,111 @@
             document.getElementById('inputMontoPagar').max = totalAdeudado.toFixed(2);
             validarMontoPago();
         }).catch(function(e) { list.innerHTML = '<div style="color:#ef4444; padding:15px;">Error: ' + e.message + '</div>'; });
-    };
+    }
 
-    window.backToServices = function() {
+    function backToServices() {
         document.getElementById('stepFacturas').style.display = 'none';
         document.getElementById('stepServicios').style.display = 'block';
-    };
+    }
 
-    window.validarMontoPago = function() {
-        var input = document.getElementById('inputMontoPagar');
-        var monto = parseFloat(input.value) || 0;
-        var msg = document.getElementById('msgMontoPago');
-        var btn = document.getElementById('btnPagar');
-        if (monto <= 0) { msg.innerHTML = '<span style="color:#dc2626;">Ingrese un monto válido</span>'; btn.disabled = true; input.style.borderColor = '#dc2626'; }
-        else if (monto > totalAdeudado) { msg.innerHTML = '<span style="color:#dc2626;"><i class="fas fa-exclamation-triangle"></i> El monto es mayor a lo adeudado ($' + totalAdeudado.toFixed(2) + ')</span>'; btn.disabled = true; input.style.borderColor = '#dc2626'; }
-        else if (minFactura > 0 && monto < minFactura) { msg.innerHTML = '<span style="color:#dc2626;"><i class="fas fa-exclamation-triangle"></i> Mínimo $' + minFactura.toFixed(2) + ' (al menos 1 factura completa)</span>'; btn.disabled = true; input.style.borderColor = '#dc2626'; }
-        else if (monto < totalAdeudado) { msg.innerHTML = '<span style="color:#2563eb;"><i class="fas fa-info-circle"></i> Pago parcial - Se aplicará a las facturas más antiguas</span>'; btn.disabled = false; input.style.borderColor = '#2563eb'; }
-        else { msg.innerHTML = '<span style="color:#16a34a;"><i class="fas fa-check-circle"></i> Pago completo</span>'; btn.disabled = false; input.style.borderColor = '#16a34a'; }
-    };
+    let totalAdeudado = 0;
+    let minFactura = 0;
+    
+    function validarMontoPago() {
+        const input = document.getElementById('inputMontoPagar');
+        const monto = parseFloat(input.value) || 0;
+        const msg = document.getElementById('msgMontoPago');
+        const btn = document.getElementById('btnPagar');
+        
+        if (monto <= 0) {
+            msg.innerHTML = '<span style="color:#dc2626;">Ingrese un monto v\u00e1lido</span>';
+            btn.disabled = true;
+            input.style.borderColor = '#dc2626';
+        } else if (monto > totalAdeudado) {
+            msg.innerHTML = '<span style="color:#dc2626;"><i class="fas fa-exclamation-triangle"></i> El monto es mayor a lo adeudado ($' + totalAdeudado.toFixed(2) + ')</span>';
+            btn.disabled = true;
+            input.style.borderColor = '#dc2626';
+        } else if (minFactura > 0 && monto < minFactura) {
+            msg.innerHTML = '<span style="color:#dc2626;"><i class="fas fa-exclamation-triangle"></i> M\u00ednimo $' + minFactura.toFixed(2) + ' (al menos 1 factura completa)</span>';
+            btn.disabled = true;
+            input.style.borderColor = '#dc2626';
+        } else if (monto < totalAdeudado) {
+            msg.innerHTML = '<span style="color:#2563eb;"><i class="fas fa-info-circle"></i> Pago parcial - Se aplicar\u00e1 a las facturas m\u00e1s antiguas</span>';
+            btn.disabled = false;
+            input.style.borderColor = '#2563eb';
+        } else {
+            msg.innerHTML = '<span style="color:#16a34a;"><i class="fas fa-check-circle"></i> Pago completo</span>';
+            btn.disabled = false;
+            input.style.borderColor = '#16a34a';
+        }
+    }
 
     // ============ CONFIRMAR PAGO ============
-    window.confirmarPago = function() {
+    let montoPagar = 0;
+
+    function confirmarPago() {
         montoPagar = parseFloat(document.getElementById('inputMontoPagar').value) || 0;
-        if (montoPagar <= 0) { mostrarAlerta('Ingrese un monto válido', 'warning', 'Monto requerido'); return; }
+        
+        if (montoPagar <= 0) { mostrarAlerta('Ingrese un monto v\u00e1lido', 'warning', 'Monto requerido'); return; }
         if (montoPagar > totalAdeudado) { mostrarAlerta('El monto aplicado es mayor a lo adeudado', 'error', 'Monto excedido'); return; }
+        
+        // Mostrar modal de confirmacion
         document.getElementById('lblConfirmTotal').innerText = '$' + montoPagar.toFixed(2);
-        var detail = montoPagar >= totalAdeudado ? 'Pago completo de ' + pendingInvoices.length + ' factura(s)' : 'Pago parcial - Se aplicará a facturas más antiguas';
+        
+        let detail = '';
+        if (montoPagar >= totalAdeudado) {
+            detail = 'Pago completo de ' + pendingInvoices.length + ' factura(s)';
+        } else {
+            detail = 'Pago parcial - Se aplicar\u00e1 a facturas m\u00e1s antiguas';
+        }
         document.getElementById('lblConfirmDetail').innerText = detail;
         document.getElementById('modalConfirmPay').style.display = 'flex';
-    };
+    }
 
-    window.ejecutarPago = function() {
+    function ejecutarPago() {
         document.getElementById('modalConfirmPay').style.display = 'none';
-        var txnVal = (document.getElementById('inputTransactionNumber').value || '').trim();
-        var metodo = document.getElementById('selectMetodoPago').value;
-        var esEfectivo = metodo === 'EFECTIVO';
+
+        // Validar numero de transaccion antes de proceder
+        const txnVal = (document.getElementById('inputTransactionNumber').value || '').trim();
+        const metodo = document.getElementById('selectMetodoPago').value;
+        const esEfectivo = metodo === 'EFECTIVO';
 
         function _doEjecutarPago() {
-            document.getElementById('modalProcessing').style.display = 'flex';
+            // Mostrar modal procesando
+            const modal = document.getElementById('modalProcessing');
+            modal.style.display = 'flex';
             document.getElementById('procIcon').innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
             document.getElementById('procIcon').style.color = '#2563eb';
             document.getElementById('procTitle').innerText = 'Procesando pago...';
             document.getElementById('procMsg').innerText = 'Espere un momento';
             document.getElementById('procBtn').style.display = 'none';
-            var imprimir = document.querySelector('input[name="rp_imprimir"]:checked').value;
-            var activar = document.querySelector('input[name="rp_activar"]:checked').value;
-            var fd = new FormData();
+
+            const imprimir = document.querySelector('input[name="rp_imprimir"]:checked').value;
+            const activar = document.querySelector('input[name="rp_activar"]:checked').value;
+
+            const fd = new FormData();
             fd.append('client_id', selectedClient.id);
+            fd.append('client_name', selectedClient.name);
             fd.append('service_ids', JSON.stringify(selectedServiceIds));
             fd.append('monto_pagar', montoPagar);
             fd.append('imprimir', imprimir);
             fd.append('activar', activar);
             fd.append('payment_method', metodo);
             fd.append('transaction_number', txnVal);
-            fetch(BASE_URL + '&ajax=process_payment', {method:'POST', body:fd})
-            .then(function(r) { return r.json(); })
-            .then(function(d) {
+            fd.append('fecha_pago', document.getElementById('inputFechaPago').value || new Date().toISOString().slice(0,10));
+
+            fetch('/modulo?pagina=RegistrarPago&ajax=process_payment', {method:'POST', body:fd})
+            .then(function(r) { return r.json(); }).then(function(d) {
                 if (d.status === 'success') {
                     document.getElementById('procIcon').innerHTML = '<i class="fas fa-check-circle"></i>';
                     document.getElementById('procIcon').style.color = '#16a34a';
                     document.getElementById('procTitle').innerText = 'Pago Registrado';
-                    document.getElementById('procMsg').innerHTML = d.msg;
-                    document.getElementById('procBtn').style.display = 'block';
+                    document.getElementById('procMsg').innerHTML = d.msg + '<br><small style="color:#94a3b8;">Redirigiendo a Pagos Pendientes...</small>';
+                    document.getElementById('procBtn').style.display = 'none';
+                    setTimeout(function() { window.location.href = '/modulo?pagina=PagosPendientes'; }, 2000);
+                    if (imprimir === 'si' && d.payment_ids && d.payment_ids.length > 0) {
+                        printReceiptByIds(d.payment_ids);
+                    }
                 } else {
                     document.getElementById('procIcon').innerHTML = '<i class="fas fa-times-circle"></i>';
                     document.getElementById('procIcon').style.color = '#ef4444';
@@ -1086,33 +1305,42 @@
             });
         }
 
+        // Si no es efectivo y hay numero de transaccion, verificar duplicado
         if (!esEfectivo && txnVal) {
-            var fdChk = new FormData();
+            const fdChk = new FormData();
             fdChk.append('transaction_number', txnVal);
-            fetch(BASE_URL + '&ajax=check_transaction', {method:'POST', body:fdChk})
-            .then(function(r) { return r.json(); })
-            .then(function(chk) {
-                if (chk.status === 'duplicate') { mostrarAlerta('Ya se registró un pago con este número de transacción', 'error', 'Número duplicado'); }
-                else { _doEjecutarPago(); }
+            fetch('/modulo?pagina=RegistrarPago&ajax=check_transaction', {method:'POST', body:fdChk})
+            .then(function(r) { return r.json(); }).then(function(chk) {
+                if (chk.status === 'duplicate') {
+                    mostrarAlerta('Ya se registr\u00f3 un pago con este n\u00famero de transacci\u00f3n', 'error', 'N\u00famero duplicado');
+                } else {
+                    _doEjecutarPago();
+                }
             }).catch(function() { _doEjecutarPago(); });
-        } else { _doEjecutarPago(); }
-    };
+        } else {
+            _doEjecutarPago();
+        }
+    }
 
-    window.cerrarProcesando = function() {
+    function cerrarProcesando() {
         document.getElementById('modalProcessing').style.display = 'none';
         limpiarFormulario();
-    };
+    }
 
-    window.rpToggleTransactionField = function(selectId, divId, inputId) {
-        var sel = document.getElementById(selectId);
-        var div = document.getElementById(divId);
-        var inp = document.getElementById(inputId);
+    function rpToggleTransactionField(selectId, divId, inputId) {
+        const sel = document.getElementById(selectId);
+        const div = document.getElementById(divId);
+        const inp = document.getElementById(inputId);
         if (!sel || !div) return;
-        if (sel.value === 'EFECTIVO') { div.style.display = 'none'; if (inp) inp.value = ''; }
-        else { div.style.display = 'block'; }
-    };
+        if (sel.value === 'EFECTIVO') {
+            div.style.display = 'none';
+            if (inp) inp.value = '';
+        } else {
+            div.style.display = 'block';
+        }
+    }
 
-    window.limpiarFormulario = function() {
+    function limpiarFormulario() {
         selectedClient = null;
         selectedServiceIds = [];
         advSelectedServiceIds = [];
@@ -1120,9 +1348,10 @@
         isConsolidatedClient = false;
         _rpAutoSelectNicServiceId = null;
         inputBuscador.value = '';
-        var selPago = document.getElementById('selectMetodoPago');
+        // Resetear metodo de pago a EFECTIVO y ocultar campo transaccion
+        const selPago = document.getElementById('selectMetodoPago');
         if (selPago) { selPago.value = 'EFECTIVO'; rpToggleTransactionField('selectMetodoPago','divTransactionNumber','inputTransactionNumber'); }
-        var selAdv = document.getElementById('selectMetodoPagoAdv');
+        const selAdv = document.getElementById('selectMetodoPagoAdv');
         if (selAdv) { selAdv.value = 'EFECTIVO'; rpToggleTransactionField('selectMetodoPagoAdv','divTransactionNumberAdv','inputTransactionNumberAdv'); }
         document.getElementById('clienteInfo').style.display = 'none';
         document.getElementById('lblServiciosStatus').innerHTML = '';
@@ -1132,10 +1361,14 @@
         document.getElementById('panelRecibos').style.display = 'none';
         document.getElementById('panelBuscador').style.display = 'block';
         document.getElementById('msgInicial').style.display = 'block';
-    };
+    }
 
     // ============ RECIBOS ============
-    window.showReceipts = function() {
+    const rpIsAdmin = true;
+    const rpCanRecibos = true;
+    let rcpSearchTimer = null;
+
+    function showReceipts() {
         document.getElementById('msgInicial').style.display = 'none';
         document.getElementById('panelBuscador').style.display = 'none';
         document.getElementById('clienteInfo').style.display = 'none';
@@ -1143,71 +1376,194 @@
         document.getElementById('stepFacturas').style.display = 'none';
         document.getElementById('stepAdelanto').style.display = 'none';
         document.getElementById('panelRecibos').style.display = 'block';
-        document.getElementById('rcpBadgeAdmin').style.display = 'inline';
-        document.getElementById('rcpBadgeHoy').style.display = 'none';
-        document.getElementById('rcpDateFilters').style.display = 'flex';
-        loadReceipts(1);
-    };
 
-    window.hideReceipts = function() {
+        // Mostrar badge segun rol
+        document.getElementById('rcpBadgeAdmin').style.display = rpIsAdmin ? 'inline' : 'none';
+        document.getElementById('rcpBadgeHoy').style.display = rpIsAdmin ? 'none' : 'inline';
+
+        // Ocultar filtros de fecha para no-admin
+        document.getElementById('rcpDateFilters').style.display = rpIsAdmin ? 'flex' : 'none';
+
+        loadReceipts(1);
+    }
+
+    function hideReceipts() {
         document.getElementById('panelRecibos').style.display = 'none';
         document.getElementById('panelBuscador').style.display = 'block';
         document.getElementById('msgInicial').style.display = 'block';
-    };
+    }
 
-    window.rcpDebounceSearch = function() {
+    function rcpDebounceSearch() {
         clearTimeout(rcpSearchTimer);
         rcpSearchTimer = setTimeout(function() { loadReceipts(1); }, 350);
-    };
+    }
 
-    window.clearReceiptFilters = function() {
+    function clearReceiptFilters() {
         document.getElementById('rcpSearch').value = '';
         document.getElementById('rcpDateFrom').value = '';
         document.getElementById('rcpDateTo').value = '';
         loadReceipts(1);
-    };
+    }
 
     function loadReceipts(page) {
-        var search = document.getElementById('rcpSearch').value.trim();
-        var dateFrom = document.getElementById('rcpDateFrom').value;
-        var dateTo = document.getElementById('rcpDateTo').value;
-        var list = document.getElementById('rcpList');
-        var pag = document.getElementById('rcpPagination');
+        const search = document.getElementById('rcpSearch').value.trim();
+        const dateFrom = document.getElementById('rcpDateFrom').value;
+        const dateTo = document.getElementById('rcpDateTo').value;
+        const list = document.getElementById('rcpList');
+        const pag = document.getElementById('rcpPagination');
+
         list.innerHTML = '<div class="rcp-loading"><i class="fas fa-spinner fa-spin"></i> Cargando recibos...</div>';
         pag.innerHTML = '';
-        var url = BASE_URL + '&ajax=list_receipts&page=' + page;
+
+        let url = '/modulo?pagina=RegistrarPago&ajax=list_receipts&page=' + page;
         if (search) url += '&search=' + encodeURIComponent(search);
         if (dateFrom) url += '&date_from=' + dateFrom;
         if (dateTo) url += '&date_to=' + dateTo;
-        fetch(url).then(function(r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+
+        fetch(url).then(function(r) { if (!r.ok) throw new Error('HTTP '+r.status); return r.text(); })
+        .then(function(txt) { try { return JSON.parse(txt); } catch(e) { console.error('Recibos JSON error:', txt.substring(0,200)); throw e; } })
         .then(function(d) {
-            if (d.status !== 'success') { list.innerHTML = '<div class="rcp-empty"><i class="fas fa-exclamation-circle"></i>' + (d.msg || 'Error') + '</div>'; return; }
-            if (!d.data || d.data.length === 0) { list.innerHTML = '<div class="rcp-empty"><i class="fas fa-receipt"></i>No se encontraron recibos</div>'; return; }
-            var html = '';
+            if (d.status !== 'success') {
+                list.innerHTML = '<div class="rcp-empty"><i class="fas fa-exclamation-circle"></i>' + (d.msg || 'Error') + '</div>';
+                return;
+            }
+
+            if (!d.data || d.data.length === 0) {
+                list.innerHTML = '<div class="rcp-empty"><i class="fas fa-receipt"></i>No se encontraron recibos</div>';
+                return;
+            }
+
+            let html = '';
             d.data.forEach(function(r) {
-                var amount = parseFloat(r.amount) || 0;
-                var fecha = r.payment_date ? new Date(r.payment_date).toLocaleDateString('es-DO', {day:'2-digit', month:'short', year:'numeric'}) + ' ' + new Date(r.payment_date).toLocaleTimeString('es-DO', {hour:'2-digit', minute:'2-digit', hour12:true}) : '';
-                html += '<div class="rcp-row"><div class="rcp-row-id">#' + r.id + '</div>' +
-                    '<div class="rcp-row-info"><div class="rcp-row-name">' + (r.client_name || 'Sin nombre') + '</div>' +
+                const amount = parseFloat(r.amount) || 0;
+                let fecha = '';
+                if (r.payment_date) {
+                    const dt = new Date(r.payment_date);
+                    fecha = dt.toLocaleDateString('es-DO', {day:'2-digit', month:'short', year:'numeric'}) + ' ' + dt.toLocaleTimeString('es-DO', {hour:'2-digit', minute:'2-digit', hour12:true});
+                }
+                html += '<div class="rcp-row" onclick="openReceipt(' + r.id + ')">' +
+                    '<div class="rcp-row-id">#' + r.id + '</div>' +
+                    '<div class="rcp-row-info">' +
+                    '<div class="rcp-row-name">' + (r.client_name || 'Sin nombre') + '</div>' +
                     '<div class="rcp-row-concept">' + (r.concept || '') + '</div></div>' +
-                    '<div class="rcp-row-right"><div class="rcp-row-amount">$' + amount.toFixed(2) + '</div>' +
-                    '<div class="rcp-row-date">' + fecha + '</div></div></div>';
+                    '<div class="rcp-row-right">' +
+                    '<div class="rcp-row-amount">$' + amount.toFixed(2) + '</div>' +
+                    '<div class="rcp-row-date">' + fecha + '</div></div>' +
+                    '<button class="rcp-row-btn" onclick="event.stopPropagation(); openReceipt(' + r.id + ')" title="Imprimir recibo">' +
+                    '<i class="fas fa-print"></i></button></div>';
             });
             list.innerHTML = html;
-            var pagHtml = '<span style="font-size:0.82rem; color:#64748b;">' + d.total + ' recibo(s) - Pag ' + d.page + '/' + d.totalPages + '</span>';
+
+            // Paginacion
+            let pagHtml = '<span style="font-size:0.82rem; color:#64748b;">' + d.total + ' recibo(s) - Pag ' + d.page + '/' + d.totalPages + '</span>';
             pagHtml += '<div style="display:flex; gap:4px;">';
             pagHtml += '<button class="rcp-pag-btn" onclick="loadReceipts(' + (d.page - 1) + ')" ' + (d.page <= 1 ? 'disabled' : '') + '><i class="fas fa-chevron-left"></i></button>';
-            var startP = Math.max(1, d.page - 2);
-            var endP = Math.min(d.totalPages, startP + 4);
+            
+            // Mostrar max 5 paginas
+            let startP = Math.max(1, d.page - 2);
+            let endP = Math.min(d.totalPages, startP + 4);
             if (endP - startP < 4) startP = Math.max(1, endP - 4);
-            for (var i = startP; i <= endP; i++) { pagHtml += '<button class="rcp-pag-btn' + (i === d.page ? ' active' : '') + '" onclick="loadReceipts(' + i + ')">' + i + '</button>'; }
-            pagHtml += '<button class="rcp-pag-btn" onclick="loadReceipts(' + (d.page + 1) + ')" ' + (d.page >= d.totalPages ? 'disabled' : '') + '><i class="fas fa-chevron-right"></i></button></div>';
+            for (let i = startP; i <= endP; i++) {
+                pagHtml += '<button class="rcp-pag-btn' + (i === d.page ? ' active' : '') + '" onclick="loadReceipts(' + i + ')">' + i + '</button>';
+            }
+            
+            pagHtml += '<button class="rcp-pag-btn" onclick="loadReceipts(' + (d.page + 1) + ')" ' + (d.page >= d.totalPages ? 'disabled' : '') + '><i class="fas fa-chevron-right"></i></button>';
+            pagHtml += '</div>';
             pag.innerHTML = pagHtml;
-        }).catch(function(e) { list.innerHTML = '<div class="rcp-empty"><i class="fas fa-exclamation-circle"></i>Error: ' + e.message + '</div>'; });
+
+        }).catch(function(e) {
+            list.innerHTML = '<div class="rcp-empty"><i class="fas fa-exclamation-circle"></i>Error: ' + e.message + '</div>';
+        });
     }
 
-    // Make loadReceipts available globally for onclick
-    window.loadReceipts = loadReceipts;
+    function openReceipt(id) {
+        silentPrintReceipt(id);
+    }
 
-})();
+    function silentPrintReceipt(paymentId) {
+        printReceiptByIds([paymentId]);
+    }
+
+    function printReceiptByIds(ids) {
+        if (!ids || ids.length === 0) return;
+        const idsStr = ids.join(',');
+        const printUrl = '/modulo?pagina=ImprimirRecibo&ajax=print&ids=' + idsStr;
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) 
+                         || (navigator.maxTouchPoints > 1 && window.innerWidth < 1024);
+        if (isMobile) {
+            window.location.href = printUrl;
+            return;
+        }
+        let iframe = document.getElementById('printReceiptFrame');
+        if (!iframe) {
+            iframe = document.createElement('iframe');
+            iframe.id = 'printReceiptFrame';
+            iframe.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;border:none;opacity:0;pointer-events:none;';
+            document.body.appendChild(iframe);
+        }
+        iframe.onload = function() {
+            setTimeout(function() {
+                try {
+                    iframe.contentWindow.focus();
+                    iframe.contentWindow.print();
+                } catch(e) {
+                    window.open(printUrl, '_blank');
+                }
+            }, 600);
+        };
+        iframe.src = printUrl;
+    }
+
+    // Auto-buscar si viene redirigido desde ReportesDePago
+    (function() {
+        try {
+            var autoSearch = sessionStorage.getItem('rpp_auto_search');
+            if (autoSearch) {
+                sessionStorage.removeItem('rpp_auto_search');
+                setTimeout(function() {
+                    var input = document.getElementById('inputBuscador');
+                    if (input) {
+                        input.value = autoSearch;
+                        input.dispatchEvent(new Event('input', {bubbles:true}));
+                        input.focus();
+                    }
+                }, 500);
+            }
+        } catch(e) {}
+    })();
+
+    // Auto-abrir recibos del día si viene con ?today=1
+    (function() {
+      var params = new URLSearchParams(window.location.search);
+      if (params.get('today') === '1') {
+        setTimeout(function() {
+          document.getElementById('panelRecibos').style.display = 'block';
+          var today = new Date().toISOString().substring(0, 10);
+          document.getElementById('rcpDateFrom').value = today;
+          document.getElementById('rcpDateTo').value = today;
+          loadReceipts(1);
+        }, 800);
+      }
+    })();
+
+    // Auto-cargar cliente si viene con ?cliente_id=X
+    (function() {
+      var params = new URLSearchParams(window.location.search);
+      var clientId = params.get('cliente_id');
+      if (clientId) {
+        setTimeout(function() {
+          fetch('/modulo?pagina=RegistrarPago&ajax=get_client&client_id=' + clientId)
+          .then(function(r) { return r.json(); })
+          .then(function(d) {
+            if (d.status === 'success' && d.data) {
+              document.getElementById('inputBuscador').value = d.data.name;
+              seleccionarCliente(d.data);
+            }
+          })
+          .catch(function(e) {
+            console.error('Error auto-cargando cliente:', e);
+          });
+        }, 500);
+      }
+    })();
 </script>

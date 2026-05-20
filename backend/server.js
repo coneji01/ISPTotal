@@ -5,6 +5,30 @@ const bcrypt = require('bcrypt');
 const fileUpload = require('express-fileupload');
 const db = require('./database');
 
+// Global error handlers to prevent crashes
+process.on('unhandledRejection', function(err) {
+  console.error('[UNHANDLED REJECTION]', err.message);
+});
+process.on('uncaughtException', function(err) {
+  console.error('[UNCAUGHT EXCEPTION]', err.message);
+});
+
+// Escapado HTML
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function trimStr(str, max) {
+  if (!str) return '';
+  return String(str).length > max ? String(str).substring(0, max) + '...' : String(str);
+}
+
 const app = express();
 const PORT = 3020;
 
@@ -12,6 +36,7 @@ const PORT = 3020;
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, '..', 'views'));
 app.use(express.static(path.join(__dirname, '..', 'frontend')));
+app.use(express.static(path.join(__dirname, '..')));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(fileUpload());
@@ -103,7 +128,7 @@ app.get('/logout', (req, res) => {
 });
 
 // ======== MODULES ========
-app.get('/modulo', requireAuth, (req, res) => {
+app.all('/modulo', requireAuth, (req, res) => {
   const pagina = req.query.pagina || 'Dashboard';
   
   // Common data
@@ -119,11 +144,12 @@ app.get('/modulo', requireAuth, (req, res) => {
   
   switch(pagina) {
     case 'Dashboard': {
-      const servicios = db.prepare('SELECT COUNT(*) as total FROM servicios').get();
+      const servicios = db.prepare("SELECT COUNT(*) as total FROM servicios WHERE estado != 'retirado'").get();
       const activos = db.prepare("SELECT COUNT(*) as total FROM servicios WHERE estado='activo'").get();
       const suspendidos = db.prepare("SELECT COUNT(*) as total FROM servicios WHERE estado='suspendido'").get();
-      const pendientes = db.prepare("SELECT COUNT(*) as total FROM ordenes WHERE estado='pendiente'").get();
+      const pendientes = db.prepare("SELECT COUNT(*) as total, COALESCE(SUM(f.monto - COALESCE((SELECT SUM(pg.monto) FROM pagos pg WHERE pg.factura_id=f.id),0)),0) as total_monto FROM facturas f WHERE f.estado='pendiente' AND f.monto > COALESCE((SELECT SUM(pg.monto) FROM pagos pg WHERE pg.factura_id=f.id),0)").get();
       const pagosHoy = db.prepare("SELECT COALESCE(SUM(monto),0) as total FROM pagos WHERE date(created_at)=date('now')").get();
+      const pagosMes = db.prepare("SELECT COALESCE(SUM(monto),0) as total, COUNT(*) as cantidad FROM pagos WHERE strftime('%Y-%m', created_at) = strftime('%Y-%m', 'now')").get();
       const instalaciones = db.prepare("SELECT COUNT(*) as total FROM ordenes WHERE tipo='Instalacion' AND estado='pendiente'").get();
       
       // Monthly stats for bar chart (12 months)
@@ -135,11 +161,304 @@ app.get('/modulo', requireAuth, (req, res) => {
       const ultimoMes = ultimoMesRow ? ultimoMesRow.total : 0;
       
       data = { ...data, servicios: servicios.total, activos: activos.total, suspendidos: suspendidos.total, 
-               pendientes: pendientes.total, instalaciones: instalaciones.total, pagosHoy: pagosHoy.total,
+               pendientes: pendientes.total, pendientes_monto: pendientes.total_monto, instalaciones: instalaciones.total, pagosHoy: pagosHoy.total, pagosMes: pagosMes.total, pagosMesCant: pagosMes.cantidad,
                instalados_meses: instaladosMeses, retirados_meses: retiradosMeses, ultimoMes: ultimoMes };
       break;
     }
     case 'Clientes': {
+      const ajax = req.query.ajax;
+
+      // ===== LIST CLIENTS (AJAX GET) =====
+      if (ajax === 'list') {
+        const search = (req.query.search || '').trim();
+        const status = req.query.status || 'todos';
+        const zona = req.query.zona || 'todas';
+        const facturas = req.query.facturas || '';
+        const fecha = req.query.fecha || '';
+        const page = Math.max(1, parseInt(req.query.page) || 1);
+        const perPage = parseInt(req.query.per_page) || 15;
+        const sort = req.query.sort || '';
+        const dir = req.query.dir === 'desc' ? 'DESC' : 'ASC';
+        const offset = (page - 1) * perPage;
+
+        let where = 'WHERE 1=1';
+        let params = [];
+
+        if (search) {
+          where += ' AND (c.nombre LIKE ? OR c.cedula LIKE ? OR c.telefono LIKE ? OR c.apodo LIKE ? OR c.direccion LIKE ?)';
+          var like = '%' + search + '%';
+          params.push(like, like, like, like, like);
+        }
+
+        if (zona && zona !== 'todas') {
+          where += ' AND c.zona_id = ?';
+          params.push(parseInt(zona));
+        }
+
+        if (status === 'activo') {
+          where += " AND (SELECT COUNT(*) FROM servicios s WHERE s.cliente_id=c.id AND s.estado='activo') > 0";
+        } else if (status === 'suspendido') {
+          where += " AND (SELECT COUNT(*) FROM servicios s WHERE s.cliente_id=c.id AND s.estado='suspendido') > 0";
+        } else if (status === 'retirado') {
+          where += ' AND (SELECT COUNT(*) FROM servicios s WHERE s.cliente_id=c.id) = 0';
+        }
+
+        if (fecha && /^\d{4}-\d{2}$/.test(fecha)) {
+          where += " AND strftime('%Y-%m', c.created_at) = ?";
+          params.push(fecha);
+        }
+
+        if (facturas === 'sin') {
+          where += " AND (SELECT COUNT(*) FROM facturas f JOIN servicios s ON s.id=f.servicio_id WHERE s.cliente_id=c.id AND f.estado='pendiente' AND f.monto > COALESCE((SELECT SUM(p.monto) FROM pagos p WHERE p.factura_id=f.id),0)) = 0";
+        } else if (facturas === '1') {
+          where += " AND (SELECT COUNT(*) FROM facturas f JOIN servicios s ON s.id=f.servicio_id WHERE s.cliente_id=c.id AND f.estado='pendiente' AND f.monto > COALESCE((SELECT SUM(p.monto) FROM pagos p WHERE p.factura_id=f.id),0)) = 1";
+        } else if (facturas === '2+') {
+          where += " AND (SELECT COUNT(*) FROM facturas f JOIN servicios s ON s.id=f.servicio_id WHERE s.cliente_id=c.id AND f.estado='pendiente' AND f.monto > COALESCE((SELECT SUM(p.monto) FROM pagos p WHERE p.factura_id=f.id),0)) >= 2";
+        }
+
+        var orderClause = 'ORDER BY c.id DESC';
+        if (sort === 'nombre') orderClause = 'ORDER BY c.nombre ' + dir;
+        else if (sort === 'zona') orderClause = 'ORDER BY z.nombre ' + dir;
+        else if (sort === 'registro') orderClause = 'ORDER BY c.created_at ' + dir;
+
+        const countRow = db.prepare('SELECT COUNT(*) as total FROM clientes c ' + where).get(...params);
+        const total = countRow ? countRow.total : 0;
+
+        const rows = db.prepare(`
+          SELECT c.*, z.nombre as zona_nombre,
+            (SELECT COUNT(*) FROM servicios s WHERE s.cliente_id=c.id AND s.estado != 'retirado') as svc_count,
+            (SELECT COUNT(*) FROM servicios s WHERE s.cliente_id=c.id AND s.estado='activo') as activo_count,
+            (SELECT COUNT(*) FROM servicios s WHERE s.cliente_id=c.id AND s.estado='suspendido') as suspendido_count,
+            (SELECT COALESCE(MAX(s.fecha_suspension),'') FROM servicios s WHERE s.cliente_id=c.id AND s.fecha_suspension IS NOT NULL) as ultima_suspension
+          FROM clientes c
+          LEFT JOIN zonas z ON z.id=c.zona_id
+          ${where}
+          ${orderClause}
+          LIMIT ? OFFSET ?
+        `).all(...params, perPage, offset);
+
+        var html = '';
+        var MONTHS = ['','Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+
+        rows.forEach(function(cliente) {
+          var svcCount = parseInt(cliente.svc_count) || 0;
+          var activoCount = parseInt(cliente.activo_count) || 0;
+          var suspendidoCount = parseInt(cliente.suspendido_count) || 0;
+          var hasActivos = activoCount > 0;
+          var isSuspendido = suspendidoCount > 0 && !hasActivos;
+
+          var badgeHtml = hasActivos
+            ? '<span class="badge badge-success" style="background:#dcfce7;color:#166534;padding:2px 10px;border-radius:10px;font-size:0.72rem;font-weight:600;">Activo</span>'
+            : (isSuspendido
+              ? '<span class="badge badge-warning" style="background:#fef3c7;color:#92400e;padding:2px 10px;border-radius:10px;font-size:0.72rem;font-weight:600;">Suspendido</span>'
+              : '<span class="badge badge-secondary" style="background:#f1f5f9;color:#94a3b8;padding:2px 10px;border-radius:10px;font-size:0.72rem;font-weight:600;">Sin Servicio</span>');
+
+          var regDate = '';
+          if (cliente.created_at) {
+            try {
+              var ds = String(cliente.created_at).replace(' ', 'T');
+              if (!ds.includes('T')) ds += 'T00:00:00';
+              var d = new Date(ds);
+              regDate = d.getDate() + ' ' + (MONTHS[d.getMonth()]) + ' ' + d.getFullYear();
+            } catch(e) { regDate = String(cliente.created_at).substring(0, 10); }
+          }
+
+          var suspDateHtml = '';
+          if (cliente.ultima_suspension && isSuspendido) {
+            try {
+              var sd = String(cliente.ultima_suspension).substring(0, 10);
+              var parts = sd.split('-');
+              if (parts.length === 3) {
+                suspDateHtml = parts[2] + ' ' + (MONTHS[parseInt(parts[1])]) + ' ' + parts[0];
+              }
+            } catch(e) {}
+          }
+
+          var aliasHtml = '';
+          if (cliente.apodo) {
+            aliasHtml = ' <span style="display:inline-flex;align-items:center;gap:3px;font-size:0.72rem;color:#64748b;background:#f1f5f9;padding:1px 7px;border-radius:4px;"><i class="fas fa-address-card" style="font-size:0.65rem;"></i> ' + escapeHtml(cliente.apodo) + '</span>';
+          }
+
+          var contactoHtml = '';
+          if (cliente.telefono) {
+            contactoHtml += '<div style="font-size:0.78rem;color:#475569;"><i class="fas fa-phone" style="font-size:0.7rem;color:#6366f1;margin-right:4px;"></i>' + escapeHtml(cliente.telefono) + '</div>';
+          }
+          if (cliente.direccion) {
+            contactoHtml += '<div style="font-size:0.75rem;color:#94a3b8;margin-top:2px;"><i class="fas fa-map-marker-alt" style="font-size:0.65rem;color:#6366f1;margin-right:4px;"></i>' + escapeHtml(trimStr(cliente.direccion, 35)) + '</div>';
+          }
+
+          var linkCell = '<a href="/modulo?pagina=VerCliente&id=' + cliente.id + '" class="btn-accion ver" title="Ver cliente" style="padding:4px 8px;border:none;border-radius:6px;background:#eff6ff;color:#2563eb;cursor:pointer;text-decoration:none;font-size:0.78rem;"><i class="fas fa-eye"></i></a>';
+
+          html += '<tr>';
+          html += '<td style="padding:10px 8px;"><input type="checkbox" class="clienteCheck" data-id="' + cliente.id + '" value="' + cliente.id + '" onchange="actualizarBulkSelection()" style="width:16px;height:16px;accent-color:#6366f1;cursor:pointer;"></td>';
+          html += '<td style="padding:10px 8px;font-weight:600;">' + cliente.id + '</td>';
+          html += '<td style="padding:10px 8px;"><a href="/modulo?pagina=VerCliente&id=' + cliente.id + '" style="font-weight:600;color:#6366f1;text-decoration:none;font-size:0.82rem;">' + escapeHtml(cliente.nombre) + '</a>' + aliasHtml + '</td>';
+          html += '<td style="padding:10px 8px;font-size:0.8rem;color:#475569;">' + escapeHtml(cliente.zona_nombre || '—') + '</td>';
+          html += '<td style="padding:10px 8px;font-size:0.78rem;color:#94a3b8;">' + regDate + '</td>';
+          html += '<td style="padding:10px 8px;font-size:0.75rem;color:#dc2626;">' + suspDateHtml + '</td>';
+          html += '<td style="padding:10px 8px;">' + contactoHtml + '</td>';
+          html += '<td style="padding:10px 8px;">' + badgeHtml + '</td>';
+          html += '<td style="padding:10px 8px;white-space:nowrap;">' + linkCell + '</td>';
+          html += '</tr>';
+        });
+
+        return res.json({ status: 'success', html: html, total: total, page: page });
+      }
+
+      // ===== SAVE CLIENT (AJAX) =====
+      if (ajax === 'save') {
+        const nombre = (req.body.nombre || req.body.name || '').trim();
+        const cedula = (req.body.cedula || '').trim();
+        const telefono = (req.body.telefono || '').trim();
+        const direccion = (req.body.direccion || '').trim();
+        const apodo = (req.body.apodo || '').trim();
+        const zona_id = parseInt(req.body.zona_id) || null;
+
+        if (!nombre) return res.json({ success: false, message: 'El nombre es obligatorio' });
+
+        try {
+          const r = db.prepare('INSERT INTO clientes (nombre, cedula, telefono, direccion, apodo, zona_id) VALUES (?,?,?,?,?,?)').run(nombre, cedula || null, telefono || null, direccion || null, apodo || null, zona_id);
+          return res.json({ success: true, message: 'Cliente creado', id: r.lastInsertRowid });
+        } catch(e) {
+          return res.json({ success: false, message: 'Error al guardar: ' + e.message });
+        }
+      }
+
+      // ===== DELETE CLIENT (AJAX) =====
+      if (ajax === 'delete') {
+        const id = parseInt(req.body.id) || 0;
+        if (!id) return res.json({ success: false, message: 'ID inválido' });
+        db.prepare('DELETE FROM clientes WHERE id=?').run(id);
+        return res.json({ success: true, message: 'Cliente eliminado' });
+      }
+
+      // ===== TOGGLE STATUS (AJAX) =====
+      if (ajax === 'toggle_status') {
+        console.log('[toggle_status] POST received, action:', req.body.action, 'ids:', req.body.ids);
+        const action = req.body.action || '';
+        // Support both single id and array of ids
+        var ids = [];
+        if (Array.isArray(req.body.ids)) {
+          ids = req.body.ids;
+        } else {
+          try { ids = JSON.parse(req.body.ids || '[]'); } catch(e) { ids = []; }
+        }
+        var singleId = parseInt(req.body.id) || 0;
+        if (singleId) ids.push(singleId);
+        
+        if (!ids.length || !action) return res.json({ success: false, message: 'Datos inválidos' });
+        
+        ids.forEach(function(id) {
+          if (action === 'activar') {
+            db.prepare("UPDATE servicios SET estado='activo' WHERE cliente_id=?").run(id);
+            // Quitar IP de la lista de suspendidos en MikroTik
+            (async function() {
+              try {
+                var router = db.prepare('SELECT * FROM routers WHERE connected=1 OR id=(SELECT MIN(id) FROM routers)').get();
+                if (router && router.user) {
+                  var MikroTikAPI = require('./mikrotik-api');
+                  var ips = db.prepare('SELECT ip FROM servicios WHERE cliente_id=? AND ip IS NOT NULL AND ip != \'\'').all(id);
+                  ips.forEach(function(svc) {
+                    MikroTikAPI.setAddressList(router.ip, router.port || 8728, router.user, router.password, svc.ip, 'Suspendidos', false);
+                  });
+                }
+              } catch(e) {}
+            })();
+          } else if (action === 'suspender') {
+            db.prepare("UPDATE servicios SET estado='suspendido' WHERE cliente_id=?").run(id);
+            
+            // Enviar notificación de suspensión por WhatsApp
+            (async function() {
+              try {
+                var openwa = require('./openwa-service');
+                var clientData = db.prepare('SELECT nombre, telefono FROM clientes WHERE id=?').get(id);
+                if (!clientData || !clientData.telefono) return;
+                
+                // Obtener servicios suspendidos con su info
+                var svcs = db.prepare('SELECT s.id, s.direccion, p.nombre as plan_nombre FROM servicios s LEFT JOIN planes p ON p.id=s.plan_id WHERE s.cliente_id=? AND s.estado=?').all(id, 'suspendido');
+                if (svcs.length === 0) return;
+                
+                // Obtener deuda total
+                var deudaRow = db.prepare("SELECT COALESCE(SUM(f.monto - COALESCE((SELECT SUM(pg.monto) FROM pagos pg WHERE pg.factura_id=f.id),0)),0) as total FROM facturas f WHERE f.servicio_id IN (SELECT s2.id FROM servicios s2 WHERE s2.cliente_id=?) AND f.estado='pendiente'").get(id);
+                var deudaTotal = deudaRow ? deudaRow.total : 0;
+                
+                // Obtener config de empresa
+                var configRow = db.prepare("SELECT value FROM configuracion WHERE key='empresa_nombre'").get();
+                var configRow2 = db.prepare("SELECT value FROM configuracion WHERE key='empresa_telefono'").get();
+                var companyName = configRow ? configRow.value : '';
+                var companyPhone = configRow2 ? configRow2.value : '';
+                
+                var tpl = db.prepare("SELECT content FROM templates WHERE template_key='notif_suspension'").get();
+                var templateBase = tpl ? tpl.content : 'Hola {client_name}, su servicio ha sido suspendido.';
+                
+                svcs.forEach(function(svc) {
+                  var msg = templateBase
+                    .replace(/{client_name}/g, clientData.nombre || '')
+                    .replace(/{service_address}/g, svc.direccion || '')
+                    .replace(/{plan_name}/g, svc.plan_nombre || '')
+                    .replace(/{invoice_remaining}/g, '$' + deudaTotal.toFixed(2))
+                    .replace(/{company_phone}/g, companyPhone)
+                    .replace(/{company_name}/g, companyName)
+                    .replace(/{current_date}/g, new Date().toLocaleDateString('es-DO'));
+                  
+                  // Usar sistema de cola (encola si está desconectado)
+                  openwa.encolarMensaje(id, svc.id, clientData.telefono, msg, 'suspension');
+                });
+              } catch(e) {
+                console.log('[Suspension] Error notificación:', e.message);
+              }
+            })();
+            
+            // Agregar IP a lista de suspendidos en MikroTik
+            (async function() {
+              try {
+                var router = db.prepare('SELECT * FROM routers WHERE connected=1 OR id=(SELECT MIN(id) FROM routers)').get();
+                if (router && router.user) {
+                  var MikroTikAPI = require('./mikrotik-api');
+                  var ips = db.prepare('SELECT ip FROM servicios WHERE cliente_id=? AND ip IS NOT NULL AND ip != \'\'').all(id);
+                  ips.forEach(function(svc) {
+                    MikroTikAPI.setAddressList(router.ip, router.port || 8728, router.user, router.password, svc.ip, 'Suspendidos', true);
+                  });
+                }
+              } catch(e) {}
+            })();
+            // Desactivar ONU en SmartOLT (por cada OLT)
+            (async function() {
+              try {
+                var onus = db.prepare('SELECT o.sn, o.olt_id, ol.smartolt_subdomain, ol.smartolt_api_key FROM onu o LEFT JOIN olts ol ON ol.id=o.olt_id WHERE o.cliente_id=? AND o.sn IS NOT NULL AND o.sn != \'\'').all(id);
+                if (!onus.length) return;
+                onus.forEach(function(onu) {
+                  if (!onu.smartolt_subdomain || !onu.smartolt_api_key) return;
+                  var url = 'https://' + onu.smartolt_subdomain + '.smartolt.com/api/onus/' + onu.sn + '/deactivate';
+                  var headers = { 'X-API-Key': onu.smartolt_api_key, 'Content-Type': 'application/json' };
+                  fetch(url, { method: 'POST', headers: headers }).catch(function() {});
+                });
+              } catch(e) {}
+            })();          } else if (action === 'retirar') {
+            db.prepare("UPDATE servicios SET estado='retirado' WHERE cliente_id=?").run(id);
+            // Eliminar ONU de SmartOLT y BD
+            (async function() {
+              try {
+                var onus = db.prepare('SELECT o.sn, o.olt_id, o.id as onu_id, ol.smartolt_subdomain, ol.smartolt_api_key FROM onu o LEFT JOIN olts ol ON ol.id=o.olt_id WHERE o.cliente_id=? AND o.sn IS NOT NULL AND o.sn != \'\'').all(id);
+                onus.forEach(function(onu) {
+                  if (onu.smartolt_subdomain && onu.smartolt_api_key) {
+                    var url = 'https://' + onu.smartolt_subdomain + '.smartolt.com/api/onus/' + onu.sn + '/delete';
+                    var headers = { 'X-API-Key': onu.smartolt_api_key, 'Content-Type': 'application/json' };
+                    fetch(url, { method: 'POST', headers: headers }).catch(function() {});
+                  }
+                  db.prepare('DELETE FROM onu WHERE id=?').run(onu.onu_id);
+                });
+              } catch(e) {}
+            })();
+          } else if (action === 'eliminar') {
+            db.prepare('DELETE FROM clientes WHERE id=?').run(id);
+          }
+        });
+        
+        return res.json({ success: true, message: ids.length + ' cliente(s) procesados' });
+      }
+
+      // Load all clients for the template
       data.clientes = db.prepare(`
         SELECT c.*, z.nombre as zona_nombre, COUNT(s.id) as servicios_count
         FROM clientes c LEFT JOIN zonas z ON z.id=c.zona_id 
@@ -192,7 +511,7 @@ app.get('/modulo', requireAuth, (req, res) => {
             )) FROM facturas f JOIN servicios s ON s.id=f.servicio_id WHERE s.cliente_id=c.id AND f.estado='pendiente' AND f.monto > COALESCE(
               (SELECT SUM(p.monto) FROM pagos p WHERE p.factura_id=f.id),0
             )),0) as total_pending,
-            (SELECT COUNT(*) FROM servicios WHERE cliente_id=c.id) as svc_count
+            (SELECT COUNT(*) FROM servicios WHERE cliente_id=c.id AND estado != 'retirado') as svc_count
           FROM clientes c
           WHERE c.nombre LIKE ? OR c.apodo LIKE ? OR c.cedula LIKE ?
           ORDER BY c.nombre LIMIT 20
@@ -692,7 +1011,7 @@ app.get('/modulo', requireAuth, (req, res) => {
         if (q.length < 2) return res.json({ status: 'success', data: [] });
         const rows = db.prepare(`
           SELECT c.id, c.nombre as name, c.cedula, c.apodo as alias, c.telefono as phone,
-          (SELECT COUNT(*) FROM servicios WHERE cliente_id=c.id) as svc_count
+          (SELECT COUNT(*) FROM servicios WHERE cliente_id=c.id AND estado != 'retirado') as svc_count
           FROM clientes c
           WHERE c.nombre LIKE ? OR c.apodo LIKE ? OR c.cedula LIKE ?
           ORDER BY c.nombre LIMIT 20
@@ -1655,13 +1974,57 @@ app.get('/modulo', requireAuth, (req, res) => {
       break;
     }
     case 'Facturacion': {
+      // Procesar formularios POST (guardar/eliminar ciclos)
+      if (req.method === 'POST' && req.body) {
+        if (req.body.accion === 'guardar_ciclo') {
+          const { id_ciclo, billing_type, invoice_day, suspend_day, tolerance_months, suspend_weekends,
+            notify_1, notify_2, notify_3, reconnection_option, reconnection_amount,
+            invoice_suspended, prorate_first_invoice, grace_days_option, grace_days,
+            notify_on_suspend, notify_on_payment } = req.body;
+          const reconnActive = reconnection_option === 'si' ? 1 : 0;
+          const invSusp = invoice_suspended === 'si' ? 1 : 0;
+          const prorate = prorate_first_invoice === 'si' ? 1 : 0;
+          const graceVal = grace_days_option === 'si' ? (parseInt(grace_days) || 0) : 0;
+          const suspWeekends = suspend_weekends === 'si' ? 1 : 0;
+          const notifSusp = notify_on_suspend === 'si' ? 1 : 0;
+          const notifPay = notify_on_payment === 'si' ? 1 : 0;
+          const name = (req.body.name && req.body.name.trim()) ? req.body.name.trim() : (billing_type === 'postpago' ? 'POST' : 'PRE') + ' | Gen: Dia ' + invoice_day + ' | Corte: Dia ' + suspend_day;
+
+          if (id_ciclo) {
+            db.prepare(`UPDATE billing_cycles SET billing_type=?, invoice_day=?, suspend_day=?, tolerance_months=?,
+              suspend_weekends=?, notify_day_1=?, notify_day_2=?, notify_day_3=?, reconnection_fee_active=?,
+              reconnection_amount=?, invoice_suspended=?, prorate_first_invoice=?, grace_days=?, notify_on_suspend=?,
+              notify_on_payment=?, name=? WHERE id=?`).run(
+              billing_type, invoice_day, suspend_day, tolerance_months, suspWeekends,
+              notify_1||0, notify_2||0, notify_3||0, reconnActive, reconnection_amount||0,
+              invSusp, prorate, graceVal, notifSusp, notifPay, name, id_ciclo
+            );
+          } else {
+            db.prepare(`INSERT INTO billing_cycles (billing_type, invoice_day, suspend_day, tolerance_months,
+              suspend_weekends, notify_day_1, notify_day_2, notify_day_3, reconnection_fee_active,
+              reconnection_amount, invoice_suspended, prorate_first_invoice, grace_days, notify_on_suspend,
+              notify_on_payment, name) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`).run(
+              billing_type, invoice_day, suspend_day, tolerance_months, suspWeekends,
+              notify_1||0, notify_2||0, notify_3||0, reconnActive, reconnection_amount||0,
+              invSusp, prorate, graceVal, notifSusp, notifPay, name
+            );
+          }
+          return res.redirect('/modulo?pagina=Facturacion');
+        }
+        if (req.body.accion === 'eliminar') {
+          const id = parseInt(req.body.id_ciclo) || 0;
+          if (id) db.prepare('DELETE FROM billing_cycles WHERE id=?').run(id);
+          return res.redirect('/modulo?pagina=Facturacion');
+        }
+      }
       data.ciclos = db.prepare('SELECT bc.*, 0 as total_clientes FROM billing_cycles bc ORDER BY bc.id').all();
       break;
     }
     case 'Plantillas': {
-      // AJAX: get_logo must be accessible via GET
-      var plantAjaxGet = req.query.ajax;
-      if (plantAjaxGet === 'get_logo') {
+      var plantAjax = req.query.ajax;
+      
+      // AJAX: get_logo
+      if (plantAjax === 'get_logo') {
         var ld = db.prepare("SELECT value FROM configuracion WHERE key='logo_data'").get();
         var lw = db.prepare("SELECT value FROM configuracion WHERE key='logo_width'").get();
         var lh = db.prepare("SELECT value FROM configuracion WHERE key='logo_height'").get();
@@ -1671,13 +2034,67 @@ app.get('/modulo', requireAuth, (req, res) => {
         return res.json({ status: 'success', logo: null });
       }
       
-      // Load templates data
+      // AJAX: save_template
+      if (plantAjax === 'save_template') {
+        const { template_key, content } = req.body;
+        if (!template_key) return res.json({ status: 'error', msg: 'template_key requerido' });
+        var existing = db.prepare('SELECT id FROM templates WHERE template_key=?').get(template_key);
+        if (existing) {
+          db.prepare("UPDATE templates SET content=?, updated_at=datetime('now') WHERE template_key=?").run(content || '', template_key);
+        } else {
+          db.prepare("INSERT INTO templates (template_key, template_name, content, updated_at) VALUES (?,?,?,datetime('now'))").run(template_key, template_key, content || '');
+        }
+        return res.json({ status: 'success', msg: 'Plantilla guardada' });
+      }
+      
+      // AJAX: reset_template
+      if (plantAjax === 'reset_template') {
+        const key = req.body.template_key;
+        var t = db.prepare('SELECT * FROM templates WHERE template_key=?').get(key);
+        if (t && t.content) {
+          return res.json({ status: 'success', content: t.content });
+        }
+        return res.json({ status: 'error', msg: 'No hay contenido original' });
+      }
+      
+      // AJAX: upload_logo
+      if (plantAjax === 'upload_logo') {
+        if (req.body.logo) {
+          db.prepare("INSERT OR REPLACE INTO configuracion (key, value) VALUES ('logo_data', ?)").run(req.body.logo);
+          return res.json({ status: 'success', logo: req.body.logo, width: parseInt(req.body.logo_width) || 120, height: parseInt(req.body.logo_height) || 60 });
+        }
+        return res.json({ status: 'error', msg: 'No se recibió logo' });
+      }
+      
+      // AJAX: save_logo_size
+      if (plantAjax === 'save_logo_size') {
+        const w = req.body.logo_width || '120';
+        const h = req.body.logo_height || '60';
+        db.prepare("INSERT OR REPLACE INTO configuracion (key, value) VALUES ('logo_width', ?)").run(String(w));
+        db.prepare("INSERT OR REPLACE INTO configuracion (key, value) VALUES ('logo_height', ?)").run(String(h));
+        return res.json({ status: 'success', msg: 'Tamaño guardado' });
+      }
+      
+      // AJAX: delete_logo
+      if (plantAjax === 'delete_logo') {
+        db.prepare("DELETE FROM configuracion WHERE key='logo_data'").run();
+        db.prepare("DELETE FROM configuracion WHERE key='logo_width'").run();
+        db.prepare("DELETE FROM configuracion WHERE key='logo_height'").run();
+        return res.json({ status: 'success', msg: 'Logo eliminado' });
+      }
+      
+      // Load templates data for the page render
       const templatesRows = db.prepare('SELECT * FROM templates').all();
       var templatesData = {};
       var templateKeysMap = {};
       templatesRows.forEach(function(t) {
         templatesData[t.template_key] = { id: t.id, template_key: t.template_key, template_name: t.template_name, content: t.content || '', updated_at: t.updated_at };
       });
+      // Load template keys map from config
+      try {
+        var keysMap = db.prepare("SELECT value FROM configuracion WHERE key='template_keys_map'").get();
+        if (keysMap) templateKeysMap = JSON.parse(keysMap.value);
+      } catch(e) {}
       data.templatesData = JSON.stringify(templatesData);
       data.templateKeysMap = JSON.stringify(templateKeysMap);
       break;
@@ -1907,10 +2324,234 @@ app.get('/modulo', requireAuth, (req, res) => {
       data.onuTypes = db.prepare("SELECT key, value FROM configuracion WHERE key LIKE 'onu_type_%' ORDER BY key").all();
       break;
     }
+    case 'Cron': {
+      const cronAjax = req.query.ajax;
+      
+      if (cronAjax === 'save_task') {
+        const task = req.body.task_name;
+        const enabled = req.body.enabled ? 1 : 0;
+        const hour = parseInt(req.body.hour) || 0;
+        const minute = parseInt(req.body.minute) || 0;
+        db.prepare('UPDATE cron_tasks SET enabled=?, hour=?, minute=? WHERE task_name=?').run(enabled, hour, minute, task);
+        return res.json({ status: 'success' });
+      }
+      
+      if (cronAjax === 'run_task') {
+        const task = req.body.task || req.query.task;
+        if (!task) return res.json({ status: 'error', msg: 'Task requerida' });
+        
+        if (task === 'recordatorios') {
+          enviarRecordatoriosWA(req, res);
+          return;
+        }
+        
+        if (task === 'suspension') {
+          enviarNotifSuspensionWA(req, res);
+          return;
+        }
+        
+        if (task === 'generar_facturas') {
+          var output = ejecutarGenerarFacturas();
+          db.prepare("UPDATE cron_tasks SET last_run=datetime('now','localtime'), last_status=?, last_output=? WHERE task_name=?").run('ok', output, 'generar_facturas');
+          return res.json({ status: 'success', data: { output: output } });
+        }
+        
+        return res.json({ status: 'success', msg: 'Tarea ejecutada' });
+      }
+      
+      if (cronAjax === 'get_log') {
+        const task = req.query.task || '';
+        const row = db.prepare('SELECT * FROM cron_tasks WHERE task_name=?').get(task);
+        if (row) {
+          return res.json({ status: 'success', data: { output: row.last_output || '', status: row.last_status || 'never', lastRun: row.last_run || 'Nunca' } });
+        }
+        return res.json({ status: 'error', msg: 'No encontrada' });
+      }
+      
+      data.tasks = db.prepare('SELECT * FROM cron_tasks ORDER BY id').all();
+      break;
+    }
   }
   
   renderPage(req, res, pagina, data);
 });
+
+// ===== CRON TASKS =====
+
+// Función: enviar recordatorios de pago via WhatsApp (15s entre mensajes)
+function enviarRecordatoriosWA(req, res) {
+  var openwa = require('./openwa-service');
+  
+  // Obtener facturas pendientes con datos de clientes
+  var pendientes = db.prepare(`
+    SELECT f.id as factura_id, c.id as cliente_id, c.nombre as cliente_nombre, c.telefono,
+      p.nombre as plan_name, f.monto, f.fecha_vencimiento,
+      COALESCE((SELECT SUM(pg.monto) FROM pagos pg WHERE pg.factura_id=f.id),0) as pagado
+    FROM facturas f
+    JOIN servicios s ON s.id=f.servicio_id
+    JOIN clientes c ON c.id=s.cliente_id
+    LEFT JOIN planes p ON p.id=s.plan_id
+    WHERE f.estado='pendiente' AND f.monto > COALESCE((SELECT SUM(pg.monto) FROM pagos pg WHERE pg.factura_id=f.id),0)
+    GROUP BY f.id
+    LIMIT 50
+  `).all();
+  
+  if (pendientes.length === 0) {
+    db.prepare("UPDATE cron_tasks SET last_run=datetime('now','localtime'), last_status='ok', last_output=? WHERE task_name='recordatorios'").run('No hay facturas pendientes');
+    return res.json({ status: 'success', data: { output: 'No hay facturas pendientes' } });
+  }
+  
+  // Obtener plantilla
+  var tpl = db.prepare("SELECT content FROM templates WHERE template_key='recordatorio_sms'").get();
+  var template = tpl ? tpl.content : 'Hola {client_name}, tienes un pago pendiente de {invoice_remaining}. Paga al {company_phone}';
+  
+  var output = 'Iniciando envio de ' + pendientes.length + ' recordatorios...\n';
+  var success = 0, errors = 0;
+  
+  // Enviar mensajes secuencialmente con delay de 15s
+  function enviarSiguiente(i) {
+    if (i >= pendientes.length) {
+      var finalOutput = output + '\nEnviados: ' + success + ', Errores: ' + errors;
+      db.prepare("UPDATE cron_tasks SET last_run=datetime('now','localtime'), last_status=?, last_output=? WHERE task_name='recordatorios'").run(errors === 0 ? 'ok' : 'error', finalOutput);
+      return res.json({ status: 'success', data: { output: finalOutput } });
+    }
+    
+    var p = pendientes[i];
+    var remaining = parseFloat(p.monto) - parseFloat(p.pagado || 0);
+    
+    if (remaining <= 0 || !p.telefono) {
+      output += '[' + (i+1) + '/' + pendientes.length + '] ' + p.cliente_nombre + ': sin telefono o sin deuda\n';
+      setTimeout(function() { enviarSiguiente(i + 1); }, 100);
+      return;
+    }
+    
+    var msg = template
+      .replace(/{client_name}/g, p.cliente_nombre || '')
+      .replace(/{plan_name}/g, p.plan_name || '')
+      .replace(/{invoice_id}/g, String(p.factura_id))
+      .replace(/{invoice_remaining}/g, '$' + remaining.toFixed(2))
+      .replace(/{invoice_due_date}/g, p.fecha_vencimiento || '')
+      .replace(/{invoice_total}/g, '$' + parseFloat(p.monto).toFixed(2))
+      .replace(/{company_phone}/g, '8092470033')
+      .replace(/{company_name}/g, 'Joel Wifi Dominicana');
+    
+    openwa.sendMessage(p.telefono, msg).then(function(result) {
+      if (result.success) {
+        success++;
+        output += '[' + (i+1) + '/' + pendientes.length + '] ' + p.cliente_nombre + ': OK\n';
+      } else {
+        errors++;
+        output += '[' + (i+1) + '/' + pendientes.length + '] ' + p.cliente_nombre + ': ERROR - ' + (result.msg || '') + '\n';
+      }
+      setTimeout(function() { enviarSiguiente(i + 1); }, 15000); // 15s delay
+    }).catch(function(e) {
+      errors++;
+      output += '[' + (i+1) + '/' + pendientes.length + '] ' + p.cliente_nombre + ': ERROR - ' + e.message + '\n';
+      setTimeout(function() { enviarSiguiente(i + 1); }, 15000);
+    });
+  }
+  
+  enviarSiguiente(0);
+}
+
+// Función: enviar notificaciones de suspensión via WhatsApp
+function enviarNotifSuspensionWA(req, res) {
+  var openwa = require('./openwa-service');
+  
+  // Obtener config de empresa
+  var configRows = db.prepare("SELECT key, value FROM configuracion WHERE key IN ('empresa_nombre','empresa_telefono')").all();
+  var config = { empresa_nombre: '', empresa_telefono: '' };
+  configRows.forEach(function(r) { config[r.key] = r.value || ''; });
+  
+  // Clientes con facturas vencidas que tienen servicios activos
+  var pendientes = db.prepare(`
+    SELECT DISTINCT c.id as cliente_id, c.nombre as cliente_nombre, c.telefono
+    FROM facturas f
+    JOIN servicios s ON s.id=f.servicio_id
+    JOIN clientes c ON c.id=s.cliente_id
+    WHERE f.estado='pendiente' AND s.estado='activo'
+      AND julianday('now') > julianday(f.fecha_vencimiento) + 5
+      AND f.monto > COALESCE((SELECT SUM(pg.monto) FROM pagos pg WHERE pg.factura_id=f.id),0)
+    GROUP BY c.id
+    LIMIT 30
+  `).all();
+  
+  if (pendientes.length === 0) {
+    db.prepare("UPDATE cron_tasks SET last_run=datetime('now','localtime'), last_status='ok', last_output=? WHERE task_name='suspension'").run('No hay clientes para suspender');
+    return res.json({ status: 'success', data: { output: 'No hay clientes para suspender' } });
+  }
+  
+  var tpl = db.prepare("SELECT content FROM templates WHERE template_key='notif_suspension'").get();
+  var templateBase = tpl ? tpl.content : 'Hola {client_name}, su servicio ha sido suspendido.';
+  
+  var output = 'Iniciando suspension de ' + pendientes.length + ' clientes...\n';
+  var success = 0, errors = 0;
+  
+  function procesarSiguiente(i) {
+    if (i >= pendientes.length) {
+      var finalOutput = output + '\nSuspendidos: ' + success + ', Errores: ' + errors;
+      db.prepare("UPDATE cron_tasks SET last_run=datetime('now','localtime'), last_status=?, last_output=? WHERE task_name='suspension'").run(errors === 0 ? 'ok' : 'error', finalOutput);
+      return res.json({ status: 'success', data: { output: finalOutput } });
+    }
+    
+    var p = pendientes[i];
+    
+    if (!p.telefono) {
+      output += '[' + (i+1) + '/' + pendientes.length + '] ' + p.cliente_nombre + ': sin teléfono\n';
+      setTimeout(function() { procesarSiguiente(i + 1); }, 100);
+      return;
+    }
+    
+    try {
+      // 1. Suspender servicios del cliente
+      db.prepare("UPDATE servicios SET estado='suspendido' WHERE cliente_id=? AND estado='activo'").run(p.cliente_id);
+      
+      // 2. Obtener info de los servicios suspendidos
+      var svcs = db.prepare('SELECT s.id, s.direccion, p.nombre as plan_nombre FROM servicios s LEFT JOIN planes p ON p.id=s.plan_id WHERE s.cliente_id=? AND s.estado=?').all(p.cliente_id, 'suspendido');
+      
+      // 3. Obtener deuda total
+      var deudaRow = db.prepare("SELECT COALESCE(SUM(f.monto - COALESCE((SELECT SUM(pg.monto) FROM pagos pg WHERE pg.factura_id=f.id),0)),0) as total FROM facturas f WHERE f.servicio_id IN (SELECT s2.id FROM servicios s2 WHERE s2.cliente_id=?) AND f.estado='pendiente'").get(p.cliente_id);
+      var deudaTotal = deudaRow ? deudaRow.total : 0;
+      
+      // 4. Enviar notificación
+      svcs.forEach(function(svc) {
+        var msg = templateBase
+          .replace(/{client_name}/g, p.cliente_nombre || '')
+          .replace(/{service_address}/g, svc.direccion || '')
+          .replace(/{plan_name}/g, svc.plan_nombre || '')
+          .replace(/{invoice_remaining}/g, '$' + deudaTotal.toFixed(2))
+          .replace(/{company_phone}/g, config.empresa_telefono)
+          .replace(/{company_name}/g, config.empresa_nombre)
+          .replace(/{current_date}/g, new Date().toLocaleDateString('es-DO'));
+        
+        openwa.encolarMensaje(p.cliente_id, svc.id, p.telefono, msg, 'suspension');
+      });
+      
+      success++;
+      output += '[' + (i+1) + '/' + pendientes.length + '] ' + p.cliente_nombre + ': suspendido y notificado\n';
+    } catch(e) {
+      errors++;
+      output += '[' + (i+1) + '/' + pendientes.length + '] ' + p.cliente_nombre + ': ERROR - ' + e.message + '\n';
+    }
+    
+    setTimeout(function() { procesarSiguiente(i + 1); }, 2000);
+  }
+  
+  procesarSiguiente(0);
+}
+
+function ejecutarGenerarFacturas() {
+  var lines = [];
+  lines.push('============================================================');
+  lines.push('[' + new Date().toLocaleString() + '] CRON GENERAR FACTURAS - START');
+  lines.push('============================================================');
+  lines.push('Ejecutando generacion...');
+  lines.push('No implementado - requiere logica de ciclos');
+  lines.push('============================================================');
+  lines.push('[' + new Date().toLocaleString() + '] CRON GENERAR FACTURAS - END');
+  lines.push('============================================================');
+  return lines.join('\n');
+}
 
 // ==================== PROMESA DE PAGO ====================
 app.get('/api/promesa/list', requireAuth, (req, res) => {
@@ -2234,63 +2875,6 @@ app.post('/modulo', (req, res, next) => {
     return res.redirect('/modulo?pagina=Facturacion');
   }
   
-  // Plantillas AJAX handlers
-  var plantAjax = req.query.ajax;
-  if (plantAjax === 'save_template') {
-    if (!req.session.user) return res.json({ status: 'error', msg: 'No autorizado' });
-    const { template_key, content } = req.body;
-    if (!template_key) return res.json({ status: 'error', msg: 'template_key requerido' });
-    var existing = db.prepare('SELECT id FROM templates WHERE template_key=?').get(template_key);
-    if (existing) {
-      db.prepare("UPDATE templates SET content=?, updated_at=datetime('now') WHERE template_key=?").run(content || '', template_key);
-    } else {
-      db.prepare("INSERT INTO templates (template_key, template_name, content, updated_at) VALUES (?,?,?,datetime('now'))").run(template_key, template_key, content || '');
-    }
-    return res.json({ status: 'success', msg: 'Plantilla guardada' });
-  }
-  if (plantAjax === 'reset_template') {
-    if (!req.session.user) return res.json({ status: 'error', msg: 'No autorizado' });
-    const key = req.body.template_key;
-    var t = db.prepare('SELECT * FROM templates WHERE template_key=?').get(key);
-    if (t && t.content) {
-      return res.json({ status: 'success', content: t.content });
-    }
-    return res.json({ status: 'error', msg: 'No hay contenido original' });
-  }
-  if (plantAjax === 'upload_logo') {
-    if (!req.session.user) return res.json({ status: 'error', msg: 'No autorizado' });
-    if (req.body.logo) {
-      db.prepare("INSERT OR REPLACE INTO configuracion (key, value) VALUES ('logo_data', ?)").run(req.body.logo);
-      return res.json({ status: 'success', logo: req.body.logo, width: parseInt(req.body.logo_width) || 120, height: parseInt(req.body.logo_height) || 60 });
-    }
-    return res.json({ status: 'error', msg: 'No se recibió logo' });
-  }
-  if (plantAjax === 'save_logo_size') {
-    if (!req.session.user) return res.json({ status: 'error', msg: 'No autorizado' });
-    const w = req.body.logo_width || '120';
-    const h = req.body.logo_height || '60';
-    db.prepare("INSERT OR REPLACE INTO configuracion (key, value) VALUES ('logo_width', ?)").run(String(w));
-    db.prepare("INSERT OR REPLACE INTO configuracion (key, value) VALUES ('logo_height', ?)").run(String(h));
-    return res.json({ status: 'success', msg: 'Tamaño guardado' });
-  }
-  if (plantAjax === 'delete_logo') {
-    if (!req.session.user) return res.json({ status: 'error', msg: 'No autorizado' });
-    db.prepare("DELETE FROM configuracion WHERE key='logo_data'").run();
-    db.prepare("DELETE FROM configuracion WHERE key='logo_width'").run();
-    db.prepare("DELETE FROM configuracion WHERE key='logo_height'").run();
-    return res.json({ status: 'success', msg: 'Logo eliminado' });
-  }
-  if (plantAjax === 'get_logo') {
-    if (!req.session.user) return res.json({ status: 'error', msg: 'No autorizado' });
-    var ld = db.prepare("SELECT value FROM configuracion WHERE key='logo_data'").get();
-    var lw = db.prepare("SELECT value FROM configuracion WHERE key='logo_width'").get();
-    var lh = db.prepare("SELECT value FROM configuracion WHERE key='logo_height'").get();
-    if (ld) {
-      return res.json({ status: 'success', logo: ld.value, width: parseInt(lw ? lw.value : 120), height: parseInt(lh ? lh.value : 60) });
-    }
-    return res.json({ status: 'success', logo: null });
-  }
-
   // ===== VENTAS: ejecutar_venta =====
   if (req.query.pagina === 'Ventas' && req.query.ajax === 'ejecutar_venta') {
     const codigo = (req.body.codigo || '').trim().toUpperCase();
@@ -2353,6 +2937,34 @@ app.post('/modulo', (req, res, next) => {
     }
   }
 
+  // ========== CRON POST HANDLERS ==========
+  if (req.query.pagina === 'Cron' && req.query.ajax) {
+    const cronAjax = req.query.ajax;
+    if (cronAjax === 'run_task') {
+      var task = req.body.task || req.query.task;
+      if (!task) return res.json({ status: 'error', msg: 'Task requerida' });
+      if (task === 'recordatorios') {
+        enviarRecordatoriosWA(req, res);
+        return;
+      }
+      if (task === 'suspension') {
+        enviarNotifSuspensionWA(req, res);
+        return;
+      }
+      db.prepare("UPDATE cron_tasks SET last_run=datetime('now','localtime'), last_status='ok' WHERE task_name=?").run(task);
+      return res.json({ status: 'success', msg: 'Tarea ejecutada' });
+    }
+    if (cronAjax === 'save_task') {
+      var ct = req.body.task_name;
+      var enabled = req.body.enabled ? 1 : 0;
+      var hour = parseInt(req.body.hour) || 0;
+      var minute = parseInt(req.body.minute) || 0;
+      db.prepare('UPDATE cron_tasks SET enabled=?, hour=?, minute=? WHERE task_name=?').run(enabled, hour, minute, ct);
+      return res.json({ status: 'success' });
+    }
+    return res.json({ status: 'error', msg: 'Acción no reconocida' });
+  }
+
   next();
 });
 
@@ -2374,6 +2986,88 @@ app.post('/api/theme/save', requireAuth, (req, res) => {
   res.json({ success: true, msg: 'Tema guardado' });
 });
 
+
+// ==================== OpenWa API ====================
+const openwa = require('./openwa-service');
+
+// GET /api/template/get - Obtener contenido de una plantilla
+app.get('/api/template/get', requireAuth, (req, res) => {
+  var key = (req.query.key || '').trim();
+  if (!key) return res.json({ status: 'error', msg: 'Key requerida' });
+  var t = db.prepare('SELECT content FROM templates WHERE template_key=?').get(key);
+  if (t) return res.json({ status: 'success', content: t.content });
+  res.json({ status: 'error', msg: 'Plantilla no encontrada' });
+});
+
+// POST /api/openwa/test - Enviar mensaje de prueba
+app.post('/api/openwa/test', requireAuth, async (req, res) => {
+  var phone = req.body.phone || req.body.telefono || '';
+  var message = req.body.message || req.body.mensaje || 'Hola, mensaje de prueba desde ISP Total';
+  try {
+    var result = await openwa.sendMessage(phone, message);
+    res.json(result);
+  } catch(e) {
+    res.json({ success: false, msg: e.message });
+  }
+});
+
+// GET /api/openwa/status - Estado de OpenWa
+app.get('/api/openwa/status', requireAuth, (req, res) => {
+  var status = openwa.getStatus();
+  res.json({ running: status.running, state: status.state, qr: status.qr, config: openwa.getConfig() });
+});
+
+// POST /api/openwa/start - Iniciar OpenWa
+app.post('/api/openwa/start', requireAuth, async (req, res) => {
+  var status = openwa.getStatus();
+  if (status.running) {
+    // Ya está corriendo, devolver estado actual como éxito
+    return res.json({ success: true, msg: 'OpenWa ya está activo', state: status.state, qr: status.qr });
+  }
+  var result = await openwa.start();
+  res.json(result);
+});
+
+// POST /api/openwa/stop - Detener OpenWa
+app.post('/api/openwa/stop', requireAuth, async (req, res) => {
+  var result = await openwa.stop();
+  res.json(result);
+});
+
+// POST /api/openwa/config - Guardar config de OpenWa
+app.post('/api/openwa/config', requireAuth, (req, res) => {
+  var fields = ['openwa_enabled','openwa_port','openwa_api_key','openwa_session_id','openwa_webhook'];
+  fields.forEach(function(k) {
+    if (req.body[k] !== undefined) {
+      var val = req.body[k];
+      if (k === 'openwa_enabled') {
+        val = (val === 'Si' || val === 'si' || val === 'true' || val === '1') ? '1' : '0';
+      }
+      openwa.saveConfig(k, val);
+    }
+  });
+  res.json({ status: 'success', msg: 'Configuración de OpenWa guardada' });
+});
+
+// GET /api/config/get - Obtener valores de config (soporta ?keys=key1,key2 o devuelve todo)
+app.get('/api/config/get', requireAuth, (req, res) => {
+  var keys = (req.query.keys || '').split(',').filter(Boolean);
+  if (keys.length > 0) {
+    // Devolver solo las keys solicitadas (usado por Clientes.ejs)
+    var placeholders = keys.map(function() { return '?'; }).join(',');
+    var stmt = db.prepare('SELECT key, value FROM configuracion WHERE key IN (' + placeholders + ')');
+    var rows = stmt.all.apply(stmt, keys);
+    var data = {};
+    rows.forEach(function(r) { data[r.key] = r.value; });
+    return res.json({ status: 'success', data: data });
+  }
+  // Devolver toda la config (usado por Configuracion.ejs)
+  const configs = db.prepare("SELECT key, value FROM configuracion").all();
+  const obj = {};
+  configs.forEach(c => obj[c.key] = c.value);
+  res.json(obj);
+});
+
 app.get('/api/theme/get', requireAuth, (req, res) => {
   const row = db.prepare("SELECT value FROM configuracion WHERE key='sidebar_theme'").get();
   res.json({ theme: row ? row.value : 'dark' });
@@ -2387,13 +3081,6 @@ app.post("/api/config/save", requireAuth, (req, res) => {
     }
   }
   res.json({ success: true });
-});
-
-app.get("/api/config/get", requireAuth, (req, res) => {
-  const configs = db.prepare("SELECT key, value FROM configuracion").all();
-  const obj = {};
-  configs.forEach(c => obj[c.key] = c.value);
-  res.json(obj);
 });
 
 // ======== API ROUTES ========
@@ -2604,8 +3291,26 @@ app.get('/api/ip-pools/:pool_id/disponibles', requireAuth, (req, res) => {
 
 // POST /api/servicios/crear - Create new service (simple version)
 app.post('/api/servicios/crear', requireAuth, async (req, res) => {
-  const { cliente_id, plan_id, zona_id, auth_type, ip, pool, router_ip, router_port, router_user, router_pass } = req.body;
+  const { cliente_id, plan_id, zona_id, auth_type, ip, pool, router_ip, router_port, router_user, router_pass, wifi_ssid, wifi_pass, direccion } = req.body;
   if (!cliente_id) return res.json({ success: false, error: 'Cliente requerido' });
+  
+  // Generar PPPoE user a partir del nombre del cliente
+  var pppoeUser = req.body.pppoe_user || '';
+  var pppoePass = '1320'; // Contraseña fija
+  
+  if (!pppoeUser && auth_type === 'pppoe') {
+    try {
+      var cliente = db.prepare('SELECT nombre FROM clientes WHERE id=?').get(cliente_id);
+      if (cliente && cliente.nombre) {
+        var parts = cliente.nombre.trim().split(/\s+/);
+        // Primera letra mayuscula de cada parte, concatenar primeras dos
+        var userParts = parts.map(function(p) { return p.charAt(0).toUpperCase() + p.slice(1).toLowerCase(); });
+        pppoeUser = userParts.join('');
+        // Remover caracteres especiales
+        pppoeUser = pppoeUser.replace(/[^a-zA-Z0-9]/g, '');
+      }
+    } catch(e) {}
+  }
   
   // Validate plan_id - check if it's a valid plan in DB
   var planValido = parseInt(plan_id) > 0 ? parseInt(plan_id) : null;
@@ -2616,7 +3321,7 @@ app.post('/api/servicios/crear', requireAuth, async (req, res) => {
   
   try {
     // Create service
-    const r = db.prepare("INSERT INTO servicios (cliente_id, plan_id, zona_id, ip, auth_type, pppoe_user, pppoe_pass, estado, fecha_activacion, ciclo_id) VALUES (?,?,?,?,?,?,?,'activo',date('now'),?)").run(cliente_id, planValido, zona_id || null, ip || null, auth_type || 'dhcp', req.body.pppoe_user || '', req.body.pppoe_pass || '', req.body.ciclo_id || null);
+    const r = db.prepare("INSERT INTO servicios (cliente_id, plan_id, zona_id, ip, auth_type, pppoe_user, pppoe_pass, wifi_ssid, wifi_pass, direccion, estado, fecha_activacion, ciclo_id) VALUES (?,?,?,?,?,?,?,?,?,?,'activo',date('now'),?)").run(cliente_id, planValido, zona_id || null, ip || null, auth_type || 'dhcp', pppoeUser, pppoePass, wifi_ssid || '', wifi_pass || '', direccion || '', req.body.ciclo_id || null);
     const servicioId = r.lastInsertRowid;
     
     // Assign IP if pool was selected
@@ -2626,13 +3331,20 @@ app.post('/api/servicios/crear', requireAuth, async (req, res) => {
       } catch(e) { /* IP already assigned, ignore */ }
     }
     
+    // Enviar mensaje de bienvenida por WhatsApp (ANTES del PPPoE, para que siempre se envie)
+    try {
+      sendWelcomeMessage(servicioId, cliente_id, planValido, req.body.ciclo_id);
+    } catch(e) {
+      console.log('[Bienvenida] Error al enviar mensaje:', e.message);
+    }
+    
     // If PPPoE, create secret on MikroTik
     if (auth_type === 'pppoe' && router_ip && router_user && router_pass) {
       try {
         const MikroTikAPI = require('./mikrotik-api');
         var secretResult = await MikroTikAPI.addPPPSecret(router_ip, router_port || 8728, router_user, router_pass, {
-          name: req.body.pppoe_user || ('CLI' + cliente_id),
-          password: req.body.pppoe_pass || 'changeme',
+          name: pppoeUser || ('CLI' + cliente_id),
+          password: pppoePass,
           profile: String(plan_id || 'default'),
           service: 'pppoe',
           'remote-address': ip || '',
@@ -2651,6 +3363,200 @@ app.post('/api/servicios/crear', requireAuth, async (req, res) => {
     res.json({ success: false, error: e.message });
   }
 });
+
+// Función: enviar mensajes de bienvenida al crear servicio
+// Envía la plantilla de métodos de pago y la de detalles del servicio
+// Si OpenWa no está conectado, encola los mensajes para enviarlos después
+function sendWelcomeMessage(servicioId, clienteId, planId, cicloId) {
+  try {
+    var openwa = require('./openwa-service');
+    var cliente = db.prepare('SELECT nombre, telefono FROM clientes WHERE id=?').get(clienteId);
+    if (!cliente || !cliente.telefono) {
+      console.log('[Bienvenida] Cliente #' + clienteId + ' sin teléfono. No se envió mensaje.');
+      return;
+    }
+    
+    // Datos del servicio específico
+    var servicio = db.prepare('SELECT s.ip, s.direccion, s.ciclo_id, p.nombre as plan_nombre, p.precio as plan_precio, p.velocidad as plan_velocidad FROM servicios s LEFT JOIN planes p ON p.id=s.plan_id WHERE s.id=?').get(servicioId);
+    
+    // Datos del plan
+    var plan = null;
+    if (planId) plan = db.prepare('SELECT nombre, precio, velocidad FROM planes WHERE id=?').get(planId);
+    if (!plan && servicio) plan = { nombre: servicio.plan_nombre, precio: servicio.plan_precio, velocidad: servicio.plan_velocidad };
+    
+    var planName = plan ? plan.nombre : '';
+    var planPrice = plan ? parseFloat(plan.precio).toFixed(2) : '';
+    var planSpeed = plan ? (plan.velocidad || '') : '';
+    
+    // Ciclo de facturación
+    var ciclo = null;
+    var cicloIdActual = cicloId || (servicio ? servicio.ciclo_id : null);
+    if (cicloIdActual) ciclo = db.prepare('SELECT * FROM billing_cycles WHERE id=?').get(cicloIdActual);
+    
+    // Configuración de empresa
+    var configRows = db.prepare("SELECT key, value FROM configuracion WHERE key IN ('empresa_nombre','empresa_telefono','empresa_correo','moneda','oficina_direccion','oficina_horario','no_cobro_msg','bancos_data')").all();
+    var config = { empresa_nombre: 'ISP Total', empresa_telefono: '', empresa_correo: '', moneda: 'RD$', oficina_direccion: '', oficina_horario: '', no_cobro_msg: 'No realizamos cobros los días domingos.', bancos_data: '[]' };
+    configRows.forEach(function(r) { config[r.key] = r.value || ''; });
+    
+    // Generar listado de bancos
+    var bancosListado = '';
+    try {
+      var bancos = JSON.parse(config.bancos_data || '[]');
+      if (bancos.length > 0) {
+        var lines = [];
+        bancos.forEach(function(b) {
+          var nombre = b.nombre || '';
+          var titular = b.titular || '';
+          var numero = b.numero || '';
+          var tipo = b.tipo || '';
+          var cedula = b.cedula || '';
+          var line = '🏦 ' + nombre;
+          if (titular) line += '\n   Titular: ' + titular;
+          if (numero) line += '\n   Cuenta ' + tipo + ': ' + numero;
+          if (cedula) line += '\n   Cédula/RNC: ' + cedula;
+          lines.push(line);
+        });
+        bancosListado = lines.join('\n\n');
+      }
+    } catch(e) {}
+    
+    var paymentDay = ciclo ? (ciclo.invoice_day || '') : '';
+    var suspendDay = ciclo ? (ciclo.suspend_day || '') : '';
+    var graceDays = ciclo ? (ciclo.grace_days || '0') : '0';
+    
+    // ====== CÁLCULO DE PRORRATEO ======
+    var hoy = new Date();
+    var diaHoy = hoy.getDate();
+    var mesHoy = hoy.getMonth();
+    var anioHoy = hoy.getFullYear();
+    var planPriceNum = plan ? parseFloat(plan.precio) : 0;
+    var proximoPago = '';
+    var montoProrrateado = '';
+    var diasFacturados = 0;
+    var diasHastaCorte = '';
+    var primerPagoGratis = false;
+    
+    if (ciclo && planPriceNum > 0) {
+      var payDay = parseInt(ciclo.invoice_day) || 30;
+      var cutDay = parseInt(ciclo.suspend_day) || 15;
+      var graceD = parseInt(ciclo.grace_days) || 0;
+      var precioPorDia = planPriceNum / 30;
+      
+      // Calcular próxima fecha de pago
+      var nextPayDate = new Date(anioHoy, mesHoy, payDay);
+      if (diaHoy >= payDay) {
+        // Si ya pasó el día de pago este mes, es para el próximo
+        nextPayDate = new Date(anioHoy, mesHoy + 1, payDay);
+      }
+      
+      // Calcular días desde hoy hasta próximo pago
+      var diffMs = nextPayDate.getTime() - hoy.getTime();
+      var daysUntilPay = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+      
+      // Formatear fecha de próximo pago
+      var meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+      proximoPago = payDay + ' de ' + meses[nextPayDate.getMonth()];
+      
+      if (daysUntilPay <= graceD) {
+        // Primer período gratis (cae dentro de los días de gracia)
+        primerPagoGratis = true;
+        montoProrrateado = '$0.00';
+        diasFacturados = 0;
+      } else {
+        // Calcular monto prorrateado
+        diasFacturados = daysUntilPay;
+        var montoProrrateo = precioPorDia * diasFacturados;
+        montoProrrateado = config.moneda + montoProrrateo.toFixed(2);
+      }
+      
+      // Calcular días hasta corte (desde hoy hasta el día de corte después del pago)
+      var cutDate = new Date(anioHoy, mesHoy, cutDay);
+      if (diaHoy >= cutDay) {
+        cutDate = new Date(anioHoy, mesHoy + 1, cutDay);
+      } else if (diaHoy < payDay) {
+        // Si estamos antes del pago, el corte es del ciclo actual
+        cutDate = new Date(anioHoy, mesHoy, cutDay);
+        if (cutDay < payDay) {
+          // Si corte es antes del pago (ej: pago día 30, corte día 11 del mes siguiente)
+          cutDate = new Date(anioHoy, mesHoy + 1, cutDay);
+        }
+      }
+      var diffCutMs = cutDate.getTime() - hoy.getTime();
+      diasHastaCorte = Math.ceil(diffCutMs / (1000 * 60 * 60 * 24)) + '';
+    }
+    
+    // Función para reemplazar variables
+    function fillTemplate(content) {
+      if (!content) return '';
+      return content
+        .replace(/{client_name}/g, cliente.nombre || '')
+        .replace(/{plan_name}/g, planName)
+        .replace(/{plan_price}/g, planPrice || '')
+        .replace(/{speed}/g, planSpeed)
+        .replace(/{plan_download}/g, planSpeed)
+        .replace(/{plan_upload}/g, '')
+        .replace(/{company_name}/g, config.empresa_nombre || '')
+        .replace(/{company_phone}/g, config.empresa_telefono || '')
+        .replace(/{company_email}/g, config.empresa_correo || '')
+        .replace(/{current_date}/g, new Date().toLocaleDateString('es-DO'))
+        .replace(/{service_address}/g, servicio ? (servicio.direccion || '') : '')
+        .replace(/{payment_day}/g, paymentDay)
+        .replace(/{suspend_day}/g, suspendDay)
+        .replace(/{grace_days}/g, graceDays)
+        .replace(/{proximo_pago}/g, proximoPago)
+        .replace(/{monto_prorrateado}/g, montoProrrateado)
+        .replace(/{dias_facturados}/g, diasFacturados + '')
+        .replace(/{dias_hasta_corte}/g, diasHastaCorte)
+        .replace(/{primer_pago_gratis}/g, primerPagoGratis ? '✅ Este primer período no tiene costo, está dentro de los días de gracia.' : '')
+        .replace(/{promise_extra_days}/g, '3')
+        .replace(/{promesa_por_mes}/g, '1')
+        .replace(/{bancos_listado}/g, bancosListado)
+        .replace(/{oficina_direccion}/g, config.oficina_direccion || '')
+        .replace(/{oficina_horario}/g, config.oficina_horario || '')
+        .replace(/{no_cobro_msg}/g, config.no_cobro_msg || 'No realizamos cobros los días domingos.')
+        .replace(/{moneda}/g, config.moneda || 'RD$');
+    }
+    
+    // Generar mensaje de bienvenida (solo plantilla de métodos de pago)
+    var tpl1 = db.prepare("SELECT content FROM templates WHERE template_key='bienvenida_sms'").get();
+    var msg1 = fillTemplate(tpl1 ? tpl1.content : 'Hola {client_name}, bienvenido a {company_name}. Tu servicio de {plan_name} ha sido activado. 📞 {company_phone}');
+    
+    var mensajesEnviar = [];
+    if (msg1.trim()) mensajesEnviar.push({ texto: msg1, tipo: 'bienvenida_pago' });
+    
+    if (mensajesEnviar.length === 0) return;
+    
+    // Verificar si OpenWa está conectado
+    var status = openwa.getStatus();
+    var conectado = (status.state === 'connected');
+    
+    mensajesEnviar.forEach(function(m, idx) {
+      if (conectado) {
+        // Enviar inmediatamente
+        var delay = idx * 500;
+        setTimeout(function() {
+          console.log('[Bienvenida] Enviando ' + m.tipo + ' a ' + cliente.nombre + ' (' + cliente.telefono + ')...');
+          openwa.sendMessage(cliente.telefono, m.texto).then(function(r) {
+            console.log('[Bienvenida] ' + m.tipo + ': ' + (r.success ? 'OK' : 'FALLÓ: ' + (r.msg || '')));
+            if (!r.success) {
+              // Falló el envío, encolar para reintentar
+              openwa.encolarMensaje(clienteId, servicioId, cliente.telefono, m.texto, m.tipo);
+            }
+          }).catch(function(e) {
+            console.log('[Bienvenida] Error ' + m.tipo + ': ' + e.message);
+            openwa.encolarMensaje(clienteId, servicioId, cliente.telefono, m.texto, m.tipo);
+          });
+        }, delay);
+      } else {
+        // OpenWa desconectado: encolar para enviar cuando se conecte
+        console.log('[Bienvenida] OpenWa desconectado, encolando ' + m.tipo + ' para ' + cliente.nombre);
+        openwa.encolarMensaje(clienteId, servicioId, cliente.telefono, m.texto, m.tipo);
+      }
+    });
+  } catch(e) {
+    console.log('[Bienvenida] Error general: ' + e.message);
+  }
+}
 
 // POST /api/ip-pools/asignar - Mark IP as assigned
 app.post('/api/ip-pools/asignar', requireAuth, (req, res) => {
@@ -4823,6 +5729,115 @@ app.post('/api/servicios/editar', requireAuth, (req, res) => {
   }
 });
 
+// GET /api/clientes/:id/servicios - Obtener servicios de un cliente
+app.get('/api/clientes/:id/info', requireAuth, (req, res) => {
+  const clienteId = parseInt(req.params.id) || 0;
+  if (!clienteId) return res.json({ success: false, message: 'ID requerido' });
+  try {
+    var cliente = db.prepare('SELECT id, nombre, telefono, cedula, direccion FROM clientes WHERE id=?').get(clienteId);
+    if (!cliente) return res.json({ success: false, message: 'No encontrado' });
+    res.json({ success: true, data: cliente });
+  } catch(e) {
+    res.json({ success: false, message: e.message });
+  }
+});
+
+// GET /api/clientes/:id/servicios - Obtener servicios de un cliente
+app.get('/api/clientes/:id/servicios', requireAuth, (req, res) => {
+  const clienteId = parseInt(req.params.id) || 0;
+  if (!clienteId) return res.json({ success: false, message: 'ID requerido' });
+  try {
+    const servicios = db.prepare(`
+      SELECT s.id, s.estado, s.ip, s.direccion, s.pppoe_user,
+        p.nombre as plan_nombre, p.precio as plan_precio,
+        z.nombre as zona_nombre,
+        o.sn as onu_sn
+      FROM servicios s
+      LEFT JOIN planes p ON p.id=s.plan_id
+      LEFT JOIN zonas z ON z.id=s.zona_id
+      LEFT JOIN onu o ON o.servicio_id=s.id
+      WHERE s.cliente_id=?
+      ORDER BY s.id DESC
+    `).all(clienteId);
+    res.json({ success: true, data: servicios });
+  } catch(e) {
+    res.json({ success: false, message: e.message });
+  }
+});
+
+// POST /api/facturar/bulk - Generar facturas para múltiples clientes
+app.post('/api/facturar/bulk', requireAuth, (req, res) => {
+  var clientes = req.body.clientes || [];
+  if (!clientes.length) return res.json({ success: false, message: 'Lista de clientes requerida' });
+  try {
+    var creadas = 0;
+    var now = new Date();
+    var periodo = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+    var vencimiento = new Date(now);
+    vencimiento.setDate(vencimiento.getDate() + 15);
+    var vencStr = vencimiento.toISOString().split('T')[0];
+    
+    clientes.forEach(function(clienteId) {
+      var servicios = db.prepare("SELECT s.id, p.precio FROM servicios s LEFT JOIN planes p ON p.id=s.plan_id WHERE s.cliente_id=? AND s.estado='activo'").all(clienteId);
+      servicios.forEach(function(svc) {
+        var precio = parseFloat(svc.precio || svc.plan_price || 0);
+        if (precio > 0) {
+          var existing = db.prepare('SELECT id FROM facturas WHERE servicio_id=? AND periodo=?').get(svc.id, periodo);
+          if (!existing) {
+            db.prepare('INSERT INTO facturas (servicio_id, periodo, monto, estado, fecha_emision, fecha_vencimiento) VALUES (?,?,?,\'pendiente\',date(\'now\'),?)').run(svc.id, periodo, precio, vencStr);
+            creadas++;
+          }
+        }
+      });
+    });
+    
+    var msg = creadas > 0 ? creadas + ' factura(s) generadas' : 'Los clientes ya tienen facturas para este periodo';
+    res.json({ success: true, message: msg, count: creadas });
+  } catch(e) {
+    res.json({ success: false, message: 'Error: ' + e.message });
+  }
+});
+
+// POST /api/servicios/:id/activar - Activar servicio
+app.post('/api/servicios/:id/activar', requireAuth, (req, res) => {
+  const id = parseInt(req.params.id) || 0;
+  if (!id) return res.json({ success: false, message: 'ID requerido' });
+  try {
+    db.prepare("UPDATE servicios SET estado='activo', fecha_activacion=date('now') WHERE id=?").run(id);
+    res.json({ success: true, message: 'Servicio activado' });
+  } catch(e) {
+    res.json({ success: false, message: e.message });
+  }
+});
+
+// POST /api/servicios/:id/retirar - Retirar servicio
+app.post('/api/servicios/:id/retirar', requireAuth, (req, res) => {
+  const id = parseInt(req.params.id) || 0;
+  if (!id) return res.json({ success: false, message: 'ID requerido' });
+  try {
+    var svc = db.prepare('SELECT s.*, o.sn as onu_sn, o.olt_id FROM servicios s LEFT JOIN onu o ON o.servicio_id=s.id WHERE s.id=?').get(id);
+    if (!svc) return res.json({ success: false, message: 'Servicio no encontrado' });
+    db.prepare("UPDATE servicios SET estado='retirado', fecha_suspension=date('now') WHERE id=?").run(id);
+    
+    // Intentar eliminar ONU de SmartOLT (usando URL de la OLT correcta)
+    try {
+      var oltCfg = db.prepare('SELECT smartolt_subdomain, smartolt_api_key FROM olts WHERE id=?').get(svc.olt_id);
+      if (oltCfg && oltCfg.smartolt_subdomain && oltCfg.smartolt_api_key && svc.onu_sn) {
+        var url = 'https://' + oltCfg.smartolt_subdomain + '.smartolt.com/api/onus/' + svc.onu_sn + '/delete';
+        var headers = { 'X-API-Key': oltCfg.smartolt_api_key, 'Content-Type': 'application/json' };
+        fetch(url, { method: 'POST', headers: headers }).catch(function() {});
+      }
+    } catch(e) {}
+    
+    // Eliminar ONU de la base de datos
+    db.prepare('DELETE FROM onu WHERE servicio_id=?').run(id);
+    
+    res.json({ success: true, message: 'Servicio retirado' });
+  } catch(e) {
+    res.json({ success: false, message: e.message });
+  }
+});
+
 // POST /api/servicios/:id/eliminar - Eliminar servicio
 app.post('/api/servicios/:id/eliminar', requireAuth, (req, res) => {
   const id = parseInt(req.params.id) || 0;
@@ -4844,15 +5859,28 @@ app.post('/api/servicios/:id/eliminar', requireAuth, (req, res) => {
   }
 });
 
-// POST /api/servicios/:id/suspender - Suspender servicio
+// POST /api/servicios/:id/suspender - Suspender/Activar servicio
 app.post('/api/servicios/:id/suspender', requireAuth, (req, res) => {
   const id = parseInt(req.params.id) || 0;
   if (!id) return res.json({ success: false, message: 'ID de servicio requerido' });
   try {
-    const svc = db.prepare('SELECT * FROM servicios WHERE id=?').get(id);
+    const svc = db.prepare('SELECT s.*, c.id as cliente_id FROM servicios s JOIN clientes c ON c.id=s.cliente_id WHERE s.id=?').get(id);
     if (!svc) return res.json({ success: false, message: 'Servicio no encontrado' });
     const nuevoEstado = svc.estado === 'suspendido' ? 'activo' : 'suspendido';
-    db.prepare('UPDATE servicios SET estado=? WHERE id=?').run(nuevoEstado, id, svc.estado);
+    db.prepare('UPDATE servicios SET estado=? WHERE id=?').run(nuevoEstado, id);
+    
+    // MikroTik: agregar/quitar IP de lista de suspendidos
+    (async function() {
+      try {
+        var router = db.prepare('SELECT * FROM routers WHERE connected=1 OR id=(SELECT MIN(id) FROM routers)').get();
+        if (router && router.user && svc.ip) {
+          var MikroTikAPI = require('./mikrotik-api');
+          var add = nuevoEstado === 'suspendido';
+          MikroTikAPI.setAddressList(router.ip, router.port || 8728, router.user, router.password, svc.ip, 'Suspendidos', add);
+        }
+      } catch(e) {}
+    })();
+    
     res.json({ success: true, message: 'Servicio ' + (nuevoEstado === 'suspendido' ? 'suspendido' : 'reactivado') });
   } catch(e) {
     res.json({ success: false, message: e.message });
@@ -4861,4 +5889,22 @@ app.post('/api/servicios/:id/suspender', requireAuth, (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`ISP Total corriendo en http://localhost:${PORT}`);
+  
+  // Auto-start OpenWa if enabled
+  try {
+    var openwa = require('./openwa-service');
+    var cfg = openwa.getConfig();
+    if (cfg.enabled) {
+      setTimeout(function() {
+        openwa.start().then(function(r) {
+          if (r.success) console.log('[OpenWa] Iniciado automáticamente');
+          else console.log('[OpenWa] Auto-start: ' + r.msg);
+        }).catch(function(e) {
+          console.log('[OpenWa] Auto-start error: ' + e.message);
+        });
+      }, 3000);
+    }
+  } catch(e) {
+    console.log('[OpenWa] Auto-start error: ' + e.message);
+  }
 });

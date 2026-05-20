@@ -92,8 +92,8 @@
     <div class="tpl-menu-item" onclick="selectTemplate('recordatorio_email',this)"><div class="tpl-menu-icon" style="background:#fee2e2;color:#dc2626;"><i class="fas fa-envelope"></i></div><div class="tpl-menu-label">Recordatorio Pago<span class="tpl-menu-type">Correo</span></div></div>
     <div class="tpl-menu-item" onclick="selectTemplate('notif_suspension',this)"><div class="tpl-menu-icon" style="background:#fef2f2;color:#991b1b;"><i class="fas fa-ban"></i></div><div class="tpl-menu-label">Notificación Suspensión<span class="tpl-menu-type">SMS/WhatsApp</span></div></div>
     <div class="tpl-menu-item" onclick="selectTemplate('confirmacion_pago',this)"><div class="tpl-menu-icon" style="background:#dcfce7;color:#16a34a;"><i class="fas fa-check-circle"></i></div><div class="tpl-menu-label">Confirmación de Pago<span class="tpl-menu-type">SMS/WhatsApp</span></div></div>
-    <div class="tpl-menu-item" onclick="selectTemplate('bienvenida_sms',this)"><div class="tpl-menu-icon" style="background:#d1fae5;color:#059669;"><i class="fas fa-comment-dots"></i></div><div class="tpl-menu-label">Bienvenida Cliente<span class="tpl-menu-type">SMS</span></div></div>
-    <div class="tpl-menu-item" onclick="selectTemplate('bienvenida_email',this)"><div class="tpl-menu-icon" style="background:#ede9fe;color:#7c3aed;"><i class="fas fa-envelope-open-text"></i></div><div class="tpl-menu-label">Bienvenida Cliente<span class="tpl-menu-type">Correo</span></div></div>
+    <div class="tpl-menu-item" onclick="selectTemplate('bienvenida_sms',this)"><div class="tpl-menu-icon" style="background:#d1fae5;color:#059669;"><i class="fas fa-comment-dots"></i></div><div class="tpl-menu-label">Bienvenida - Pago<span class="tpl-menu-type">WhatsApp</span></div></div>
+    <div class="tpl-menu-item" onclick="selectTemplate('detalles_servicio',this)"><div class="tpl-menu-icon" style="background:#dbeafe;color:#2563eb;"><i class="fas fa-info-circle"></i></div><div class="tpl-menu-label">Detalles del Servicio<span class="tpl-menu-type">WhatsApp</span></div></div>
     <div style="padding:10px 20px 5px;font-size:.72rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;">Documentos</div>
     <div class="tpl-menu-item" onclick="selectTemplate('contrato',this)"><div class="tpl-menu-icon" style="background:#fef3c7;color:#b45309;"><i class="fas fa-file-contract"></i></div><div class="tpl-menu-label">Contrato<span class="tpl-menu-type">Documento A4</span></div></div>
     <div class="tpl-menu-item" onclick="selectTemplate('orden_instalacion',this)"><div class="tpl-menu-icon" style="background:#dbeafe;color:#1d4ed8;"><i class="fas fa-clipboard-check"></i></div><div class="tpl-menu-label">Orden de Instalación<span class="tpl-menu-type">Documento A4</span></div></div>
@@ -259,7 +259,8 @@ const tplMeta = {
   recordatorio_email:{icon:'fa-envelope',color:'#dc2626',title:'Recordatorio de Pago (Correo)',previewType:'full',type:'html'},
   notif_suspension:{icon:'fa-ban',color:'#991b1b',title:'Notificación de Suspensión',previewType:'sms',type:'sms'},
   confirmacion_pago:{icon:'fa-check-circle',color:'#16a34a',title:'Confirmación de Pago',previewType:'sms',type:'sms'},
-  bienvenida_sms:{icon:'fa-comment-dots',color:'#059669',title:'Bienvenida al Cliente (SMS)',previewType:'sms',type:'sms'},
+  bienvenida_sms:{icon:'fa-comment-dots',color:'#059669',title:'Bienvenida - Métodos de Pago (WhatsApp)',previewType:'sms',type:'html'},
+  detalles_servicio:{icon:'fa-info-circle',color:'#2563eb',title:'Detalles del Servicio (WhatsApp)',previewType:'sms',type:'html'},
   bienvenida_email:{icon:'fa-envelope-open-text',color:'#7c3aed',title:'Bienvenida al Cliente (Correo)',previewType:'full',type:'html'},
   contrato:{icon:'fa-file-contract',color:'#b45309',title:'Contrato de Servicio',previewType:'a4',type:'html'},
   orden_instalacion:{icon:'fa-clipboard-check',color:'#1d4ed8',title:'Orden de Instalación',previewType:'a4',type:'html'},
@@ -280,7 +281,14 @@ const sampleData = {
   '{staff_name}':'Carlos Martínez','{staff_phone}':'809-555-4321','{staff_role}':'Técnico',
   '{order_type}':'Instalación','{order_details}':'Instalación - Plan: Fibra 100 Mbps',
   '{barcode_receipt}':'<svg class="barcode-svg" viewBox="0 0 200 50" style="display:block;margin:4px auto;width:180px;height:45px;"><rect x="5" y="0" width="2" height="40" fill="#000"/><rect x="9" y="0" width="1" height="40" fill="#000"/><rect x="12" y="0" width="3" height="40" fill="#000"/><rect x="17" y="0" width="1" height="40" fill="#000"/><rect x="20" y="0" width="2" height="40" fill="#000"/><rect x="24" y="0" width="3" height="40" fill="#000"/><rect x="29" y="0" width="1" height="40" fill="#000"/><rect x="32" y="0" width="2" height="40" fill="#000"/><rect x="36" y="0" width="1" height="40" fill="#000"/><rect x="39" y="0" width="3" height="40" fill="#000"/><rect x="44" y="0" width="2" height="40" fill="#000"/><rect x="48" y="0" width="1" height="40" fill="#000"/><rect x="51" y="0" width="2" height="40" fill="#000"/><rect x="55" y="0" width="3" height="40" fill="#000"/><rect x="60" y="0" width="1" height="40" fill="#000"/><rect x="63" y="0" width="2" height="40" fill="#000"/><rect x="67" y="0" width="1" height="40" fill="#000"/><rect x="70" y="0" width="3" height="40" fill="#000"/><rect x="75" y="0" width="2" height="40" fill="#000"/><rect x="79" y="0" width="1" height="40" fill="#000"/><text x="100" y="48" text-anchor="middle" font-family="monospace" font-size="9">528</text></svg>',
-  '{encf}':'E320000000015','{ecf_tipo}':'FACTURA DE CONSUMO','{ecf_qr}':'[QR DGII]','{total_pendiente}':'0.00'
+  '{encf}':'E320000000015','{ecf_tipo}':'FACTURA DE CONSUMO','{ecf_qr}':'[QR DGII]','{total_pendiente}':'0.00',
+  // Variables de pago y bancos
+  '{bancos_listado}':'🏦 Banco Popular\n   Titular: Joel Wifi Dominicana\n   Cuenta Corriente: 123-456-789-0\n   Cédula/RNC: 130-123456-7\n\n🏦 Banreservas\n   Titular: Joel Wifi Dominicana\n   Cuenta Ahorros: 987-654-321-0\n   Cédula/RNC: 130-123456-7',
+  '{oficina_direccion}':'Calle Principal #10, Puerto Plata','{oficina_horario}':'8:00 AM - 5:00 PM','{no_cobro_msg}':'No realizamos cobros los días domingos.',
+  '{payment_day}':'10','{grace_days}':'7','{promise_extra_days}':'3','{promesa_por_mes}':'1',
+  '{proximo_pago}':'30 de mayo','{monto_prorrateado}':'RD$533.33','{dias_facturados}':'20','{dias_hasta_corte}':'15',
+  '{primer_pago_gratis}':'✅ Este primer período no tiene costo, está dentro de los días de gracia.',
+  '{speed}':'100Mbps'
 };
 
 function execCmd(c,v){document.getElementById('wysiwygEditor').focus();document.execCommand(c,false,v||null);}
@@ -502,5 +510,14 @@ function loadLogo(){
 
 // INIT
 loadLogo();
-renderKeys('recibo_pos');
+// Initialize the first template on page load
+(function() {
+  var firstKey = 'recibo_pos';
+  var firstEl = document.querySelector('.tpl-menu-item[onclick*="' + firstKey + '"]');
+  if (firstEl) {
+    selectTemplate(firstKey, firstEl);
+  } else {
+    renderKeys(firstKey);
+  }
+})();
 </script>

@@ -1,0 +1,116 @@
+<!-- PAGE HEADER -->
+<div class="page-header">
+  <h2><i class="fas fa-hourglass-half" style="color:#d97706;"></i> Pagos Pendientes</h2>
+  <div><span class="badge badge-warning" style="font-size:0.9rem;padding:6px 16px;"><%= pendientes.length %> facturas pendientes</span></div>
+</div>
+
+<!-- FILTROS -->
+<div class="card" style="margin-bottom:16px;padding:12px 16px;">
+  <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+    <input type="text" id="buscarPendiente" class="form-control" placeholder="Buscar cliente..." style="max-width:250px;font-size:0.85rem;" onkeyup="filtrarTabla()">
+    <select id="filtroZonaPP" class="form-control" style="max-width:180px;font-size:0.85rem;" onchange="filtrarTabla()">
+      <option value="">Todas las Zonas</option>
+      <% (zonas || []).forEach(function(z) { %>
+      <option value="<%= z.id %>"><%= z.nombre %></option>
+      <% }); %>
+    </select>
+    <button class="btn btn-primary btn-sm" onclick="location.reload()"><i class="fas fa-sync"></i> Actualizar</button>
+    <span style="margin-left:auto;font-size:0.82rem;color:#64748b;font-weight:600;">
+      Total adeudado: <span style="color:#dc2626;font-size:1rem;">
+        $<%= pendientes.reduce(function(s,i){return s + (i.monto - i.pagado)},0).toLocaleString('es-DO', {minimumFractionDigits:2}) %>
+      </span>
+    </span>
+  </div>
+</div>
+
+<!-- TABLE -->
+<div class="card" style="overflow-x:auto;">
+  <table class="table" style="width:100%;font-size:0.82rem;">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Cliente</th>
+        <th>Plan</th>
+        <th>Periodo</th>
+        <th>Vence</th>
+        <th>Debe</th>
+        <th>Pagado</th>
+        <th>Restante</th>
+        <th>Estado</th>
+        <th>Zona</th>
+        <th>Acción</th>
+      </tr>
+    </thead>
+    <tbody id="tablaPendientes">
+      <% if (pendientes.length === 0) { %>
+      <tr><td colspan="11" style="text-align:center;padding:40px;color:#94a3b8;">
+        <i class="fas fa-check-circle" style="font-size:2rem;display:block;margin-bottom:8px;color:#22c55e;"></i>
+        No hay facturas pendientes
+      </td></tr>
+      <% } else { pendientes.forEach(function(f) { 
+        var restante = f.monto - f.pagado;
+        var vencida = new Date(f.fecha_vencimiento) < new Date();
+      %>
+      <tr class="<%= vencida ? 'vencida' : '' %>" data-cliente="<%= (f.cliente_nombre||'').toLowerCase() %>" data-zona="<%= f.zona_id || '' %>">
+        <td style="font-weight:600;"><%= f.id %></td>
+        <td>
+          <a href="/modulo?pagina=VerCliente&id=<%= f.cliente_id %>" style="font-weight:600;color:#2563eb;text-decoration:none;">
+            <%= f.cliente_nombre %>
+          </a>
+          <% if (f.telefono) { %><div style="font-size:0.72rem;color:#94a3b8;"><%= f.telefono %></div><% } %>
+        </td>
+        <td><%= f.plan_nombre || '—' %></td>
+        <td><%= f.periodo %></td>
+        <td style="<%= vencida ? 'color:#dc2626;font-weight:600;' : '' %>">
+          <%= new Date(f.fecha_vencimiento).toLocaleDateString('es-DO') %>
+          <% if (vencida) { %><span class="badge badge-danger">Vencida</span><% } %>
+        </td>
+        <td>$<%= (f.monto || 0).toLocaleString('es-DO', {minimumFractionDigits:2}) %></td>
+        <td>$<%= (f.pagado || 0).toLocaleString('es-DO', {minimumFractionDigits:2}) %></td>
+        <td style="font-weight:700;color:<%= restante > 0 ? '#dc2626' : '#16a34a' %>;">
+          $<%= restante.toLocaleString('es-DO', {minimumFractionDigits:2}) %>
+        </td>
+        <td>
+          <% if (restante <= 0) { %>
+            <span class="badge badge-success">Pagada</span>
+          <% } else if (vencida) { %>
+            <span class="badge badge-danger">Vencida</span>
+          <% } else { %>
+            <span class="badge badge-warning">Pendiente</span>
+          <% } %>
+        </td>
+        <td><%= f.zona_nombre || '—' %></td>
+        <td style="white-space:nowrap;">
+          <a href="/modulo?pagina=RegistrarPago&cliente_id=<%= f.cliente_id %>" class="btn btn-sm btn-success" style="text-decoration:none;padding:4px 10px;font-size:0.75rem;">
+            <i class="fas fa-dollar-sign"></i> Cobrar
+          </a>
+          <a href="/modulo?pagina=PromesaDePago&cliente_id=<%= f.cliente_id %>" class="btn btn-sm btn-primary" style="text-decoration:none;padding:4px 10px;font-size:0.75rem;background:#2563eb;color:#fff;border:none;border-radius:6px;display:inline-flex;align-items:center;gap:4px;cursor:pointer;">
+            <i class="fas fa-handshake"></i> Promesa
+          </a>
+        </td>
+      </tr>
+      <% }); } %>
+    </tbody>
+  </table>
+</div>
+
+<style>
+  tr.vencida { background:#fef2f2; }
+  tr.vencida:hover td { background:#fee2e2 !important; }
+  .badge { padding:2px 8px;border-radius:10px;font-size:0.7rem;font-weight:600; }
+  .badge-success { background:#dcfce7;color:#166534; }
+  .badge-warning { background:#fef3c7;color:#92400e; }
+  .badge-danger { background:#fee2e2;color:#991b1b; }
+</style>
+
+<script>
+function filtrarTabla() {
+  var q = (document.getElementById('buscarPendiente').value || '').toLowerCase();
+  var zona = document.getElementById('filtroZonaPP').value;
+  document.querySelectorAll('#tablaPendientes tr[data-cliente]').forEach(function(row) {
+    var matchCliente = !q || row.getAttribute('data-cliente').includes(q);
+    var matchZona = !zona || row.getAttribute('data-zona') === zona;
+    row.style.display = (matchCliente && matchZona) ? '' : 'none';
+  });
+}
+</script>

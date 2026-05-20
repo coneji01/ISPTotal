@@ -79,7 +79,7 @@
     <div class="config-title">App del<br>Cliente</div>
   </div>
   <!-- Tareas Programadas -->
-  <div class="config-card" onclick="openConfig('tareas')">
+  <div class="config-card" onclick="window.location.href='/modulo?pagina=Cron'">
     <div class="config-icon-box"><i class="fas fa-calendar-check"></i></div>
     <div class="config-title">Tareas<br>Programadas</div>
   </div>
@@ -131,7 +131,15 @@ const configSections = {
       { label: 'Correo', name: 'empresa_correo', type: 'email' },
       { label: 'Dirección', name: 'empresa_direccion', type: 'text' },
       { label: 'Moneda', name: 'moneda', type: 'select', options: ['RD$', 'US$', '€'] },
-      { label: 'Logo URL', name: 'empresa_logo', type: 'text' }
+      { label: 'Logo URL', name: 'empresa_logo', type: 'text' },
+      // Separador: Datos Bancarios
+      { label: '━━━ DATOS BANCARIOS ━━━', name: '_sep_bancos', type: 'separator' },
+      { label: 'Cuentas bancarias', name: 'bancos_data', type: 'bancos-dinamico' },
+      // Separador: Oficina y Mensajería
+      { label: '━━━ OFICINA Y MENSAJERÍA ━━━', name: '_sep_oficina', type: 'separator' },
+      { label: 'Dirección de la oficina', name: 'oficina_direccion', type: 'text', placeholder: 'Calle Principal #10, Puerto Plata' },
+      { label: 'Horario de oficina', name: 'oficina_horario', type: 'text', placeholder: '8:00 AM - 5:00 PM' },
+      { label: 'Mensaje días sin cobro', name: 'no_cobro_msg', type: 'text', value: 'No realizamos cobros los días domingos.' }
     ]
   },
   personal: {
@@ -257,7 +265,7 @@ const configSections = {
     title: 'Mensajería',
     icon: 'fa-comments',
     fields: [
-      { label: 'Canal principal', name: 'sms_canal', type: 'select', options: ['WhatsApp', 'SMS', 'Email', 'WhatsApp + SMS'] },
+      { label: 'Canal principal', name: 'sms_canal', type: 'select', options: ['WhatsApp', 'SMS', 'Email', 'WhatsApp + SMS', 'OpenWa', 'OpenWa + SMS'] },
       { label: 'Token WhatsApp Business', name: 'sms_waba_token', type: 'password' },
       { label: 'Número de teléfono', name: 'sms_telefono', type: 'text' },
       { label: 'API Key SMS', name: 'sms_apikey', type: 'password' },
@@ -293,12 +301,19 @@ const configSections = {
   api: {
     title: 'API',
     icon: 'fa-plug',
-    fields: [
-      { label: 'Token de API', name: 'api_token', type: 'text', readonly: true, value: '••••••••' },
-      { label: 'Generar nuevo token', name: 'api_regenerate', type: 'button' },
-      { label: 'Límite de peticiones/min', name: 'api_rate_limit', type: 'number', value: '60' },
-      { label: 'IPs permitidas', name: 'api_ips', type: 'textarea', rows: 3, placeholder: 'IPs separadas por coma' }
-    ]
+    fields: [],
+    openwa: {
+      title: 'OpenWa - WhatsApp API',
+      icon: 'fa-whatsapp',
+      description: 'Gateway WhatsApp auto-gestionado. Convierte una cuenta de WhatsApp en una API.',
+      fields: [
+        { label: 'Habilitar OpenWa', name: 'openwa_enabled', type: 'select', options: ['No', 'Si'] },
+        { label: 'Puerto', name: 'openwa_port', type: 'number', value: '8080' },
+        { label: 'API Key', name: 'openwa_api_key', type: 'password' },
+        { label: 'ID de Sesión', name: 'openwa_session_id', type: 'text', value: 'isptotal' },
+        { label: 'Webhook URL', name: 'openwa_webhook', type: 'text', placeholder: 'https://tu-servicio.com/webhook' }
+      ]
+    }
   },
   backup: {
     title: 'Backup',
@@ -404,7 +419,14 @@ function openConfig(sectionId) {
     section.fields.forEach(f => {
       html += '<div class="form-group">';
       html += '<label>' + f.label + '</label>';
-      if (f.type === 'select') {
+      if (f.type === 'separator') {
+        html = html.substring(0, html.length - '</div>'.length); // remove the </div> we just added
+        html += '<hr style="margin:16px 0;border:none;border-top:2px solid #e2e8f0;">';
+        if (f.label) {
+          html += '<h4 style="font-size:.85rem;color:#6366f1;margin-bottom:12px;">' + f.label + '</h4>';
+        }
+        html += '</div>';
+      } else if (f.type === 'select') {
         html += '<select name="' + f.name + '" class="form-control">';
         (f.options || []).forEach(o => {
           html += '<option value="' + o + '" ' + (f.value === o ? 'selected' : '') + '>' + o + '</option>';
@@ -420,6 +442,11 @@ function openConfig(sectionId) {
         html += '<textarea name="' + f.name + '" class="form-control" rows="' + (f.rows || 3) + '" placeholder="' + (f.placeholder || '') + '">' + (f.value || '') + '</textarea>';
       } else if (f.type === 'password') {
         html += '<input type="password" name="' + f.name + '" class="form-control" placeholder="' + (f.placeholder || '') + '" value="' + (f.value || '') + '" ' + (f.readonly ? 'readonly' : '') + '>';
+      } else if (f.type === 'bancos-dinamico') {
+        // Bancos dinámicos
+        html += '<div id="bancosContainer"></div>';
+        html += '<button type="button" class="btn-add-banco" onclick="agregarBanco()"><i class="fas fa-plus"></i> Agregar banco</button>';
+        html += '<input type="hidden" name="bancos_data" id="bancosDataInput" value="">';
       } else {
         html += '<input type="' + f.type + '" name="' + f.name + '" class="form-control" placeholder="' + (f.placeholder || '') + '" value="' + (f.value || '') + '" ' + (f.readonly ? 'readonly' : '') + '>';
       }
@@ -429,16 +456,48 @@ function openConfig(sectionId) {
     html += '</form>';
   }
   
+  // Si es la sección API, agregar panel OpenWa después
+  if (sectionId === 'api' && section.openwa) {
+    var owa = section.openwa;
+    html += '<div style="margin-top:30px;padding-top:24px;border-top:2px solid #e2e8f0;">';
+    html += '<h3 style="display:flex;align-items:center;gap:10px;font-size:1rem;margin-bottom:6px;">';
+    html += '<i class="fab fa-whatsapp" style="color:#25D366;font-size:1.3rem;"></i> ' + owa.title + '</h3>';
+    html += '<p style="font-size:0.82rem;color:#64748b;margin-bottom:14px;">' + (owa.description || '') + '</p>';
+    html += '<div class="form-group" style="display:flex;align-items:center;gap:14px;margin-bottom:10px;">';
+    html += '  <label style="font-weight:600;font-size:0.9rem;cursor:pointer;">' + owa.title + '</label>';
+    html += '  <div class="owa-toggle-wrap" onclick="toggleOpenWa(this)" id="owaToggle" style="display:inline-flex;align-items:center;gap:8px;">';
+    html += '    <button class="owa-toggle" id="owaToggleBtn"><div class="owa-toggle-knob"></div></button>';
+    html += '    <span id="owaToggleLabel" style="font-size:0.8rem;color:#94a3b8;">Desactivado</span>';
+    html += '  </div>';
+    html += '</div>';
+    html += '<p style="font-size:0.82rem;color:#64748b;margin-bottom:14px;">' + (owa.description || '') + '</p>';
+    html += '<div id="openwaStatusBox" style="padding:12px 16px;border-radius:10px;font-size:0.85rem;display:none;"></div>';
+    html += '<div id="openwaQrBox" style="margin-top:14px;display:none;text-align:center;">';
+    html += '  <p style="font-size:0.82rem;color:#64748b;margin-bottom:8px;">Escanea este código QR con WhatsApp para conectar:</p>';
+    html += '  <div id="openwaQrImage" style="background:#fff;display:inline-block;padding:12px;border-radius:12px;border:2px solid #e2e8f0;"></div>';
+    html += '</div>';
+    html += '</div>';
+  }
+  
   document.getElementById('configSectionBody').innerHTML = html;
   
   // Cargar valores guardados para todas las secciones con fields (excepto routerPanel y table)
   if (section.fields && !section.routerPanel && !section.table && !section.textarea) {
     loadConfigValues(sectionId);
   }
+  // Cargar valores de OpenWa si es la sección API
+  if (sectionId === 'api') { loadOpenWaConfig(); }
 }
+
+var openwaMonitorTimer = null;
 
 function closeConfigSection() {
   document.getElementById('configSectionContainer').style.display = 'none';
+  // Detener el monitor de OpenWa al cerrar la sección
+  if (openwaMonitorTimer) {
+    clearTimeout(openwaMonitorTimer);
+    openwaMonitorTimer = null;
+  }
 }
 
 async function saveConfig(e, sectionId) {
@@ -485,6 +544,7 @@ function loadConfigValues(sectionId) {
       if (!section || !section.fields) return;
 
       section.fields.forEach(f => {
+        if (f.type === 'separator' || f.type === 'bancos-dinamico') return;
         const el = document.querySelector('[name="' + f.name + '"]');
         if (!el) return;
         const savedVal = config[f.name];
@@ -504,6 +564,11 @@ function loadConfigValues(sectionId) {
           }
         }
       });
+      
+      // Cargar bancos dinámicos si aplica
+      if (sectionId === 'empresa' && config.bancos_data) {
+        loadBancosData(config.bancos_data);
+      }
     })
     .catch(() => {});
 }
@@ -517,6 +582,287 @@ function downloadBackup() { showToast('Descargando backup...'); }
 function restoreBackup() { showToast('Función de restauración'); }
 function checkUpdates() { showToast('Buscando actualizaciones...'); }
 function installUpdate() { showToast('Instalando actualización...'); }
+
+// ============ OpenWa ============
+function loadOpenWaConfig() {
+  fetch('/api/openwa/status').then(function(r) { return r.json(); }).then(function(d) {
+    var cfg = d.config || {};
+    var fields = ['openwa_enabled','openwa_port','openwa_api_key','openwa_session_id','openwa_webhook'];
+    fields.forEach(function(k) {
+      var el = document.querySelector('[name="' + k + '"]');
+      if (!el) return;
+      if (cfg[k] !== undefined) el.value = cfg[k];
+    });
+    // Mostrar estado actual inmediatamente
+    if (d.running) {
+      updateOpenWaUI(d);
+    }
+  }).catch(function() {});
+}
+
+// Actualizar UI de OpenWa según estado
+function updateOpenWaUI(d) {
+  var box = document.getElementById('openwaStatusBox');
+  var btn = document.getElementById('owaToggleBtn');
+  var label = document.getElementById('owaToggleLabel');
+  if (!box) return;
+  
+  if (d.running && d.state === 'qr' && d.qr) {
+    box.style.display = 'block';
+    box.style.background = '#fef3c7';
+    box.style.border = '1px solid #fde68a';
+    box.style.color = '#92400e';
+    box.innerHTML = '<i class="fas fa-qrcode"></i> <strong>Escanea el QR con WhatsApp</strong>';
+    document.getElementById('openwaQrBox').style.display = 'block';
+    document.getElementById('openwaQrImage').innerHTML = '<img src="' + d.qr + '?t=' + Date.now() + '" style="width:260px;height:auto;max-width:100%;border-radius:8px;">';
+    if (label) { label.textContent = 'Esperando QR...'; label.style.color = '#d97706'; }
+    if (btn && !btn.classList.contains('on')) btn.classList.add('on');
+  } else if (d.running && d.state === 'connected') {
+    box.style.display = 'block';
+    box.style.background = '#f0fdf4';
+    box.style.border = '1px solid #bbf7d0';
+    box.style.color = '#166534';
+    box.innerHTML = '<i class="fas fa-check-circle"></i> <strong>OpenWa conectado</strong>';
+    document.getElementById('openwaQrBox').style.display = 'none';
+    if (label) { label.textContent = 'Conectado'; label.style.color = '#16a34a'; }
+    if (btn && !btn.classList.contains('on')) btn.classList.add('on');
+  } else if (d.running) {
+    box.style.display = 'block';
+    box.style.background = '#eff6ff';
+    box.style.border = '1px solid #bfdbfe';
+    box.style.color = '#1e40af';
+    box.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <strong>Iniciando...</strong>';
+  } else {
+    box.style.display = 'block';
+    box.style.background = '#fef2f2';
+    box.style.border = '1px solid #fecaca';
+    box.style.color = '#991b1b';
+    box.innerHTML = '<i class="fas fa-times-circle"></i> <strong>OpenWa detenido</strong>';
+    document.getElementById('openwaQrBox').style.display = 'none';
+    if (btn) btn.classList.remove('on');
+    if (label) { label.textContent = 'Desconectado'; label.style.color = '#dc2626'; }
+  }
+}
+
+function toggleOpenWa(el) {
+  var btn = document.getElementById('owaToggleBtn');
+  var label = document.getElementById('owaToggleLabel');
+  var isOn = btn.classList.contains('on');
+  
+  if (isOn) {
+    // Apagar
+    btn.classList.remove('on');
+    label.textContent = 'Desactivado';
+    label.style.color = '#94a3b8';
+    // Parar el monitoreo
+    if (openwaMonitorTimer) {
+      clearTimeout(openwaMonitorTimer);
+      openwaMonitorTimer = null;
+    }
+    fetch('/api/openwa/config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ openwa_enabled: '0' })
+    }).then(function() {
+      return fetch('/api/openwa/stop', {method:'POST'});
+    }).then(function() {
+      showToast('OpenWa desactivado');
+      var box = document.getElementById('openwaStatusBox');
+      if (box) {
+        box.style.display = 'block';
+        box.style.background = '#fef2f2';
+        box.style.border = '1px solid #fecaca';
+        box.style.color = '#991b1b';
+        box.innerHTML = '<i class="fas fa-times-circle"></i> <strong>OpenWa detenido</strong>';
+      }
+      document.getElementById('openwaQrBox').style.display = 'none';
+    });
+  } else {
+    // Encender
+    btn.classList.add('on');
+    label.textContent = 'Iniciando...';
+    label.style.color = '#16a34a';
+    
+    // Primero verificar estado actual
+    fetch('/api/openwa/status').then(function(r) { return r.json(); }).then(function(s) {
+      if (s.running && s.state === 'connected') {
+        // Ya está conectado, solo actualizar UI
+        label.textContent = 'Conectado';
+        showToast('OpenWa ya estaba conectado');
+        monitorOpenWa();
+        return;
+      }
+      
+      // Guardar config
+      fetch('/api/openwa/config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ openwa_enabled: '1' })
+      }).then(function() {
+        // Preguntar estado actual antes de intentar arrancar
+        return fetch('/api/openwa/status');
+      }).then(function(r) { return r.json(); }).then(function(s) {
+        if (s.running && (s.state === 'qr' || s.state === 'connected' || s.state === 'starting')) {
+          // Ya está corriendo, mostrar estado inmediatamente
+          updateOpenWaUI(s);
+          showToast('OpenWa ya está en ejecución');
+          monitorOpenWa();
+          return;
+        }
+        // Si no está corriendo, arrancar
+        return fetch('/api/openwa/start', {method:'POST'}).then(function(r) { return r.json(); });
+      }).then(function(d) {
+        if (!d) return;
+        if (d.success) {
+          showToast(d.msg);
+          // Mostrar QR de inmediato
+          fetch('/api/openwa/status').then(function(r) { return r.json(); }).then(function(s) {
+            updateOpenWaUI(s);
+            monitorOpenWa();
+          });
+        } else {
+          showToast('Error: ' + d.msg, 'error');
+          btn.classList.remove('on');
+          label.textContent = 'Error';
+          label.style.color = '#dc2626';
+        }
+      }).catch(function(e) {
+        showToast('Error: ' + e.message, 'error');
+        btn.classList.remove('on');
+        label.textContent = 'Error';
+        label.style.color = '#dc2626';
+      });
+    }).catch(function() {
+      // Si falla el status, intentar arrancar directamente
+      fetch('/api/openwa/start', {method:'POST'});
+    });
+  }
+}
+
+function monitorOpenWa() {
+  var container = document.getElementById('configSectionContainer');
+  if (!container || container.style.display === 'none') {
+    openwaMonitorTimer = null;
+    return;
+  }
+  
+  fetch('/api/openwa/status').then(function(r) { return r.json(); }).then(function(d) {
+    updateOpenWaUI(d);
+    
+    // Seguir monitoreando SOLO si está en estado 'starting' o 'qr' (transitorios)
+    // Si está connected o detenido, dejar de molestar
+    var btn = document.getElementById('owaToggleBtn');
+    var seguir = false;
+    if (d.running && (d.state === 'starting' || d.state === 'qr')) {
+      seguir = true;
+    } else if (!d.running && btn && btn.classList.contains('on')) {
+      // Si el toggle está ON pero no corre, reintentar
+      seguir = true;
+    }
+    
+    if (seguir) {
+      openwaMonitorTimer = setTimeout(monitorOpenWa, 3000);
+    } else {
+      openwaMonitorTimer = null;
+    }
+  }).catch(function() {
+    openwaMonitorTimer = setTimeout(monitorOpenWa, 5000);
+  });
+}
+
+// ====== BANCOS DINÁMICOS ======
+let bancosList = [];
+
+function agregarBanco() {
+  bancosList.push({ nombre: '', titular: '', numero: '', tipo: 'Corriente', cedula: '' });
+  renderBancos();
+}
+
+function eliminarBanco(idx) {
+  bancosList.splice(idx, 1);
+  renderBancos();
+}
+
+function renderBancos() {
+  const container = document.getElementById('bancosContainer');
+  if (!container) return;
+  
+  if (bancosList.length === 0) {
+    container.innerHTML = '<div class="banco-empty"><i class="fas fa-university"></i>No hay cuentas bancarias registradas.<br>Haz clic en "+ Agregar banco" para añadir una.</div>';
+    const input = document.getElementById('bancosDataInput');
+    if (input) input.value = '[]';
+    return;
+  }
+  
+  let html = '';
+  bancosList.forEach(function(b, i) {
+    html += '<div class="banco-card" data-idx="' + i + '">';
+    html += '  <div class="banco-card-header">';
+    html += '    <div class="banco-card-title"><i class="fas fa-university" style="color:#6366f1;margin-right:6px;"></i>Banco ' + (i + 1) + '</div>';
+    html += '    <button type="button" class="banco-card-remove" onclick="eliminarBanco(' + i + ')" title="Eliminar"><i class="fas fa-times"></i></button>';
+    html += '  </div>';
+    html += '  <div class="banco-card-grid">';
+    html += '    <div class="field-group"><label>Nombre del banco</label>';
+    html += '      <input type="text" class="banco-input" data-idx="' + i + '" data-field="nombre" value="' + escHtml(b.nombre) + '" placeholder="Ej: Banco Popular">';
+    html += '    </div>';
+    html += '    <div class="field-group"><label>Titular de la cuenta</label>';
+    html += '      <input type="text" class="banco-input" data-idx="' + i + '" data-field="titular" value="' + escHtml(b.titular) + '" placeholder="Nombre del titular">';
+    html += '    </div>';
+    html += '    <div class="field-group"><label>Número de cuenta</label>';
+    html += '      <input type="text" class="banco-input" data-idx="' + i + '" data-field="numero" value="' + escHtml(b.numero) + '" placeholder="Cuenta">';
+    html += '    </div>';
+    html += '    <div class="field-group"><label>Tipo de cuenta</label>';
+    html += '      <select class="banco-input" data-idx="' + i + '" data-field="tipo">';
+    html += '        <option value="Corriente" ' + (b.tipo === 'Corriente' ? 'selected' : '') + '>Corriente</option>';
+    html += '        <option value="Ahorros" ' + (b.tipo === 'Ahorros' ? 'selected' : '') + '>Ahorros</option>';
+    html += '      </select>';
+    html += '    </div>';
+    html += '    <div class="field-group"><label>Cédula / RNC</label>';
+    html += '      <input type="text" class="banco-input" data-idx="' + i + '" data-field="cedula" value="' + escHtml(b.cedula) + '" placeholder="Cédula del titular">';
+    html += '    </div>';
+    html += '  </div>';
+    html += '</div>';
+  });
+  
+  container.innerHTML = html;
+  
+  // Attach change listeners
+  document.querySelectorAll('.banco-input').forEach(function(el) {
+    el.addEventListener('change', function() {
+      var idx = parseInt(this.getAttribute('data-idx'));
+      var field = this.getAttribute('data-field');
+      if (bancosList[idx]) bancosList[idx][field] = this.value;
+      saveBancosData();
+    });
+    el.addEventListener('input', function() {
+      var idx = parseInt(this.getAttribute('data-idx'));
+      var field = this.getAttribute('data-field');
+      if (bancosList[idx]) bancosList[idx][field] = this.value;
+      saveBancosData();
+    });
+  });
+  
+  saveBancosData();
+}
+
+function saveBancosData() {
+  const input = document.getElementById('bancosDataInput');
+  if (input) input.value = JSON.stringify(bancosList);
+}
+
+function loadBancosData(raw) {
+  try {
+    bancosList = JSON.parse(raw) || [];
+  } catch(e) {
+    bancosList = [];
+  }
+  renderBancos();
+}
+
+function escHtml(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
 </script>
 
 <style>
@@ -534,6 +880,28 @@ function installUpdate() { showToast('Instalando actualización...'); }
   display: flex; align-items: center; justify-content: center; font-size: 1.2rem;
 }
 .config-title { font-size: 0.75rem; color: #475569; line-height: 1.3; }
+/* Toggle switch (like Cron tasks) */
+.owa-toggle-wrap{display:inline-flex;align-items:center;gap:8px;cursor:pointer;}
+.owa-toggle{position:relative;width:46px;height:26px;background:#cbd5e1;border-radius:13px;cursor:pointer;transition:background .25s;border:none;padding:0;flex-shrink:0;}
+.owa-toggle.on{background:#16a34a}
+.owa-toggle-knob{position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform .25s;box-shadow:0 1px 3px rgba(0,0,0,.15);}
+.owa-toggle.on .owa-toggle-knob{transform:translateX(20px)}
+
+/* Bancos dinámicos */
+.banco-card{background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:16px;margin-bottom:12px;position:relative;}
+.banco-card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.banco-card-title{font-size:.82rem;font-weight:700;color:#1e293b;}
+.banco-card-remove{width:28px;height:28px;border:none;border-radius:6px;background:#fef2f2;color:#dc2626;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.85rem;transition:all .15s;}
+.banco-card-remove:hover{background:#dc2626;color:#fff;}
+.banco-card-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px;}
+.banco-card-grid .field-group{display:flex;flex-direction:column;}
+.banco-card-grid .field-group label{font-size:.72rem;font-weight:600;color:#64748b;margin-bottom:3px;}
+.banco-card-grid .field-group input,.banco-card-grid .field-group select{font-size:.82rem;padding:7px 10px;border:1px solid #e2e8f0;border-radius:6px;outline:none;transition:border-color .15s;background:#fff;}
+.banco-card-grid .field-group input:focus,.banco-card-grid .field-group select:focus{border-color:#6366f1;}
+.btn-add-banco{display:inline-flex;align-items:center;gap:6px;padding:10px 18px;border-radius:8px;font-size:.85rem;font-weight:600;border:2px dashed #c7d2fe;background:transparent;color:#6366f1;cursor:pointer;transition:all .15s;margin-top:4px;}
+.btn-add-banco:hover{background:#eef2ff;border-color:#6366f1;}
+.banco-empty{text-align:center;padding:24px;color:#94a3b8;font-size:.85rem;}
+.banco-empty i{font-size:1.5rem;display:block;margin-bottom:8px;color:#cbd5e1;}
 </style>
 
 <script>

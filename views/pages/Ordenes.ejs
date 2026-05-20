@@ -62,7 +62,7 @@
                         <% if (o.tipo && o.tipo.toLowerCase() === 'traslado') { %>
                         <button class="btn btn-sm" style="background:#7c3aed;color:#fff;" onclick="abrirCompletarTraslado(<%= o.id %>, '<%= o.tipo %>')" title="Completar Traslado"><i class="fas fa-truck-moving"></i> Completar</button>
                         <% } else { %>
-                        <button class="btn btn-sm btn-success" onclick="showAlert('info','Completar','Función próximamente')"><i class="fas fa-check-circle"></i></button>
+                        <button class="btn btn-sm btn-success" onclick="completarOrden(<%= o.id %>, '<%= (o.cliente_nombre || "").replace(/'/g, "\\'") %>')" title="Completar Orden"><i class="fas fa-check-circle"></i> Completar</button>
                         <% } %>
                         <button class="btn btn-sm btn-danger" onclick="showAlert('info','Cancelar','Función próximamente')"><i class="fas fa-ban"></i></button>
                     </td>
@@ -297,6 +297,27 @@ function asignarOrden() {
         if (d.success) { showAlert('success', 'Asignado', 'Técnico asignado correctamente'); closeModalAsig(); window.location.reload(); }
         else showAlert('error', 'Error', d.message || 'No se pudo asignar');
     });
+}
+
+// ---- Completar Orden (instalación) ----
+function completarOrden(ordenId, clienteNombre) {
+    if (!confirm('Completar orden de instalación para ' + (clienteNombre || '') + '? El servicio será activado.')) return;
+    
+    fetch('/api/ordenes/completar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orden_id: ordenId })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(resp) {
+        if (resp.status === 'success') {
+            showAlert('success', 'Orden Completada', resp.msg);
+            setTimeout(function() { location.reload(); }, 1500);
+        } else {
+            showAlert('error', 'Error', resp.msg);
+        }
+    })
+    .catch(function() { showAlert('error', 'Error', 'Error de conexión'); });
 }
 
 // ---- Completar Traslado ----

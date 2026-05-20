@@ -10,7 +10,7 @@
         <input type="hidden" name="accion" value="guardar">
 
         <!-- Identificación del Cliente -->
-        <h4 style="color:var(--primary);border-bottom:1px solid var(--border);padding-bottom:10px;margin-bottom:20px;">
+        <h4 style="color:var(--accent);border-bottom:1px solid #eee;padding-bottom:10px;margin-bottom:20px;">
             <i class="fas fa-id-card"></i> Identificación del Cliente
         </h4>
 
@@ -76,7 +76,7 @@
             </div>
 
             <!-- Zona y Servicio -->
-            <h4 style="color:var(--primary);border-bottom:1px solid var(--border);padding-bottom:10px;margin:30px 0 20px 0;">
+            <h4 style="color:var(--accent);border-bottom:1px solid #eee;padding-bottom:10px;margin:30px 0 20px 0;">
                 <i class="fas fa-map-marker-alt"></i> Zona y Servicio
             </h4>
 
@@ -99,7 +99,7 @@
             </div>
 
             <!-- Facturación -->
-            <h4 style="color:var(--primary);border-bottom:1px solid var(--border);padding-bottom:10px;margin:30px 0 20px 0;">
+            <h4 style="color:var(--accent);border-bottom:1px solid #eee;padding-bottom:10px;margin:30px 0 20px 0;">
                 <i class="fas fa-file-invoice-dollar"></i> Facturación
             </h4>
 
@@ -175,27 +175,8 @@
                 </div>
             </div>
 
-            <!-- WiFi -->
-            <h4 style="color:var(--primary);border-bottom:1px solid var(--border);padding-bottom:10px;margin:30px 0 20px 0;">
-                <i class="fas fa-wifi"></i> WiFi (Opcional)
-            </h4>
-
-            <div class="form-grid">
-                <div class="form-group">
-                    <label class="form-label">Nombre WiFi (SSID)</label>
-                    <input type="text" name="wifi_ssid" class="form-control" placeholder="Ej: ISP_Total">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Clave WiFi <small style="color:var(--text-gray);">(min. 8 caracteres)</small></label>
-                    <input type="text" name="wifi_pass" class="form-control" minlength="8"
-                           placeholder="Mínimo 8 caracteres"
-                           onkeydown="if(event.key===' ')event.preventDefault();"
-                           oninput="this.value=this.value.replace(/\s/g,'');">
-                </div>
-            </div>
-
             <!-- Costo de Instalación -->
-            <h4 style="color:var(--primary);border-bottom:1px solid var(--border);padding-bottom:10px;margin:30px 0 20px 0;">
+            <h4 style="color:var(--accent);border-bottom:1px solid #eee;padding-bottom:10px;margin:30px 0 20px 0;">
                 <i class="fas fa-tools"></i> Instalación
             </h4>
 
@@ -221,9 +202,9 @@
             </div>
 
             <!-- Crea Orden -->
-            <div style="margin-top:30px;text-align:right;border-top:1px solid var(--border);padding-top:20px;">
+            <div style="margin-top:30px;text-align:right;border-top:1px solid #eee;padding-top:20px;">
                 <button type="submit" class="btn btn-primary" style="padding:12px 30px;font-size:1rem;">
-                    <i class="fas fa-save"></i> Guardar Cliente
+                    <i class="fas fa-clipboard-list"></i> Crear Orden
                 </button>
             </div>
         </fieldset>
@@ -422,17 +403,9 @@ document.getElementById('formNuevoCliente').addEventListener('submit', function(
     .then(function(r) { return r.json(); })
     .then(function(d) {
         btn.disabled = false;
-        btn.innerHTML = '<i class="fas fa-save"></i> Guardar Cliente';
+        btn.innerHTML = '<i class="fas fa-save"></i> Crear Orden';
         if (d.success) {
-            document.getElementById('modalResultadoTitle').innerHTML = '<i class="fas fa-check-circle" style="color:#16a34a;"></i> Cliente Creado';
-            document.getElementById('modalResultadoMsg').innerHTML = 'Cliente <strong>' + (d.cliente_nombre || '') + '</strong> creado exitosamente.<br>' +
-                (d.cliente_id ? 'ID: <strong>' + d.cliente_id + '</strong>' : '') +
-                (d.servicio_id ? '<br>Servicio ID: <strong>' + d.servicio_id + '</strong>' : '');
-            document.getElementById('modalResultado').style.display = 'flex';
-            form.reset();
-            document.getElementById('restoFormulario').disabled = true;
-            document.getElementById('restoFormulario').style.opacity = '0.6';
-            document.getElementById('docResult').style.display = 'none';
+            window.location.href = '/modulo?pagina=Ordenes';
         } else {
             document.getElementById('modalResultadoTitle').innerHTML = '<i class="fas fa-times-circle" style="color:#dc2626;"></i> Error';
             document.getElementById('modalResultadoMsg').innerHTML = d.message || 'Error al guardar. Intente de nuevo.';
@@ -441,7 +414,7 @@ document.getElementById('formNuevoCliente').addEventListener('submit', function(
     })
     .catch(function(e) {
         btn.disabled = false;
-        btn.innerHTML = '<i class="fas fa-save"></i> Guardar Cliente';
+        btn.innerHTML = '<i class="fas fa-save"></i> Crear Orden';
         document.getElementById('modalResultadoTitle').innerHTML = '<i class="fas fa-times-circle" style="color:#dc2626;"></i> Error';
         document.getElementById('modalResultadoMsg').innerHTML = 'Error de conexión. Intente de nuevo.';
         document.getElementById('modalResultado').style.display = 'flex';

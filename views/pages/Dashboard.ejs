@@ -95,6 +95,7 @@ body { font-family: 'Inter', sans-serif; }
     .trend-neutral { background: rgba(245, 158, 11, 0.15); color: var(--dash-warning); }
     
     .trend-info { background: rgba(78, 84, 200, 0.1); color: var(--dash-primary); }
+    .trend-danger { background: rgba(239, 68, 68, 0.15); color: var(--dash-danger); }
 
     /* Colores por tipo */
     .card-clients .card-icon-bg, .card-clients .card-icon-fg { color: var(--dash-primary); background: currentColor; }
@@ -105,6 +106,12 @@ body { font-family: 'Inter', sans-serif; }
 
     .card-orders .card-icon-bg, .card-orders .card-icon-fg { color: var(--dash-warning); background: currentColor; }
     .card-orders .card-icon-fg { background: transparent; }
+    
+    .card-payments .card-icon-bg, .card-payments .card-icon-fg { color: var(--dash-danger); background: currentColor; }
+    .card-payments .card-icon-fg { background: transparent; }
+    
+    .card-monthly .card-icon-bg, .card-monthly .card-icon-fg { color: var(--dash-primary); background: currentColor; }
+    .card-monthly .card-icon-fg { background: transparent; }
 
     /* Widget Grafico */
     .chart-card {
@@ -255,24 +262,36 @@ body { font-family: 'Inter', sans-serif; }
   </div>
 
   <!-- Card 2: Cobrado Hoy -->
-  <div class="dash-card card-money" onclick="location.href='/modulo?pagina=RegistrarPago'" style="cursor:pointer">
+  <div class="dash-card card-money" onclick="location.href='/modulo?pagina=RegistrarPago&today=1'" style="cursor:pointer">
     <div class="card-icon-bg"></div>
     <div class="card-icon-fg"><i class="fas fa-dollar-sign"></i></div>
     <div class="card-label">Cobrado Hoy</div>
-    <div class="card-value">$<%= (pagosHoy || 0).toFixed(0) %></div>
+    <div class="card-value" style="color:#16a34a;font-weight:700;">RD$<%= (pagosHoy || 0).toLocaleString('es-DO', {minimumFractionDigits:2}) %></div>
     <div class="card-footer">
       <span class="trend-badge trend-neutral" style="font-size:0.7rem; color:var(--dash-gray);"><i class="fas fa-list"></i> Ver detalle de pagos</span>
     </div>
   </div>
 
-  <!-- Card 3: Órdenes pendientes -->
-  <div class="dash-card card-orders" onclick="location.href='/modulo?pagina=Ordenes'" style="cursor:pointer">
+  <!-- Card 2b: Cobrado del Mes -->
+  <div class="dash-card card-monthly" style="cursor:pointer">
     <div class="card-icon-bg"></div>
-    <div class="card-icon-fg"><i class="fas fa-clipboard-list"></i></div>
-    <div class="card-label">Órdenes pendientes</div>
-    <div class="card-value"><%= pendientes || 0 %></div>
+    <div class="card-icon-fg"><i class="fas fa-calendar-check"></i></div>
+    <div class="card-label" style="font-size:0.75rem;color:#64748b;">Cobrado en el Mes</div>
+    <div class="card-value" style="font-size:1.9rem;font-weight:800;color:#2563eb;">RD$<%= (pagosMes || 0).toLocaleString('es-DO', {minimumFractionDigits:2}) %></div>
+    <div class="card-footer" style="font-size:0.78rem;color:#475569;font-weight:400;">
+      <span><%= new Date().toLocaleString('es-DO', { month: 'long', year: 'numeric' }).toUpperCase() %></span>
+      <span style="margin-left:auto;color:#94a3b8;"><%= pagosMesCant || 0 %> PAGOS</span>
+    </div>
+  </div>
+
+  <!-- Card 3: Pagos Pendientes -->
+  <div class="dash-card card-payments" onclick="location.href='/modulo?pagina=PagosPendientes'" style="cursor:pointer">
+    <div class="card-icon-bg"></div>
+    <div class="card-icon-fg"><i class="fas fa-hourglass-half"></i></div>
+    <div class="card-label">Pagos Pendientes</div>
+    <div class="card-value" style="color:#d97706;font-weight:700;">RD$<%= (pendientes_monto || 0).toLocaleString('es-DO', {minimumFractionDigits:2}) %></div>
     <div class="card-footer">
-      <span class="trend-badge trend-neutral"><i class="fas fa-tools"></i> <%= instalaciones || 0 %> Instalaciones</span>
+      <span class="trend-badge trend-danger"><i class="fas fa-file-invoice"></i> <%= pendientes || 0 %> facturas</span>
     </div>
   </div>
 
@@ -383,22 +402,23 @@ var MONTHS = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov',
   var maxInst = Math.max(...instData, 1);
   var maxRet = Math.max(...retData, 1);
   var maxVal = Math.max(maxInst, maxRet, 1);
+  var minBarH = 4;
 
   var container = document.getElementById('barChart');
   if (container) {
     var html = '';
     for (var i = 0; i < labels.length; i++) {
-      var instH = Math.round((instData[i] / maxVal) * 150);
-      var retH = Math.round((retData[i] / maxVal) * 150);
-      if (instH < 2 && instData[i] > 0) instH = 2;
-      if (retH < 2 && retData[i] > 0) retH = 2;
+      var instH = Math.max(Math.round((instData[i] / maxVal) * 150), instData[i] > 0 ? minBarH : 0);
+      var retH = Math.max(Math.round((retData[i] / maxVal) * 150), minBarH);
 
       html += '<div class="bar-group">';
       html += '  <div class="bars-container">';
-      html += '    <div class="bar purple" style="height:' + instH + 'px">';
+      html += '    <div class="bar purple" style="height:' + instH + 'px;position:relative;">';
+      html += '      <div class="bar-value" style="position:absolute;top:-18px;left:50%;transform:translateX(-50%);font-size:0.7rem;font-weight:700;color:#4e54c8;">' + instData[i] + '</div>';
       html += '      <div class="bar-tooltip">Instalados: ' + instData[i] + '</div>';
       html += '    </div>';
-      html += '    <div class="bar red" style="height:' + retH + 'px">';
+      html += '    <div class="bar red" style="height:' + retH + 'px;position:relative;">';
+      html += '      <div class="bar-value" style="position:absolute;top:-18px;left:50%;transform:translateX(-50%);font-size:0.7rem;font-weight:700;color:#dc2626;">' + retData[i] + '</div>';
       html += '      <div class="bar-tooltip">Retirados: ' + retData[i] + '</div>';
       html += '    </div>';
       html += '  </div>';
@@ -518,7 +538,17 @@ function renderWanChart(data) {
       responsive: true, maintainAspectRatio: false,
       animation: { duration: 800, easing: 'easeInOutQuart' },
       transitions: { active: { animation: { duration: 300 } } },
-      plugins: { legend: { display: false } },
+      interaction: { intersect: false, mode: 'index' },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: function(ctx) {
+              return ctx.dataset.label + ': ' + parseFloat(ctx.raw).toFixed(2) + ' Mbps';
+            }
+          }
+        }
+      },
       scales: {
         x: { display: true, ticks: { maxTicksLimit: 12, font: { size: 10 }, maxRotation: 0 } },
         y: { beginAtZero: true, max: maxVal * 1.2, ticks: { callback: function(v) { return v.toFixed(0) + ' Mbps'; }, font: { size: 10 } } }
