@@ -234,6 +234,16 @@ async function sendMessage(phone, message) {
   try {
     var cleanPhone = phone.replace(/[^\d]/g, '');
     if (cleanPhone.length === 10) cleanPhone = '1' + cleanPhone;
+    
+    // Evitar enviar mensajes al mismo número (no se puede auto-enviar)
+    try {
+      var myNumber = client.info ? (client.info.wid ? client.info.wid.user : '') : '';
+      if (myNumber && cleanPhone === myNumber) {
+        console.log('[OpenWa] Saltando auto-mensaje a ' + phone);
+        return { success: true, msg: 'Auto-mensaje omitido' };
+      }
+    } catch(e) {}
+    
     await client.sendMessage(cleanPhone + '@c.us', message);
     return { success: true, msg: 'Mensaje enviado' };
   } catch(e) {

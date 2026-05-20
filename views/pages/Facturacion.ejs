@@ -153,8 +153,8 @@
             </div>
 
             <h4 style="margin-top:0; color:var(--primary); font-size:0.95rem;">Ciclo de Facturaci&oacute;n y Corte</h4>
-            <div style="background:#f8fafc; padding:15px; border-radius:6px; margin-bottom:15px;">
-                <div class="form-group" style="margin-bottom:10px;">
+            <div style="background:#f8fafc; padding:20px; border-radius:6px; margin-bottom:15px;">
+                <div class="form-group" style="margin-bottom:12px;">
                     <label class="form-label">Fecha para crear factura</label>
                     <select name="invoice_day" id="invoiceDay" class="form-control" required>
                         <% for (var d = 1; d <= 31; d++) { %>
@@ -162,8 +162,16 @@
                         <% } %>
                     </select>
                 </div>
-                <div class="form-group" style="margin-bottom:10px;">
-                    <label class="form-label">Fecha de suspensi&oacute;n</label>
+                <div class="form-group" style="margin-bottom:12px;">
+                    <label class="form-label">D&iacute;a de pago <small style="color:#6366f1;font-weight:400;">(usado para el prorrateo)</small></label>
+                    <select name="payment_day" id="paymentDay" class="form-control" required>
+                        <% for (var d = 1; d <= 31; d++) { %>
+                            <option value='<%= d %>' <%= d === 30 ? 'selected' : '' %>>D&iacute;a <%= d %> del mes</option>
+                        <% } %>
+                    </select>
+                </div>
+                <div class="form-group" style="margin-bottom:12px;">
+                    <label class="form-label">Fecha de suspensi&oacute;n (corte)</label>
                     <select name="suspend_day" id="suspendDay" class="form-control" required>
                         <% for (var d = 1; d <= 31; d++) { %>
                             <option value='<%= d %>' <%= d === 15 ? 'selected' : '' %>>D&iacute;a <%= d %> del mes</option>
@@ -328,6 +336,7 @@ function abrirModal(data) {
         document.getElementById('nameCiclo').value = data.name || '';
         selectBillingType(data.billing_type || 'prepago');
         document.getElementById('invoiceDay').value = data.invoice_day;
+        document.getElementById('paymentDay').value = data.payment_day || data.invoice_day;
         document.getElementById('suspendDay').value = data.suspend_day;
         document.getElementById('toleranceMonths').value = data.tolerance_months;
         if (data.suspend_weekends == 1)

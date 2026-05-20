@@ -2118,20 +2118,20 @@ app.all('/modulo', requireAuth, (req, res) => {
           const name = (req.body.name && req.body.name.trim()) ? req.body.name.trim() : (billing_type === 'postpago' ? 'POST' : 'PRE') + ' | Gen: Dia ' + invoice_day + ' | Corte: Dia ' + suspend_day;
 
           if (id_ciclo) {
-            db.prepare(`UPDATE billing_cycles SET billing_type=?, invoice_day=?, suspend_day=?, tolerance_months=?,
+            db.prepare(`UPDATE billing_cycles SET billing_type=?, invoice_day=?, payment_day=?, suspend_day=?, tolerance_months=?,
               suspend_weekends=?, notify_day_1=?, notify_day_2=?, notify_day_3=?, reconnection_fee_active=?,
               reconnection_amount=?, invoice_suspended=?, prorate_first_invoice=?, grace_days=?, notify_on_suspend=?,
               notify_on_payment=?, name=? WHERE id=?`).run(
-              billing_type, invoice_day, suspend_day, tolerance_months, suspWeekends,
+              billing_type, invoice_day, req.body.payment_day || invoice_day, suspend_day, tolerance_months, suspWeekends,
               notify_1||0, notify_2||0, notify_3||0, reconnActive, reconnection_amount||0,
               invSusp, prorate, graceVal, notifSusp, notifPay, name, id_ciclo
             );
           } else {
-            db.prepare(`INSERT INTO billing_cycles (billing_type, invoice_day, suspend_day, tolerance_months,
+            db.prepare(`INSERT INTO billing_cycles (billing_type, invoice_day, payment_day, suspend_day, tolerance_months,
               suspend_weekends, notify_day_1, notify_day_2, notify_day_3, reconnection_fee_active,
               reconnection_amount, invoice_suspended, prorate_first_invoice, grace_days, notify_on_suspend,
-              notify_on_payment, name) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`).run(
-              billing_type, invoice_day, suspend_day, tolerance_months, suspWeekends,
+              notify_on_payment, name) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`).run(
+              billing_type, invoice_day, req.body.payment_day || invoice_day, suspend_day, tolerance_months, suspWeekends,
               notify_1||0, notify_2||0, notify_3||0, reconnActive, reconnection_amount||0,
               invSusp, prorate, graceVal, notifSusp, notifPay, name
             );
@@ -3059,20 +3059,20 @@ app.post('/modulo', (req, res, next) => {
     const name = (req.body.name && req.body.name.trim()) ? req.body.name.trim() : (billing_type === 'postpago' ? 'POST' : 'PRE') + ' | Gen: Dia ' + invoice_day + ' | Corte: Dia ' + suspend_day;
 
     if (id_ciclo) {
-      db.prepare(`UPDATE billing_cycles SET billing_type=?, invoice_day=?, suspend_day=?, tolerance_months=?,
+      db.prepare(`UPDATE billing_cycles SET billing_type=?, invoice_day=?, payment_day=?, suspend_day=?, tolerance_months=?,
         suspend_weekends=?, notify_day_1=?, notify_day_2=?, notify_day_3=?, reconnection_fee_active=?,
         reconnection_amount=?, invoice_suspended=?, prorate_first_invoice=?, grace_days=?, notify_on_suspend=?,
         notify_on_payment=?, name=? WHERE id=?`).run(
-        billing_type, invoice_day, suspend_day, tolerance_months, suspWeekends,
+        billing_type, invoice_day, req.body.payment_day || invoice_day, suspend_day, tolerance_months, suspWeekends,
         notify_1||0, notify_2||0, notify_3||0, reconnActive, reconnection_amount||0,
         invSusp, prorate, graceVal, notifSusp, notifPay, name, id_ciclo
       );
     } else {
-      db.prepare(`INSERT INTO billing_cycles (billing_type, invoice_day, suspend_day, tolerance_months,
+      db.prepare(`INSERT INTO billing_cycles (billing_type, invoice_day, payment_day, suspend_day, tolerance_months,
         suspend_weekends, notify_day_1, notify_day_2, notify_day_3, reconnection_fee_active,
         reconnection_amount, invoice_suspended, prorate_first_invoice, grace_days, notify_on_suspend,
-        notify_on_payment, name) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`).run(
-        billing_type, invoice_day, suspend_day, tolerance_months, suspWeekends,
+        notify_on_payment, name) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`).run(
+        billing_type, invoice_day, req.body.payment_day || invoice_day, suspend_day, tolerance_months, suspWeekends,
         notify_1||0, notify_2||0, notify_3||0, reconnActive, reconnection_amount||0,
         invSusp, prorate, graceVal, notifSusp, notifPay, name
       );
@@ -3634,7 +3634,7 @@ function sendWelcomeMessage(servicioId, clienteId, planId, cicloId) {
       }
     } catch(e) {}
     
-    var paymentDay = ciclo ? (ciclo.invoice_day || '') : '';
+    var paymentDay = ciclo ? (ciclo.payment_day || ciclo.invoice_day || '') : '';
     var suspendDay = ciclo ? (ciclo.suspend_day || '') : '';
     var graceDays = ciclo ? (ciclo.grace_days || '0') : '0';
     
@@ -3656,7 +3656,7 @@ function sendWelcomeMessage(servicioId, clienteId, planId, cicloId) {
       
       if (ciclo) {
         // Con ciclo de facturación: calcular según días de pago y corte configurados
-        var payDay = parseInt(ciclo.invoice_day) || 30;
+        var payDay = parseInt(ciclo.payment_day) || parseInt(ciclo.invoice_day) || 30;
         var cutDay = parseInt(ciclo.suspend_day) || 15;
         var graceD = parseInt(ciclo.grace_days) || 0;
         
@@ -3695,13 +3695,46 @@ function sendWelcomeMessage(servicioId, clienteId, planId, cicloId) {
         var diffCutMs = cutDate.getTime() - hoy.getTime();
         diasHastaCorte = Math.ceil(diffCutMs / (1000 * 60 * 60 * 24)) + '';
       } else {
-        // Sin ciclo: usar 30 días desde hoy como próximo pago
-        var nextPayDate = new Date(anioHoy, mesHoy + 1, diaHoy);
-        proximoPago = diaHoy + ' de ' + meses[nextPayDate.getMonth()];
-        diasFacturados = 30;
-        var montoProrrateo = precioPorDia * 30;
-        montoProrrateado = config.moneda + montoProrrateo.toFixed(2);
-        diasHastaCorte = '30';
+        // Sin ciclo: buscar el primer ciclo disponible o usar defaults
+        var primerCiclo = db.prepare("SELECT * FROM billing_cycles WHERE is_default=1 OR id=(SELECT MIN(id) FROM billing_cycles)").get();
+        if (primerCiclo) {
+          var payDay = parseInt(primerCiclo.payment_day) || parseInt(primerCiclo.invoice_day) || 30;
+          var cutDay = parseInt(primerCiclo.suspend_day) || 15;
+          var graceD = parseInt(primerCiclo.grace_days) || 0;
+          
+          var nextPayDate = new Date(anioHoy, mesHoy, payDay);
+          if (diaHoy >= payDay) nextPayDate = new Date(anioHoy, mesHoy + 1, payDay);
+          
+          var diffMs = nextPayDate.getTime() - hoy.getTime();
+          var daysUntilPay = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+          proximoPago = payDay + ' de ' + meses[nextPayDate.getMonth()];
+          
+          if (daysUntilPay <= graceD) {
+            primerPagoGratis = true;
+            montoProrrateado = '$0.00';
+            diasFacturados = 0;
+          } else {
+            diasFacturados = daysUntilPay;
+            var montoProrrateo = precioPorDia * diasFacturados;
+            montoProrrateado = config.moneda + montoProrrateo.toFixed(2);
+          }
+          
+          var cutDate = new Date(anioHoy, mesHoy, cutDay);
+          if (diaHoy >= cutDay) cutDate = new Date(anioHoy, mesHoy + 1, cutDay);
+          else if (diaHoy < payDay) {
+            cutDate = new Date(anioHoy, mesHoy, cutDay);
+            if (cutDay < payDay) cutDate = new Date(anioHoy, mesHoy + 1, cutDay);
+          }
+          var diffCutMs = cutDate.getTime() - hoy.getTime();
+          diasHastaCorte = Math.ceil(diffCutMs / (1000 * 60 * 60 * 24)) + '';
+        } else {
+          // Sin ciclos en el sistema: mostrar el precio completo
+          proximoPago = '30 de ' + meses[mesHoy + 1 < 12 ? mesHoy + 1 : 0];
+          diasFacturados = 30;
+          var montoProrrateo = precioPorDia * 30;
+          montoProrrateado = config.moneda + montoProrrateo.toFixed(2);
+          diasHastaCorte = '15';
+        }
       }
     }
     
