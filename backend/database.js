@@ -62,7 +62,8 @@ const cronTasks = [
   { task_name: 'suspension', enabled: 0, hour: 8, minute: 0 },
   { task_name: 'recordatorios', enabled: 0, hour: 10, minute: 0 },
   { task_name: 'backup', enabled: 1, hour: 23, minute: 0 },
-  { task_name: 'monitoreo', enabled: 0, hour: 0, minute: 30 }
+  { task_name: 'monitoreo', enabled: 0, hour: 0, minute: 30 },
+  { task_name: 'expirar_promesas', enabled: 0, hour: 6, minute: 0 }
 ];
 for (const t of cronTasks) {
   try {

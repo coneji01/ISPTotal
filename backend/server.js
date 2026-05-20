@@ -2193,7 +2193,7 @@ app.all('/modulo', requireAuth, (req, res) => {
         const filter = req.query.filter || 'active';
         let where = '';
         if (filter === 'active') where = "WHERE pp.estado='activa' AND pp.fecha_limite >= date('now')";
-        else if (filter === 'expired') where = "WHERE pp.estado='activa' AND pp.fecha_limite < date('now')";
+        else if (filter === 'expired') where = "WHERE (pp.estado='vencida' OR (pp.estado='activa' AND pp.fecha_limite < date('now')))";
         else if (filter === 'cancelled') where = "WHERE pp.estado='cancelada'";
         const rows = db.prepare(`
           SELECT pp.*, c.nombre as client_name, c.apodo as alias,
@@ -2455,6 +2455,11 @@ app.all('/modulo', requireAuth, (req, res) => {
           return res.json({ status: 'success', data: { output: output } });
         }
         
+        if (task === 'expirar_promesas') {
+          ejecutarExpirarPromesas(req, res);
+          return;
+        }
+        
         return res.json({ status: 'success', msg: 'Tarea ejecutada' });
       }
       
@@ -2652,12 +2657,66 @@ function ejecutarGenerarFacturas() {
   return lines.join('\n');
 }
 
+// Función: expirar promesas de pago vencidas
+function ejecutarExpirarPromesas(req, res) {
+  try {
+    var vencidas = db.prepare(`
+      SELECT pp.id, pp.cliente_id, pp.servicio_ids, pp.fecha_limite,
+        c.nombre as cliente_nombre
+      FROM promesas_pago pp
+      JOIN clientes c ON c.id=pp.cliente_id
+      WHERE pp.estado='activa' AND pp.fecha_limite < date('now')
+      ORDER BY pp.fecha_limite ASC
+    `).all();
+    
+    if (vencidas.length === 0) {
+      db.prepare("UPDATE cron_tasks SET last_run=datetime('now','localtime'), last_status='ok', last_output=? WHERE task_name='expirar_promesas'").run('No hay promesas vencidas');
+      if (res) return res.json({ status: 'success', data: { output: 'No hay promesas vencidas' } });
+      return;
+    }
+    
+    var output = 'Procesando ' + vencidas.length + ' promesas vencidas...\n';
+    var suspendidos = 0;
+    var errores = 0;
+    
+    vencidas.forEach(function(p) {
+      try {
+        // Obtener IDs de servicios
+        var svcIds = [];
+        try { svcIds = JSON.parse(p.servicio_ids); } catch(e) {}
+        
+        // Suspender servicios asociados a la promesa
+        svcIds.forEach(function(sid) {
+          db.prepare("UPDATE servicios SET estado='suspendido' WHERE id=? AND estado='activo'").run(sid);
+          suspendidos++;
+          output += '  Servicio #' + sid + ' suspendido por promesa vencida (' + p.fecha_limite + ')\n';
+        });
+        
+        // Marcar promesa como vencida (cambiar estado)
+        db.prepare("UPDATE promesas_pago SET estado='vencida' WHERE id=?").run(p.id);
+      } catch(e) {
+        errores++;
+        output += '  ERROR: ' + e.message + '\n';
+      }
+    });
+    
+    output += '\nTotal: ' + suspendidos + ' servicio(s) suspendidos, ' + errores + ' error(es)';
+    db.prepare("UPDATE cron_tasks SET last_run=datetime('now','localtime'), last_status=?, last_output=? WHERE task_name='expirar_promesas'").run(errores === 0 ? 'ok' : 'error', output);
+    
+    if (res) return res.json({ status: 'success', data: { output: output } });
+  } catch(e) {
+    var errMsg = 'Error: ' + e.message;
+    db.prepare("UPDATE cron_tasks SET last_run=datetime('now','localtime'), last_status='error', last_output=? WHERE task_name='expirar_promesas'").run(errMsg);
+    if (res) return res.json({ status: 'error', msg: errMsg });
+  }
+}
+
 // ==================== PROMESA DE PAGO ====================
 app.get('/api/promesa/list', requireAuth, (req, res) => {
   const filter = req.query.filter || 'active';
   let where = '';
   if (filter === 'active') where = "WHERE pp.estado='activa' AND pp.fecha_limite >= date('now')";
-  else if (filter === 'expired') where = "WHERE pp.estado='activa' AND pp.fecha_limite < date('now')";
+  else if (filter === 'expired') where = "WHERE (pp.estado='vencida' OR (pp.estado='activa' AND pp.fecha_limite < date('now')))";
   else if (filter === 'cancelled') where = "WHERE pp.estado='cancelada'";
   const rows = db.prepare(`
     SELECT pp.*, c.nombre as client_name, c.apodo as alias,
@@ -3060,6 +3119,10 @@ app.post('/modulo', (req, res, next) => {
       }
       if (task === 'suspension') {
         enviarNotifSuspensionWA(req, res);
+        return;
+      }
+      if (task === 'expirar_promesas') {
+        ejecutarExpirarPromesas(req, res);
         return;
       }
       db.prepare("UPDATE cron_tasks SET last_run=datetime('now','localtime'), last_status='ok' WHERE task_name=?").run(task);
