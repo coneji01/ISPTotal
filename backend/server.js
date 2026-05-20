@@ -3674,12 +3674,12 @@ function sendWelcomeMessage(servicioId, clienteId, planId, cicloId) {
         
         if (daysUntilPay <= graceD) {
           primerPagoGratis = true;
-          montoProrrateado = '$0.00';
+          montoProrrateado = '✅ Sin costo: está dentro de los días de gracia.';
           diasFacturados = 0;
         } else {
           diasFacturados = daysUntilPay;
           var montoProrrateo = precioPorDia * diasFacturados;
-          montoProrrateado = config.moneda + montoProrrateo.toFixed(2);
+          montoProrrateado = '💰 ' + config.moneda + montoProrrateo.toFixed(2) + ' por ' + diasFacturados + ' días de uso';
         }
         
         // Calcular días hasta corte
@@ -3711,12 +3711,12 @@ function sendWelcomeMessage(servicioId, clienteId, planId, cicloId) {
           
           if (daysUntilPay <= graceD) {
             primerPagoGratis = true;
-            montoProrrateado = '$0.00';
+            montoProrrateado = '✅ Sin costo: está dentro de los días de gracia.';
             diasFacturados = 0;
           } else {
             diasFacturados = daysUntilPay;
             var montoProrrateo = precioPorDia * diasFacturados;
-            montoProrrateado = config.moneda + montoProrrateo.toFixed(2);
+            montoProrrateado = '💰 ' + config.moneda + montoProrrateo.toFixed(2) + ' por ' + diasFacturados + ' días de uso';
           }
           
           var cutDate = new Date(anioHoy, mesHoy, cutDay);
@@ -3732,7 +3732,7 @@ function sendWelcomeMessage(servicioId, clienteId, planId, cicloId) {
           proximoPago = '30 de ' + meses[mesHoy + 1 < 12 ? mesHoy + 1 : 0];
           diasFacturados = 30;
           var montoProrrateo = precioPorDia * 30;
-          montoProrrateado = config.moneda + montoProrrateo.toFixed(2);
+          montoProrrateado = '💰 ' + config.moneda + montoProrrateo.toFixed(2) + ' por ' + diasFacturados + ' días de uso';
           diasHastaCorte = '15';
         }
       }

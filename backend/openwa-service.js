@@ -235,19 +235,35 @@ async function sendMessage(phone, message) {
     var cleanPhone = phone.replace(/[^\d]/g, '');
     if (cleanPhone.length === 10) cleanPhone = '1' + cleanPhone;
     
-    // Evitar enviar mensajes al mismo número (no se puede auto-enviar)
+    // Intentar detectar si es auto-mensaje (solo si client.info está disponible)
     try {
-      var myNumber = client.info ? (client.info.wid ? client.info.wid.user : '') : '';
-      if (myNumber && cleanPhone === myNumber) {
-        console.log('[OpenWa] Saltando auto-mensaje a ' + phone);
-        return { success: true, msg: 'Auto-mensaje omitido' };
+      var wwInfo = client.info ? (client.info.wid ? client.info.wid.user : '') : '';
+      if (wwInfo) {
+        var cleanWw = wwInfo.replace(/[^\d]/g, '');
+        if (cleanWw.length === 10) cleanWw = '1' + cleanWw;
+        if (cleanPhone === cleanWw) {
+          console.log('[OpenWa] Saltando auto-mensaje (mismo número que WhatsApp)');
+          return { success: true, msg: 'Auto-mensaje omitido' };
+        }
       }
     } catch(e) {}
     
     await client.sendMessage(cleanPhone + '@c.us', message);
     return { success: true, msg: 'Mensaje enviado' };
   } catch(e) {
-    return { success: false, msg: 'Error: ' + e.message };
+    var errMsg = e.message || '';
+    // Si el frame se desconectó, reiniciar OpenWa automáticamente
+    if (errMsg.includes('detached Frame') || errMsg.includes('No LID for user')) {
+      console.log('[OpenWa] Frame desconectado, reiniciando...');
+      // Destruir cliente y reconectar en 2 segundos
+      if (!autoReconnectTimer) {
+        detenerHealthCheck();
+        if (client) { try { client.destroy(); } catch(ex) {} client = null; }
+        connectionState = 'disconnected';
+        autoReconnectTimer = setTimeout(function() { start(); }, 2000);
+      }
+    }
+    return { success: false, msg: 'Error: ' + errMsg };
   }
 }
 
