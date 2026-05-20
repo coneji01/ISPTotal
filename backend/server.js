@@ -40,18 +40,23 @@ app.use(express.static(path.join(__dirname, '..')));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 // SQLite session store (persistente a través de reinicios)
-const SQLiteStore = require('better-sqlite3');
-const sessionStoreDb = new SQLiteStore(path.join(__dirname, '..', 'isptotal.db'));
+const SQLiteStore3 = require('better-sqlite3');
+const sessionStoreDb = new SQLiteStore3(path.join(__dirname, '..', 'isptotal.db'));
 sessionStoreDb.exec('CREATE TABLE IF NOT EXISTS sessions (sid TEXT PRIMARY KEY, session TEXT, expires DATETIME)');
 
-const sessionStore = new (require('events').EventEmitter)();
-sessionStore.get = function(sid, cb) {
+function SqliteSessionStore() {
+  require('express-session').Store.call(this);
+}
+SqliteSessionStore.prototype = Object.create(require('express-session').Store.prototype);
+SqliteSessionStore.prototype.constructor = SqliteSessionStore;
+
+SqliteSessionStore.prototype.get = function(sid, cb) {
   try {
     var row = sessionStoreDb.prepare('SELECT session FROM sessions WHERE sid=? AND expires > datetime(\'now\')').get(sid);
     cb(null, row ? JSON.parse(row.session) : null);
   } catch(e) { cb(e); }
 };
-sessionStore.set = function(sid, session, cb) {
+SqliteSessionStore.prototype.set = function(sid, session, cb) {
   try {
     var maxAge = session && session.cookie ? session.cookie.maxAge : 86400000;
     var expires = new Date(Date.now() + maxAge).toISOString();
@@ -59,12 +64,14 @@ sessionStore.set = function(sid, session, cb) {
     if (cb) cb(null);
   } catch(e) { if (cb) cb(e); }
 };
-sessionStore.destroy = function(sid, cb) {
+SqliteSessionStore.prototype.destroy = function(sid, cb) {
   try { sessionStoreDb.prepare('DELETE FROM sessions WHERE sid=?').run(sid); if (cb) cb(null); } catch(e) { if (cb) cb(e); }
 };
-sessionStore.touch = function(sid, session, cb) {
-  sessionStore.set(sid, session, cb);
+SqliteSessionStore.prototype.touch = function(sid, session, cb) {
+  this.set(sid, session, cb);
 };
+
+const sessionStore = new SqliteSessionStore();
 
 app.use(fileUpload());
 app.use(session({
