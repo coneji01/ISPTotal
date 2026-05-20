@@ -387,6 +387,28 @@ function filterList(f, btn) {
 
 // ====== NUEVA PROMESA ======
 function openNewPromise() {
+    console.log('[DBG-PP] openNewPromise called');
+    clearClient();
+    var inp = document.getElementById('ppSearchInput');
+    console.log('[DBG-PP] ppSearchInput: ' + (inp ? 'FOUND' : 'NULL'));
+    if (inp) inp.value = '';
+    var dd = document.getElementById('ppDueDate');
+    console.log('[DBG-PP] ppDueDate: ' + (dd ? 'FOUND' : 'NULL'));
+    if (dd) { dd.value = ''; dd.min = new Date(Date.now() + 86400000).toISOString().split('T')[0]; }
+    var notes = document.getElementById('ppNotes');
+    if (notes) notes.value = '';
+    var modal = document.getElementById('ppModal');
+    console.log('[DBG-PP] ppModal before open: ' + (modal ? 'FOUND' : 'NULL'));
+    if (modal) {
+        modal.classList.add('open');
+        console.log('[DBG-PP] open class added, current display: ' + window.getComputedStyle(modal).display);
+    }
+    setTimeout(function() {
+        var inp2 = document.getElementById('ppSearchInput');
+        if (inp2) inp2.focus();
+        console.log('[DBG-PP] focus set');
+    }, 200);
+}
     clearClient();
     document.getElementById('ppSearchInput').value = '';
     document.getElementById('ppDueDate').value = '';
@@ -397,10 +419,20 @@ function openNewPromise() {
 }
 
 function closeModalPP() {
+    console.log('[DBG-PP] closeModalPP called');
+    var modal = document.getElementById('ppModal');
+    if (modal) {
+        modal.classList.remove('open');
+        modal.style.display = '';
+        console.log('[DBG-PP] modal closed, display now: ' + window.getComputedStyle(modal).display);
+    }
+}
     document.getElementById('ppModal').classList.remove('open');
 }
 
 function ppSearchDebounce() {
+    console.log('[DBG-PP] search input changed');
+    clearTimeout(ppSearchTimer);
     clearTimeout(ppSearchTimer);
     const val = document.getElementById('ppSearchInput').value.trim();
     if (val.length < 2) { document.getElementById('ppSearchResults').style.display = 'none'; return; }
@@ -425,6 +457,8 @@ function ppSearchDebounce() {
 }
 
 function selectClient(id, name, alias) {
+    console.log('[DBG-PP] selectClient id=' + id + ' name=' + name + ' alias=' + (alias||''));
+
     ppSelectedClient = id;
     document.getElementById('ppSearchGroup').style.display = 'none';
     document.getElementById('ppSearchResults').style.display = 'none';
@@ -445,6 +479,8 @@ function clearClient() {
 }
 
 function loadServices(clientId) {
+    console.log('[DBG-PP] loadServices(' + clientId + ') called');
+
     fetch('/api/promesa/get_services?client_id=' + clientId)
     .then(r => r.json()).then(svcs => {
         const box = document.getElementById('ppSvcList');
@@ -473,6 +509,8 @@ function loadServices(clientId) {
 }
 
 function savePromise() {
+    console.log('[DBG-PP] savePromise called, ppSelectedClient:', ppSelectedClient ? JSON.stringify(ppSelectedClient) : 'NULL');
+    if (!ppSelectedClient) { alert('Seleccione un cliente'); return; }
     const services = [];
     document.querySelectorAll('#ppSvcList input[type=checkbox]:checked:not(:disabled)').forEach(c => services.push(c.value));
     if (!services.length) { mostrarAlerta('Error','Seleccione al menos un servicio'); return; }
