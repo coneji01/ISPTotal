@@ -1494,6 +1494,10 @@ app.all('/modulo', requireAuth, (req, res) => {
       break;
     }
     case 'PagosPendientes': {
+      // Primero contar total real (sin LIMIT)
+      var countRow = db.prepare("SELECT COUNT(*) as total FROM facturas f WHERE f.estado='pendiente' AND f.monto > COALESCE((SELECT SUM(pg.monto) FROM pagos pg WHERE pg.factura_id=f.id),0)").get();
+      data.pendientes_count = countRow ? countRow.total : 0;
+      
       data.pendientes = db.prepare(`
         SELECT f.id as factura_id, c.id as cliente_id, c.nombre as cliente_nombre, c.telefono,
           p.nombre as plan_name, f.monto, f.fecha_vencimiento,
@@ -1505,7 +1509,6 @@ app.all('/modulo', requireAuth, (req, res) => {
         LEFT JOIN planes p ON p.id=s.plan_id
         WHERE f.estado='pendiente' AND f.monto > COALESCE((SELECT SUM(pg.monto) FROM pagos pg WHERE pg.factura_id=f.id),0)
         ORDER BY c.nombre ASC
-        LIMIT 100
       `).all();
       data.zonas = db.prepare('SELECT * FROM zonas ORDER BY nombre').all();
       break;

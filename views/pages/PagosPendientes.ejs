@@ -1,7 +1,7 @@
 <!-- PAGE HEADER -->
 <div class="page-header">
   <h2><i class="fas fa-hourglass-half" style="color:#d97706;"></i> Pagos Pendientes</h2>
-  <div><span class="badge badge-warning" style="font-size:0.9rem;padding:6px 16px;"><%= pendientes.length %> facturas pendientes</span></div>
+  <div><span class="badge badge-warning" style="font-size:0.9rem;padding:6px 16px;"><%= typeof pendientes_count !== 'undefined' ? pendientes_count : pendientes.length %> facturas pendientes</span></div>
 </div>
 
 <!-- FILTROS -->
