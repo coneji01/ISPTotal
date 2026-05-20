@@ -569,6 +569,24 @@ app.all('/modulo', requireAuth, (req, res) => {
         return res.json({ status: 'success', data: rows, nic_match: null });
       }
 
+      // --- Obtener datos del cliente por ID ---
+      if (ajax === 'get_client') {
+        const clientId = parseInt(req.query.client_id) || 0;
+        if (!clientId) return res.json({ status: 'error', msg: 'ID de cliente requerido' });
+        const cliente = db.prepare(`
+          SELECT c.id, c.nombre as name, c.cedula, c.apodo as alias,
+            COALESCE((SELECT SUM(f.monto - COALESCE(
+              (SELECT SUM(p.monto) FROM pagos p WHERE p.factura_id=f.id),0
+            )) FROM facturas f JOIN servicios s ON s.id=f.servicio_id WHERE s.cliente_id=c.id AND f.estado='pendiente' AND f.monto > COALESCE(
+              (SELECT SUM(p.monto) FROM pagos p WHERE p.factura_id=f.id),0
+            )),0) as total_pending,
+            (SELECT COUNT(*) FROM servicios WHERE cliente_id=c.id AND estado != 'retirado') as svc_count
+          FROM clientes c WHERE c.id=?
+        `).get(clientId);
+        if (!cliente) return res.json({ status: 'error', msg: 'Cliente no encontrado' });
+        return res.json({ status: 'success', data: cliente, nic_match: null });
+      }
+
       // --- Obtener servicios del cliente ---
       if (ajax === 'get_client_services') {
         const clientId = parseInt(req.query.client_id) || 0;
