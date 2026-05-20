@@ -1,467 +1,371 @@
-<!-- Page Header -->
-<div class="page-header">
-  <h2><i class="fas fa-chart-bar"></i> Estadísticas</h2>
-  <div class="btn-group">
-    <select id="yearSelector" class="form-control" style="width:auto;" onchange="cargarDashboard()">
-      <% const currentYear = new Date().getFullYear(); %>
-      <% for(let y = currentYear; y >= currentYear - 5; y--) { %>
-        <option value="<%= y %>" <%= y === currentYear ? 'selected' : '' %>><%= y %></option>
-      <% } %>
-    </select>
-    <button class="btn btn-secondary btn-sm" onclick="cargarDashboard()"><i class="fas fa-sync"></i> Actualizar</button>
-  </div>
-</div>
-
 <style>
-  .stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 16px;
-    margin-bottom: 24px;
-  }
-  .stat-card {
-    background: #fff;
-    border-radius: 12px;
-    padding: 20px;
-    border: 1px solid #e2e8f0;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    transition: transform 0.15s, box-shadow 0.15s;
-  }
-  .stat-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-  }
-  .stat-icon {
-    width: 48px;
-    height: 48px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    font-size: 1.2rem;
-  }
-  .stat-info { flex: 1; min-width: 0; }
-  .stat-value {
-    font-size: 1.5rem;
-    font-weight: 800;
-    line-height: 1.2;
-    margin-bottom: 2px;
-  }
-  .stat-label {
-    font-size: 0.78rem;
-    color: #64748b;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.3px;
-  }
-  .chart-container {
-    background: #fff;
-    border-radius: 12px;
-    padding: 20px;
-    border: 1px solid #e2e8f0;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-    margin-bottom: 20px;
-  }
-  .chart-title {
-    font-size: 0.95rem;
-    font-weight: 700;
-    color: #334155;
-    margin-bottom: 16px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .chart-title i { color: #6366f1; font-size: 0.85rem; }
-  .chart-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-    margin-bottom: 20px;
-  }
-  @media (max-width: 900px) {
-    .chart-row { grid-template-columns: 1fr; }
-    .stats-grid { grid-template-columns: repeat(2, 1fr); }
-  }
-  @media (max-width: 600px) {
-    .stats-grid { grid-template-columns: 1fr; }
-  }
-
-  /* Recent payments table */
-  .payments-card {
-    background: #fff;
-    border-radius: 12px;
-    padding: 20px;
-    border: 1px solid #e2e8f0;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-    margin-bottom: 20px;
-  }
-  .payments-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.85rem;
-  }
-  .payments-table th {
-    text-align: left;
-    padding: 10px 12px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: #64748b;
-    text-transform: uppercase;
-    border-bottom: 2px solid #e2e8f0;
-    letter-spacing: 0.3px;
-  }
-  .payments-table td {
-    padding: 10px 12px;
-    border-bottom: 1px solid #f1f5f9;
-    color: #334155;
-  }
-  .payments-table tr:hover { background: #f8fafc; }
-  .payment-method {
-    display: inline-block;
-    padding: 2px 8px;
-    border-radius: 6px;
-    font-size: 0.72rem;
-    font-weight: 600;
-  }
-  .payment-method.efectivo { background: #dcfce7; color: #166534; }
-  .payment-method.verifone { background: #dbeafe; color: #1e40af; }
-  .payment-method.transferencia { background: #fef3c7; color: #92400e; }
-  .payment-method.default { background: #f1f5f9; color: #475569; }
-
-  /* Totals bar */
-  .totals-bar {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-    margin-bottom: 20px;
-  }
-  .total-item {
-    background: #fff;
-    border-radius: 10px;
-    padding: 14px 16px;
-    border: 1px solid #e2e8f0;
-    text-align: center;
-  }
-  .total-label {
-    font-size: 0.72rem;
-    color: #64748b;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.3px;
-    margin-bottom: 4px;
-  }
-  .total-value {
-    font-size: 1.2rem;
-    font-weight: 800;
-  }
-  @media (max-width: 600px) {
-    .totals-bar { grid-template-columns: 1fr; }
-  }
-
-  .loading-state {
-    text-align: center;
-    padding: 40px;
-    color: #94a3b8;
-  }
-  .loading-state i { font-size: 1.5rem; margin-bottom: 10px; display: block; }
+.st-header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:20px}
+.st-title{font-size:1.3rem;font-weight:700;color:#1e293b;display:flex;align-items:center;gap:10px}
+.st-title i{color:#0ea5e9}
+.st-filters{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.st-mode-toggle{display:flex;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;background:#f8fafc}
+.st-mode-opt{display:flex;align-items:center;gap:5px;padding:6px 14px;font-size:0.82rem;font-weight:600;color:#64748b;cursor:pointer;user-select:none;margin:0}
+.st-mode-opt input{display:none}
+.st-mode-opt.active{background:#0ea5e9;color:#fff}
+.st-mode-opt:hover:not(.active){background:#f1f5f9}
+.st-select{padding:7px 12px;border:1px solid #e2e8f0;border-radius:8px;font-size:0.85rem;color:#475569;background:#fff;cursor:pointer}
+.st-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+.st-card{background:#fff;border-radius:12px;padding:14px;border:1px solid #e2e8f0;box-shadow:0 1px 3px rgba(0,0,0,.04);cursor:pointer;transition:transform .15s,box-shadow .15s}
+.st-card:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.1)}
+.st-card-inner{display:flex;align-items:center;gap:10px}
+.st-card-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.st-card-icon i{font-size:0.9rem}
+.st-card-text{min-width:0;flex:1}
+.st-card-val{font-size:1.1rem;font-weight:800;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.st-card-label{font-size:0.72rem;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:.3px}
+.st-card-sub{font-size:0.68rem;color:#94a3b8;margin-top:3px}
+.st-num-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px}
+.st-num-card{background:#fff;border-radius:10px;padding:12px 10px;border:1px solid #e2e8f0;text-align:center}
+.st-num-val{font-size:1.3rem;font-weight:800;line-height:1.2}
+.st-num-label{font-size:0.7rem;color:#64748b;font-weight:500;text-transform:uppercase;letter-spacing:.3px;margin-top:2px}
+.st-section{margin-bottom:24px}
+.st-section-title{font-size:1rem;font-weight:700;color:#334155;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.st-section-title i{color:#0ea5e9;font-size:0.9rem}
+.st-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.st-panel{background:#fff;border-radius:12px;padding:16px;border:1px solid #e2e8f0}
+.st-bar-wrap{margin-bottom:8px}
+.st-bar-label{display:flex;justify-content:space-between;font-size:0.82rem;margin-bottom:4px}
+.st-bar-name{color:#334155;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.st-bar-val{color:#64748b;font-weight:600;flex-shrink:0;margin-left:8px}
+.st-bar-track{height:8px;background:#f1f5f9;border-radius:8px;overflow:hidden}
+.st-bar-fill{height:100%;border-radius:8px;transition:width .6s ease}
+.st-table{width:100%;border-collapse:collapse;font-size:0.85rem}
+.st-table th{text-align:left;padding:8px 10px;font-size:0.75rem;font-weight:600;color:#64748b;text-transform:uppercase;border-bottom:2px solid #e2e8f0}
+.st-table td{padding:8px 10px;border-bottom:1px solid #f1f5f9;color:#334155}
+.st-table tr:hover{background:#f8fafc}
+.st-chart{height:140px;display:flex;align-items:flex-end;gap:2px;padding:10px 0}
+.st-chart-bar{flex:1;border-radius:3px 3px 0 0;min-height:2px;transition:height .4s ease;cursor:pointer;position:relative}
+.st-chart-bar:hover{opacity:.8}
+.st-chart-bar:hover::after{content:attr(data-tip);position:absolute;bottom:100%;left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;padding:3px 8px;border-radius:4px;font-size:0.65rem;white-space:nowrap;margin-bottom:4px;z-index:10}
+.st-chart-labels{display:flex;gap:2px;font-size:0.55rem;color:#94a3b8;text-align:center}
+.st-chart-labels span{flex:1;overflow:hidden;text-overflow:ellipsis}
+.st-loading{padding:60px;text-align:center;color:#94a3b8}
+.st-tabs{display:flex;gap:0;margin-bottom:18px;background:#fff;border-radius:10px;border:1px solid #e2e8f0;overflow:hidden;width:fit-content}
+.st-tab{padding:10px 22px;font-size:0.88rem;font-weight:600;color:#64748b;cursor:pointer;display:flex;align-items:center;gap:7px;border-right:1px solid #e2e8f0;user-select:none}
+.st-tab:last-child{border-right:none}
+.st-tab:hover{background:#f8fafc;color:#334155}
+.st-tab.active{background:#0ea5e9;color:#fff}
+.st-modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.4);z-index:3000;display:none;align-items:center;justify-content:center;padding:16px}
+.st-modal{background:#fff;border-radius:14px;width:100%;max-width:700px;max-height:85vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.st-modal-head{padding:16px 20px;border-bottom:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center}
+.st-modal-head h3{margin:0;font-size:1rem;color:#1e293b}
+.st-modal-close{cursor:pointer;font-size:1.4rem;color:#94a3b8;line-height:1}
+.st-modal-close:hover{color:#ef4444}
+.st-modal-toolbar{padding:10px 20px;border-bottom:1px solid #f1f5f9;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+.st-modal-body{overflow-y:auto;flex:1}
+.st-modal-foot{padding:10px 20px;border-top:1px solid #e2e8f0;display:flex;justify-content:center}
+.st-inv-row{display:flex;justify-content:space-between;align-items:center;padding:10px 20px;border-bottom:1px solid #f8fafc;font-size:0.85rem}
+.st-inv-row:hover{background:#f8fafc}
+.st-modal-search{padding:5px 10px;border:1px solid #e2e8f0;border-radius:6px;font-size:0.82rem;outline:none}
+.st-modal-search:focus{border-color:#0ea5e9}
+.st-pag{display:flex;gap:4px;align-items:center;flex-wrap:wrap}
+.st-pag-btn{min-width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center;border:1px solid #e2e8f0;border-radius:6px;background:#fff;color:#475569;font-size:0.8rem;cursor:pointer;font-weight:500}
+.st-pag-btn:hover:not(:disabled){background:#f1f5f9}
+.st-pag-btn:disabled{opacity:.3;cursor:not-allowed}
+.st-pag-active{background:#0ea5e9;color:#fff;border-color:#0ea5e9;font-weight:700}
+@media(max-width:900px){.st-grid{grid-template-columns:repeat(2,1fr)}.st-num-grid{grid-template-columns:repeat(4,1fr)}.st-row{grid-template-columns:1fr}}
+@media(max-width:600px){.st-grid{grid-template-columns:1fr 1fr}.st-num-grid{grid-template-columns:repeat(2,1fr)}}
 </style>
 
-<!-- Loading State -->
-<div id="statsLoading" class="loading-state" style="display:none;">
-  <i class="fas fa-spinner fa-spin"></i>
-  Cargando estadísticas...
-</div>
-
-<!-- Summary Cards -->
-<div class="stats-grid" id="statsCards">
-  <div class="stat-card">
-    <div class="stat-icon" style="background:#e0f2fe;"><i class="fas fa-dollar-sign" style="color:#0284c7;"></i></div>
-    <div class="stat-info">
-      <div class="stat-value" style="color:#0284c7;" id="ingresosMes">$0</div>
-      <div class="stat-label">Ingresos del Mes</div>
+<div class="st-header">
+  <div class="st-title"><i class="fas fa-chart-line"></i> Estadisticas</div>
+  <div class="st-filters">
+    <div class="st-mode-toggle" id="stRangeToggle">
+      <label class="st-mode-opt active" onclick="stSetFilterMode('periodo')"><input type="radio" name="stFilterMode" checked><span>Periodo</span></label>
+      <label class="st-mode-opt" onclick="stSetFilterMode('rango')"><input type="radio" name="stFilterMode"><span>Rango</span></label>
     </div>
-  </div>
-  <div class="stat-card">
-    <div class="stat-icon" style="background:#dcfce7;"><i class="fas fa-users" style="color:#16a34a;"></i></div>
-    <div class="stat-info">
-      <div class="stat-value" style="color:#16a34a;" id="clientesActivos">0</div>
-      <div class="stat-label">Clientes Activos</div>
+    <div id="stFilterPeriodo"><select class="st-select" id="stPeriodo" onchange="stLoad()"></select></div>
+    <div id="stFilterRango" style="display:none;gap:6px;align-items:center;">
+      <input type="date" class="st-select" id="stDesde" onchange="stLoad()" style="padding:6px 10px;">
+      <span style="color:#94a3b8;font-size:0.8rem;">a</span>
+      <input type="date" class="st-select" id="stHasta" onchange="stLoad()" style="padding:6px 10px;">
     </div>
+    <select class="st-select" id="stZona" onchange="stLoad()">
+      <option value="0">Todas las zonas</option>
+      <% (zonas || []).forEach(function(z){ %>
+      <option value="<%= z.id %>"><%= z.nombre %></option>
+      <% }); %>
+    </select>
   </div>
-  <div class="stat-card">
-    <div class="stat-icon" style="background:#fef2f2;"><i class="fas fa-pause-circle" style="color:#dc2626;"></i></div>
-    <div class="stat-info">
-      <div class="stat-value" style="color:#dc2626;" id="clientesSuspendidos">0</div>
-      <div class="stat-label">Suspendidos</div>
+</div>
+
+<div class="st-tabs">
+  <div class="st-tab active" onclick="stSwitchTab('finanzas',this)"><i class="fas fa-dollar-sign"></i> Finanzas</div>
+  <div class="st-tab" onclick="stSwitchTab('clientes',this)"><i class="fas fa-users"></i> Clientes</div>
+</div>
+
+<div id="stTabFinanzas"><div class="st-loading" id="stFinanzasContent"><i class="fas fa-spinner fa-spin" style="font-size:1.5rem;margin-bottom:10px;display:block;"></i>Cargando...</div></div>
+<div id="stTabClientes" style="display:none;"><div class="st-loading" id="stClientesContent"><i class="fas fa-spinner fa-spin" style="font-size:1.5rem;margin-bottom:10px;display:block;"></i>Cargando...</div></div>
+
+<div class="st-modal-overlay" id="stModal">
+  <div class="st-modal">
+    <div class="st-modal-head"><h3 id="stModalTitle">Detalle</h3><span class="st-modal-close" onclick="stCloseModal()">&times;</span></div>
+    <div class="st-modal-toolbar">
+      <div class="st-modal-total" id="stModalTotal"></div>
+      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+        <input type="text" class="st-modal-search" id="stModalSearch" placeholder="Buscar..." onkeyup="stModalSearchFn()">
+        <select class="st-select" id="stModalOrden" onchange="stLoadDetail(1)" style="font-size:0.8rem;padding:4px 8px;">
+          <option value="desc">Monto mayor</option>
+          <option value="asc">Monto menor</option>
+        </select>
+      </div>
     </div>
-  </div>
-  <div class="stat-card">
-    <div class="stat-icon" style="background:#f0f0ff;"><i class="fas fa-server" style="color:#6366f1;"></i></div>
-    <div class="stat-info">
-      <div class="stat-value" style="color:#6366f1;" id="serviciosTotales">0</div>
-      <div class="stat-label">Servicios Totales</div>
-    </div>
+    <div class="st-modal-body" id="stModalBody"></div>
+    <div class="st-modal-foot" id="stModalPag"></div>
   </div>
 </div>
-
-<!-- Totals Bar -->
-<div class="totals-bar">
-  <div class="total-item">
-    <div class="total-label">Cobrado Hoy</div>
-    <div class="total-value" style="color:#16a34a;" id="cobradoHoy">$0</div>
-  </div>
-  <div class="total-item">
-    <div class="total-label">Cobrado Este Mes</div>
-    <div class="total-value" style="color:#0284c7;" id="cobradoMes">$0</div>
-  </div>
-  <div class="total-item">
-    <div class="total-label">Pendiente Total</div>
-    <div class="total-value" style="color:#f59e0b;" id="pendienteTotal">$0</div>
-  </div>
-</div>
-
-<!-- Charts Row -->
-<div class="chart-row">
-  <div class="chart-container">
-    <div class="chart-title"><i class="fas fa-chart-bar"></i> Ingresos Mensuales</div>
-    <canvas id="ingresosChart" height="200"></canvas>
-  </div>
-  <div class="chart-container">
-    <div class="chart-title"><i class="fas fa-chart-line"></i> Instalados vs Retirados</div>
-    <canvas id="instaladosRetiradosChart" height="200"></canvas>
-  </div>
-</div>
-
-<!-- Recent Payments -->
-<div class="payments-card">
-  <div class="chart-title" style="margin-bottom:12px;"><i class="fas fa-receipt"></i> Pagos Recientes</div>
-  <div style="overflow-x:auto;">
-    <table class="payments-table" id="paymentsTable">
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Cliente</th>
-          <th>Monto</th>
-          <th>Método</th>
-          <th>Zona</th>
-          <th>Fecha</th>
-        </tr>
-      </thead>
-      <tbody id="paymentsBody">
-        <tr><td colspan="6" style="text-align:center;color:#94a3b8;padding:30px;"><i class="fas fa-spinner fa-spin"></i> Cargando pagos...</td></tr>
-      </tbody>
-    </table>
-  </div>
-</div>
-
-<!-- Chart.js CDN -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 
 <script>
-// Global chart instances
-var ingresosChartInstance = null;
-var instaladosRetiradosChartInstance = null;
+var stPeriodos = <%- JSON.stringify(periodos || []) %>;
+var mesesNombres = ['','Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+var stFilterMode = 'periodo';
+var stCurrentMode = 'mes';
+var stModalData = [];
+var stModalPage = 1;
+var stModalPerPage = 15;
+var stModalType = '';
+var stModalTimer = null;
 
-// Formatear moneda
-function fmtMoney(n) {
-  return '$' + parseFloat(n || 0).toLocaleString('es-DO', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+// Inicializar selector de periodo
+(function(){
+  var sel = document.getElementById('stPeriodo');
+  if (!stPeriodos || !stPeriodos.length) {
+    var now = new Date();
+    sel.innerHTML = '<option value="' + (now.getMonth()+1) + '-' + now.getFullYear() + '">' + mesesNombres[now.getMonth()+1] + ' ' + now.getFullYear() + '</option>';
+    return;
+  }
+  var h = '';
+  for (var i = 0; i < stPeriodos.length; i++) {
+    var p = stPeriodos[i];
+    h += '<option value="' + p.mes + '-' + p.anio + '"' + (i===0?' selected':'') + '>' + mesesNombres[parseInt(p.mes)] + ' ' + p.anio + '</option>';
+  }
+  sel.innerHTML = h;
+})();
+
+function stSetFilterMode(mode) {
+  stFilterMode = mode;
+  document.querySelectorAll('#stRangeToggle .st-mode-opt').forEach(function(el){el.classList.toggle('active', el.onclick.toString().includes(mode))});
+  document.getElementById('stFilterPeriodo').style.display = mode === 'periodo' ? '' : 'none';
+  document.getElementById('stFilterRango').style.display = mode === 'rango' ? 'flex' : 'none';
+  if (mode === 'rango') {
+    var pv = document.getElementById('stPeriodo').value.split('-');
+    var m = parseInt(pv[0]), a = parseInt(pv[1]);
+    document.getElementById('stDesde').value = a + '-' + String(m).padStart(2,'0') + '-01';
+    var last = new Date(a, m, 0);
+    document.getElementById('stHasta').value = a + '-' + String(m).padStart(2,'0') + '-' + String(last.getDate()).padStart(2,'0');
+  }
+  stLoad();
 }
 
-// Obtener nombre del mes abreviado
-function mesNombre(num) {
-  const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
-  return meses[parseInt(num) - 1] || num;
+function stSwitchTab(tab, el) {
+  document.querySelectorAll('.st-tab').forEach(function(t){t.classList.remove('active')});
+  el.classList.add('active');
+  document.getElementById('stTabFinanzas').style.display = tab === 'finanzas' ? '' : 'none';
+  document.getElementById('stTabClientes').style.display = tab === 'clientes' ? '' : 'none';
+  if (stCurrentMode !== 'ciclo') stLoad();
 }
 
-// Months array for Chart.js labels
-const mesesCompletos = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+function stCard(val, label, sub, color, icon, tipo) {
+  var click = tipo ? ' onclick="stOpenModal(\'' + tipo + '\')"' : '';
+  return '<div class="st-card"' + click + '><div class="st-card-inner"><div class="st-card-icon" style="background:' + color + '15;"><i class="fas ' + icon + '" style="color:' + color + ';"></i></div><div class="st-card-text"><div class="st-card-val" style="color:' + color + ';">' + val + '</div><div class="st-card-label">' + label + '</div><div class="st-card-sub">' + sub + '</div></div></div></div>';
+}
 
-// Cargar dashboard
-function cargarDashboard() {
-  var year = document.getElementById('yearSelector').value;
-  var loading = document.getElementById('statsLoading');
-  loading.style.display = 'block';
+function stNum(val, label, color) {
+  return '<div class="st-num-card"><div class="st-num-val" style="color:' + color + ';">' + val + '</div><div class="st-num-label">' + label + '</div></div>';
+}
 
-  var xhr = new XMLHttpRequest();
-  xhr.open('GET', '/modulo?pagina=Estadisticas&ajax=dashboard&year=' + year);
-  xhr.onload = function() {
-    loading.style.display = 'none';
-    try { var d = JSON.parse(xhr.responseText); } catch(e) { return; }
-    if (!d.success) return;
+function stSetMode(mode) {
+  stCurrentMode = mode;
+  document.querySelectorAll('#stModeToggle .st-mode-opt').forEach(function(el){el.classList.remove('active')});
+  document.getElementById('stMode' + (mode==='ciclo'?'Ciclo':'Mes')).classList.add('active');
+  stLoad();
+}
 
-    var s = d.stats;
+function stLoad() {
+  var pv = document.getElementById('stPeriodo').value.split('-');
+  var mes = pv[0], anio = pv[1], zona = document.getElementById('stZona').value;
+  var wrapF = document.getElementById('stFinanzasContent');
+  var wrapC = document.getElementById('stClientesContent');
+  wrapF.innerHTML = '<div class="st-loading"><i class="fas fa-spinner fa-spin"></i> Cargando...</div>';
+  wrapC.innerHTML = wrapF.innerHTML;
 
-    // Summary cards
-    document.getElementById('ingresosMes').textContent = fmtMoney(s.ingresosMes);
-    document.getElementById('clientesActivos').textContent = s.clientesActivos;
-    document.getElementById('clientesSuspendidos').textContent = s.clientesSuspendidos;
-    document.getElementById('serviciosTotales').textContent = s.serviciosTotales;
+  var params = '&mes=' + mes + '&anio=' + anio + '&zona=' + zona + '&mode=' + stCurrentMode;
+  if (stFilterMode === 'rango') {
+    var desde = document.getElementById('stDesde').value;
+    var hasta = document.getElementById('stHasta').value;
+    if (desde && hasta) params += '&desde=' + desde + '&hasta=' + hasta;
+  }
 
-    // Totals bar
-    document.getElementById('cobradoHoy').textContent = fmtMoney(s.cobradoHoy);
-    document.getElementById('cobradoMes').textContent = fmtMoney(s.cobradoMes);
-    document.getElementById('pendienteTotal').textContent = fmtMoney(s.pendienteTotal);
+  fetch('/modulo?pagina=Estadisticas&ajax=get_stats' + params)
+  .then(function(r){return r.json()})
+  .then(function(d){
+    if (d.status !== 'success') { wrapF.innerHTML = '<div class="st-loading">Error</div>'; return; }
+    var c = d.clientes, f = d.finanzas;
+    var fmt = function(n){return '$' + parseFloat(n||0).toLocaleString('es-DO',{minimumFractionDigits:2})};
+    var modeLabel = stFilterMode === 'rango' ? 'este rango' : (stCurrentMode === 'mes' ? 'este mes' : 'este ciclo');
 
-    // Monthly income chart
-    var pagosLabels = [];
-    var pagosData = [];
-    for (var i = 1; i <= 12; i++) {
-      var mesStr = String(i).padStart(2, '0');
-      var found = d.pagosPorMes.find(function(p) { return p.mes === mesStr; });
-      pagosLabels.push(mesCompletos[i - 1]);
-      pagosData.push(found ? parseFloat(found.total) : 0);
+    // ===== TAB FINANZAS =====
+    var hf = '<div class="st-grid">';
+    hf += stCard(fmt(f.total_ciclo), 'Facturado', 'En ' + modeLabel, '#6366f1', 'fa-file-invoice-dollar', 'facturado');
+    hf += stCard(fmt(f.cobrado_mes), 'Cobrado', 'En ' + modeLabel, '#16a34a', 'fa-hand-holding-usd', 'cobrado');
+    hf += stCard(fmt(f.cobrado_hoy), 'Cobrado Hoy', new Date().toLocaleDateString('es-DO'), '#8b5cf6', 'fa-calendar-day', 'cobrado_hoy');
+    hf += stCard(fmt(f.pendiente_mes || 0), 'Pendiente', 'De ' + modeLabel, '#f59e0b', 'fa-clock', 'pendiente');
+    hf += stCard(fmt(f.total_vencido || 0), 'Vencido', 'De ' + modeLabel, '#dc2626', 'fa-exclamation-triangle', 'vencido');
+    hf += stCard(fmt(f.total_gastos || 0), 'Gastos', 'De ' + modeLabel, '#7c3aed', 'fa-shopping-cart', null);
+    hf += '</div>';
+
+    // Gráfico Cobrado vs Gastado
+    if (stCurrentMode === 'mes' || stFilterMode === 'rango') {
+      var cob = parseFloat(f.cobrado_mes)||0, gas = parseFloat(f.total_gastos)||0;
+      var bal = cob - gas, maxV = Math.max(cob, gas, 1);
+      var pctC = Math.round((cob/maxV)*100), pctG = Math.round((gas/maxV)*100);
+      hf += '<div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:20px;margin-bottom:14px;">'
+        + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">'
+        + '<div style="font-size:0.85rem;font-weight:700;color:#1e293b;"><i class="fas fa-chart-bar" style="color:#6366f1;margin-right:6px;"></i>Ingresos vs Gastos</div>'
+        + '</div>';
+      hf += '<div><div style="display:flex;justify-content:space-between;margin-bottom:5px;"><span style="font-size:0.78rem;font-weight:600;color:#16a34a;"><i class="fas fa-hand-holding-usd"></i> Cobrado</span><span style="font-size:0.85rem;font-weight:800;color:#16a34a;">'+fmt(cob)+'</span></div>'
+        + '<div style="background:#f0fdf4;border-radius:8px;height:28px;overflow:hidden;"><div style="background:linear-gradient(90deg,#16a34a,#22c55e);height:100%;width:'+Math.max(pctC,2)+'%;border-radius:8px;"></div></div></div>';
+      hf += '<div style="margin-top:10px;"><div style="display:flex;justify-content:space-between;margin-bottom:5px;"><span style="font-size:0.78rem;font-weight:600;color:#7c3aed;"><i class="fas fa-shopping-cart"></i> Gastado</span><span style="font-size:0.85rem;font-weight:800;color:#7c3aed;">'+fmt(gas)+'</span></div>'
+        + '<div style="background:#f5f3ff;border-radius:8px;height:28px;overflow:hidden;"><div style="background:linear-gradient(90deg,#7c3aed,#8b5cf6);height:100%;width:'+Math.max(pctG,2)+'%;border-radius:8px;"></div></div></div>';
+      var balColor = bal >= 0 ? '#16a34a' : '#dc2626';
+      hf += '<div style="margin-top:14px;padding-top:12px;border-top:1px solid #e2e8f0;display:flex;justify-content:space-between;">'
+        + '<div><div style="font-size:0.72rem;color:#94a3b8;text-transform:uppercase;">' + (bal >= 0 ? 'Ganancia' : 'Deficit') + '</div>'
+        + '<div style="font-size:1.1rem;font-weight:800;color:'+balColor+';">'+fmt(Math.abs(bal))+'</div></div>'
+        + '<div style="text-align:right;"><div style="font-size:0.72rem;color:#94a3b8;text-transform:uppercase;">Margen</div>'
+        + '<div style="font-size:1.1rem;font-weight:800;color:'+balColor+';">'+ (cob > 0 ? Math.round((bal/cob)*100) : 0) + '%</div></div></div>';
+      hf += '</div>';
     }
 
-    if (ingresosChartInstance) ingresosChartInstance.destroy();
-    var ctx1 = document.getElementById('ingresosChart').getContext('2d');
-    ingresosChartInstance = new Chart(ctx1, {
-      type: 'bar',
-      data: {
-        labels: pagosLabels,
-        datasets: [{
-          label: 'Ingresos',
-          data: pagosData,
-          backgroundColor: 'rgba(99, 102, 241, 0.7)',
-          borderColor: 'rgba(99, 102, 241, 1)',
-          borderWidth: 1,
-          borderRadius: 4
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            callbacks: {
-              label: function(ctx) { return fmtMoney(ctx.parsed.y); }
-            }
-          }
-        },
-        scales: {
-          y: {
-            beginAtZero: true,
-            ticks: {
-              callback: function(val) { return fmtMoney(val); }
-            }
-          }
-        }
-      }
-    });
+    wrapF.innerHTML = hf;
 
-    // Instalados vs Retirados chart
-    var instLabels = [];
-    var instaladosData = [];
-    var retiradosData = [];
-    for (var i = 1; i <= 12; i++) {
-      var mesStr = String(i).padStart(2, '0');
-      var foundInst = d.instaladosMes.find(function(p) { return p.mes === mesStr; });
-      var foundRet = d.retiradosMes.find(function(p) { return p.mes === mesStr; });
-      instLabels.push(mesCompletos[i - 1]);
-      instaladosData.push(foundInst ? parseInt(foundInst.total) : 0);
-      retiradosData.push(foundRet ? parseInt(foundRet.total) : 0);
+    // ===== TAB CLIENTES =====
+    var hc = '';
+    // Suspend months selector
+    var suspMonths = 3;
+    hc += '<div style="margin-bottom:14px;display:flex;align-items:center;gap:8px;font-size:0.85rem;color:#475569;">'
+      + '<span>Mostrar suspendidos con mas de</span>'
+      + '<select class="st-select" id="stSuspMonths" style="width:80px;padding:5px 8px;" onchange="stLoad()">'
+      + '<option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="6">6</option><option value="12">12</option>'
+      + '</select><span>mes(es)</span></div>';
+
+    hc += '<div class="st-num-grid">';
+    hc += stNum(c.activos||0, 'Activos', '#16a34a');
+    hc += stNum(c.suspendidos||0, 'Suspendidos', '#f59e0b');
+    hc += stNum(c.suspendidos_largos||0, 'Susp. >'+suspMonths+'m', '#dc2626');
+    hc += stNum(c.nuevos_anio||0, 'Nuevos (ano)', '#6366f1');
+    hc += stNum(c.nuevos_mes||0, 'Nuevos (mes)', '#0ea5e9');
+    hc += stNum(c.suspendidos_mes||0, 'Susp. (mes)', '#f59e0b');
+    hc += stNum(c.reactivados_mes||0, 'Reactivados', '#8b5cf6');
+    hc += stNum(c.retirados_mes||0, 'Retirados (mes)', '#dc2626');
+    hc += '</div>';
+
+    // Grafico 12 meses
+    if (c.por_mes && c.por_mes.length) {
+      hc += '<div class="st-section"><div class="st-section-title"><i class="fas fa-chart-bar"></i> Instalaciones (12 meses)</div>';
+      var maxM = Math.max.apply(null, c.por_mes.map(function(x){return x.total})) || 1;
+      hc += '<div class="st-chart">';
+      for (var i = 0; i < c.por_mes.length; i++) {
+        var pct2 = Math.max((c.por_mes[i].total / maxM * 100), 2);
+        hc += '<div class="st-chart-bar" style="height:'+pct2+'%;background:#0ea5e9;" data-tip="' + mesesNombres[parseInt(c.por_mes[i].mes)] + ': ' + c.por_mes[i].total + '"></div>';
+      }
+      hc += '</div><div class="st-chart-labels">';
+      for (var i = 0; i < c.por_mes.length; i++) {
+        hc += '<span>' + mesesNombres[parseInt(c.por_mes[i].mes)].substring(0,3) + '</span>';
+      }
+      hc += '</div></div>';
     }
 
-    if (instaladosRetiradosChartInstance) instaladosRetiradosChartInstance.destroy();
-    var ctx2 = document.getElementById('instaladosRetiradosChart').getContext('2d');
-    instaladosRetiradosChartInstance = new Chart(ctx2, {
-      type: 'bar',
-      data: {
-        labels: instLabels,
-        datasets: [
-          {
-            label: 'Instalados',
-            data: instaladosData,
-            backgroundColor: 'rgba(22, 163, 74, 0.7)',
-            borderColor: 'rgba(22, 163, 74, 1)',
-            borderWidth: 1,
-            borderRadius: 4
-          },
-          {
-            label: 'Retirados',
-            data: retiradosData,
-            backgroundColor: 'rgba(239, 68, 68, 0.7)',
-            borderColor: 'rgba(239, 68, 68, 1)',
-            borderWidth: 1,
-            borderRadius: 4
-          }
-        ]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        plugins: {
-          legend: {
-            position: 'top',
-            labels: { font: { size: 11 } }
-          },
-          tooltip: {
-            callbacks: {
-              label: function(ctx) { return ctx.dataset.label + ': ' + ctx.parsed.y + ' servicios'; }
-            }
-          }
-        },
-        scales: {
-          y: {
-            beginAtZero: true,
-            ticks: { stepSize: 1 }
-          }
-        }
-      }
-    });
-  };
-  xhr.onerror = function() {
-    loading.style.display = 'none';
-  };
-  xhr.send();
+    // Nuevos por zona + Top planes
+    hc += '<div class="st-row">';
+    hc += '<div class="st-panel"><div class="st-section-title"><i class="fas fa-map-marker-alt"></i> Nuevos por Zona</div>';
+    if (c.por_zona && c.por_zona.length) {
+      var maxZ = Math.max.apply(null, c.por_zona.map(function(x){return x.total})) || 1;
+      c.por_zona.forEach(function(z){
+        var pctZ = (z.total/maxZ*100);
+        hc += '<div class="st-bar-wrap"><div class="st-bar-label"><span class="st-bar-name">' + (z.zona_nombre||'Sin zona') + '</span><span class="st-bar-val">' + z.total + '</span></div><div class="st-bar-track"><div class="st-bar-fill" style="width:'+pctZ+'%;background:#6366f1;"></div></div></div>';
+      });
+    } else hc += '<div style="color:#94a3b8;text-align:center;padding:20px;">Sin datos</div>';
+    hc += '</div>';
+
+    hc += '<div class="st-panel"><div class="st-section-title"><i class="fas fa-tachometer-alt"></i> Top Planes</div>';
+    if (c.top_planes && c.top_planes.length) {
+      var maxP = Math.max.apply(null, c.top_planes.map(function(x){return x.total})) || 1;
+      c.top_planes.forEach(function(p){
+        var pctP = (p.total/maxP*100);
+        hc += '<div class="st-bar-wrap"><div class="st-bar-label"><span class="st-bar-name">' + (p.plan_nombre||'Sin plan') + '</span><span class="st-bar-val">' + p.total + '</span></div><div class="st-bar-track"><div class="st-bar-fill" style="width:'+pctP+'%;background:#0ea5e9;"></div></div></div>';
+      });
+    } else hc += '<div style="color:#94a3b8;text-align:center;padding:20px;">Sin datos</div>';
+    hc += '</div></div>';
+
+    wrapC.innerHTML = hc;
+  });
 }
 
-// Cargar pagos recientes
-function cargarPagosRecientes() {
-  var tbody = document.getElementById('paymentsBody');
+function stOpenModal(tipo) {
+  stModalType = tipo;
+  stModalPage = 1;
+  document.getElementById('stModalTitle').textContent = tipo.charAt(0).toUpperCase() + tipo.slice(1);
+  document.getElementById('stModalSearch').value = '';
+  document.getElementById('stModal').style.display = 'flex';
+  stLoadDetail(1);
+}
 
-  var xhr = new XMLHttpRequest();
-  xhr.open('GET', '/modulo?pagina=Estadisticas&ajax=recent_payments&limit=20');
-  xhr.onload = function() {
-    try { var d = JSON.parse(xhr.responseText); } catch(e) { return; }
-    if (!d.success || !d.data.length) {
-      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#94a3b8;padding:30px;">Sin pagos registrados</td></tr>';
+function stCloseModal() {
+  document.getElementById('stModal').style.display = 'none';
+  stModalData = [];
+}
+
+function stModalSearchFn() {
+  clearTimeout(stModalTimer);
+  stModalTimer = setTimeout(function(){ stLoadDetail(1); }, 400);
+}
+
+function stLoadDetail(page) {
+  stModalPage = page || 1;
+  var q = document.getElementById('stModalSearch').value.trim();
+  var orden = document.getElementById('stModalOrden').value;
+  var params = '&tipo=' + stModalType + '&page=' + stModalPage + '&orden=' + orden + '&per_page=' + stModalPerPage;
+  if (q) params += '&q=' + encodeURIComponent(q);
+
+  var pv = document.getElementById('stPeriodo').value.split('-');
+  params += '&mes=' + pv[0] + '&anio=' + pv[1];
+
+  fetch('/modulo?pagina=Estadisticas&ajax=get_invoices_detail' + params)
+  .then(function(r){return r.json()})
+  .then(function(d){
+    if (d.status !== 'success') { document.getElementById('stModalBody').innerHTML = '<div class="st-loading">Error</div>'; return; }
+    stModalData = d.data || [];
+    var body = document.getElementById('stModalBody');
+    var totalEl = document.getElementById('stModalTotal');
+    totalEl.textContent = 'Total: $' + (d.total || 0).toFixed(2) + ' (' + (d.total_count || 0) + ' registros)';
+
+    if (!stModalData.length) {
+      body.innerHTML = '<div class="st-loading">Sin resultados</div>';
+      document.getElementById('stModalPag').innerHTML = '';
       return;
     }
 
-    var html = '';
-    for (var i = 0; i < d.data.length; i++) {
-      var p = d.data[i];
-      var metodoClass = 'default';
-      var metodoLabel = p.metodo || 'N/A';
-      var ml = metodoLabel.toLowerCase();
-      if (ml.indexOf('efectivo') !== -1) metodoClass = 'efectivo';
-      else if (ml.indexOf('verifone') !== -1 || ml.indexOf('tarjeta') !== -1 || ml.indexOf('card') !== -1) metodoClass = 'verifone';
-      else if (ml.indexOf('transfer') !== -1 || ml.indexOf('deposito') !== -1) metodoClass = 'transferencia';
+    var h = '';
+    stModalData.forEach(function(r){
+      h += '<div class="st-inv-row"><div><div style="font-weight:600;color:#1e293b;">' + (r.cliente_nombre || 'N/A') + '</div><div style="font-size:0.75rem;color:#94a3b8;">' + (r.plan_nombre || '') + '</div></div><div style="text-align:right;"><div style="font-weight:700;color:#059669;">$' + parseFloat(r.monto || 0).toFixed(2) + '</div><div style="font-size:0.72rem;color:#64748b;">' + (r.fecha_pago ? new Date(r.fecha_pago).toLocaleDateString('es-DO') : '') + '</div></div></div>';
+    });
+    body.innerHTML = h;
 
-      var fecha = p.created_at ? new Date(p.created_at + (p.created_at.indexOf('T') === -1 ? 'T00:00:00' : '')).toLocaleDateString('es-DO', {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'}) : '-';
-      html += '<tr>';
-      html += '<td style="font-weight:600;">#' + p.id + '</td>';
-      html += '<td><a href="/modulo?pagina=VerCliente&id=' + p.cliente_id + '" style="color:#6366f1;text-decoration:none;font-weight:600;">' + (p.cliente_nombre || 'N/A') + '</a></td>';
-      html += '<td style="font-weight:700;color:#16a34a;">' + fmtMoney(p.monto) + '</td>';
-      html += '<td><span class="payment-method ' + metodoClass + '">' + metodoLabel + '</span></td>';
-      html += '<td style="color:#64748b;">' + (p.zona_nombre || '-') + '</td>';
-      html += '<td style="font-size:0.78rem;color:#94a3b8;">' + fecha + '</td>';
-      html += '</tr>';
+    // Pagination
+    var totalPages = d.total_pages || 1;
+    var pag = '<button class="st-pag-btn" onclick="stLoadDetail(' + (stModalPage-1) + ')" ' + (stModalPage <= 1 ? 'disabled' : '') + '>‹</button>';
+    for (var p = 1; p <= totalPages && p <= 10; p++) {
+      pag += '<button class="st-pag-btn' + (p === stModalPage ? ' st-pag-active' : '') + '" onclick="stLoadDetail(' + p + ')">' + p + '</button>';
     }
-    tbody.innerHTML = html;
-  };
-  xhr.onerror = function() { };
-  xhr.send();
+    pag += '<button class="st-pag-btn" onclick="stLoadDetail(' + (stModalPage+1) + ')" ' + (stModalPage >= totalPages ? 'disabled' : '') + '>›</button>';
+    document.getElementById('stModalPag').innerHTML = pag;
+  });
 }
 
-// Inicializar al cargar la página
-document.addEventListener('DOMContentLoaded', function() {
-  cargarDashboard();
-  cargarPagosRecientes();
-});
+stLoad();
 </script>
