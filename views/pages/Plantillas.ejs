@@ -334,7 +334,7 @@ function getCurrentContent(){
 }
 function setAllEditors(content){
   const m=tplMeta[currentKey];
-  if(m.type==='sms'){document.getElementById('smsTextarea').value=content;updateSmsCounter();}
+  if(m.type==='sms'){document.getElementById('smsTextarea').value=content;}
   else{document.getElementById('wysiwygEditor').innerHTML=content;document.getElementById('tplTextarea').value=content;}
 }
 function syncV2C(){document.getElementById('tplTextarea').value=document.getElementById('wysiwygEditor').innerHTML;}
