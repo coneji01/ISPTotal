@@ -51,7 +51,7 @@
         var restante = f.monto - f.pagado;
         var vencida = new Date(f.fecha_vencimiento) < new Date();
       %>
-      <tr class="<%= vencida ? 'vencida' : '' %>" data-cliente="<%= (f.cliente_nombre||'').toLowerCase() %>" data-zona="<%= f.zona_id || '' %>">
+      <tr class="<%= vencida ? 'vencida' : '' %>" data-cliente="<%= (f.cliente_nombre||'').toLowerCase() %>" data-zona="<%= f.zona_id || '' %>" data-cliente-id="<%= f.cliente_id %>" data-cliente-nombre="<%= (f.cliente_nombre||'').replace(/'/g, '&apos;') %>">
         <td style="font-weight:600;"><%= f.id %></td>
         <td>
           <a href="/modulo?pagina=VerCliente&id=<%= f.cliente_id %>" style="font-weight:600;color:#2563eb;text-decoration:none;">
@@ -84,7 +84,7 @@
           <a href="/modulo?pagina=RegistrarPago&cliente_id=<%= f.cliente_id %>" class="btn btn-sm btn-success" style="text-decoration:none;padding:4px 10px;font-size:0.75rem;">
             <i class="fas fa-dollar-sign"></i> Cobrar
           </a>
-          <button class="btn btn-sm btn-primary" onclick="openNewPromisePP(<%= f.cliente_id %>, '<%= f.cliente_nombre.replace(/'/g, "\\'") %>')" style="padding:4px 10px;font-size:0.75rem;background:#2563eb;color:#fff;border:none;border-radius:6px;display:inline-flex;align-items:center;gap:4px;cursor:pointer;">
+          <button class="btn btn-sm btn-primary" onclick="openNewPromisePP(<%= f.cliente_id %>)" style="padding:4px 10px;font-size:0.75rem;background:#2563eb;color:#fff;border:none;border-radius:6px;display:inline-flex;align-items:center;gap:4px;cursor:pointer;">
             <i class="fas fa-handshake"></i> Promesa
           </button>
         </td>
@@ -226,10 +226,16 @@ function filtrarTabla() {
 let ppSelectedClient = null;
 let ppSearchTimer = null;
 
-function openNewPromisePP(clienteId, clienteNombre) {
+function openNewPromisePP(clienteId) {
+    // Find client name from the table row
+    var rows = document.querySelectorAll('[data-cliente-id="' + clienteId + '"]');
+    var nombre = '';
+    if (rows.length > 0) {
+        nombre = rows[0].getAttribute('data-cliente-nombre') || '';
+    }
     // Pre-select client
-    ppSelectedClient = { id: clienteId, name: clienteNombre };
-    document.getElementById('ppClientName').textContent = clienteNombre;
+    ppSelectedClient = { id: clienteId, name: nombre };
+    document.getElementById('ppClientName').textContent = nombre || ('Cliente #' + clienteId);
     document.getElementById('ppClientSelected').style.display = 'flex';
     document.getElementById('ppSearchGroup').style.display = 'none';
     loadServicesPP(clienteId);
