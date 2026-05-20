@@ -251,17 +251,14 @@ function openNewPromisePP(clienteId) {
     console.log('[DBG] ppModal element: ' + (modal ? 'FOUND' : 'NULL'));
     if (modal) {
         modal.classList.add('open');
-        modal.style.display = 'flex';
-        modal.style.alignItems = 'center';
-        modal.style.justifyContent = 'center';
-        modal.style.position = 'fixed';
-        modal.style.top = '0';
-        modal.style.left = '0';
-        modal.style.width = '100%';
-        modal.style.height = '100%';
-        modal.style.zIndex = '99999';
-        modal.style.background = 'rgba(0,0,0,0.5)';
-        console.log('[DBG] Modal opened with ALL inline styles');
+        // Force overlay styles
+        modal.style.cssText = 'display:flex;align-items:center;justify-content:center;position:fixed;top:0;left:0;width:100%;height:100%;z-index:99999;background:rgba(0,0,0,0.5)';
+        // Force modal card to be white
+        var modalCard = modal.querySelector('.pp-modal');
+        if (modalCard) {
+            modalCard.style.cssText = 'background:#fff;border-radius:12px;width:100%;max-width:700px;max-height:90vh;overflow-y:auto;box-shadow:0 10px 40px rgba(0,0,0,0.15)';
+        }
+        console.log('[DBG] Modal opened with forced inline styles');
     } else {
         console.log('[DBG] Modal NOT found');
     }
