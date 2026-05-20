@@ -2277,6 +2277,8 @@ app.all('/modulo', requireAuth, (req, res) => {
     case 'Estadisticas': {
       const ajax = req.query.ajax;
       const zonas = db.prepare('SELECT * FROM zonas ORDER BY nombre').all();
+      data.periodos = db.prepare("SELECT DISTINCT strftime('%m',created_at) as mes, strftime('%Y',created_at) as anio FROM pagos ORDER BY anio DESC, mes DESC").all();
+      data.zonas = zonas;
 
       // ===================== get_stats =====================
       if (ajax === 'get_stats') {
