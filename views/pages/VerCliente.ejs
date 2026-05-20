@@ -1221,6 +1221,10 @@ function nsGuardar() {
   data.wifi_ssid = document.getElementById('nsWifiSsid') ? document.getElementById('nsWifiSsid').value : '';
   data.wifi_pass = document.getElementById('nsWifiPass') ? document.getElementById('nsWifiPass').value : '';
   
+  // Ciclo de facturación
+  var nsCicloVal = document.getElementById('nsCiclo') ? document.getElementById('nsCiclo').value : '';
+  data.ciclo_id = nsCicloVal && nsCicloVal !== '' && nsCicloVal !== 'custom' ? parseInt(nsCicloVal) : null;
+  
   if (metodo === 'static') {
     data.ip = document.getElementById('nsIpSelect').value;
     data.pool = document.getElementById('nsPool').value;

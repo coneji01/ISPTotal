@@ -718,16 +718,23 @@ app.all('/modulo', requireAuth, (req, res) => {
 
         // Activar servicio si se solicitó
         if (activar === 'si') {
-          db.prepare(`UPDATE servicios SET estado='activo' WHERE cliente_id=? AND estado='suspendido'`).run(clientId);
-          // Enviar notificación de reactivación
-          (async function() {
-            try {
-              var svcs = db.prepare('SELECT id FROM servicios WHERE cliente_id=? AND estado=?').all(clientId, 'activo');
-              svcs.forEach(function(s) { sendReactivationNotification(clientId, s.id, null); });
-            } catch(e) {}
-          })();
+          var result = db.prepare(`UPDATE servicios SET estado='activo' WHERE cliente_id=? AND estado='suspendido'`).run(clientId);
+          // Solo enviar notificación si realmente se reactivó al menos un servicio
+          if (result.changes > 0) {
+            (async function() {
+              try {
+                var svcs = db.prepare('SELECT id FROM servicios WHERE cliente_id=? AND estado=?').all(clientId, 'activo');
+                svcs.forEach(function(s) { sendReactivationNotification(clientId, s.id, null); });
+              } catch(e) {}
+            })();
+          }
         }
 
+        // Enviar confirmación de pago
+        (async function() {
+          try { sendPaymentConfirmation(clientId, montoPagar, metodo, paymentIds.length > 0 ? paymentIds[0].factura_id : null); } catch(e) {}
+        })();
+        
         var msg = 'Pago registrado exitosamente por $' + montoPagar.toFixed(2);
         return res.json({ status: 'success', msg: msg, payment_ids: paymentIds.map(function(p){return p.id;}) });
       }
@@ -772,15 +779,22 @@ app.all('/modulo', requireAuth, (req, res) => {
         payAdv();
 
         if (activar === 'si') {
-          db.prepare(`UPDATE servicios SET estado='activo' WHERE cliente_id=? AND estado='suspendido'`).run(clientId);
-          // Enviar notificación de reactivación
-          (async function() {
-            try {
-              var svcs = db.prepare('SELECT id FROM servicios WHERE cliente_id=? AND estado=?').all(clientId, 'activo');
-              svcs.forEach(function(s) { sendReactivationNotification(clientId, s.id, null); });
-            } catch(e) {}
-          })();
+          var result2 = db.prepare(`UPDATE servicios SET estado='activo' WHERE cliente_id=? AND estado='suspendido'`).run(clientId);
+          // Solo enviar notificación si realmente se reactivó al menos un servicio
+          if (result2.changes > 0) {
+            (async function() {
+              try {
+                var svcs = db.prepare('SELECT id FROM servicios WHERE cliente_id=? AND estado=?').all(clientId, 'activo');
+                svcs.forEach(function(s) { sendReactivationNotification(clientId, s.id, null); });
+              } catch(e) {}
+            })();
+          }
         }
+        
+        // Enviar confirmación de pago
+        (async function() {
+          try { sendPaymentConfirmation(clientId, montoPagar, metodo, paymentIds.length > 0 ? paymentIds[0].factura_id : null); } catch(e) {}
+        })();
 
         return res.json({ status: 'success', msg: 'Adelanto registrado por $' + montoPagar.toFixed(2), payment_ids: paymentIds.map(function(p){return p.id;}) });
       }
@@ -2140,7 +2154,14 @@ app.all('/modulo', requireAuth, (req, res) => {
         }
         if (req.body.accion === 'eliminar') {
           const id = parseInt(req.body.id_ciclo) || 0;
-          if (id) db.prepare('DELETE FROM billing_cycles WHERE id=?').run(id);
+          if (id) {
+            var svcCount = db.prepare('SELECT COUNT(*) as c FROM servicios WHERE ciclo_id=?').get(id);
+            if (svcCount && svcCount.c > 0) {
+              // Reasignar servicios a null antes de eliminar
+              db.prepare("UPDATE servicios SET ciclo_id=NULL WHERE ciclo_id=?").run(id);
+            }
+            db.prepare('DELETE FROM billing_cycles WHERE id=?').run(id);
+          }
           return res.redirect('/modulo?pagina=Facturacion');
         }
       }
@@ -3081,7 +3102,13 @@ app.post('/modulo', (req, res, next) => {
   }
   if (req.body && req.body.accion === 'eliminar') {
     const id = parseInt(req.body.id_ciclo) || 0;
-    if (id) db.prepare('DELETE FROM billing_cycles WHERE id=?').run(id);
+    if (id) {
+      var svcCount2 = db.prepare('SELECT COUNT(*) as c FROM servicios WHERE ciclo_id=?').get(id);
+      if (svcCount2 && svcCount2.c > 0) {
+        db.prepare('UPDATE servicios SET ciclo_id=NULL WHERE ciclo_id=?').run(id);
+      }
+      db.prepare('DELETE FROM billing_cycles WHERE id=?').run(id);
+    }
     return res.redirect('/modulo?pagina=Facturacion');
   }
   
@@ -3423,6 +3450,68 @@ app.post('/api/routers/ppp/add-secret', requireAuth, async (req, res) => {
 app.get('/api/planes', requireAuth, (req, res) => {
   const planes = db.prepare('SELECT p.*, (SELECT COUNT(*) FROM servicios WHERE plan_id=p.id) as servicios_count FROM planes p ORDER BY p.nombre').all();
   res.json(planes);
+});
+
+// POST /api/planes/save - Create or update plan
+app.post('/api/planes/save', requireAuth, (req, res) => {
+  try {
+    const { id, nombre, precio, velocidad_subida, velocidad_bajada, upload_burst, download_burst,
+      burst_threshold_up, burst_threshold_down, perfil_mikrotik, perfil_olt_descarga, perfil_olt_subida,
+      zonas, disponible } = req.body;
+    
+    if (!nombre || !nombre.trim()) {
+      return res.json({ success: false, message: 'El nombre del plan es requerido' });
+    }
+    
+    const planId = parseInt(id) || 0;
+    if (planId > 0) {
+      db.prepare(`UPDATE planes SET nombre=?, precio=?, velocidad=?, velocidad_subida=?, velocidad_bajada=?,
+        upload_burst=?, download_burst=?, burst_threshold_up=?, burst_threshold_down=?,
+        perfil_mikrotik=?, perfil_olt_descarga=?, perfil_olt_subida=?, zonas=?, disponible=? WHERE id=?`)
+        .run(nombre.trim(), parseFloat(precio) || 0, velocidad_subida || velocidad_bajada || '',
+          velocidad_subida || '', velocidad_bajada || '', upload_burst || '', download_burst || '',
+          burst_threshold_up || '', burst_threshold_down || '', perfil_mikrotik || '',
+          perfil_olt_descarga || '', perfil_olt_subida || '', zonas || 'all', disponible !== 0 ? 1 : 0, planId);
+    } else {
+      db.prepare(`INSERT INTO planes (nombre, precio, velocidad, velocidad_subida, velocidad_bajada,
+        upload_burst, download_burst, burst_threshold_up, burst_threshold_down,
+        perfil_mikrotik, perfil_olt_descarga, perfil_olt_subida, zonas, disponible)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`)
+        .run(nombre.trim(), parseFloat(precio) || 0, velocidad_subida || velocidad_bajada || '',
+          velocidad_subida || '', velocidad_bajada || '', upload_burst || '', download_burst || '',
+          burst_threshold_up || '', burst_threshold_down || '', perfil_mikrotik || '',
+          perfil_olt_descarga || '', perfil_olt_subida || '', zonas || 'all', disponible !== 0 ? 1 : 0);
+    }
+    
+    res.json({ success: true, message: 'Plan guardado' });
+  } catch(e) {
+    res.json({ success: false, message: e.message });
+  }
+});
+
+// POST /api/planes/:id/delete - Delete a plan
+app.post('/api/planes/:id/delete', requireAuth, (req, res) => {
+  try {
+    const id = parseInt(req.params.id) || 0;
+    if (!id) return res.json({ success: false, message: 'ID requerido' });
+    const count = db.prepare('SELECT COUNT(*) as c FROM servicios WHERE plan_id=?').get(id);
+    if (count && count.c > 0) {
+      return res.json({ success: false, message: 'No se puede eliminar: ' + count.c + ' servicio(s) usan este plan' });
+    }
+    db.prepare('DELETE FROM planes WHERE id=?').run(id);
+    res.json({ success: true, message: 'Plan eliminado' });
+  } catch(e) {
+    res.json({ success: false, message: e.message });
+  }
+});
+
+// GET /api/planes/:id - Get single plan
+app.get('/api/planes/:id', requireAuth, (req, res) => {
+  const id = parseInt(req.params.id) || 0;
+  if (!id) return res.json({ success: false, message: 'ID requerido' });
+  const plan = db.prepare('SELECT p.* FROM planes p WHERE p.id=?').get(id);
+  if (!plan) return res.json({ success: false, message: 'Plan no encontrado' });
+  res.json(plan);
 });
 
 // ======== IP POOLS API ========
@@ -3861,6 +3950,37 @@ app.post('/api/ip-pools/asignar', requireAuth, (req, res) => {
     else res.json({ success: false, message: e.message });
   }
 });
+
+// Función: enviar confirmación de pago
+function sendPaymentConfirmation(clienteId, monto, metodo, facturaId) {
+  try {
+    var openwa = require('./openwa-service');
+    var cliente = db.prepare('SELECT nombre, telefono FROM clientes WHERE id=?').get(clienteId);
+    if (!cliente || !cliente.telefono) return;
+    
+    var config = {};
+    var cr = db.prepare("SELECT key, value FROM configuracion WHERE key IN ('empresa_nombre','empresa_telefono')").all();
+    cr.forEach(function(r) { config[r.key] = r.value || ''; });
+    
+    var tpl = db.prepare("SELECT content FROM templates WHERE template_key='confirmacion_pago'").get();
+    if (!tpl || !tpl.content) return;
+    
+    var msg = tpl.content
+      .replace(/{client_name}/g, cliente.nombre || '')
+      .replace(/{payment_amount}/g, '$' + parseFloat(monto || 0).toFixed(2))
+      .replace(/{payment_method}/g, metodo || '')
+      .replace(/{payment_date}/g, new Date().toLocaleDateString('es-DO'))
+      .replace(/{invoice_id}/g, facturaId ? '#' + facturaId : '')
+      .replace(/{total_pendiente}/g, '')
+      .replace(/{plan_name}/g, '')
+      .replace(/{company_name}/g, config.empresa_nombre || '')
+      .replace(/{company_phone}/g, config.empresa_telefono || '');
+    
+    openwa.encolarMensaje(clienteId, null, cliente.telefono, msg, 'confirmacion_pago');
+  } catch(e) {
+    console.log('[Pago] Error notificación:', e.message);
+  }
+}
 
 // ======== SMARTOLT API ========
 const SMARTOLT_BASE = 'https://api.smartolt.com/api';
@@ -4720,7 +4840,8 @@ app.post('/api/smartolt/onu/authorize', requireAuth, async (req, res) => {
         }
       } catch(eDet) {}
     }
-    if (model) params.append('onu_type', model);
+    // No enviamos onu_type para evitar error 'type not defined' en SmartOLT
+    // SmartOLT asigna el tipo automáticamente o permite configurarlo después
     // Siempre Routing a menos que el usuario envíe explícitamente 'bridge'
     var onuMode = 'Routing';
     if (req.body.onu_mode && (req.body.onu_mode.toLowerCase() === 'bridging' || req.body.onu_mode.toLowerCase() === 'bridge')) onuMode = 'Bridging';
@@ -5752,7 +5873,7 @@ app.post('/api/cambio-onu/autorizar-nueva-onu', requireAuth, async (req, res) =>
         cliente_nombre = realClient.nombre;
       }
     }
-    if (onu_type) params.append('onu_type', onu_type);
+    // No enviamos onu_type para evitar error 'type not defined' en SmartOLT
     // Siempre Routing a menos que el usuario envíe explícitamente 'bridge'
     var onuMode = 'Routing';
     if (req.body.onu_mode && (req.body.onu_mode.toLowerCase() === 'bridging' || req.body.onu_mode.toLowerCase() === 'bridge')) onuMode = 'Bridging';

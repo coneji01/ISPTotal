@@ -1,6 +1,6 @@
 /**
- * OpenWa Service v5 - whatsapp-web.js con auto-reconnect robusto,
- * cola de mensajes y health check.
+ * OpenWa Service v6 - whatsapp-web.js ultra estable
+ * Keep-alive, auto-reconnect con backoff, cola de mensajes, health check.
  */
 const path = require('path');
 const fs = require('fs');
@@ -9,7 +9,6 @@ const db = require('./database');
 
 const SESSION_DIR = path.join(__dirname, '..', 'openwa-sessions');
 const QR_FILE = path.join(__dirname, '..', 'openwa-qr.png');
-// Buscar Chrome más reciente disponible
 var CHROME_PATH = '/home/jellyfin/.cache/puppeteer/chrome/linux-131.0.6778.204/chrome-linux64/chrome';
 try {
   var chromeDirs = fs.readdirSync('/home/jellyfin/.cache/puppeteer/chrome/').filter(function(d) { return d.startsWith('linux-'); }).sort();
@@ -23,13 +22,14 @@ let client = null;
 let connectionState = 'disconnected';
 let autoReconnectTimer = null;
 let healthCheckTimer = null;
+let keepAliveTimer = null;
+let reconnectAttempts = 0;
 
 // ========== LIMPIEZA ==========
 
 function cleanupStaleChrome() {
   try {
     var sessionPath = path.join(SESSION_DIR, 'session');
-    // Matar procesos Chrome zombies que usen nuestra sesión
     try {
       var result = execSync("ps aux | grep -i chrome | grep 'user-data-dir.*openwa-sessions' | awk '{print $2}'", { encoding: 'utf8', timeout: 3000 });
       var pids = result.trim().split('\n').filter(Boolean);
@@ -37,7 +37,6 @@ function cleanupStaleChrome() {
         try { process.kill(parseInt(pid), 'SIGKILL'); } catch(e) {}
       });
     } catch(e) {}
-    // Eliminar archivos de candado
     ['SingletonLock','SingletonCookie','SingletonSocket','SingletonConnect'].forEach(function(f) {
       try { fs.unlinkSync(path.join(sessionPath, f)); } catch(e) {}
     });
@@ -73,7 +72,6 @@ function encolarMensaje(clienteId, servicioId, telefono, mensaje, tipo) {
   try {
     db.prepare("INSERT INTO message_queue (cliente_id, servicio_id, telefono, mensaje, tipo) VALUES (?,?,?,?,?)").run(clienteId || null, servicioId || null, telefono, mensaje, tipo || 'bienvenida');
     console.log('[OpenWa] Mensaje encolado para ' + telefono);
-    // Si estamos conectados, procesar inmediatamente
     if (connectionState === 'connected') {
       setTimeout(procesarColaMensajes, 500);
     }
@@ -84,14 +82,39 @@ function encolarMensaje(clienteId, servicioId, telefono, mensaje, tipo) {
   }
 }
 
+// ========== KEEP ALIVE ==========
+// WhatsApp Web desconecta después de ~2h de inactividad
+// Enviamos un ping cada 20 minutos para mantener la sesión activa
+
+function iniciarKeepAlive() {
+  detenerKeepAlive();
+  keepAliveTimer = setInterval(function() {
+    if (!client || connectionState !== 'connected') return;
+    try {
+      // Enviar presencia (visto) a WhatsApp para mantener sesión activa
+      client.sendPresenceAvailable().catch(function() {});
+    } catch(e) {}
+  }, 20 * 60 * 1000); // cada 20 minutos
+}
+
+function detenerKeepAlive() {
+  if (keepAliveTimer) { clearInterval(keepAliveTimer); keepAliveTimer = null; }
+}
+
 // ========== HEALTH CHECK ==========
 
 function iniciarHealthCheck() {
   if (healthCheckTimer) clearInterval(healthCheckTimer);
   healthCheckTimer = setInterval(function() {
-    if (!client) return;
+    if (!client) {
+      // Sin cliente, intentar reconectar si está habilitado
+      if (getConfig().enabled && connectionState === 'disconnected' && !autoReconnectTimer) {
+        console.log('[OpenWa] HealthCheck: sin cliente, reconectando...');
+        start();
+      }
+      return;
+    }
     if (connectionState === 'connected') {
-      // Procesar cola cada 30 segundos si hay mensajes pendientes
       procesarColaMensajes();
     }
   }, 30000);
@@ -115,7 +138,6 @@ function saveConfig(key, value) {
 // ========== START / STOP ==========
 
 async function start() {
-  // Si el cliente existe pero no está connected, destruirlo y recrear
   if (client) {
     if (connectionState === 'connected') return { success: true, msg: 'OpenWa ya está activo' };
     try { await client.destroy(); } catch(e) {}
@@ -126,7 +148,6 @@ async function start() {
   var cfg = getConfig();
   if (!cfg.enabled) return { success: false, msg: 'OpenWa no habilitado' };
 
-  // Limpiar procesos zombies antes de iniciar
   cleanupStaleChrome();
 
   try {
@@ -143,12 +164,23 @@ async function start() {
           '--no-sandbox',
           '--disable-setuid-sandbox',
           '--disable-dev-shm-usage',
-          '--disable-gpu'
+          '--disable-gpu',
+          '--disable-background-networking',
+          '--disable-background-timer-throttling',
+          '--disable-renderer-backgrounding',
+          '--disable-backgrounding-occluded-windows',
+          '--disable-ipc-flooding-protection',
+          '--disable-extensions',
+          '--disable-sync',
+          '--autoplay-policy=user-gesture-required',
+          '--no-first-run',
+          '--disable-features=Translate,MediaRouter'
         ]
       }
     });
 
     connectionState = 'starting';
+    reconnectAttempts = 0;
 
     client.on('qr', function(qrCode) {
       connectionState = 'qr';
@@ -162,12 +194,12 @@ async function start() {
 
     client.on('ready', function() {
       connectionState = 'connected';
+      reconnectAttempts = 0;
       if (autoReconnectTimer) { clearTimeout(autoReconnectTimer); autoReconnectTimer = null; }
       console.log('[OpenWa] Conectado a WhatsApp');
-      // Procesar mensajes en cola pendientes
       procesarColaMensajes();
-      // Iniciar health check
       iniciarHealthCheck();
+      iniciarKeepAlive();
     });
 
     client.on('disconnected', function(reason) {
@@ -175,18 +207,26 @@ async function start() {
       connectionState = 'disconnected';
       client = null;
       detenerHealthCheck();
+      detenerKeepAlive();
       if (getConfig().enabled) {
-        autoReconnectTimer = setTimeout(function() { start(); }, 5000);
+        // Backoff exponencial: 5s, 10s, 20s, 40s, 80s, 160s, 300s max
+        reconnectAttempts++;
+        var delay = Math.min(5000 * Math.pow(2, reconnectAttempts - 1), 300000);
+        console.log('[OpenWa] Reconnect en ' + (delay/1000) + 's (intento #' + reconnectAttempts + ')');
+        autoReconnectTimer = setTimeout(function() { start(); }, delay);
       }
     });
 
-    client.on('auth_failure', function() {
-      console.log('[OpenWa] Fallo de autenticación');
+    client.on('auth_failure', function(msg) {
+      console.log('[OpenWa] Fallo de autenticación:', msg);
       connectionState = 'disconnected';
       client = null;
       detenerHealthCheck();
+      detenerKeepAlive();
       if (getConfig().enabled) {
-        autoReconnectTimer = setTimeout(function() { start(); }, 10000);
+        reconnectAttempts++;
+        var delay = Math.min(5000 * Math.pow(2, reconnectAttempts - 1), 300000);
+        autoReconnectTimer = setTimeout(function() { start(); }, delay);
       }
     });
 
@@ -196,12 +236,14 @@ async function start() {
     client = null;
     connectionState = 'disconnected';
     detenerHealthCheck();
+    detenerKeepAlive();
     return { success: false, msg: 'Error: ' + e.message };
   }
 }
 
 async function stop() {
   detenerHealthCheck();
+  detenerKeepAlive();
   if (autoReconnectTimer) { clearTimeout(autoReconnectTimer); autoReconnectTimer = null; }
   if (!client) {
     cleanupStaleChrome();
@@ -235,14 +277,13 @@ async function sendMessage(phone, message) {
     var cleanPhone = phone.replace(/[^\d]/g, '');
     if (cleanPhone.length === 10) cleanPhone = '1' + cleanPhone;
     
-    // Intentar detectar si es auto-mensaje (solo si client.info está disponible)
     try {
       var wwInfo = client.info ? (client.info.wid ? client.info.wid.user : '') : '';
       if (wwInfo) {
         var cleanWw = wwInfo.replace(/[^\d]/g, '');
         if (cleanWw.length === 10) cleanWw = '1' + cleanWw;
         if (cleanPhone === cleanWw) {
-          console.log('[OpenWa] Saltando auto-mensaje (mismo número que WhatsApp)');
+          console.log('[OpenWa] Saltando auto-mensaje (mismo número)');
           return { success: true, msg: 'Auto-mensaje omitido' };
         }
       }
@@ -252,12 +293,11 @@ async function sendMessage(phone, message) {
     return { success: true, msg: 'Mensaje enviado' };
   } catch(e) {
     var errMsg = e.message || '';
-    // Si el frame se desconectó, reiniciar OpenWa automáticamente
     if (errMsg.includes('detached Frame') || errMsg.includes('No LID for user')) {
-      console.log('[OpenWa] Frame desconectado, reiniciando...');
-      // Destruir cliente y reconectar en 2 segundos
+      console.log('[OpenWa] Frame desconectado, reiniciando en 2s...');
       if (!autoReconnectTimer) {
         detenerHealthCheck();
+        detenerKeepAlive();
         if (client) { try { client.destroy(); } catch(ex) {} client = null; }
         connectionState = 'disconnected';
         autoReconnectTimer = setTimeout(function() { start(); }, 2000);
