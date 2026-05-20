@@ -365,11 +365,14 @@ function selectTemplate(key,el){
   if(smsTa) smsTa.style.display=isSms?'block':'none';
   if(wysiwyg) wysiwyg.style.display=isSms?'none':'block';
   if(htmlTa) htmlTa.style.display=isSms?'none':'block';
-  // Ocultar botón Visual para SMS, mostrar para HTML
+  // Ocultar/mostrar botón Visual según el tipo
   document.querySelectorAll('.tpl-tab').forEach(function(t){
     if(t.getAttribute('data-tab')==='visual') t.style.display=isSms?'none':'inline-block';
   });
-  switchTab('visual',document.querySelector('.tpl-tab[data-tab="visual"]'));
+  // SMS va a la pestaña de código, HTML a visual
+  var tabName=isSms?'code':'visual';
+  var tabEl=document.querySelector('.tpl-tab[data-tab="' + tabName + '"]');
+  if(tabEl) switchTab(tabName, tabEl);
 }
 
 function renderKeys(key){
