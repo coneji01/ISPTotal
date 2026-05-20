@@ -1107,6 +1107,512 @@ app.all('/modulo', requireAuth, (req, res) => {
       `).all();
       break;
     }
+    case 'InventarioAPI': {
+      var invAction = req.query.action || (req.body.action || '');
+
+      // Utility: log inventory movement
+      function invLogMov(invId, tipo, cantidad, tecId, tecNombre, cliServ, detalle, ofiDest) {
+        try {
+          db.prepare('INSERT INTO inventario_movimientos (inventario_id, tipo, cantidad, tecnico_id, tecnico_nombre, cliente_servicio, detalle, oficina_destino) VALUES (?,?,?,?,?,?,?,?)').run(invId, tipo, cantidad||0, tecId||null, tecNombre||null, cliServ||null, detalle||null, ofiDest||null);
+        } catch(e) {}
+      }
+
+      // ===== GET ALL DATA =====
+      if (invAction === 'getAll' || invAction === 'getData') {
+        // Get inventory items (sin asignar)
+        var items = db.prepare("SELECT i.*, COALESCE(i.oficina,'General') as oficina FROM inventario i WHERE i.asignado_a IS NULL AND (i.razon_devolucion IS NULL OR i.razon_devolucion = '') ORDER BY i.id DESC").all();
+
+        // Get assigned items
+        var asignados = db.prepare("SELECT i.*, COALESCE(i.oficina,'General') as oficina FROM inventario i WHERE i.asignado_a IS NOT NULL AND (i.razon_devolucion IS NULL OR i.razon_devolucion = '') ORDER BY i.fecha_asignacion DESC").all();
+
+        // Get returned items
+        var devueltos = db.prepare("SELECT i.*, COALESCE(i.oficina,'General') as oficina FROM inventario i WHERE i.razon_devolucion IS NOT NULL AND i.razon_devolucion != '' ORDER BY i.fecha_devolucion DESC").all();
+
+        // Get personal
+        var personal = db.prepare('SELECT nombre FROM inventario_personal ORDER BY nombre').all().map(function(x) { return x.nombre; });
+
+        // Get offices
+        var oficinas = db.prepare('SELECT nombre FROM inventario_oficinas ORDER BY nombre').all().map(function(x) { return x.nombre; });
+
+        // Get categories summary for dashboard
+        var categoriasResumen = db.prepare("SELECT i.categoria, COUNT(*) as total, SUM(CASE WHEN i.asignado_a IS NULL AND (i.razon_devolucion IS NULL OR i.razon_devolucion = '') THEN 1 ELSE 0 END) as disponibles, COALESCE(i.oficina,'General') as oficina FROM inventario i WHERE i.categoria IS NOT NULL AND i.categoria != '' GROUP BY i.categoria, i.oficina").all();
+
+        // Get tech assignment stats for chart (7 days)
+        var graficaTecnicos = db.prepare("SELECT i.asignado_a as persona, COUNT(*) as total FROM inventario i WHERE i.asignado_a IS NOT NULL AND i.fecha_asignacion >= datetime('now','-7 days') GROUP BY i.asignado_a ORDER BY total DESC").all();
+
+        // Get history
+        var historial = db.prepare('SELECT im.*, i.codigo, i.nombre as nombre_articulo FROM inventario_movimientos im LEFT JOIN inventario i ON i.id=im.inventario_id ORDER BY im.id DESC LIMIT 200').all();
+
+        // Format history dates
+        historial = historial.map(function(h) {
+          var d = h.created_at ? new Date(h.created_at+'Z') : null;
+          var fechaFmt = d ? d.getDate()+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear() : '';
+          var actionLabel = '';
+          if (h.tipo === 'asignacion') actionLabel = 'Asignado a '+(h.tecnico_nombre||'')+(h.cliente_servicio ? ' / '+h.cliente_servicio : '');
+          else if (h.tipo === 'devolucion') actionLabel = 'Devuelto'+(h.detalle ? ': '+h.detalle : '');
+          else if (h.tipo === 'movimiento') actionLabel = 'Movido a '+(h.oficina_destino||'General');
+          else if (h.tipo === 'entrada') actionLabel = 'Entrada x'+h.cantidad;
+          else if (h.tipo === 'reingreso') actionLabel = 'Reingresado';
+          else actionLabel = h.tipo || '-';
+          var tec = h.tecnico_nombre || '';
+          return { fecha: h.created_at ? h.created_at.split(' ')[0] : '', fecha_fmt: fechaFmt, accion: actionLabel, codigo: h.codigo||'', nombre_articulo: h.nombre_articulo||'', tecnico: tec };
+        });
+
+        // Get config
+        var config = {};
+        var configRows = db.prepare("SELECT key, value FROM configuracion WHERE key LIKE 'inv_%'").all();
+        configRows.forEach(function(r) {
+          try { config[r.key.replace('inv_','')] = JSON.parse(r.value); } catch(e) { config[r.key.replace('inv_','')] = r.value; }
+        });
+
+        return res.json({
+          success: true,
+          items: items,
+          asignados: asignados,
+          devoluciones: devueltos,
+          historial: historial,
+          personal: personal,
+          oficinas: oficinas,
+          categorias_resumen: categoriasResumen,
+          grafica_tecnicos: graficaTecnicos,
+          config: config
+        });
+      }
+
+      // ===== GET PAGINATED INVENTORY =====
+      if (invAction === 'getInventarioPaginado') {
+        var invPag = parseInt(req.body.pagina) || 1;
+        var invPP = 30;
+        var invOff = (invPag - 1) * invPP;
+        var invFil = req.body.filtro || 'unassigned';
+        var invBusq = (req.body.busqueda || '').trim();
+        var invCat = req.body.categoria || '';
+        var invOfi = req.body.oficina || '';
+        var invFecFil = req.body.fecha_filtro || '';
+
+        var invW = [];
+        var invP = [];
+
+        if (invFil === 'returned') {
+          invW.push("i.razon_devolucion IS NOT NULL AND i.razon_devolucion != ''");
+        } else if (invFil === 'assigned') {
+          invW.push("i.asignado_a IS NOT NULL AND (i.razon_devolucion IS NULL OR i.razon_devolucion = '')");
+        } else {
+          invW.push("i.asignado_a IS NULL AND (i.razon_devolucion IS NULL OR i.razon_devolucion = '')");
+        }
+
+        if (invBusq) {
+          invW.push('(i.nombre LIKE ? OR i.codigo LIKE ? OR i.serial LIKE ?)');
+          var invLK = '%' + invBusq + '%';
+          invP.push(invLK, invLK, invLK);
+        }
+        if (invCat && invCat !== 'total') {
+          invW.push('i.categoria = ?');
+          invP.push(invCat);
+        }
+        if (invOfi && invOfi !== 'total') {
+          invW.push("COALESCE(i.oficina,'General') = ?");
+          invP.push(invOfi);
+        }
+        if (invFecFil) {
+          invW.push("date(i.created_at) = ?");
+          invP.push(invFecFil);
+        }
+
+        var invWC = invW.length > 0 ? 'WHERE ' + invW.join(' AND ') : '';
+
+        var invTR = db.prepare('SELECT COUNT(*) as cnt FROM inventario i ' + invWC).get.apply(db, invP);
+        var invTot = invTR ? invTR.cnt : 0;
+        var invPags = Math.max(1, Math.ceil(invTot / invPP));
+
+        var invItms = db.prepare('SELECT i.*, COALESCE(i.oficina,\'General\') as oficina FROM inventario i ' + invWC + ' ORDER BY i.id DESC LIMIT ? OFFSET ?').all.apply(db, invP.concat([invPP, invOff]));
+
+        return res.json({ success: true, items: invItms, total_items: invTot, paginas: invPags, pagina_actual: invPag });
+      }
+
+      // ===== REGISTER ITEMS =====
+      if (invAction === 'registerItem' || invAction === 'registrarArticulo') {
+        var items = req.body.items;
+        var cantidad = parseInt(req.body.cantidad) || 1;
+        var nombre = (req.body.nombre || '').trim();
+        var categoria = (req.body.categoria || '').trim();
+        var oficina = (req.body.oficina || '').trim();
+        var esVenta = req.body.es_venta || 0;
+        var precioVenta = parseFloat(req.body.precio_venta) || 0;
+
+        if (!nombre || !categoria) {
+          return res.json({ success: false, message: 'Nombre y categoría son obligatorios' });
+        }
+
+        if (items && Array.isArray(items)) {
+          items.forEach(function(it) {
+            var codigo = (it.codigo || '').trim() || Math.floor(Math.random()*100000000).toString();
+            var serial = (it.serial || '').trim();
+            try {
+              db.prepare('INSERT INTO inventario (codigo, nombre, categoria, stock, precio, es_venta, oficina, serial, precio_venta) VALUES (?,?,?,1,?,?,?,?,?)').run(codigo, nombre, categoria, precioVenta, esVenta, oficina||null, serial||null, precioVenta);
+            } catch(e) {
+              // If code exists, retry with random code
+              if (e.message && e.message.indexOf('UNIQUE') >= 0) {
+                codigo = Math.floor(Math.random()*100000000).toString();
+                db.prepare('INSERT INTO inventario (codigo, nombre, categoria, stock, precio, es_venta, oficina, serial, precio_venta) VALUES (?,?,?,1,?,?,?,?,?)').run(codigo, nombre, categoria, precioVenta, esVenta, oficina||null, serial||null, precioVenta);
+              }
+            }
+          });
+          return res.json({ success: true, message: cantidad + ' artículo(s) registrado(s)', items: items });
+        } else {
+          // Legacy single item
+          var codigo = Math.floor(Math.random()*100000000).toString();
+          db.prepare('INSERT INTO inventario (codigo, nombre, categoria, stock, precio, es_venta, oficina, precio_venta) VALUES (?,?,?,1,?,?,?,?)').run(codigo, nombre, categoria, precioVenta, esVenta, oficina||null, precioVenta);
+          return res.json({ success: true, message: 'Artículo registrado', codigo: codigo });
+        }
+      }
+
+      // ===== ASSIGN ITEM =====
+      if (invAction === 'assignItem' || invAction === 'asignarArticulo') {
+        var codigo = (req.body.codigo || '').trim().toUpperCase();
+        var persona = (req.body.persona || '').trim();
+        var uso = (req.body.uso || req.body.asignado_uso || '').trim();
+        var cliente = (req.body.cliente || req.body.asignado_cliente || '').trim();
+
+        if (!codigo || !persona || !uso) {
+          return res.json({ success: false, message: 'Código, técnico y uso son obligatorios' });
+        }
+
+        var item = db.prepare('SELECT * FROM inventario WHERE codigo=?').get(codigo);
+        if (!item) {
+          return res.json({ success: false, message: 'Artículo no encontrado' });
+        }
+
+        db.prepare('UPDATE inventario SET asignado_a=?, asignado_uso=?, asignado_cliente=?, fecha_asignacion=datetime("now"), stock=0 WHERE codigo=?').run(persona, uso, cliente||null, codigo);
+
+        // Log movement
+        invLogMov(item.id, 'asignacion', 1, null, persona, cliente, 'Uso: '+uso, null);
+
+        // Save to personal table if new
+        try { db.prepare('INSERT OR IGNORE INTO inventario_personal (nombre) VALUES (?)').run(persona); } catch(e) {}
+
+        return res.json({ success: true, message: 'Asignado a ' + persona });
+      }
+
+      // ===== RETURN ITEM =====
+      if (invAction === 'returnItem' || invAction === 'devolverArticulo') {
+        var codigo = (req.body.codigo || '').trim().toUpperCase();
+        var clienteLugar = (req.body.cliente || req.body.clienteLugar || req.body.asignado_cliente || '').trim();
+        var oficina = (req.body.oficina || '').trim();
+        var razon = (req.body.razon || req.body.razon_devolucion || '').trim();
+        var tipoFalla = (req.body.tipoFalla || req.body.tipo_falla || '').trim();
+        var categoria = (req.body.categoria || '').trim();
+
+        if (!codigo) {
+          return res.json({ success: false, message: 'Código requerido' });
+        }
+
+        var item = db.prepare('SELECT * FROM inventario WHERE codigo=?').get(codigo);
+        if (!item) {
+          return res.json({ success: false, message: 'Artículo no encontrado' });
+        }
+
+        var detalle = 'Devuelto / ' + (razon || 'Retiro');
+        if (tipoFalla) detalle += ' | Falla: ' + tipoFalla;
+
+        db.prepare('UPDATE inventario SET razon_devolucion=?, tipo_falla=?, cliente_lugar=?, oficina=?, fecha_devolucion=datetime("now"), asignado_a=NULL, asignado_uso=?, asignado_cliente=?, stock=-1 WHERE codigo=?').run(detalle, tipoFalla||null, clienteLugar||null, oficina||null, detalle, clienteLugar||null, codigo);
+
+        // Log movement
+        invLogMov(item.id, 'devolucion', 0, null, null, clienteLugar, detalle, oficina);
+
+        return res.json({ success: true, message: 'Devolución registrada' });
+      }
+
+      // ===== REUTILIZAR (RE-ENTER INVENTORY) =====
+      if (invAction === 'reutilizarArticulo') {
+        var codigo = (req.body.codigo || '').trim().toUpperCase();
+        var nombre = (req.body.nombre || '').trim();
+        var categoria = (req.body.categoria || '').trim();
+        var oficina = (req.body.oficina || '').trim();
+
+        if (!codigo) {
+          return res.json({ success: false, message: 'Código requerido' });
+        }
+
+        var item = db.prepare('SELECT * FROM inventario WHERE codigo=?').get(codigo);
+        if (!item) {
+          return res.json({ success: false, message: 'Artículo no encontrado' });
+        }
+
+        // Reset item - mark as available again
+        db.prepare('UPDATE inventario SET asignado_a=NULL, asignado_uso=NULL, asignado_cliente=NULL, fecha_asignacion=NULL, razon_devolucion=NULL, tipo_falla=NULL, cliente_lugar=NULL, fecha_devolucion=NULL, stock=1, oficina=? WHERE codigo=?').run(oficina||null, codigo);
+
+        // Log movement
+        invLogMov(item.id, 'reingreso', 1, null, null, null, 'Reingresado al inventario', oficina);
+
+        return res.json({ success: true, message: 'Artículo reingresado' });
+      }
+
+      // ===== MOVE ITEM =====
+      if (invAction === 'moveItem' || invAction === 'moverArticuloOficina') {
+        var codigo = (req.body.codigo || '').trim().toUpperCase();
+        var nuevaOficina = (req.body.nueva_oficina || '').trim();
+
+        if (!codigo) {
+          return res.json({ success: false, message: 'Código requerido' });
+        }
+
+        var item = db.prepare('SELECT * FROM inventario WHERE codigo=?').get(codigo);
+        if (!item) {
+          return res.json({ success: false, message: 'Artículo no encontrado' });
+        }
+
+        var oldOficina = item.oficina || 'General';
+        db.prepare('UPDATE inventario SET oficina=? WHERE codigo=?').run(nuevaOficina||null, codigo);
+
+        // Log movement
+        invLogMov(item.id, 'movimiento', 0, null, null, null, 'De ' + oldOficina + ' a ' + (nuevaOficina || 'General'), nuevaOficina);
+
+        return res.json({ success: true, message: 'Movido a ' + (nuevaOficina || 'General') });
+      }
+
+      // ===== DELETE ITEM =====
+      if (invAction === 'deleteItem' || invAction === 'eliminarArticulo') {
+        var codigo = (req.body.codigo || '').trim().toUpperCase();
+
+        if (!codigo) {
+          return res.json({ success: false, message: 'Código requerido' });
+        }
+
+        var item = db.prepare('SELECT * FROM inventario WHERE codigo=?').get(codigo);
+        if (!item) {
+          return res.json({ success: false, message: 'Artículo no encontrado' });
+        }
+
+        db.prepare('DELETE FROM inventario WHERE codigo=?').run(codigo);
+        return res.json({ success: true, message: 'Eliminado' });
+      }
+
+      // ===== UPDATE PRICE =====
+      if (invAction === 'updatePrice' || invAction === 'actualizarPrecio') {
+        var codigo = (req.body.codigo || '').trim().toUpperCase();
+        var precioVenta = parseFloat(req.body.precio_venta) || 0;
+
+        if (!codigo) {
+          return res.json({ success: false, message: 'Código requerido' });
+        }
+
+        db.prepare('UPDATE inventario SET precio_venta=?, es_venta=? WHERE codigo=?').run(precioVenta, precioVenta > 0 ? 1 : 0, codigo);
+        return res.json({ success: true, message: 'Precio actualizado' });
+      }
+
+      // ===== SEARCH CLIENTS =====
+      if (invAction === 'searchClients') {
+        var term = (req.body.term || '').trim();
+        if (!term || term.length < 2) {
+          return res.json({ success: true, results: [] });
+        }
+
+        var like = '%' + term + '%';
+        var clients = db.prepare('SELECT id, nombre, cedula, telefono, direccion FROM clientes WHERE nombre LIKE ? OR cedula LIKE ? OR telefono LIKE ? OR direccion LIKE ? LIMIT 15').all(like, like, like, like);
+        var orders = db.prepare('SELECT o.id, c.nombre as cliente_nombre, o.direccion_instalacion FROM ordenes o JOIN clientes c ON c.id=o.cliente_id WHERE o.direccion_instalacion LIKE ? OR c.nombre LIKE ? LIMIT 10').all(like, like);
+
+        var results = [];
+        clients.forEach(function(c) {
+          var detail = [];
+          if (c.cedula) detail.push('Cédula: ' + c.cedula);
+          if (c.telefono) detail.push('Tel: ' + c.telefono);
+          results.push({ name: c.nombre, tipo: 'Cliente', detail: detail.join(' | ') });
+        });
+        orders.forEach(function(o) {
+          results.push({ name: (o.cliente_nombre || '') + ' - Orden #' + o.id, tipo: 'Orden', detail: o.direccion_instalacion || '' });
+        });
+
+        return res.json({ success: true, results: results });
+      }
+
+      // ===== GET REPORTS =====
+      if (invAction === 'getReports' || invAction === 'getArticulosPorTecnico') {
+        var tecnico = (req.body.tecnico || '').trim();
+        var rango = req.body.rango || 'todo';
+
+        if (!tecnico) {
+          return res.json([]);
+        }
+
+        var dateFilter = '';
+        if (rango === 'today') dateFilter = " AND date(i.fecha_asignacion) = date('now')";
+        else if (rango === '7d') dateFilter = " AND i.fecha_asignacion >= datetime('now','-7 days')";
+        else if (rango === '30d') dateFilter = " AND i.fecha_asignacion >= datetime('now','-30 days')";
+
+        var items = db.prepare('SELECT i.codigo, i.nombre, i.categoria, i.fecha_asignacion as fecha FROM inventario i WHERE i.asignado_a=? ' + dateFilter + ' ORDER BY i.fecha_asignacion DESC').all(tecnico);
+
+        if (req.body.accion === 'getReports') {
+          return res.json({ success: true, data: items });
+        }
+        return res.json(items);
+      }
+
+      // ===== SAVE CONFIG =====
+      if (invAction === 'saveConfig' || invAction === 'guardarConfig') {
+        var clave = req.body.clave || '';
+        var valor = req.body.valor;
+
+        if (!clave) {
+          return res.json({ success: false, message: 'Clave requerida' });
+        }
+
+        var strVal = typeof valor === 'object' ? JSON.stringify(valor) : String(valor);
+        try {
+          db.prepare("INSERT OR REPLACE INTO configuracion (key, value) VALUES (?,?)").run('inv_' + clave, strVal);
+        } catch(e) {
+          return res.json({ success: false, message: 'Error guardando: ' + e.message });
+        }
+
+        return res.json({ success: true, message: 'Configuración guardada' });
+      }
+
+      // ===== SAVE/SAVE ALERT =====
+      if (invAction === 'saveAlert' || invAction === 'guardarAlerta') {
+        var categoria = (req.body.categoria || '').trim();
+        var minimo = parseInt(req.body.minimo) || 5;
+
+        if (!categoria) {
+          return res.json({ success: false, message: 'Categoría requerida' });
+        }
+
+        try {
+          var existing = db.prepare('SELECT id FROM inventario_alertas WHERE categoria=?').get(categoria);
+          if (existing) {
+            db.prepare('UPDATE inventario_alertas SET minimo=? WHERE id=?').run(minimo, existing.id);
+          } else {
+            db.prepare('INSERT INTO inventario_alertas (categoria, minimo) VALUES (?,?)').run(categoria, minimo);
+          }
+          return res.json({ success: true, message: 'Alerta guardada' });
+        } catch(e) {
+          return res.json({ success: false, message: 'Error: ' + e.message });
+        }
+      }
+
+      // ===== STAFF MANAGEMENT =====
+      if (invAction === 'saveStaff' || invAction === 'gestionPersonal') {
+        var subAction = req.body.subAction || (req.body.accion || '');
+        var nombre = (req.body.nombre || '').trim();
+
+        if (!nombre) {
+          return res.json({ success: false, message: 'Nombre requerido' });
+        }
+
+        try {
+          if (subAction === 'add') {
+            db.prepare('INSERT OR IGNORE INTO inventario_personal (nombre) VALUES (?)').run(nombre);
+          } else if (subAction === 'del') {
+            db.prepare('DELETE FROM inventario_personal WHERE nombre=?').run(nombre);
+          }
+          return res.json({ success: true });
+        } catch(e) {
+          return res.json({ success: false, message: 'Error: ' + e.message });
+        }
+      }
+
+      if (invAction === 'deleteStaff') {
+        var nombre = (req.body.nombre || '').trim();
+        try {
+          db.prepare('DELETE FROM inventario_personal WHERE nombre=?').run(nombre);
+          return res.json({ success: true });
+        } catch(e) {
+          return res.json({ success: false, message: e.message });
+        }
+      }
+
+      // ===== OFFICE MANAGEMENT =====
+      if (invAction === 'saveOffice' || invAction === 'gestionOficinas') {
+        var subAction = req.body.subAction || (req.body.accion || '');
+        var nombre = (req.body.nombre || '').trim();
+
+        if (!nombre) {
+          return res.json({ success: false, message: 'Nombre requerido' });
+        }
+
+        try {
+          if (subAction === 'add') {
+            db.prepare('INSERT OR IGNORE INTO inventario_oficinas (nombre) VALUES (?)').run(nombre);
+          } else if (subAction === 'del') {
+            db.prepare('DELETE FROM inventario_oficinas WHERE nombre=?').run(nombre);
+          }
+          return res.json({ success: true });
+        } catch(e) {
+          return res.json({ success: false, message: 'Error: ' + e.message });
+        }
+      }
+
+      if (invAction === 'deleteOffice') {
+        var nombre = (req.body.nombre || '').trim();
+        try {
+          db.prepare('DELETE FROM inventario_oficinas WHERE nombre=?').run(nombre);
+          return res.json({ success: true });
+        } catch(e) {
+          return res.json({ success: false, message: e.message });
+        }
+      }
+
+      // ===== PRINT LABEL =====
+      if (invAction === 'printLabel') {
+        var codigo = (req.body.codigo || '').trim();
+        var item = db.prepare('SELECT * FROM inventario WHERE codigo=?').get(codigo);
+        if (!item) {
+          return res.json({ success: false, message: 'No encontrado' });
+        }
+        return res.json({ success: true, item: item });
+      }
+
+      // ===== TEST EMAIL =====
+      if (invAction === 'testSMTP') {
+        var config = req.body.config;
+        if (!config || !config.host || !config.user) {
+          return res.json({ success: false, message: 'Configuración SMTP incompleta' });
+        }
+        // Asynchronously attempt to send test email
+        (async function() {
+          try {
+            var nodemailer = require('nodemailer');
+            var transporter = nodemailer.createTransport({
+              host: config.host,
+              port: parseInt(config.port) || 587,
+              secure: config.tls ? true : false,
+              auth: { user: config.user, pass: config.pass || '' }
+            });
+            await transporter.sendMail({
+              from: config.from || config.user,
+              to: config.receiver || config.user,
+              subject: 'Prueba SMTP - ISP Total Inventario',
+              text: 'Esta es una prueba de configuración SMTP desde el módulo de Inventario.'
+            });
+          } catch(e) {
+            console.log('[Inventario] Test SMTP error:', e.message);
+          }
+        })();
+        return res.json({ success: true, message: 'Correo enviado (si la config es correcta)' });
+      }
+
+      // ===== TEST MESSAGE =====
+      if (invAction === 'testMensaje') {
+        var phone = (req.body.phone || '').trim();
+        if (!phone) {
+          return res.json({ success: false, message: 'Teléfono requerido' });
+        }
+        (async function() {
+          try {
+            var openwa = require('./openwa-service');
+            var result = await openwa.sendMessage(phone, 'Mensaje de prueba desde el módulo de Inventario.');
+            if (result && result.success) {
+              console.log('[Inventario] Mensaje de prueba enviado a', phone);
+            }
+          } catch(e) {
+            console.log('[Inventario] Test message error:', e.message);
+          }
+        })();
+        return res.json({ success: true, message: 'Mensaje encolado' });
+      }
+
+      // Unknown action
+      return res.json({ success: false, message: 'Acción no reconocida: ' + invAction });
+    }
     case 'Ventas': {
       var ventAjax = req.query.ajax;
 
@@ -1770,90 +2276,233 @@ app.all('/modulo', requireAuth, (req, res) => {
     }
     case 'Estadisticas': {
       const ajax = req.query.ajax;
+      const zonas = db.prepare('SELECT * FROM zonas ORDER BY nombre').all();
 
-      // --- dashboard: estadísticas generales + pagos por mes para Chart.js ---
-      if (ajax === 'dashboard') {
-        const year = parseInt(req.query.year) || new Date().getFullYear();
+      // ===================== get_stats =====================
+      if (ajax === 'get_stats') {
+        const mes = parseInt(req.query.mes) || new Date().getMonth() + 1;
+        const anio = parseInt(req.query.anio) || new Date().getFullYear();
+        const zona = parseInt(req.query.zona) || 0;
+        const modo = req.query.modo || 'finanzas';
+        const rango = req.query.rango || 'mes';
 
-        const ingresosMes = db.prepare("SELECT COALESCE(SUM(monto),0) as t FROM pagos WHERE strftime('%Y-%m', created_at)=strftime('%Y-%m','now')").get().t;
-        const activos = db.prepare("SELECT COUNT(*) as c FROM servicios WHERE estado='activo'").get().c;
-        const suspendidos = db.prepare("SELECT COUNT(*) as c FROM servicios WHERE estado='suspendido'").get().c;
-        const serviciosTotales = db.prepare('SELECT COUNT(*) as c FROM servicios').get().c;
-        const cobradoHoy = db.prepare("SELECT COALESCE(SUM(monto),0) as t FROM pagos WHERE date(created_at)=date('now')").get().t;
-        const cobradoMes = db.prepare("SELECT COALESCE(SUM(monto),0) as t FROM pagos WHERE strftime('%Y-%m', created_at)=strftime('%Y-%m','now')").get().t;
-        const pendienteTotal = db.prepare("SELECT COALESCE(SUM(f.monto - COALESCE((SELECT SUM(p.monto) FROM pagos p WHERE p.factura_id=f.id),0)),0) as t FROM facturas f WHERE f.estado='pendiente'").get().t;
+        let fechaWhere = '';
+        let fechaParams = [];
+        if (rango === 'dia') {
+          fechaWhere = "AND date(p.created_at)=date('now')";
+        } else if (rango === 'semana') {
+          fechaWhere = "AND p.created_at >= datetime('now', '-7 days')";
+        } else if (rango === 'mes') {
+          if (mes > 0 && anio > 0) {
+            var ms = String(mes).padStart(2,'0');
+            fechaWhere = "AND strftime('%Y-%m', p.created_at)=?";
+            fechaParams.push(anio+'-'+ms);
+          } else {
+            fechaWhere = "AND strftime('%Y-%m', p.created_at)=strftime('%Y-%m','now')";
+          }
+        } else if (rango === 'anio') {
+          fechaWhere = "AND strftime('%Y', p.created_at)=?";
+          fechaParams.push(String(anio));
+        }
 
-        // Pagos por mes (12 meses)
-        const pagosPorMes = db.prepare(`
-          SELECT strftime('%m', created_at) as mes, strftime('%Y', created_at) as anio, COALESCE(SUM(monto),0) as total
-          FROM pagos
-          WHERE strftime('%Y', created_at) = ?
-          GROUP BY strftime('%m', created_at), strftime('%Y', created_at)
-          ORDER BY mes
-        `).all(String(year));
+        let zonaWhere = '';
+        let zonaParams = [];
+        if (zona > 0) {
+          zonaWhere = 'AND (s.zona_id=? OR c.zona_id=?)';
+          zonaParams.push(zona, zona);
+        }
 
-        // Instalados vs retirados por mes (12 meses)
-        const instaladosMes = db.prepare(`
-          SELECT substr(fecha_activacion,6,2) as mes, COUNT(*) as total
-          FROM servicios
-          WHERE strftime('%Y', fecha_activacion) = ?
-          GROUP BY substr(fecha_activacion,6,2)
-          ORDER BY mes
-        `).all(String(year));
+        // ===== MODO FINANZAS =====
+        if (modo === 'finanzas') {
+          var tw = 'WHERE 1=1' + fechaWhere + zonaWhere;
+          var ap = fechaParams.concat(zonaParams);
+          var cobradoTotal = db.prepare('SELECT COALESCE(SUM(p.monto),0) as t FROM pagos p LEFT JOIN servicios s ON s.id=p.servicio_id LEFT JOIN clientes c ON c.id=p.cliente_id ' + tw).get.apply(db, ap);
+          var pendienteTotal = db.prepare("SELECT COALESCE(SUM(f.monto - COALESCE((SELECT SUM(pg.monto) FROM pagos pg WHERE pg.factura_id=f.id),0)),0) as t FROM facturas f JOIN servicios s ON s.id=f.servicio_id WHERE f.estado='pendiente' AND f.monto > COALESCE((SELECT SUM(pg.monto) FROM pagos pg WHERE pg.factura_id=f.id),0)" + (zona>0?' AND s.zona_id=?':'')).get.apply(db, zona>0?[zona]:[]);
+          var gastosTotal = db.prepare('SELECT COALESCE(SUM(monto),0) as t FROM gastos WHERE strftime(?,created_at)=?').get('%Y-%m', anio+'-'+String(mes).padStart(2,'0'));
+          var cobradoPorMetodo = db.prepare("SELECT p.metodo as metodo, COALESCE(SUM(p.monto),0) as total, COUNT(*) as cantidad FROM pagos p LEFT JOIN servicios s ON s.id=p.servicio_id LEFT JOIN clientes c ON c.id=p.cliente_id " + tw + " GROUP BY p.metodo ORDER BY total DESC").all.apply(db, ap);
+          var cobradoPorCobrador = db.prepare('SELECT u.nombre as cobrador, COALESCE(SUM(p.monto),0) as total, COUNT(*) as cantidad FROM pagos p LEFT JOIN servicios s ON s.id=p.servicio_id LEFT JOIN clientes c ON c.id=p.cliente_id LEFT JOIN usuarios u ON u.id=p.usuario_id ' + tw + (zona>0?' AND (s.zona_id=? OR c.zona_id=?)':'') + ' GROUP BY u.nombre ORDER BY total DESC').all.apply(db, ap.concat(zona>0?[zona,zona]:[]));
+          var pagosPorMes = db.prepare('SELECT strftime(?,created_at) as mes, COALESCE(SUM(monto),0) as total FROM pagos WHERE strftime(?,created_at)=? GROUP BY strftime(?,created_at) ORDER BY mes').all('%Y-%m', '%Y-%m', String(anio), '%Y-%m');
+          var cobradoHoy = db.prepare("SELECT COALESCE(SUM(monto),0) as t FROM pagos WHERE date(created_at)=date('now')").get().t;
+          var cobradoMesActual = db.prepare("SELECT COALESCE(SUM(monto),0) as t FROM pagos WHERE strftime('%Y-%m', created_at)=strftime('%Y-%m','now')").get().t;
+          var ultimosPagos = db.prepare('SELECT p.id, p.monto, p.metodo, p.created_at, c.nombre as cliente_nombre, c.id as cliente_id FROM pagos p LEFT JOIN clientes c ON c.id=p.cliente_id ORDER BY p.id DESC LIMIT 15').all();
+          return res.json({
+            success: true, modo: 'finanzas',
+            cobradoTotal: cobradoTotal.t, pendienteTotal: pendienteTotal.t, gastosTotal: gastosTotal.t,
+            cobradoHoy: cobradoHoy, cobradoMesActual: cobradoMesActual,
+            cobradoPorMetodo: cobradoPorMetodo, cobradoPorCobrador: cobradoPorCobrador,
+            pagosPorMes: pagosPorMes, ultimosPagos: ultimosPagos, mes: mes, anio: anio
+          });
+        }
 
-        const retiradosMes = db.prepare(`
-          SELECT substr(fecha_suspension,6,2) as mes, COUNT(*) as total
-          FROM servicios
-          WHERE strftime('%Y', fecha_suspension) = ? AND fecha_suspension IS NOT NULL
-          GROUP BY substr(fecha_suspension,6,2)
-          ORDER BY mes
-        `).all(String(year));
+        // ===== MODO CLIENTES =====
+        if (modo === 'clientes') {
+          var czw = '';
+          var czp = [];
+          if (zona > 0) { czw = 'WHERE c.zona_id=?'; czp.push(zona); }
+          var totalClientes = db.prepare('SELECT COUNT(*) as c FROM clientes c ' + czw).get.apply(db, czp);
+          var activos = db.prepare('SELECT COUNT(*) as c FROM servicios s LEFT JOIN clientes c ON c.id=s.cliente_id WHERE s.estado=?' + (zona>0?' AND (s.zona_id=? OR c.zona_id=?)':'')).get.apply(db, ['activo'].concat(zona>0?[zona,zona]:[]));
+          var suspendidos = db.prepare('SELECT COUNT(*) as c FROM servicios s LEFT JOIN clientes c ON c.id=s.cliente_id WHERE s.estado=?' + (zona>0?' AND (s.zona_id=? OR c.zona_id=?)':'')).get.apply(db, ['suspendido'].concat(zona>0?[zona,zona]:[]));
+          var sinServicio = db.prepare('SELECT COUNT(*) as c FROM clientes c WHERE (SELECT COUNT(*) FROM servicios s WHERE s.cliente_id=c.id AND s.estado!=?) = 0' + (zona>0?' AND c.zona_id=?':'')).get.apply(db, ['retirado'].concat(zona>0?[zona]:[]));
+          var serviciosPorPlan = db.prepare("SELECT p.nombre as plan, p.precio, COUNT(*) as total, SUM(CASE WHEN s.estado='activo' THEN 1 ELSE 0 END) as activos, SUM(CASE WHEN s.estado='suspendido' THEN 1 ELSE 0 END) as suspendidos FROM servicios s LEFT JOIN planes p ON p.id=s.plan_id LEFT JOIN clientes c ON c.id=s.cliente_id WHERE s.plan_id IS NOT NULL" + (zona>0?' AND s.zona_id=?':'') + ' GROUP BY s.plan_id ORDER BY total DESC').all.apply(db, zona>0?[zona]:[]);
+          var serviciosPorZona = db.prepare("SELECT z.nombre as zona, COUNT(*) as total, SUM(CASE WHEN s.estado='activo' THEN 1 ELSE 0 END) as activos, SUM(CASE WHEN s.estado='suspendido' THEN 1 ELSE 0 END) as suspendidos FROM servicios s LEFT JOIN zonas z ON z.id=s.zona_id LEFT JOIN clientes c ON c.id=s.cliente_id WHERE s.zona_id IS NOT NULL" + (zona>0?' AND s.zona_id=?':'') + ' GROUP BY s.zona_id ORDER BY total DESC').all.apply(db, zona>0?[zona]:[]);
+          var instaladosMes = db.prepare('SELECT strftime(?,fecha_activacion) as mes, COUNT(*) as total FROM servicios WHERE fecha_activacion IS NOT NULL AND strftime(?,fecha_activacion)=? GROUP BY strftime(?,fecha_activacion) ORDER BY mes').all('%Y-%m', '%Y-%m', String(anio)+'-'+String(mes).padStart(2,'0'), '%Y-%m');
+          var retiradosMes = db.prepare('SELECT COUNT(*) as total FROM servicios WHERE fecha_suspension IS NOT NULL AND strftime(?,fecha_suspension)=?').get('%Y-%m', String(anio)+'-'+String(mes).padStart(2,'0'));
+          return res.json({
+            success: true, modo: 'clientes',
+            totalClientes: totalClientes.c, activos: activos.c, suspendidos: suspendidos.c, sinServicio: sinServicio.c,
+            serviciosPorPlan: serviciosPorPlan, serviciosPorZona: serviciosPorZona,
+            instaladosMes: instaladosMes, retiradosMes: retiradosMes?retiradosMes.total:0,
+            mes: mes, anio: anio
+          });
+        }
+        return res.json({ success: false, message: 'Modo no especificado' });
+      }
 
-        return res.json({
-          success: true,
-          stats: {
-            ingresosMes: ingresosMes,
-            clientesActivos: activos,
-            clientesSuspendidos: suspendidos,
-            serviciosTotales: serviciosTotales,
-            cobradoHoy: cobradoHoy,
-            cobradoMes: cobradoMes,
-            pendienteTotal: pendienteTotal
-          },
-          pagosPorMes: pagosPorMes,
-          instaladosMes: instaladosMes,
-          retiradosMes: retiradosMes
+      // ===================== get_invoices_detail =====================
+      if (ajax === 'get_invoices_detail') {
+        const page = Math.max(1, parseInt(req.query.page)||1);
+        const limit = Math.min(50, parseInt(req.query.limit)||15);
+        const offset = (page-1)*limit;
+        const tipo = req.query.tipo||'todas';
+        const order = req.query.order||'id';
+        const dir = req.query.dir==='asc'?'ASC':'DESC';
+        const search = (req.query.search||'').trim();
+        let where = 'WHERE 1=1';
+        let params = [];
+        if (tipo==='pendientes') { where += " AND f.estado='pendiente' AND f.monto > COALESCE((SELECT SUM(pg.monto) FROM pagos pg WHERE pg.factura_id=f.id),0)"; }
+        else if (tipo==='pagadas') { where += " AND f.estado='pagada'"; }
+        else if (tipo==='vencidas') { where += " AND f.estado='pendiente' AND f.monto > COALESCE((SELECT SUM(pg.monto) FROM pagos pg WHERE pg.factura_id=f.id),0) AND date(f.fecha_vencimiento) < date('now')"; }
+        if (search) { where += ' AND (c.nombre LIKE ? OR f.periodo LIKE ?)'; params.push('%'+search+'%','%'+search+'%'); }
+        var oc = 'ORDER BY f.id DESC';
+        if (order==='monto') oc = 'ORDER BY f.monto '+dir;
+        else if (order==='cliente') oc = 'ORDER BY c.nombre '+dir;
+        else if (order==='vencimiento') oc = 'ORDER BY f.fecha_vencimiento '+dir;
+        else if (order==='periodo') oc = 'ORDER BY f.periodo '+dir;
+        var cr = db.prepare('SELECT COUNT(*) as total FROM facturas f LEFT JOIN servicios s ON s.id=f.servicio_id LEFT JOIN clientes c ON c.id=s.cliente_id '+where).get.apply(db,params);
+        var total = cr?cr.total:0;
+        var rows = db.prepare('SELECT f.id, f.servicio_id, f.periodo, f.monto, f.estado, f.fecha_emision, f.fecha_vencimiento, f.created_at, c.nombre as cliente_nombre, c.id as cliente_id, COALESCE((SELECT SUM(pg.monto) FROM pagos pg WHERE pg.factura_id=f.id),0) as pagado FROM facturas f LEFT JOIN servicios s ON s.id=f.servicio_id LEFT JOIN clientes c ON c.id=s.cliente_id '+where+' '+oc+' LIMIT ? OFFSET ?').all.apply(db,params.concat([limit,offset]));
+        rows.forEach(function(r){
+          var pg = parseFloat(r.pagado)||0;
+          var mt = parseFloat(r.monto)||0;
+          if (pg>=mt) { r.estado_legible='Pagada'; r.estado_class='pagada'; }
+          else if (pg>0) { r.estado_legible='Parcial'; r.estado_class='parcial'; }
+          else if (r.fecha_vencimiento && new Date(r.fecha_vencimiento)<new Date()) { r.estado_legible='Vencida'; r.estado_class='vencida'; }
+          else { r.estado_legible='Pendiente'; r.estado_class='pendiente'; }
+          r.restante = mt-pg;
         });
+        return res.json({ success:true, data:rows, total:total, page:page, pages:Math.max(1,Math.ceil(total/limit)) });
       }
 
-      // --- recent_payments: últimos pagos registrados ---
-      if (ajax === 'recent_payments') {
-        const limit = parseInt(req.query.limit) || 20;
-        const pagos = db.prepare(`
-          SELECT p.id, p.monto, p.metodo, p.created_at, c.nombre as cliente_nombre, c.id as cliente_id,
-                 z.nombre as zona_nombre
-          FROM pagos p
-          LEFT JOIN clientes c ON c.id = p.cliente_id
-          LEFT JOIN servicios s ON s.id = p.servicio_id
-          LEFT JOIN zonas z ON z.id = s.zona_id
-          ORDER BY p.id DESC
-          LIMIT ?
-        `).all(limit);
-        return res.json({ success: true, data: pagos });
+      // ===================== get_services_detail =====================
+      if (ajax === 'get_services_detail') {
+        const page = Math.max(1, parseInt(req.query.page)||1);
+        const limit = Math.min(50, parseInt(req.query.limit)||15);
+        const offset = (page-1)*limit;
+        const estado = req.query.estado||'todos';
+        const order = req.query.order||'id';
+        const dir = req.query.dir==='asc'?'ASC':'DESC';
+        const search = (req.query.search||'').trim();
+        const zonaFiltro = parseInt(req.query.zona)||0;
+        let where = 'WHERE 1=1';
+        let params = [];
+        if (estado && estado!=='todos') { where += ' AND s.estado=?'; params.push(estado); }
+        if (zonaFiltro>0) { where += ' AND (s.zona_id=? OR c.zona_id=?)'; params.push(zonaFiltro,zonaFiltro); }
+        if (search) { where += ' AND (c.nombre LIKE ? OR s.direccion LIKE ? OR s.ip LIKE ?)'; params.push('%'+search+'%','%'+search+'%','%'+search+'%'); }
+        var oc = 'ORDER BY s.id DESC';
+        if (order==='nombre') oc = 'ORDER BY c.nombre '+dir;
+        else if (order==='plan') oc = 'ORDER BY p.nombre '+dir;
+        else if (order==='zona') oc = 'ORDER BY z.nombre '+dir;
+        else if (order==='estado') oc = 'ORDER BY s.estado '+dir;
+        var cr = db.prepare('SELECT COUNT(*) as total FROM servicios s LEFT JOIN clientes c ON c.id=s.cliente_id LEFT JOIN planes p ON p.id=s.plan_id LEFT JOIN zonas z ON z.id=s.zona_id '+where).get.apply(db,params);
+        var total = cr?cr.total:0;
+        var rows = db.prepare('SELECT s.id, s.cliente_id, s.estado, s.ip, s.direccion, s.fecha_activacion, s.fecha_suspension, s.created_at, c.nombre as cliente_nombre, c.telefono, p.nombre as plan_nombre, p.precio as plan_precio, z.nombre as zona_nombre FROM servicios s LEFT JOIN clientes c ON c.id=s.cliente_id LEFT JOIN planes p ON p.id=s.plan_id LEFT JOIN zonas z ON z.id=s.zona_id '+where+' '+oc+' LIMIT ? OFFSET ?').all.apply(db,params.concat([limit,offset]));
+        return res.json({ success:true, data:rows, total:total, page:page, pages:Math.max(1,Math.ceil(total/limit)) });
       }
 
-      // --- Initial page load data ---
+      // ===================== print handlers =====================
+      if (ajax === 'print_services') {
+        var rows = db.prepare("SELECT s.id, s.estado, s.ip, s.direccion, s.fecha_activacion, c.nombre as cliente_nombre, c.cedula, c.telefono, p.nombre as plan_nombre, p.precio as plan_precio, z.nombre as zona_nombre FROM servicios s LEFT JOIN clientes c ON c.id=s.cliente_id LEFT JOIN planes p ON p.id=s.plan_id LEFT JOIN zonas z ON z.id=s.zona_id WHERE s.estado NOT IN ('retirado') ORDER BY z.nombre, c.nombre").all();
+        var h = generarHTMLImpresion('Listado de Servicios', rows, 'servicios');
+        res.set('Content-Type','text/html; charset=utf-8'); return res.send(h);
+      }
+      if (ajax === 'print_suspended') {
+        var rows = db.prepare("SELECT s.id, s.estado, s.ip, s.direccion, s.fecha_suspension, c.nombre as cliente_nombre, c.cedula, c.telefono, p.nombre as plan_nombre, p.precio as plan_precio, z.nombre as zona_nombre FROM servicios s LEFT JOIN clientes c ON c.id=s.cliente_id LEFT JOIN planes p ON p.id=s.plan_id LEFT JOIN zonas z ON z.id=s.zona_id WHERE s.estado='suspendido' ORDER BY z.nombre, c.nombre").all();
+        var h = generarHTMLImpresion('Listado de Suspendidos', rows, 'servicios');
+        res.set('Content-Type','text/html; charset=utf-8'); return res.send(h);
+      }
+      if (ajax === 'print_gastos') {
+        var mes = parseInt(req.query.mes)||new Date().getMonth()+1;
+        var anio = parseInt(req.query.anio)||new Date().getFullYear();
+        var ms = String(mes).padStart(2,'0');
+        var rows = db.prepare("SELECT g.*, u.nombre as usuario_nombre FROM gastos g LEFT JOIN usuarios u ON u.id=g.usuario_id WHERE strftime('%Y-%m', g.created_at)=? ORDER BY g.created_at DESC").all(anio+'-'+ms);
+        var total = rows.reduce(function(a,r){return a+parseFloat(r.monto||0);},0);
+        var h = generarHTMLImpresion('Listado de Gastos - '+mesesEsp[mes-1]+' '+anio, rows, 'gastos', total);
+        res.set('Content-Type','text/html; charset=utf-8'); return res.send(h);
+      }
+      if (ajax === 'print_cobrador') {
+        var mes = parseInt(req.query.mes)||new Date().getMonth()+1;
+        var anio = parseInt(req.query.anio)||new Date().getFullYear();
+        var cid = parseInt(req.query.cobrador_id)||0;
+        var ms = String(mes).padStart(2,'0');
+        if (cid > 0) {
+          var rows = db.prepare("SELECT p.*, c.nombre as cliente_nombre, u.nombre as cobrador_nombre FROM pagos p LEFT JOIN clientes c ON c.id=p.cliente_id LEFT JOIN usuarios u ON u.id=p.usuario_id WHERE p.usuario_id=? AND strftime('%Y-%m', p.created_at)=? ORDER BY p.created_at DESC").all(cid, anio+'-'+ms);
+          var total = rows.reduce(function(a,r){return a+parseFloat(r.monto||0);},0);
+          var cn = rows.length>0?(rows[0].cobrador_nombre||'Cobrador'):'Cobrador';
+          var h = generarHTMLImpresion('Cobros de '+cn+' - '+mesesEsp[mes-1]+' '+anio, rows, 'cobrador', total);
+          res.set('Content-Type','text/html; charset=utf-8'); return res.send(h);
+        } else {
+          var cobradores = db.prepare("SELECT u.id, u.nombre, COALESCE(SUM(p.monto),0) as total, COUNT(*) as cantidad FROM pagos p LEFT JOIN usuarios u ON u.id=p.usuario_id WHERE strftime('%Y-%m', p.created_at)=? GROUP BY u.id, u.nombre ORDER BY total DESC").all(anio+'-'+ms);
+          return res.json({ success:true, data:cobradores });
+        }
+      }
+
+      // ===================== Initial page load =====================
       if (!ajax) {
-        data.stats = {
-          totalClientes: db.prepare('SELECT COUNT(*) as c FROM clientes').get().c,
-          activos: db.prepare("SELECT COUNT(*) as c FROM servicios WHERE estado='activo'").get().c,
-          suspendidos: db.prepare("SELECT COUNT(*) as c FROM servicios WHERE estado='suspendido'").get().c,
-          ingresosMes: db.prepare("SELECT COALESCE(SUM(monto),0) as t FROM pagos WHERE strftime('%Y-%m', created_at)=strftime('%Y-%m','now')").get().t,
-          gastosMes: db.prepare("SELECT COALESCE(SUM(monto),0) as t FROM gastos WHERE strftime('%Y-%m', created_at)=strftime('%Y-%m','now')").get().t
-        };
+        data.zonas = zonas;
+        data.empleados = db.prepare('SELECT * FROM empleados WHERE activo=1').all();
+        data.cobradores = db.prepare('SELECT id, nombre FROM usuarios WHERE activo=1').all();
+        data.totalClientes = db.prepare('SELECT COUNT(*) as c FROM clientes').get().c;
+        data.activos = db.prepare("SELECT COUNT(*) as c FROM servicios WHERE estado='activo'").get().c;
+        data.suspendidos = db.prepare("SELECT COUNT(*) as c FROM servicios WHERE estado='suspendido'").get().c;
+        data.ingresosMes = db.prepare("SELECT COALESCE(SUM(monto),0) as t FROM pagos WHERE strftime('%Y-%m', created_at)=strftime('%Y-%m','now')").get().t;
+        data.gastosMes = db.prepare("SELECT COALESCE(SUM(monto),0) as t FROM gastos WHERE strftime('%Y-%m', created_at)=strftime('%Y-%m','now')").get().t;
+        data.pendienteTotal = db.prepare("SELECT COALESCE(SUM(f.monto - COALESCE((SELECT SUM(p.monto) FROM pagos p WHERE p.factura_id=f.id),0)),0) as t FROM facturas f WHERE f.estado='pendiente'").get().t;
       }
       break;
     }
+
+// ===== Helper: generarHTMLImpresion =====
+function generarHTMLImpresion(titulo, rows, tipo, total) {
+  var mensEsp = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  var h = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>'+escapeHtml(titulo)+'</title>';
+  h += '<style>body{font-family:monospace;font-size:11px;margin:0;padding:15px;}h2{text-align:center;margin:0 0 5px;font-size:16px;}.sub{text-align:center;font-size:10px;color:#666;margin-bottom:10px;}table{width:100%;border-collapse:collapse;}th{background:#f1f5f9;padding:6px 8px;font-size:10px;text-align:left;border:1px solid #ddd;}td{padding:5px 8px;border:1px solid #ddd;}.total{font-weight:bold;text-align:right;padding:8px;}.badge{display:inline-block;padding:1px 6px;border-radius:4px;font-size:9px;}.ba{background:#dcfce7;color:#166534;}.bs{background:#fef3c7;color:#92400e;}.bi{background:#fee2e2;color:#991b1b;}@media print{@page{margin:10mm;}body{padding:0;}}</style></head><body>';
+  h += '<h2>'+escapeHtml(titulo)+'</h2><div class="sub">Generado: '+new Date().toLocaleDateString('es-DO',{year:'numeric',month:'long',day:'numeric',hour:'2-digit',minute:'2-digit'})+'</div>';
+  if (tipo==='servicios') {
+    h += '<table><thead><tr><th>ID</th><th>Cliente</th><th>Cédula</th><th>Teléfono</th><th>Plan</th><th>Precio</th><th>Zona</th><th>Estado</th><th>Dirección</th><th>Activación</th></tr></thead><tbody>';
+    rows.forEach(function(r){
+      var bc='ba'; if(r.estado==='suspendido')bc='bs'; else if(r.estado==='retirado')bc='bi';
+      var el=(r.estado||'').charAt(0).toUpperCase()+(r.estado||'').slice(1);
+      h += '<tr><td>'+r.id+'</td><td>'+escapeHtml(r.cliente_nombre||'')+'</td><td>'+escapeHtml(r.cedula||'')+'</td><td>'+escapeHtml(r.telefono||'')+'</td><td>'+escapeHtml(r.plan_nombre||'')+'</td><td>$'+(parseFloat(r.plan_precio)||0).toFixed(2)+'</td><td>'+escapeHtml(r.zona_nombre||'')+'</td><td><span class="badge '+bc+'">'+el+'</span></td><td>'+escapeHtml(r.direccion||'')+'</td><td>'+(r.fecha_activacion||'')+'</td></tr>';
+    });
+    h += '</tbody></table>';
+  } else if (tipo==='gastos') {
+    h += '<table><thead><tr><th>ID</th><th>Concepto</th><th>Monto</th><th>Método</th><th>Categoría</th><th>Referencia</th><th>Fecha</th><th>Registrado por</th></tr></thead><tbody>';
+    rows.forEach(function(r){
+      h += '<tr><td>'+r.id+'</td><td>'+escapeHtml(r.concepto||'')+'</td><td>$'+(parseFloat(r.monto)||0).toFixed(2)+'</td><td>'+escapeHtml(r.metodo||'')+'</td><td>'+escapeHtml(r.categoria||'')+'</td><td>'+escapeHtml(r.referencia||'')+'</td><td>'+(r.payment_date||r.created_at||'')+'</td><td>'+escapeHtml(r.usuario_nombre||'')+'</td></tr>';
+    });
+    h += '</tbody></table><div class="total">Total: $'+(parseFloat(total)||0).toFixed(2)+'</div>';
+  } else if (tipo==='cobrador') {
+    h += '<table><thead><tr><th>ID Pago</th><th>Cliente</th><th>Monto</th><th>Método</th><th>Fecha</th></tr></thead><tbody>';
+    rows.forEach(function(r){
+      h += '<tr><td>'+r.id+'</td><td>'+escapeHtml(r.cliente_nombre||'')+'</td><td>$'+(parseFloat(r.monto)||0).toFixed(2)+'</td><td>'+escapeHtml(r.metodo||'')+'</td><td>'+(r.created_at||'')+'</td></tr>';
+    });
+    h += '</tbody></table><div class="total">Total cobrado: $'+(parseFloat(total)||0).toFixed(2)+'</div>';
+  }
+  h += '<script>window.print();<\/script></body></html>';
+  return h;
+}
+
+var mesesEsp = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
     case 'Planes': {
       data.zonas = db.prepare('SELECT * FROM zonas ORDER BY nombre').all();
       const counts = db.prepare('SELECT plan_id, COUNT(*) as c FROM servicios GROUP BY plan_id').all();

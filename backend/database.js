@@ -29,6 +29,31 @@ try { db.exec("ALTER TABLE onu ADD COLUMN caja_nap_id INTEGER REFERENCES cajas_n
 try { db.exec("ALTER TABLE onu ADD COLUMN puerto_caja INTEGER"); } catch(e) {}
 try { db.exec("ALTER TABLE promesas_pago ADD COLUMN created_by_name TEXT"); } catch(e) {}
 
+// Inventory module migrations
+try { db.exec("ALTER TABLE inventario ADD COLUMN oficina TEXT"); } catch(e) {}
+try { db.exec("ALTER TABLE inventario ADD COLUMN serial TEXT"); } catch(e) {}
+try { db.exec("ALTER TABLE inventario ADD COLUMN asignado_a TEXT"); } catch(e) {}
+try { db.exec("ALTER TABLE inventario ADD COLUMN asignado_uso TEXT"); } catch(e) {}
+try { db.exec("ALTER TABLE inventario ADD COLUMN asignado_cliente TEXT"); } catch(e) {}
+try { db.exec("ALTER TABLE inventario ADD COLUMN fecha_asignacion DATETIME"); } catch(e) {}
+try { db.exec("ALTER TABLE inventario ADD COLUMN precio_venta REAL DEFAULT 0"); } catch(e) {}
+try { db.exec("ALTER TABLE inventario ADD COLUMN asignado_oficina TEXT"); } catch(e) {}
+try { db.exec("ALTER TABLE inventario ADD COLUMN razon_devolucion TEXT"); } catch(e) {}
+try { db.exec("ALTER TABLE inventario ADD COLUMN tipo_falla TEXT"); } catch(e) {}
+try { db.exec("ALTER TABLE inventario ADD COLUMN cliente_lugar TEXT"); } catch(e) {}
+try { db.exec("ALTER TABLE inventario ADD COLUMN fecha_devolucion DATETIME"); } catch(e) {}
+
+// New tables for inventory module
+db.exec("CREATE TABLE IF NOT EXISTS inventario_oficinas (id INTEGER PRIMARY KEY AUTOINCREMENT, nombre TEXT UNIQUE NOT NULL, created_at DATETIME DEFAULT CURRENT_TIMESTAMP)");
+db.exec("CREATE TABLE IF NOT EXISTS inventario_personal (id INTEGER PRIMARY KEY AUTOINCREMENT, nombre TEXT UNIQUE NOT NULL, created_at DATETIME DEFAULT CURRENT_TIMESTAMP)");
+db.exec("CREATE TABLE IF NOT EXISTS inventario_alertas (id INTEGER PRIMARY KEY AUTOINCREMENT, categoria TEXT NOT NULL, minimo INTEGER DEFAULT 5, created_at DATETIME DEFAULT CURRENT_TIMESTAMP)");
+
+// Add columns to inventario_movimientos if needed
+try { db.exec("ALTER TABLE inventario_movimientos ADD COLUMN detalle TEXT"); } catch(e) {}
+try { db.exec("ALTER TABLE inventario_movimientos ADD COLUMN tecnico_nombre TEXT"); } catch(e) {}
+try { db.exec("ALTER TABLE inventario_movimientos ADD COLUMN cliente_servicio TEXT"); } catch(e) {}
+try { db.exec("ALTER TABLE inventario_movimientos ADD COLUMN oficina_destino TEXT"); } catch(e) {}
+
 // Crear tabla mensajes si no existe
 db.exec(`
 CREATE TABLE IF NOT EXISTS mensajes (
