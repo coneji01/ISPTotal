@@ -39,11 +39,39 @@ app.use(express.static(path.join(__dirname, '..', 'frontend')));
 app.use(express.static(path.join(__dirname, '..')));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+// SQLite session store (persistente a través de reinicios)
+const SQLiteStore = require('better-sqlite3');
+const sessionStoreDb = new SQLiteStore(path.join(__dirname, '..', 'isptotal.db'));
+sessionStoreDb.exec('CREATE TABLE IF NOT EXISTS sessions (sid TEXT PRIMARY KEY, session TEXT, expires DATETIME)');
+
+const sessionStore = new (require('events').EventEmitter)();
+sessionStore.get = function(sid, cb) {
+  try {
+    var row = sessionStoreDb.prepare('SELECT session FROM sessions WHERE sid=? AND expires > datetime(\'now\')').get(sid);
+    cb(null, row ? JSON.parse(row.session) : null);
+  } catch(e) { cb(e); }
+};
+sessionStore.set = function(sid, session, cb) {
+  try {
+    var maxAge = session && session.cookie ? session.cookie.maxAge : 86400000;
+    var expires = new Date(Date.now() + maxAge).toISOString();
+    sessionStoreDb.prepare('INSERT OR REPLACE INTO sessions (sid, session, expires) VALUES (?,?,?)').run(sid, JSON.stringify(session), expires);
+    if (cb) cb(null);
+  } catch(e) { if (cb) cb(e); }
+};
+sessionStore.destroy = function(sid, cb) {
+  try { sessionStoreDb.prepare('DELETE FROM sessions WHERE sid=?').run(sid); if (cb) cb(null); } catch(e) { if (cb) cb(e); }
+};
+sessionStore.touch = function(sid, session, cb) {
+  sessionStore.set(sid, session, cb);
+};
+
 app.use(fileUpload());
 app.use(session({
+  store: sessionStore,
   secret: 'isptotal-secret-key-2026',
-  resave: false,
-  saveUninitialized: false,
+  resave: true,
+  saveUninitialized: true,
   cookie: { maxAge: 24 * 60 * 60 * 1000 }
 }));
 
