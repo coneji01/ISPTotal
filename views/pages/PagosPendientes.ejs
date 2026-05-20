@@ -251,10 +251,17 @@ function openNewPromisePP(clienteId) {
     console.log('[DBG] ppModal element: ' + (modal ? 'FOUND' : 'NULL'));
     if (modal) {
         modal.classList.add('open');
-        modal.style.display = 'flex';
-        console.log('[DBG] Modal opened via classList.add + inline style');
+        modal.style.display = 'flex !important';
+        modal.style.position = 'fixed';
+        modal.style.top = '0';
+        modal.style.left = '0';
+        modal.style.width = '100%';
+        modal.style.height = '100%';
+        modal.style.zIndex = '99999';
+        modal.style.background = 'rgba(0,0,0,0.5)';
+        console.log('[DBG] Modal opened with ALL inline styles');
     } else {
-        console.log('[DBG] Modal NOT found, trying inline style');
+        console.log('[DBG] Modal NOT found');
     }
     loadServicesPP(clienteId);
 }
