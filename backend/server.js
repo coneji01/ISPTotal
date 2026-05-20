@@ -631,7 +631,7 @@ app.all('/modulo', requireAuth, (req, res) => {
       }
 
       // --- Obtener facturas pendientes de servicios seleccionados ---
-      if (ajax === 'get_pending_invoices') {
+      if (ajax === 'get_invoices' || ajax === 'get_pending_invoices') {
         const clientId = parseInt(req.query.client_id) || 0;
         let serviceIds = [];
         try { serviceIds = JSON.parse(req.query.service_ids || '[]'); } catch(e) {}
