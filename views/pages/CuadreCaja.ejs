@@ -1,614 +1,375 @@
 <style>
 :root { --cc-green: #10b981; --cc-green-dark: #059669; }
-.card { box-shadow: 0 2px 12px rgba(0,0,0,0.06); border-radius: 12px; overflow: visible; }
-.card-header { padding: 18px 22px; font-size: 1.05rem; font-weight: 700; display: flex; justify-content: space-between; align-items: center; }
-.card-body { padding: 22px; }
-.page-header { margin-bottom: 20px; }
-.page-header h2 i { color: var(--cc-green); }
+.cc-header { margin-bottom:20px; }
+.cc-title { font-size:1.4rem; font-weight:700; display:flex; align-items:center; gap:10px; color:var(--text); }
+.cc-tabs { display:flex; gap:4px; background:var(--bg-card); border-radius:10px; padding:4px; margin-bottom:24px; width:fit-content; }
+.cc-tab { padding:10px 22px; border-radius:8px; border:none; background:transparent; color:var(--text-gray); font-weight:600; font-size:0.9rem; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; gap:7px; }
+.cc-tab:hover { color:var(--text); }
+.cc-tab.active { background:var(--bg-primary); color:var(--text); box-shadow:0 1px 3px rgba(0,0,0,0.1); }
+.cc-card { background:var(--bg-primary); border-radius:12px; border:1px solid var(--border); overflow:hidden; margin-bottom:20px; }
+.cc-card-header { padding:16px 20px; border-bottom:1px solid var(--border); font-size:1rem; font-weight:700; display:flex; justify-content:space-between; align-items:center; }
+.cc-card-body { padding:20px; }
+.cc-card-title { display:flex; align-items:center; gap:8px; }
+.cc-form-row { display:flex; gap:12px; flex-wrap:wrap; }
+.cc-form-group { flex:1; min-width:250px; }
+.cc-form-label { display:block; font-weight:600; color:var(--text-gray); margin-bottom:6px; font-size:0.85rem; }
+.cc-form-select { width:100%; padding:10px 12px; border:1px solid var(--border); border-radius:8px; font-size:0.9rem; background:var(--bg-input); cursor:pointer; }
+.cc-form-select:focus { border-color:#6366f1; outline:none; }
+.cc-pend-box { display:flex; align-items:center; justify-content:space-between; background:#f0fdf4; border:2px solid #bbf7d0; border-radius:12px; padding:20px; margin-top:15px; flex-wrap:wrap; gap:15px; }
+.cc-pend-left { flex:1; }
+.cc-pend-amount { font-size:2rem; font-weight:800; color:var(--cc-green-dark); }
+.cc-pend-count { font-size:0.85rem; color:#64748b; margin-top:2px; }
+.cc-pend-empty { text-align:center; padding:30px; color:#94a3b8; font-size:0.9rem; }
+.cc-pend-empty i { font-size:2.5rem; display:block; margin-bottom:10px; color:#22c55e; }
+.btn-cuadrar { padding:12px 24px; border:none; border-radius:10px; font-size:1rem; font-weight:700; background:linear-gradient(135deg,#10b981,#059669); color:#fff; cursor:pointer; transition:all 0.2s; display:inline-flex; align-items:center; gap:8px; }
+.btn-cuadrar:hover:not(:disabled) { transform:translateY(-1px); box-shadow:0 4px 12px rgba(16,185,129,0.3); }
+.btn-cuadrar:disabled { opacity:0.5; cursor:not-allowed; }
+.btn-print { padding:10px 20px; border:1px solid #e2e8f0; border-radius:8px; font-size:0.9rem; font-weight:600; background:#fff; color:#475569; cursor:pointer; display:inline-flex; align-items:center; gap:6px; }
+.btn-print:hover { background:#f8fafc; }
+.cc-result { margin-top:20px; border:2px solid var(--cc-green); border-radius:12px; overflow:hidden; }
+.cc-result-header { background:linear-gradient(135deg,#ecfdf5,#d1fae5); padding:16px 20px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; }
+.cc-result-title { font-weight:700; color:#065f46; font-size:1rem; display:flex; align-items:center; gap:8px; }
+.cc-result-amount { font-size:1.4rem; font-weight:800; color:var(--cc-green-dark); }
+.cc-result-body { padding:16px 20px; max-height:400px; overflow-y:auto; }
+.cc-result-actions { padding:14px 20px; border-top:1px solid #e2e8f0; background:#f8fafc; display:flex; gap:10px; justify-content:flex-end; }
+.cc-result-table { width:100%; border-collapse:collapse; font-size:0.88rem; }
+.cc-result-table th { background:#f1f5f9; padding:8px 10px; text-align:left; font-weight:600; color:#475569; font-size:0.8rem; text-transform:uppercase; }
+.cc-result-table td { padding:8px 10px; border-bottom:1px solid #f1f5f9; }
+.cc-result-table td.monto-col { text-align:right; font-weight:700; color:var(--cc-green-dark); font-family:'Courier New',monospace; }
+.cc-ultimo { margin-top:24px; }
+.cc-ultimo-badge { background:#dbeafe; color:#1e40af; padding:3px 10px; border-radius:12px; font-size:0.78rem; font-weight:600; }
+.cc-ultimo-row { display:flex; justify-content:space-between; align-items:center; padding:14px 0; border-bottom:1px solid #f1f5f9; }
+.cc-ultimo-row:last-child { border:none; }
+.cc-ultimo-label { color:#64748b; font-size:0.88rem; }
+.cc-ultimo-val { font-weight:700; color:#334155; }
+.cc-ultimo-total { font-size:1.3rem; color:var(--cc-green-dark); }
+.cc-table { width:100%; border-collapse:collapse; }
+.cc-table th { background:#f8fafc; padding:12px 16px; text-align:left; font-weight:600; color:#64748b; font-size:0.8rem; text-transform:uppercase; border-bottom:2px solid #e2e8f0; }
+.cc-table td { padding:12px 16px; border-bottom:1px solid #f1f5f9; font-size:0.88rem; }
+.cc-table tr:hover { background:#fafbfc; }
+.cc-empty { text-align:center; padding:40px; color:#94a3b8; }
+.metodo-badge { display:inline-flex; padding:3px 8px; border-radius:10px; font-size:0.72rem; font-weight:600; }
+.metodo-badge.EFECTIVO { background:#d1fae5; color:#065f46; }
+.metodo-badge.TARJETA { background:#dbeafe; color:#1e40af; }
+.metodo-badge.TRANSFERENCIA { background:#fef3c7; color:#92400e; }
+.metodo-badge.VERIFONE { background:#ede9fe; color:#5b21b6; }
 
-/* Tabs */
-.cc-tabs { display: flex; gap: 4px; background: var(--bg-card); border-radius: 10px; padding: 4px; margin-bottom: 24px; width: fit-content; }
-.cc-tab { padding: 10px 22px; border-radius: 8px; border: none; background: transparent; color: var(--text-gray); font-weight: 600; font-size: 0.92rem; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 7px; }
-.cc-tab:hover { color: var(--text-primary); }
-.cc-tab.active { background: var(--bg-primary); color: var(--text-primary); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-
-/* Cards */
-.cc-card { background: var(--bg-primary); border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); overflow: hidden; margin-bottom: 20px; }
-.cc-card-header { padding: 18px 22px; border-bottom: 1px solid var(--border-color); font-size: 1.05rem; font-weight: 700; display: flex; justify-content: space-between; align-items: center; }
-.cc-card-body { padding: 22px; }
-.cc-card-title { display: flex; align-items: center; gap: 8px; }
-
-/* Form */
-.cc-form-row { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; }
-.cc-form-group { flex: 1; min-width: 200px; }
-.cc-form-label { display: block; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; font-size: 0.88rem; }
-
-/* Summary cards row */
-.cc-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 20px; }
-.cc-summary-card { background: var(--bg-primary); border-radius: 12px; padding: 20px; text-align: center; box-shadow: 0 2px 12px rgba(0,0,0,0.06); border: 1px solid var(--border-color); }
-.cc-summary-label { font-size: 0.82rem; color: var(--text-gray); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; margin-bottom: 6px; }
-.cc-summary-amount { font-size: 1.6rem; font-weight: 800; }
-.cc-summary-card.pagos .cc-summary-amount { color: var(--cc-green); }
-.cc-summary-card.gastos .cc-summary-amount { color: #ef4444; }
-.cc-summary-card.saldo .cc-summary-amount { color: #1d4ed8; }
-
-/* Tables */
-.cc-table { width: 100%; border-collapse: collapse; }
-.cc-table th { background: var(--bg-card); padding: 12px 16px; text-align: left; font-weight: 600; color: var(--text-secondary); font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid var(--border-color); }
-.cc-table td { padding: 14px 16px; border-bottom: 1px solid var(--border-color); color: var(--text-primary); font-size: 0.93rem; }
-.cc-table tr:hover { background: var(--bg-card); }
-.cc-table .monto { font-weight: 700; color: var(--cc-green); font-size: 1.05rem; }
-.cc-table .monto-neg { font-weight: 700; color: #ef4444; font-size: 1.05rem; }
-.cc-table .fecha { color: var(--text-gray); }
-
-/* Método badges */
-.metodo-badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 20px; font-size: 0.78rem; font-weight: 600; white-space: nowrap; }
-.metodo-badge.EFECTIVO { background: #d1fae5; color: #065f46; }
-.metodo-badge.TARJETA { background: #dbeafe; color: #1e40af; }
-.metodo-badge.TRANSFERENCIA { background: #fef3c7; color: #92400e; }
-.metodo-badge.VERIFONE { background: #ede9fe; color: #5b21b6; }
-
-/* Desglose */
-.desglose-metodos { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
-.desglose-item { display: inline-flex; align-items: center; gap: 6px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; padding: 6px 14px; font-size: 0.85rem; }
-.desglose-item .label { font-weight: 600; color: var(--text-secondary); }
-.desglose-item .val { font-weight: 700; color: var(--text-primary); }
-.desglose-item .count { color: var(--text-gray); font-size: 0.78rem; }
-
-/* Empty state */
-.empty-state { text-align: center; padding: 50px 20px; color: var(--text-gray); }
-.empty-state i { font-size: 3rem; color: var(--border-color); margin-bottom: 15px; display: block; }
-
-/* Modal for adding gastos */
-.modal-cc { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); align-items: center; justify-content: center; padding: 20px; }
-.modal-cc.show { display: flex; }
-.modal-cc-content { background: var(--bg-primary); border-radius: 16px; width: 100%; max-width: 480px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); overflow: hidden; }
-.modal-cc-header { padding: 20px 24px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); }
-.modal-cc-header h3 { margin: 0; font-size: 1.1rem; }
-.modal-cc-close { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-gray); }
-.modal-cc-body { padding: 24px; }
-.modal-cc-footer { padding: 16px 24px; border-top: 1px solid var(--border-color); display: flex; gap: 10px; justify-content: flex-end; }
-.form-group { margin-bottom: 16px; }
-.form-group label { display: block; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; font-size: 0.88rem; }
-.form-control { width: 100%; padding: 10px 14px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.95rem; background: var(--bg-primary); color: var(--text-primary); box-sizing: border-box; }
-.form-control:focus { outline: none; border-color: var(--cc-green); box-shadow: 0 0 0 3px rgba(16,185,129,0.12); }
-.btn-cuadrar { background: linear-gradient(135deg, var(--cc-green), var(--cc-green-dark)); color: white; border: none; padding: 12px 28px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 0.95rem; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s; }
-.btn-cuadrar:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(16,185,129,0.3); }
-.btn-cuadrar:disabled { background: #cbd5e1; cursor: not-allowed; transform: none; box-shadow: none; }
-.btn-outline { background: transparent; border: 1px solid var(--border-color); color: var(--text-secondary); padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px; }
-.btn-outline:hover { background: var(--bg-card); }
-
-/* Result card after cuadre */
-.cc-result { margin-top: 20px; border: 2px solid var(--cc-green); border-radius: 12px; overflow: hidden; animation: ccSlideIn 0.3s ease-out; }
-@keyframes ccSlideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-.cc-result-header { background: linear-gradient(135deg, #ecfdf5, #d1fae5); padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
-.cc-result-title { font-weight: 700; color: #065f46; font-size: 1.05rem; display: flex; align-items: center; gap: 8px; }
-.cc-result-amount { font-size: 1.4rem; font-weight: 800; color: var(--cc-green-dark); }
-.cc-result-body { padding: 16px 20px; max-height: 400px; overflow-y: auto; }
-.cc-result-actions { padding: 14px 20px; border-top: 1px solid var(--border-color); display: flex; gap: 10px; justify-content: flex-end; }
-
-/* Loading */
-.cc-loading { text-align: center; padding: 40px; color: var(--text-gray); }
-
-/* Header actions */
-.header-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-
-/* Pagination */
-.pagination { display: flex; gap: 8px; justify-content: center; align-items: center; margin-top: 16px; }
-.pagination button { padding: 8px 16px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-primary); color: var(--text-primary); cursor: pointer; font-size: 0.85rem; font-weight: 600; }
-.pagination button:hover { background: var(--bg-card); }
-.pagination button:disabled { opacity: 0.5; cursor: not-allowed; }
-.pagination span { font-size: 0.88rem; color: var(--text-gray); }
-
-/* Date filter */
-.date-filter { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; }
-.date-filter input[type="date"] { padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.9rem; background: var(--bg-primary); color: var(--text-primary); }
+/* Dropdown */
+.cc-dropdown { position:fixed; background:#fff; border:1px solid #e2e8f0; border-radius:8px; max-height:250px; overflow-y:auto; z-index:9999; display:none; box-shadow:0 4px 16px rgba(0,0,0,0.1); min-width:250px; }
+.cc-dropdown-item { padding:10px 14px; cursor:pointer; border-bottom:1px solid #f1f5f9; font-size:0.88rem; color:#1e293b; }
+.cc-dropdown-item:hover { background:#f1f5f9; }
+.cc-dropdown-item:last-child { border-bottom:none; }
+.cc-dropdown-empty { padding:12px 16px; color:#94a3b8; font-size:0.85rem; }
 </style>
 
-<!-- Loading overlay -->
-<div id="cc-loading" class="cc-loading"><i class="fas fa-spinner fa-spin fa-2x"></i><br><br><span style="font-size:1.1rem;color:var(--text-gray);">Cargando cuadre de caja...</span></div>
-
-<!-- ========== MAIN CONTENT ========== -->
-<div id="cc-content" style="display:none;">
-
-  <!-- Header -->
-  <div class="page-header">
-    <h2><i class="fas fa-cash-register"></i> Cuadre de Caja</h2>
-  </div>
-
-  <!-- Tabs -->
-  <div class="cc-tabs" id="cc-tabs">
-    <button class="cc-tab active" data-tab="caja"><i class="fas fa-cash-register"></i> Caja</button>
-    <button class="cc-tab" data-tab="historial"><i class="fas fa-list"></i> Historial</button>
-  </div>
-
-  <!-- ================================================================ -->
-  <!-- TAB: CAJA                                                       -->
-  <!-- ================================================================ -->
-  <div id="tab-caja">
-
-    <!-- Fecha selector -->
-    <div class="date-filter" style="margin-bottom:20px;">
-      <div class="form-group" style="margin:0;">
-        <label for="cc-date">Fecha del cuadre</label>
-        <input type="date" id="cc-date" class="form-control" style="width:auto;">
-      </div>
-      <button class="btn-outline" onclick="cargarCaja()"><i class="fas fa-sync"></i> Actualizar</button>
-    </div>
-
-    <!-- Summary cards -->
-    <div class="cc-summary" id="cc-summary">
-      <div class="cc-summary-card pagos">
-        <div class="cc-summary-label"><i class="fas fa-hand-holding-usd"></i> Total Pagos</div>
-        <div class="cc-summary-amount" id="total-pagos">$0.00</div>
-      </div>
-      <div class="cc-summary-card gastos">
-        <div class="cc-summary-label"><i class="fas fa-shopping-cart"></i> Total Gastos</div>
-        <div class="cc-summary-amount" id="total-gastos">$0.00</div>
-      </div>
-      <div class="cc-summary-card saldo">
-        <div class="cc-summary-label"><i class="fas fa-balance-scale"></i> Saldo</div>
-        <div class="cc-summary-amount" id="total-saldo">$0.00</div>
-      </div>
-    </div>
-
-    <!-- Desglose pagos por método -->
-    <div class="cc-card">
-      <div class="cc-card-header">
-        <div class="cc-card-title"><i class="fas fa-credit-card"></i> Desglose de Pagos</div>
-      </div>
-      <div class="cc-card-body">
-        <div id="desglose-metodos" class="desglose-metodos">
-          <span style="color:var(--text-gray);">Cargando...</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Pagos del día -->
-    <div class="cc-card">
-      <div class="cc-card-header">
-        <div class="cc-card-title"><i class="fas fa-money-bill-wave"></i> Pagos del Día</div>
-        <div><span id="pagos-count" style="color:var(--text-gray);font-size:0.85rem;">0 pagos</span></div>
-      </div>
-      <div class="cc-card-body">
-        <div id="pagos-list"><p style="color:var(--text-gray);text-align:center;">Cargando...</p></div>
-      </div>
-    </div>
-
-    <!-- Gastos del día -->
-    <div class="cc-card">
-      <div class="cc-card-header">
-        <div class="cc-card-title"><i class="fas fa-receipt"></i> Gastos del Día</div>
-        <div class="header-actions">
-          <span id="gastos-count" style="color:var(--text-gray);font-size:0.85rem;">0 gastos</span>
-          <button class="btn-outline" onclick="openGastoModal()" style="font-size:0.85rem;padding:8px 14px;"><i class="fas fa-plus"></i> Agregar Gasto</button>
-        </div>
-      </div>
-      <div class="cc-card-body">
-        <div id="gastos-list"><p style="color:var(--text-gray);text-align:center;">Cargando...</p></div>
-      </div>
-    </div>
-
-    <!-- Realizar Cuadre -->
-    <div class="cc-card">
-      <div class="cc-card-body" style="text-align:center;padding:24px;">
-        <p style="color:var(--text-secondary);margin-bottom:16px;">
-          <i class="fas fa-info-circle"></i> Al realizar el cuadre se registrará un cierre de caja para la fecha seleccionada.
-          <br><small style="color:var(--text-gray);">Esto evitará que se pueda volver a cuadrar la misma fecha.</small>
-        </p>
-        <button class="btn-cuadrar" id="btn-cuadrar" onclick="realizarCuadre()">
-          <i class="fas fa-check-circle"></i> Realizar Cuadre
-        </button>
-      </div>
-    </div>
-
-    <!-- Resultado del cuadre -->
-    <div id="cuadre-resultado" style="display:none;">
-      <div class="cc-result">
-        <div class="cc-result-header">
-          <div class="cc-result-title"><i class="fas fa-check-circle"></i> Cuadre Realizado</div>
-          <div class="cc-result-amount" id="res-saldo"></div>
-        </div>
-        <div class="cc-result-body">
-          <div id="res-info" style="display:flex;gap:20px;flex-wrap:wrap;margin-bottom:12px;font-size:0.88rem;color:var(--text-secondary);"></div>
-          <div id="res-desglose" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;"></div>
-          <h4 style="margin:12px 0 8px;font-size:0.95rem;">Pagos</h4>
-          <table class="cc-table" id="res-pagos-table">
-            <thead><tr><th>Cliente</th><th>Monto</th><th>Método</th></tr></thead>
-            <tbody id="res-pagos-body"></tbody>
-          </table>
-          <h4 style="margin:12px 0 8px;font-size:0.95rem;">Gastos</h4>
-          <table class="cc-table" id="res-gastos-table">
-            <thead><tr><th>Concepto</th><th>Monto</th><th>Método</th></tr></thead>
-            <tbody id="res-gastos-body"></tbody>
-          </table>
-        </div>
-        <div class="cc-result-actions">
-          <button class="btn-outline" onclick="document.getElementById('cuadre-resultado').style.display='none';cargarCaja();"><i class="fas fa-redo"></i> Volver</button>
-        </div>
-      </div>
-    </div>
-
-  </div>
-
-  <!-- ================================================================ -->
-  <!-- TAB: HISTORIAL                                                  -->
-  <!-- ================================================================ -->
-  <div id="tab-historial" style="display:none;">
-
-    <div class="cc-card">
-      <div class="cc-card-header">
-        <div class="cc-card-title"><i class="fas fa-history"></i> Historial de Cuadres</div>
-      </div>
-      <div class="cc-card-body">
-        <div id="historial-list"><p style="color:var(--text-gray);text-align:center;">Cargando...</p></div>
-        <div id="historial-pagination" class="pagination"></div>
-      </div>
-    </div>
-
-  </div>
-
+<div class="cc-header">
+  <h1 class="cc-title"><i class="fas fa-cash-register" style="color:var(--cc-green);"></i> Cuadre de Caja</h1>
 </div>
 
-<!-- ===== MODAL AGREGAR GASTO ===== -->
-<div class="modal-cc" id="modal-gasto">
-  <div class="modal-cc-content">
-    <div class="modal-cc-header">
-      <h3><i class="fas fa-plus-circle" style="color:var(--cc-green);"></i> Agregar Gasto</h3>
-      <button class="modal-cc-close" onclick="closeGastoModal()">&times;</button>
+<!-- TABS -->
+<div class="cc-tabs" id="ccTabs">
+  <a class="cc-tab active" data-tab="caja" onclick="switchTabCC('caja')"><i class="fas fa-cash-register"></i> Caja</a>
+  <a class="cc-tab" data-tab="historial" onclick="switchTabCC('historial')"><i class="fas fa-list"></i> Historial</a>
+</div>
+
+<div id="tabCaja">
+  <!-- Seleccionar usuario -->
+  <div class="cc-card">
+    <div class="cc-card-header">
+      <div class="cc-card-title"><i class="fas fa-user" style="color:var(--cc-green);"></i> Nuevo Cuadre</div>
     </div>
-    <div class="modal-cc-body">
-      <div class="form-group">
-        <label for="gasto-concepto">Concepto *</label>
-        <input type="text" id="gasto-concepto" class="form-control" placeholder="Ej: Pago de electricidad" required>
+    <div class="cc-card-body">
+      <div class="cc-form-row">
+        <div class="cc-form-group" style="position:relative;">
+          <label class="cc-form-label">Cuadrar a</label>
+          <input type="text" id="ccBuscarUsuario" class="cc-form-select" placeholder="Buscar usuario..." oninput="ccFiltrarUsuarios()" autocomplete="off">
+          <input type="hidden" id="ccSelectUsuario" value="">
+          <div class="cc-dropdown" id="ccDropUsuarios"></div>
+        </div>
       </div>
-      <div class="form-group">
-        <label for="gasto-monto">Monto *</label>
-        <input type="number" id="gasto-monto" class="form-control" placeholder="0.00" step="0.01" min="0.01" required>
+
+      <!-- Info último cuadre -->
+      <div id="ccUltimoCuadreInfo" style="display:none; background:#f1f5f9; padding:10px 15px; border-radius:8px; margin-top:15px;">
+        <span style="color:#64748b; font-size:0.85rem;">
+          <i class="fas fa-history"></i> <strong>Último cuadre:</strong> <span id="ccUltimoCuadreFecha">-</span>
+        </span>
       </div>
-      <div class="form-group">
-        <label for="gasto-metodo">Método de pago</label>
-        <select id="gasto-metodo" class="form-control">
-          <option value="EFECTIVO">Efectivo</option>
-          <option value="TARJETA">Tarjeta</option>
-          <option value="TRANSFERENCIA">Transferencia</option>
-          <option value="VERIFONE">Verifone</option>
-        </select>
+
+      <!-- Pendiente -->
+      <div id="ccPendienteArea" style="display:none;">
+        <div id="ccPendienteInfo" class="cc-pend-box">
+          <div class="cc-pend-left">
+            <div class="cc-pend-amount" id="ccTotalPendiente">$0.00</div>
+            <div class="cc-pend-count" id="ccCantidadPagos">0 pagos</div>
+            <div id="ccDesglose" style="margin-top:8px; display:flex; gap:6px; flex-wrap:wrap;"></div>
+          </div>
+          <button class="btn-cuadrar" id="ccBtnCuadrar" onclick="ccRealizarCuadre()" disabled>
+            <i class="fas fa-check-circle"></i> Realizar Cuadre
+          </button>
+        </div>
       </div>
-      <div class="form-group">
-        <label for="gasto-referencia">Referencia</label>
-        <input type="text" id="gasto-referencia" class="form-control" placeholder="N° de referencia o factura">
+
+      <!-- Sin pendientes -->
+      <div id="ccSinPendiente" style="display:none;">
+        <div class="cc-pend-empty">
+          <i class="fas fa-check-circle"></i>
+          No hay pagos pendientes de cuadrar
+          <div id="ccSinPendienteUltimo" style="font-size:0.8rem; margin-top:5px;"></div>
+        </div>
       </div>
-      <div class="form-group">
-        <label for="gasto-categoria">Categoría</label>
-        <select id="gasto-categoria" class="form-control">
-          <option value="Varios">Varios</option>
-          <option value="Electricidad">Electricidad</option>
-          <option value="Internet">Internet</option>
-          <option value="Alquiler">Alquiler</option>
-          <option value="Personal">Personal</option>
-          <option value="Servicios">Servicios</option>
-          <option value="Proveedores">Proveedores</option>
-          <option value="Equipos">Equipos</option>
-        </select>
-      </div>
-      <div id="gasto-msg" style="display:none;padding:8px 12px;border-radius:8px;font-size:0.85rem;margin-bottom:10px;"></div>
     </div>
-    <div class="modal-cc-footer">
-      <button class="btn-outline" onclick="closeGastoModal()">Cancelar</button>
-      <button class="btn-cuadrar" onclick="guardarGasto()" style="font-size:0.88rem;padding:10px 18px;"><i class="fas fa-save"></i> Guardar Gasto</button>
+  </div>
+
+  <!-- Resultado cuadre -->
+  <div id="ccResultadoArea" style="display:none;">
+    <div class="cc-result">
+      <div class="cc-result-header">
+        <div class="cc-result-title"><i class="fas fa-check-circle"></i> Cuadre Generado</div>
+        <div class="cc-result-amount" id="ccResTotal"></div>
+      </div>
+      <div class="cc-result-body">
+        <div style="display:flex; gap:20px; flex-wrap:wrap; margin-bottom:12px; font-size:0.88rem; color:#475569;">
+          <div><strong>Usuario:</strong> <span id="ccResUsuario"></span></div>
+          <div><strong>Fecha:</strong> <span id="ccResFecha"></span></div>
+          <div><strong>Pagos:</strong> <span id="ccResCantidad"></span></div>
+          <div><strong>Desde:</strong> <span id="ccResDesde"></span></div>
+        </div>
+        <div id="ccResDesglose" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px;"></div>
+        <table class="cc-result-table">
+          <thead><tr><th>Cliente</th><th>Monto</th><th>Método</th><th>Fecha</th></tr></thead>
+          <tbody id="ccResDetalles"></tbody>
+        </table>
+      </div>
+      <div class="cc-result-actions">
+        <button class="btn-print" onclick="ccImprimir(ccUltimoCuadreId)"><i class="fas fa-print"></i> Imprimir</button>
+        <button class="btn-cuadrar" onclick="ccNuevoCuadre()" style="font-size:0.9rem; padding:10px 18px;"><i class="fas fa-plus"></i> Nuevo Cuadre</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="tabHistorial" style="display:none;">
+  <div class="cc-card">
+    <div class="cc-card-header">
+      <div class="cc-card-title"><i class="fas fa-history" style="color:var(--cc-green);"></i> Historial de Cuadres</div>
+    </div>
+    <div class="cc-card-body">
+      <table class="cc-table">
+        <thead><tr><th>#</th><th>Usuario</th><th>Desde</th><th>Hasta</th><th>Pagos</th><th>Total</th><th style="text-align:right;">Acción</th></tr></thead>
+        <tbody id="ccHistorialBody">
+          <tr><td colspan="7" class="cc-empty"><i class="fas fa-spinner fa-spin"></i> Cargando...</td></tr>
+        </tbody>
+      </table>
     </div>
   </div>
 </div>
 
 <script>
-// ===== STATE =====
-let currentDate = '';
-let gastosPage = 1;
-let pagosPage = 1;
+var ccUsuariosList = [];
+var ccPendienteData = null;
+var ccUltimoCuadreId = null;
 
-// ===== TABS =====
-document.getElementById('cc-tabs').addEventListener('click', function(e) {
-  var tab = e.target.closest('.cc-tab');
-  if (!tab) return;
-  document.querySelectorAll('.cc-tab').forEach(function(t) { t.classList.remove('active'); });
-  tab.classList.add('active');
-  var target = tab.getAttribute('data-tab');
-  document.getElementById('tab-caja').style.display = target === 'caja' ? 'block' : 'none';
-  document.getElementById('tab-historial').style.display = target === 'historial' ? 'block' : 'none';
-  if (target === 'historial') cargarHistorial(1);
-});
-
-// ===== INIT =====
-function init() {
-  var today = new Date().toISOString().slice(0,10);
-  document.getElementById('cc-date').value = today;
-  currentDate = today;
-  cargarCaja();
-  document.getElementById('cc-loading').style.display = 'none';
-  document.getElementById('cc-content').style.display = 'block';
+function switchTabCC(tab) {
+  document.querySelectorAll('.cc-tab').forEach(function(t){t.classList.remove('active')});
+  document.querySelector('.cc-tab[data-tab="'+tab+'"]').classList.add('active');
+  document.getElementById('tabCaja').style.display = tab === 'caja' ? 'block' : 'none';
+  document.getElementById('tabHistorial').style.display = tab === 'historial' ? 'block' : 'none';
+  if (tab === 'historial') ccCargarHistorial();
 }
 
-// ===== CARGAR CAJA =====
-function cargarCaja() {
-  var date = document.getElementById('cc-date').value || new Date().toISOString().slice(0,10);
-  currentDate = date;
-
-  // Summary
-  fetch('/modulo?pagina=CuadreCaja&ajax=summary&date=' + encodeURIComponent(date))
-    .then(function(r) { return r.json(); })
-    .then(function(d) {
-      if (d.status === 'success') {
-        document.getElementById('total-pagos').textContent = '$' + parseFloat(d.data.total_pagos).toFixed(2);
-        document.getElementById('total-gastos').textContent = '$' + parseFloat(d.data.total_gastos).toFixed(2);
-        document.getElementById('total-saldo').textContent = '$' + parseFloat(d.data.saldo).toFixed(2);
-      }
-    });
-
-  // Pagos
-  fetch('/modulo?pagina=CuadreCaja&ajax=pagos&date=' + encodeURIComponent(date))
-    .then(function(r) { return r.json(); })
-    .then(function(d) {
-      if (d.status === 'success') {
-        renderPagos(d.data);
-      }
-    });
-
-  // Gastos
-  fetch('/modulo?pagina=CuadreCaja&ajax=gastos&date=' + encodeURIComponent(date))
-    .then(function(r) { return r.json(); })
-    .then(function(d) {
-      if (d.status === 'success') {
-        renderGastos(d.data);
-      }
-    });
-}
-
-// ===== RENDER PAGOS =====
-function renderPagos(data) {
-  var pagos = data.pagos || [];
-  var desglose = data.desglose || [];
-
-  document.getElementById('pagos-count').textContent = pagos.length + ' pago(s)';
-
-  // Desglose por método
-  var dm = document.getElementById('desglose-metodos');
-  if (desglose.length === 0) {
-    dm.innerHTML = '<span style="color:var(--text-gray);font-size:0.88rem;">No hay pagos en esta fecha</span>';
+// ====== USUARIOS ======
+function ccFiltrarUsuarios() {
+  var inp = document.getElementById('ccBuscarUsuario');
+  var drop = document.getElementById('ccDropUsuarios');
+  var q = inp.value.toLowerCase().trim();
+  var rect = inp.getBoundingClientRect();
+  drop.style.top = (rect.bottom + 4) + 'px';
+  drop.style.left = rect.left + 'px';
+  drop.style.width = Math.max(rect.width, 250) + 'px';
+  
+  var filtered = ccUsuariosList.filter(function(u) {
+    return !q || u.label.toLowerCase().indexOf(q) !== -1;
+  });
+  
+  if (!filtered.length) {
+    drop.innerHTML = '<div class="cc-dropdown-empty">Sin resultados</div>';
   } else {
-    var colores = { EFECTIVO: '#15803d', TARJETA: '#1d4ed8', TRANSFERENCIA: '#92400e', VERIFONE: '#5b21b6' };
-    dm.innerHTML = desglose.map(function(m) {
-      var c = colores[m.metodo] || '#475569';
-      return '<div class="desglose-item"><i class="fas fa-credit-card" style="color:' + c + ';font-size:0.7rem;"></i>'
-        + '<span class="label">' + m.metodo + ':</span>'
-        + '<span class="val">$' + parseFloat(m.total).toFixed(2) + '</span>'
-        + '<span class="count">(' + m.cantidad + ')</span></div>';
+    drop.innerHTML = filtered.map(function(u) {
+      return '<div class="cc-dropdown-item" onmousedown="ccSeleccionarUsuario(\\'' + u.value.replace(/'/g, "\\'") + '\\',\\'' + u.label.replace(/'/g, "\\'") + '\\')">' + u.label + '</div>';
     }).join('');
   }
-
-  // Pagos table
-  var pl = document.getElementById('pagos-list');
-  if (pagos.length === 0) {
-    pl.innerHTML = '<div class="empty-state"><i class="fas fa-money-bill-wave"></i><p>No hay pagos registrados en esta fecha</p></div>';
-    return;
-  }
-  var h = '<table class="cc-table"><thead><tr><th>Cliente</th><th>Monto</th><th>Método</th><th>Transacción</th><th class="fecha">Fecha</th></tr></thead><tbody>';
-  pagos.forEach(function(p) {
-    var metClass = 'metodo-badge ' + (p.metodo || 'EFECTIVO');
-    h += '<tr><td>' + (p.cliente_nombre || 'N/A') + '</td>'
-      + '<td class="monto">$' + parseFloat(p.monto).toFixed(2) + '</td>'
-      + '<td><span class="' + metClass + '">' + (p.metodo || 'EFECTIVO') + '</span></td>'
-      + '<td style="color:var(--text-gray);font-size:0.85rem;">' + (p.transaccion || '-') + '</td>'
-      + '<td class="fecha">' + (p.created_at ? new Date(p.created_at).toLocaleString('es-DO') : '-') + '</td></tr>';
-  });
-  h += '</tbody></table>';
-  pl.innerHTML = h;
+  drop.style.display = 'block';
 }
 
-// ===== RENDER GASTOS =====
-function renderGastos(gastos) {
-  document.getElementById('gastos-count').textContent = gastos.length + ' gasto(s)';
-  var gl = document.getElementById('gastos-list');
-  if (gastos.length === 0) {
-    gl.innerHTML = '<div class="empty-state"><i class="fas fa-receipt"></i><p>No hay gastos registrados en esta fecha</p></div>';
-    return;
-  }
-  var h = '<table class="cc-table"><thead><tr><th>Concepto</th><th>Monto</th><th>Método</th><th>Categoría</th><th class="fecha">Fecha</th></tr></thead><tbody>';
-  gastos.forEach(function(g) {
-    h += '<tr><td>' + (g.concepto || 'N/A') + '</td>'
-      + '<td class="monto-neg">$' + parseFloat(g.monto).toFixed(2) + '</td>'
-      + '<td><span class="metodo-badge ' + (g.metodo || 'EFECTIVO') + '">' + (g.metodo || 'EFECTIVO') + '</span></td>'
-      + '<td style="color:var(--text-gray);font-size:0.85rem;">' + (g.categoria || 'Varios') + '</td>'
-      + '<td class="fecha">' + (g.created_at ? new Date(g.created_at).toLocaleString('es-DO') : '-') + '</td></tr>';
-  });
-  h += '</tbody></table>';
-  gl.innerHTML = h;
+function ccSeleccionarUsuario(value, label) {
+  document.getElementById('ccBuscarUsuario').value = label;
+  document.getElementById('ccSelectUsuario').value = value;
+  document.getElementById('ccDropUsuarios').style.display = 'none';
+  ccCargarPendiente(value);
 }
 
-// ===== REALIZAR CUADRE =====
-function realizarCuadre() {
-  var date = currentDate || document.getElementById('cc-date').value;
-  if (!confirm('¿Estás seguro de realizar el cuadre de caja para el día ' + date + '?\n\nEsto registrará el cierre y no se podrá volver a cuadrar esta fecha.')) return;
+// ====== PENDIENTES ======
+function ccCargarPendiente(usuario) {
+  fetch('/modulo?pagina=CuadreCaja&ajax=get_pendientes_cuadre&usuario=' + encodeURIComponent(usuario))
+  .then(function(r){return r.json()})
+  .then(function(d){
+    if (d.status !== 'success') return;
+    ccPendienteData = d.data;
+    if (d.data.ultimo_cuadre) {
+      document.getElementById('ccUltimoCuadreInfo').style.display = 'block';
+      document.getElementById('ccUltimoCuadreFecha').textContent = new Date(d.data.ultimo_cuadre).toLocaleString('es-DO');
+    } else {
+      document.getElementById('ccUltimoCuadreInfo').style.display = 'none';
+    }
+    
+    if (d.data.pagos.length === 0) {
+      document.getElementById('ccPendienteArea').style.display = 'none';
+      document.getElementById('ccSinPendiente').style.display = 'block';
+      document.getElementById('ccSinPendienteUltimo').textContent = d.data.ultimo_cuadre ? '(Último cuadre: ' + new Date(d.data.ultimo_cuadre).toLocaleString('es-DO') + ')' : '(Sin cuadres previos)';
+      document.getElementById('ccBtnCuadrar').disabled = true;
+    } else {
+      document.getElementById('ccPendienteArea').style.display = 'block';
+      document.getElementById('ccSinPendiente').style.display = 'none';
+      document.getElementById('ccTotalPendiente').textContent = '$' + d.data.total.toFixed(2);
+      document.getElementById('ccCantidadPagos').textContent = d.data.cantidad + ' pago(s)';
+      document.getElementById('ccBtnCuadrar').disabled = false;
+      
+      // Desglose
+      var desgHtml = '';
+      Object.keys(d.data.desglose).forEach(function(met) {
+        var m = d.data.desglose[met];
+        desgHtml += '<span class="metodo-badge ' + met + '">' + met + ': $' + m.total.toFixed(2) + ' (' + m.cantidad + ')</span>';
+      });
+      document.getElementById('ccDesglose').innerHTML = desgHtml;
+    }
+  });
+}
 
-  var btn = document.getElementById('btn-cuadrar');
+// ====== REALIZAR CUADRE ======
+function ccRealizarCuadre() {
+  var usuario = document.getElementById('ccSelectUsuario').value;
+  if (!usuario) { alert('Seleccione un usuario'); return; }
+  if (!confirm('¿Estás seguro de realizar el cuadre para ' + usuario + '?')) return;
+  
+  var btn = document.getElementById('ccBtnCuadrar');
   btn.disabled = true;
   btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
-
+  
   var fd = new FormData();
-  fd.append('fecha', date);
-
-  fetch('/modulo?pagina=CuadreCaja&ajax=do_cuadre', { method: 'POST', body: fd })
-    .then(function(r) { return r.json(); })
-    .then(function(d) {
-      btn.disabled = false;
-      btn.innerHTML = '<i class="fas fa-check-circle"></i> Realizar Cuadre';
-      if (d.status === 'success') {
-        mostrarResultadoCuadre(d.data);
-      } else {
-        alert('Error: ' + d.msg);
-      }
-    })
-    .catch(function() {
-      btn.disabled = false;
-      btn.innerHTML = '<i class="fas fa-check-circle"></i> Realizar Cuadre';
-      alert('Error de conexión al realizar el cuadre.');
-    });
-}
-
-function mostrarResultadoCuadre(data) {
-  document.getElementById('res-saldo').textContent = '$' + parseFloat(data.saldo).toFixed(2);
-  document.getElementById('res-info').innerHTML = ''
-    + '<div><strong>Total Pagos:</strong> $' + parseFloat(data.total_pagos).toFixed(2) + '</div>'
-    + '<div><strong>Total Gastos:</strong> $' + parseFloat(data.total_gastos).toFixed(2) + '</div>'
-    + '<div><strong>Saldo:</strong> $' + parseFloat(data.saldo).toFixed(2) + '</div>';
-
-  // Desglose por método en pagos
-  var desglose = {};
-  (data.pagos || []).forEach(function(p) {
-    var m = p.metodo || 'EFECTIVO';
-    desglose[m] = (desglose[m] || 0) + parseFloat(p.monto);
+  fd.append('usuario', usuario);
+  
+  fetch('/modulo?pagina=CuadreCaja&ajax=crear_cuadre_usuario', { method: 'POST', body: fd })
+  .then(function(r){return r.json()})
+  .then(function(d){
+    if (d.status === 'success') {
+      ccUltimoCuadreId = d.cuadre_id;
+      ccMostrarResultado(d);
+    } else {
+      alert('Error: ' + (d.msg || 'desconocido'));
+    }
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-check-circle"></i> Realizar Cuadre';
+  })
+  .catch(function(){
+    alert('Error de conexión');
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-check-circle"></i> Realizar Cuadre';
   });
-  var colores = { EFECTIVO: '#15803d', TARJETA: '#1d4ed8', TRANSFERENCIA: '#92400e', VERIFONE: '#5b21b6' };
-  var rd = document.getElementById('res-desglose');
-  var keys = Object.keys(desglose);
-  if (keys.length) {
-    rd.innerHTML = keys.map(function(m) {
-      var c = colores[m] || '#475569';
-      return '<div class="desglose-item"><i class="fas fa-credit-card" style="color:' + c + ';font-size:0.7rem;"></i>'
-        + '<span class="label">' + m + ':</span>'
-        + '<span class="val">$' + desglose[m].toFixed(2) + '</span></div>';
-    }).join('');
-    rd.style.display = 'flex';
-  } else {
-    rd.style.display = 'none';
-  }
-
-  // Pagos table
-  var pb = document.getElementById('res-pagos-body');
-  if (data.pagos && data.pagos.length) {
-    pb.innerHTML = data.pagos.map(function(p) {
-      return '<tr><td>' + (p.cliente_nombre || 'N/A') + '</td><td class="monto">$' + parseFloat(p.monto).toFixed(2) + '</td><td>' + (p.metodo || 'EFECTIVO') + '</td></tr>';
-    }).join('');
-  } else {
-    pb.innerHTML = '<tr><td colspan="3" style="text-align:center;color:var(--text-gray);">No hay pagos</td></tr>';
-  }
-
-  // Gastos table
-  var gb = document.getElementById('res-gastos-body');
-  if (data.gastos && data.gastos.length) {
-    gb.innerHTML = data.gastos.map(function(g) {
-      return '<tr><td>' + (g.concepto || 'N/A') + '</td><td class="monto-neg">$' + parseFloat(g.monto).toFixed(2) + '</td><td>' + (g.metodo || 'EFECTIVO') + '</td></tr>';
-    }).join('');
-  } else {
-    gb.innerHTML = '<tr><td colspan="3" style="text-align:center;color:var(--text-gray);">No hay gastos</td></tr>';
-  }
-
-  document.getElementById('cuadre-resultado').style.display = 'block';
-  document.getElementById('cuadre-resultado').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-// ===== GASTO MODAL =====
-function openGastoModal() { document.getElementById('modal-gasto').classList.add('show'); }
-function closeGastoModal() {
-  document.getElementById('modal-gasto').classList.remove('show');
-  document.getElementById('gasto-msg').style.display = 'none';
-}
-
-function guardarGasto() {
-  var concepto = (document.getElementById('gasto-concepto').value || '').trim();
-  var monto = parseFloat(document.getElementById('gasto-monto').value) || 0;
-  var metodo = document.getElementById('gasto-metodo').value;
-  var referencia = (document.getElementById('gasto-referencia').value || '').trim();
-  var categoria = document.getElementById('gasto-categoria').value;
-
-  if (!concepto) { mostrarGastoMsg('error', 'El concepto es requerido'); return; }
-  if (monto <= 0) { mostrarGastoMsg('error', 'El monto debe ser mayor a 0'); return; }
-
-  var fd = new FormData();
-  fd.append('concepto', concepto);
-  fd.append('monto', monto);
-  fd.append('metodo', metodo);
-  fd.append('referencia', referencia);
-  fd.append('categoria', categoria);
-
-  fetch('/modulo?pagina=CuadreCaja&ajax=add_gasto', { method: 'POST', body: fd })
-    .then(function(r) { return r.json(); })
-    .then(function(d) {
-      if (d.status === 'success') {
-        mostrarGastoMsg('success', 'Gasto registrado exitosamente');
-        document.getElementById('gasto-concepto').value = '';
-        document.getElementById('gasto-monto').value = '';
-        document.getElementById('gasto-referencia').value = '';
-        setTimeout(function() { closeGastoModal(); cargarCaja(); }, 1000);
-      } else {
-        mostrarGastoMsg('error', d.msg || 'Error al guardar el gasto');
-      }
-    })
-    .catch(function() {
-      mostrarGastoMsg('error', 'Error de conexión');
+function ccMostrarResultado(d) {
+  document.getElementById('cardNuevoCuadre').style.display = 'none';
+  document.getElementById('ccResultadoArea').style.display = 'block';
+  document.getElementById('ccResUsuario').textContent = document.getElementById('ccSelectUsuario').value;
+  document.getElementById('ccResFecha').textContent = new Date().toLocaleString('es-DO');
+  document.getElementById('ccResCantidad').textContent = d.cantidad + ' pago(s)';
+  document.getElementById('ccResTotal').textContent = '$' + d.total.toFixed(2);
+  document.getElementById('ccResDesde').textContent = d.desde ? new Date(d.desde).toLocaleString('es-DO') : 'Inicio';
+  
+  // Desglose métodos
+  var desgHtml = '';
+  if (d.metodos) {
+    Object.keys(d.metodos).forEach(function(met) {
+      var m = d.metodos[met];
+      desgHtml += '<span class="metodo-badge ' + met + '">' + met + ': $' + m.total.toFixed(2) + '</span>';
     });
-}
-
-function mostrarGastoMsg(tipo, msg) {
-  var el = document.getElementById('gasto-msg');
-  el.style.display = 'block';
-  el.style.background = tipo === 'success' ? '#d1fae5' : '#fee2e2';
-  el.style.color = tipo === 'success' ? '#065f46' : '#991b1b';
-  el.innerHTML = '<i class="fas fa-' + (tipo === 'success' ? 'check-circle' : 'exclamation-circle') + '"></i> ' + msg;
-}
-
-// ===== HISTORIAL =====
-var histPage = 1;
-var histTotalPages = 1;
-
-function cargarHistorial(page) {
-  histPage = page || 1;
-  fetch('/modulo?pagina=CuadreCaja&ajax=history&limit=20&offset=' + ((histPage - 1) * 20))
-    .then(function(r) { return r.json(); })
-    .then(function(d) {
-      if (d.status === 'success') {
-        renderHistorial(d.data, d.total);
-      }
-    });
-}
-
-function renderHistorial(data, total) {
-  var hl = document.getElementById('historial-list');
-  histTotalPages = Math.ceil(total / 20) || 1;
-
-  if (!data || data.length === 0) {
-    hl.innerHTML = '<div class="empty-state"><i class="fas fa-history"></i><p>No hay cuadres registrados</p></div>';
-    document.getElementById('historial-pagination').innerHTML = '';
-    return;
   }
-
-  var h = '<table class="cc-table"><thead><tr><th>ID</th><th>Fecha</th><th>Total Pagos</th><th>Total Gastos</th><th>Saldo</th><th>Realizado por</th><th class="fecha">Creado</th></tr></thead><tbody>';
-  data.forEach(function(c) {
-    h += '<tr><td>#' + c.id + '</td>'
-      + '<td><strong>' + c.fecha + '</strong></td>'
-      + '<td class="monto">$' + parseFloat(c.total_pagos).toFixed(2) + '</td>'
-      + '<td class="monto-neg">$' + parseFloat(c.total_gastos).toFixed(2) + '</td>'
-      + '<td style="font-weight:700;color:' + (parseFloat(c.saldo) >= 0 ? 'var(--cc-green)' : '#ef4444') + ';">$' + parseFloat(c.saldo).toFixed(2) + '</td>'
-      + '<td><span class="metodo-badge EFECTIVO">' + (c.usuario_nombre || 'Sistema') + '</span></td>'
-      + '<td class="fecha">' + (c.created_at ? new Date(c.created_at).toLocaleString('es-DO') : '-') + '</td></tr>';
+  document.getElementById('ccResDesglose').innerHTML = desgHtml;
+  
+  // Detalles
+  var detHtml = '';
+  (d.detalles || []).forEach(function(p) {
+    var f = p.fecha ? new Date(p.fecha).toLocaleDateString('es-DO') : '-';
+    detHtml += '<tr><td>' + (p.cliente || 'N/A') + '</td><td class="monto-col">$' + p.monto.toFixed(2) + '</td><td>' + (p.metodo || '-') + '</td><td>' + f + '</td></tr>';
   });
-  h += '</tbody></table>';
-  hl.innerHTML = h;
-
-  // Pagination
-  var pg = document.getElementById('historial-pagination');
-  pg.innerHTML = '<button onclick="cargarHistorial(1)"' + (histPage <= 1 ? ' disabled' : '') + '><i class="fas fa-angle-double-left"></i></button>'
-    + '<button onclick="cargarHistorial(' + (histPage - 1) + ')"' + (histPage <= 1 ? ' disabled' : '') + '><i class="fas fa-angle-left"></i></button>'
-    + '<span>Página ' + histPage + ' de ' + histTotalPages + '</span>'
-    + '<button onclick="cargarHistorial(' + (histPage + 1) + ')"' + (histPage >= histTotalPages ? ' disabled' : '') + '><i class="fas fa-angle-right"></i></button>'
-    + '<button onclick="cargarHistorial(' + histTotalPages + ')"' + (histPage >= histTotalPages ? ' disabled' : '') + '><i class="fas fa-angle-double-right"></i></button>';
+  document.getElementById('ccResDetalles').innerHTML = detHtml;
+  
+  setTimeout(function(){ ccImprimir(d.cuadre_id); }, 800);
 }
 
-// ===== INIT ON LOAD =====
-setTimeout(init, 100);
+function ccNuevoCuadre() {
+  document.getElementById('ccResultadoArea').style.display = 'none';
+  document.getElementById('cardNuevoCuadre').style.display = 'block';
+  document.getElementById('ccBtnCuadrar').disabled = true;
+  document.getElementById('ccBtnCuadrar').innerHTML = '<i class="fas fa-check-circle"></i> Realizar Cuadre';
+  ccPendienteData = null;
+  ccUltimoCuadreId = null;
+  var usuario = document.getElementById('ccSelectUsuario').value;
+  if (usuario) ccCargarPendiente(usuario);
+}
 
-// ===== CLOSE MODAL ON OVERLAY CLICK =====
-document.getElementById('modal-gasto').addEventListener('click', function(e) {
-  if (e.target === this) closeGastoModal();
-});
+function ccImprimir(cuadreId) {
+  if (!cuadreId) return;
+  var w = window.open('/modulo?pagina=CuadreCaja&ajax=get_cuadre_detalle&cuadre_id=' + cuadreId, '_blank', 'width=800,height=600');
+  // The imprimir page handles the print dialog
+}
+
+// ====== HISTORIAL ======
+function ccCargarHistorial() {
+  fetch('/modulo?pagina=CuadreCaja&ajax=history&limit=100')
+  .then(function(r){return r.json()})
+  .then(function(d){
+    if (d.status !== 'success') return;
+    var tb = document.getElementById('ccHistorialBody');
+    if (!d.data || d.data.length === 0) {
+      tb.innerHTML = '<tr><td colspan="7" class="cc-empty"><i class="fas fa-cash-register"></i> No hay cuadres realizados</td></tr>';
+      return;
+    }
+    var h = '';
+    d.data.forEach(function(c) {
+      var desde = c.fecha_desde ? new Date(c.fecha_desde).toLocaleString('es-DO') : '-';
+      var hasta = c.fecha_hasta ? new Date(c.fecha_hasta).toLocaleString('es-DO') : c.fecha || '-';
+      h += '<tr>';
+      h += '<td style="font-weight:700;">#' + c.id + '</td>';
+      h += '<td>' + (c.usuario_nombre || '-') + '</td>';
+      h += '<td style="font-size:0.82rem;color:#64748b;">' + desde + '</td>';
+      h += '<td style="font-size:0.82rem;color:#64748b;">' + hasta + '</td>';
+      h += '<td>' + (c.pagos_count || 0) + '</td>';
+      h += '<td style="font-weight:700;color:var(--cc-green-dark);">$' + (c.total_pagos || 0).toFixed(2) + '</td>';
+      h += '<td style="text-align:right;"><button class="btn-print" onclick="ccImprimir(' + c.id + ')" style="padding:4px 10px;font-size:0.78rem;"><i class="fas fa-print"></i> Imprimir</button></td>';
+      h += '</tr>';
+    });
+    tb.innerHTML = h;
+  });
+}
+
+// ====== INIT ======
+function ccInit() {
+  // Cargar usuarios
+  fetch('/modulo?pagina=CuadreCaja&ajax=list_usuarios_cuadre')
+  .then(function(r){return r.json()})
+  .then(function(d){
+    if (d.status === 'success') ccUsuariosList = d.data || [];
+  });
+  
+  // Close dropdown on outside click
+  document.addEventListener('click', function(e) {
+    var drop = document.getElementById('ccDropUsuarios');
+    var inp = document.getElementById('ccBuscarUsuario');
+    if (drop && inp && !drop.contains(e.target) && e.target !== inp) {
+      drop.style.display = 'none';
+    }
+  });
+}
+ccInit();
 </script>

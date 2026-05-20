@@ -1527,6 +1527,29 @@ app.all('/modulo', requireAuth, (req, res) => {
       data.zonas = db.prepare('SELECT * FROM zonas ORDER BY nombre').all();
       break;
     }
+    case 'ImprimirRecibo': {
+      const ajax = req.query.ajax;
+      if (ajax === 'print') {
+        var ids = (req.query.ids || '').split(',').filter(Boolean).map(Number);
+        if (ids.length === 0) return res.status(400).send('IDs requeridos');
+        var pago = db.prepare('SELECT p.*, c.nombre as cliente_nombre FROM pagos p LEFT JOIN clientes c ON c.id=p.cliente_id WHERE p.id=?').get(ids[0]);
+        if (!pago) return res.status(404).send('Pago no encontrado');
+        var servicio = db.prepare('SELECT p.nombre as plan_nombre FROM servicios s LEFT JOIN planes p ON p.id=s.plan_id WHERE s.id=?').get(pago.servicio_id);
+        data.recibo_id = ids.join('/');
+        data.cliente_nombre = pago.cliente_nombre || '';
+        data.monto = parseFloat(pago.monto) || 0;
+        data.metodo_pago = pago.metodo || 'EFECTIVO';
+        data.transaccion = pago.transaccion || '';
+        data.plan_nombre = servicio ? servicio.plan_nombre : '';
+        data.empresa_nombre = (db.prepare("SELECT value FROM configuracion WHERE key='empresa_nombre'").get() || {}).value || '';
+        data.empresa_telefono = (db.prepare("SELECT value FROM configuracion WHERE key='empresa_telefono'").get() || {}).value || '';
+        data.empresa_direccion = (db.prepare("SELECT value FROM configuracion WHERE key='empresa_direccion'").get() || {}).value || '';
+        data.pagina = 'ImprimirRecibo';
+        res.render('pages/ImprimirRecibo', data);
+        return;
+      }
+      break;
+    }
     case 'PagosAdmin': {
       // AJAX handlers for PagosAdmin
       const ajax = req.query.ajax;
@@ -2346,6 +2369,7 @@ app.all('/modulo', requireAuth, (req, res) => {
     }
     case 'CuadreCaja': {
       const ajax = req.query.ajax;
+      console.log('[CC DEBUG] CuadreCaja case entered, ajax=' + ajax + ' pagina=' + req.query.pagina);
 
       // --- Resumen del día ---
       if (ajax === 'summary') {
@@ -2434,6 +2458,121 @@ app.all('/modulo', requireAuth, (req, res) => {
         }
         const r = db.prepare(`INSERT INTO gastos (concepto, monto, metodo, referencia, categoria, usuario_id, notas) VALUES (?,?,?,?,?,?,?)`).run(concepto, monto, metodo || 'EFECTIVO', referencia || '', categoria || 'Varios', req.session.user.id, notas || '');
         return res.json({ status: 'success', msg: 'Gasto agregado', id: r.lastInsertRowid });
+      }
+
+      // --- Listar usuarios para cuadre (cobradores/empleados) ---
+      if (ajax === 'list_usuarios_cuadre') {
+        var usuarios = db.prepare("SELECT id, nombre FROM empleados WHERE activo=1 AND (tipo='cobrador' OR tipo='oficina' OR tipo='admin') ORDER BY nombre").all();
+        // Also add system users
+        var sysUsers = db.prepare("SELECT id, nombre FROM usuarios WHERE activo=1 ORDER BY nombre").all();
+        // Merge and deduplicate
+        var nombres = {};
+        var result = [];
+        sysUsers.forEach(function(u) {
+          if (!nombres[u.nombre]) {
+            nombres[u.nombre] = true;
+            result.push({ value: u.nombre, label: u.nombre });
+          }
+        });
+        usuarios.forEach(function(u) {
+          if (!nombres[u.nombre]) {
+            nombres[u.nombre] = true;
+            result.push({ value: u.nombre, label: u.nombre });
+          }
+        });
+        return res.json({ status: 'success', data: result });
+      }
+
+      // --- Obtener pagos pendientes de un usuario desde su último cuadre ---
+      if (ajax === 'get_pendientes_cuadre') {
+        var usuario = req.query.usuario || '';
+        if (!usuario) return res.json({ status: 'error', msg: 'Usuario requerido' });
+        
+        // Encontrar el último cuadre de este usuario
+        var ultimo = db.prepare("SELECT MAX(fecha_hasta) as ultima_fecha FROM cuadre_caja WHERE usuario_nombre=? AND fecha_hasta IS NOT NULL").get(usuario);
+        var fechaDesde = ultimo && ultimo.ultima_fecha ? ultimo.ultima_fecha : '1970-01-01';
+        
+        // Obtener pagos NO cuadrados de este usuario (cobrador)
+        // Usamos el nombre del empleado/sistema que coincide con el usuario del cuadre
+        var pagos = db.prepare(`
+          SELECT p.*, c.nombre as cliente_nombre, c.telefono as telefono
+          FROM pagos p
+          LEFT JOIN clientes c ON c.id=p.cliente_id
+          WHERE p.cuadrado=0 AND p.created_at > ?
+          ORDER BY p.created_at ASC
+        `).all(fechaDesde);
+        
+        var desglose = {};
+        var total = 0;
+        pagos.forEach(function(p) {
+          var met = p.metodo || 'EFECTIVO';
+          if (!desglose[met]) desglose[met] = { cantidad: 0, total: 0 };
+          desglose[met].cantidad++;
+          desglose[met].total += parseFloat(p.monto || 0);
+          total += parseFloat(p.monto || 0);
+        });
+        
+        return res.json({
+          status: 'success',
+          data: {
+            pagos: pagos,
+            desglose: desglose,
+            total: total,
+            cantidad: pagos.length,
+            ultimo_cuadre: ultimo && ultimo.ultima_fecha ? ultimo.ultima_fecha : null
+          }
+        });
+      }
+
+      // --- Crear cuadre para un usuario específico ---
+      if (ajax === 'crear_cuadre_usuario') {
+        if (req.method !== 'POST') return res.status(405).json({ error: 'POST required' });
+        var usuario = req.body.usuario || '';
+        if (!usuario) return res.json({ status: 'error', msg: 'Usuario requerido' });
+        
+        // Get pending payments
+        var ultimo = db.prepare("SELECT MAX(fecha_hasta) as ultima_fecha FROM cuadre_caja WHERE usuario_nombre=? AND fecha_hasta IS NOT NULL").get(usuario);
+        var fechaDesde = ultimo && ultimo.ultima_fecha ? ultimo.ultima_fecha : '1970-01-01';
+        var ahora = new Date().toISOString();
+        
+        var pagos = db.prepare("SELECT p.*, c.nombre as cliente_nombre FROM pagos p LEFT JOIN clientes c ON c.id=p.cliente_id WHERE p.cuadrado=0 AND p.created_at > ? ORDER BY p.created_at ASC").all(fechaDesde);
+        if (pagos.length === 0) return res.json({ status: 'error', msg: 'No hay pagos pendientes de cuadrar' });
+        
+        var total = 0;
+        var detalles = [];
+        var metodos = {};
+        pagos.forEach(function(p) {
+          var m = parseFloat(p.monto || 0);
+          total += m;
+          detalles.push({
+            pago_id: p.id, cliente: p.cliente_nombre || 'N/A', monto: m,
+            metodo: p.metodo || 'EFECTIVO', fecha: p.created_at
+          });
+          var met = p.metodo || 'EFECTIVO';
+          if (!metodos[met]) metodos[met] = { cantidad: 0, total: 0 };
+          metodos[met].cantidad++;
+          metodos[met].total += m;
+        });
+        
+        var r = db.prepare("INSERT INTO cuadre_caja (usuario_nombre, fecha, fecha_desde, fecha_hasta, total_pagos, pagos_count, detalles_json, total_metodos_json) VALUES (?,?,?,?,?,?,?,?)").run(usuario, ahora.slice(0,10), fechaDesde, ahora, total, pagos.length, JSON.stringify(detalles), JSON.stringify(metodos));
+        var cuadreId = r.lastInsertRowid;
+        
+        // Mark payments as cuadrado
+        pagos.forEach(function(p) {
+          db.prepare("UPDATE pagos SET cuadrado=1, cuadre_id=? WHERE id=?").run(cuadreId, p.id);
+        });
+        
+        return res.json({ status: 'success', msg: 'Cuadre realizado', cuadre_id: cuadreId, total: total, cantidad: pagos.length, detalles: detalles, metodos: metodos, desde: fechaDesde, hasta: ahora });
+      }
+
+      // --- Obtener detalle de un cuadre ---
+      if (ajax === 'get_cuadre_detalle') {
+        var cuadreId = parseInt(req.query.cuadre_id) || 0;
+        if (!cuadreId) return res.json({ status: 'error', msg: 'ID requerido' });
+        var cuadre = db.prepare("SELECT * FROM cuadre_caja WHERE id=?").get(cuadreId);
+        if (!cuadre) return res.json({ status: 'error', msg: 'Cuadre no encontrado' });
+        var pagos = db.prepare("SELECT p.*, c.nombre as cliente_nombre FROM pagos p LEFT JOIN clientes c ON c.id=p.cliente_id WHERE p.cuadre_id=? ORDER BY p.created_at ASC").all(cuadreId);
+        return res.json({ status: 'success', cuadre: cuadre, detalles: pagos, desde: cuadre.fecha_desde });
       }
 
       break;
@@ -3771,18 +3910,15 @@ function sendWelcomeMessage(servicioId, clienteId, planId, cicloId) {
           montoProrrateado = '💰 ' + config.moneda + montoProrrateo.toFixed(2) + ' por ' + diasFacturados + ' días de uso';
         }
         
-        // Calcular días hasta corte
-        var cutDate = new Date(anioHoy, mesHoy, cutDay);
-        if (diaHoy >= cutDay) {
-          cutDate = new Date(anioHoy, mesHoy + 1, cutDay);
-        } else if (diaHoy < payDay) {
-          cutDate = new Date(anioHoy, mesHoy, cutDay);
-          if (cutDay < payDay) {
-            cutDate = new Date(anioHoy, mesHoy + 1, cutDay);
-          }
+        // Calcular días desde el pago hasta el corte
+        if (cutDay > payDay) {
+          // Corte en el mismo mes después del pago
+          diasHastaCorte = (cutDay - payDay) + '';
+        } else {
+          // Corte al mes siguiente (ej: pago día 15, corte día 4 del mes siguiente)
+          var diasEnMes = new Date(anioHoy, mesHoy + 1, 0).getDate();
+          diasHastaCorte = ((diasEnMes - payDay) + cutDay) + '';
         }
-        var diffCutMs = cutDate.getTime() - hoy.getTime();
-        diasHastaCorte = Math.ceil(diffCutMs / (1000 * 60 * 60 * 24)) + '';
       } else {
         // Sin ciclo: buscar el primer ciclo disponible o usar defaults
         var primerCiclo = db.prepare("SELECT * FROM billing_cycles WHERE is_default=1 OR id=(SELECT MIN(id) FROM billing_cycles)").get();
@@ -3808,14 +3944,12 @@ function sendWelcomeMessage(servicioId, clienteId, planId, cicloId) {
             montoProrrateado = '💰 ' + config.moneda + montoProrrateo.toFixed(2) + ' por ' + diasFacturados + ' días de uso';
           }
           
-          var cutDate = new Date(anioHoy, mesHoy, cutDay);
-          if (diaHoy >= cutDay) cutDate = new Date(anioHoy, mesHoy + 1, cutDay);
-          else if (diaHoy < payDay) {
-            cutDate = new Date(anioHoy, mesHoy, cutDay);
-            if (cutDay < payDay) cutDate = new Date(anioHoy, mesHoy + 1, cutDay);
+          if (cutDay > payDay) {
+            diasHastaCorte = (cutDay - payDay) + '';
+          } else {
+            var diasEnMes = new Date(anioHoy, mesHoy + 1, 0).getDate();
+            diasHastaCorte = ((diasEnMes - payDay) + cutDay) + '';
           }
-          var diffCutMs = cutDate.getTime() - hoy.getTime();
-          diasHastaCorte = Math.ceil(diffCutMs / (1000 * 60 * 60 * 24)) + '';
         } else {
           // Sin ciclos en el sistema: mostrar el precio completo
           proximoPago = '30 de ' + meses[mesHoy + 1 < 12 ? mesHoy + 1 : 0];
