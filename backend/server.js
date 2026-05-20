@@ -99,6 +99,7 @@ function renderPage(req, res, page, data = {}) {
     { type: 'link', id: 'Dashboard', icon: 'fa-chart-pie', nombre: 'Resumen' },
     { type: 'link', id: 'Clientes', icon: 'fa-users', nombre: 'Clientes' },
     { type: 'link', id: 'NuevoCliente', icon: 'fa-user-plus', nombre: 'Nuevo cliente' },
+    { type: 'link', id: 'PagosPendientes', icon: 'fa-hourglass-half', nombre: 'Pagos Pendientes' },
     { type: 'link', id: 'RegistrarPago', icon: 'fa-hand-holding-usd', nombre: 'Registrar pago' },
     { type: 'link', id: 'PromesaDePago', icon: 'fa-handshake', nombre: 'Promesa de pago' },
     { type: 'link', id: 'Ordenes', icon: 'fa-clipboard-list', nombre: 'Órdenes' },
@@ -119,7 +120,6 @@ function renderPage(req, res, page, data = {}) {
     { type: 'category', id: 'admin', nombre: 'Administrativo', icon: 'fa-cogs', items: [
       { id: 'Proveedores', icon: 'fa-truck', nombre: 'Proveedores' },
       { id: 'Empleados', icon: 'fa-id-badge', nombre: 'Empleados' },
-      { id: 'PagosPendientes', icon: 'fa-hourglass-half', nombre: 'Pagos Pendientes' },
       { id: 'PagosAdmin', icon: 'fa-file-invoice-dollar', nombre: 'Pagos' },
       { id: 'Estadisticas', icon: 'fa-chart-bar', nombre: 'Estadísticas' }
     ]},
