@@ -84,9 +84,9 @@
           <a href="/modulo?pagina=RegistrarPago&cliente_id=<%= f.cliente_id %>" class="btn btn-sm btn-success" style="text-decoration:none;padding:4px 10px;font-size:0.75rem;">
             <i class="fas fa-dollar-sign"></i> Cobrar
           </a>
-          <a href="/modulo?pagina=PromesaDePago&cliente_id=<%= f.cliente_id %>" class="btn btn-sm btn-primary" style="text-decoration:none;padding:4px 10px;font-size:0.75rem;background:#2563eb;color:#fff;border:none;border-radius:6px;display:inline-flex;align-items:center;gap:4px;cursor:pointer;">
+          <button class="btn btn-sm btn-primary" onclick="openNewPromisePP(<%= f.cliente_id %>, '<%= f.cliente_nombre.replace(/'/g, "\\'") %>')" style="padding:4px 10px;font-size:0.75rem;background:#2563eb;color:#fff;border:none;border-radius:6px;display:inline-flex;align-items:center;gap:4px;cursor:pointer;">
             <i class="fas fa-handshake"></i> Promesa
-          </a>
+          </button>
         </td>
       </tr>
       <% }); } %>
@@ -94,6 +94,115 @@
   </table>
 </div>
 
+
+<!-- Modal Nueva Promesa de Pago -->
+<div class="pp-overlay" id="ppModal">
+    <div class="pp-modal">
+        <div class="pp-modal-header">
+            <h3><i class="fas fa-handshake" style="color:#2563eb;"></i> Nueva Promesa de Pago</h3>
+            <button class="pp-modal-close" onclick="closeModalPP()">&times;</button>
+        </div>
+        <div class="pp-modal-body">
+            <div class="pp-form-group" id="ppSearchGroup" style="position:relative;">
+                <label class="pp-form-label">Buscar Cliente</label>
+                <input type="text" class="pp-input" id="ppSearchInput" placeholder="Nombre, apodo, c&eacute;dula o NIC..." oninput="ppSearchDebouncePP()" autocomplete="off">
+                <div class="pp-search-results" id="ppSearchResults"></div>
+            </div>
+            <div class="pp-client-selected" id="ppClientSelected">
+                <div>
+                    <strong id="ppClientName"></strong>
+                    <span id="ppClientAlias" style="color:#d97706; font-style:italic; margin-left:6px;"></span>
+                </div>
+                <button class="pp-btn pp-btn-danger pp-btn-sm" onclick="clearClientPP()"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="pp-form-group" id="ppSvcGroup" style="display:none;">
+                <label class="pp-form-label">Servicios <span style="color:#94a3b8; font-weight:400;">(seleccione a cu&aacute;les aplicar)</span></label>
+                <div id="ppSvcList" class="pp-svc-list"></div>
+            </div>
+            <div class="pp-form-group" id="ppDateGroup" style="display:none;">
+                <label class="pp-form-label">Fecha l&iacute;mite de la promesa</label>
+                <input type="date" class="pp-input" id="ppDueDate" min="">
+            </div>
+            <div class="pp-form-group" id="ppNotesGroup" style="display:none;">
+                <label class="pp-form-label">Notas <span style="color:#94a3b8; font-weight:400;">(opcional)</span></label>
+                <textarea class="pp-input" id="ppNotes" rows="2" placeholder="Motivo de la promesa..."></textarea>
+            </div>
+        </div>
+        <div class="pp-modal-footer" id="ppFooter" style="display:none;">
+            <button class="pp-btn" style="background:#e2e8f0; color:#475569;" onclick="closeModalPP()">Cancelar</button>
+            <button class="pp-btn pp-btn-primary" onclick="savePromisePP()" id="ppSaveBtn">
+                <i class="fas fa-save"></i> Crear Promesa
+            </button>
+        </div>
+    </div>
+</div>
+
+
+/* Promesa modal styles */
+.pp-overlay {
+  position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.4);
+  z-index:4000; display:none; align-items:center; justify-content:center;
+}
+.pp-overlay.open { display:flex; }
+.pp-modal {
+  background:#fff; border-radius:12px; width:100%; max-width:520px; max-height:90vh;
+  overflow-y:auto; box-shadow:0 10px 40px rgba(0,0,0,0.15);
+}
+.pp-modal-header {
+  padding:14px 18px; border-bottom:1px solid #e2e8f0; display:flex;
+  align-items:center; justify-content:space-between;
+}
+.pp-modal-header h3 { margin:0; font-size:1.05rem; }
+.pp-modal-close {
+  width:30px; height:30px; border:none; background:#f1f5f9; border-radius:6px;
+  font-size:1.2rem; cursor:pointer; display:flex; align-items:center; justify-content:center;
+  color:#64748b;
+}
+.pp-modal-close:hover { background:#e2e8f0; }
+.pp-modal-body { padding:16px 18px; }
+.pp-modal-footer {
+  padding:12px 18px; border-top:1px solid #e2e8f0; display:flex; gap:8px; justify-content:flex-end;
+}
+.pp-form-group { margin-bottom:14px; }
+.pp-form-label { display:block; font-size:0.82rem; font-weight:600; color:#475569; margin-bottom:6px; }
+.pp-input {
+  width:100%; padding:9px 12px; border:1px solid #d1d5db; border-radius:6px;
+  font-size:0.9rem; box-sizing:border-box;
+}
+.pp-input:focus { outline:none; border-color:#6366f1; background:#fff; }
+.pp-btn {
+  padding:9px 18px; border:none; border-radius:8px; font-size:0.85rem; font-weight:600;
+  cursor:pointer; display:inline-flex; align-items:center; gap:6px;
+}
+.pp-btn-primary { background:#6366f1; color:#fff; }
+.pp-btn-primary:hover { background:#4f46e5; }
+.pp-btn-sm { padding:5px 10px; font-size:0.78rem; }
+.pp-btn-danger { background:#dc2626; color:#fff; }
+.pp-btn-danger:hover { background:#b91c1c; }
+.pp-search-results {
+  position:absolute; left:0; right:0; top:100%; z-index:10;
+  background:#fff; border:1px solid #e2e8f0; border-radius:0 0 8px 8px;
+  max-height:220px; overflow-y:auto; display:none; box-shadow:0 4px 12px rgba(0,0,0,0.08);
+}
+.pp-search-item {
+  padding:10px 12px; cursor:pointer; border-bottom:1px solid #f1f5f9;
+  font-size:0.85rem;
+}
+.pp-search-item:hover { background:#f8fafc; }
+.pp-client-selected {
+  display:none; align-items:center; justify-content:space-between;
+  padding:10px 14px; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:8px;
+  margin-bottom:12px;
+}
+.pp-svc-list { max-height:240px; overflow-y:auto; border:1px solid #e2e8f0; border-radius:6px; }
+.pp-svc-item {
+  padding:8px 12px; border-bottom:1px solid #f1f5f9; display:flex;
+  justify-content:space-between; align-items:center;
+}
+.pp-svc-item:last-child { border-bottom:none; }
+.pp-svc-item label { display:flex; align-items:center; gap:8px; cursor:pointer; font-size:0.85rem; }
+.pp-svc-warn { font-size:0.75rem; color:#dc2626; }
+.pp-svc-ok { font-size:0.75rem; color:#16a34a; }
 <style>
   tr.vencida { background:#fef2f2; }
   tr.vencida:hover td { background:#fee2e2 !important; }
@@ -113,4 +222,137 @@ function filtrarTabla() {
     row.style.display = (matchCliente && matchZona) ? '' : 'none';
   });
 }
+
+let ppSelectedClient = null;
+let ppSearchTimer = null;
+
+function openNewPromisePP(clienteId, clienteNombre) {
+    // Pre-select client
+    ppSelectedClient = { id: clienteId, name: clienteNombre };
+    document.getElementById('ppClientName').textContent = clienteNombre;
+    document.getElementById('ppClientSelected').style.display = 'flex';
+    document.getElementById('ppSearchGroup').style.display = 'none';
+    loadServicesPP(clienteId);
+    document.getElementById('ppModal').classList.add('open');
+}
+
+function closeModalPP() {
+    document.getElementById('ppModal').classList.remove('open');
+    ppSelectedClient = null;
+}
+
+function ppSearchDebouncePP() {
+    clearTimeout(ppSearchTimer);
+    var val = document.getElementById('ppSearchInput').value.trim();
+    if (val.length < 2) { document.getElementById('ppSearchResults').style.display = 'none'; return; }
+    ppSearchTimer = setTimeout(function() {
+        fetch('/api/promesa/search_clients?term=' + encodeURIComponent(val))
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            var box = document.getElementById('ppSearchResults');
+            if (!data.length) { box.style.display = 'none'; return; }
+            var html = '';
+            data.forEach(function(c) {
+                html += '<div class="pp-search-item" onclick="selectClientPP(' + c.id + ',\'' + c.name.replace(/'/g, "\\'") + '\')">';
+                html += '<strong>' + c.name + '</strong>';
+                if (c.alias) html += ' <span style="color:#d97706;">(' + c.alias + ')</span>';
+                if (c.nics) html += '<br><small style="color:#94a3b8;">' + c.nics + '</small>';
+                html += '</div>';
+            });
+            box.innerHTML = html;
+            box.style.display = 'block';
+        });
+    }, 300);
+}
+
+function selectClientPP(id, name) {
+    ppSelectedClient = { id: id, name: name };
+    document.getElementById('ppClientName').textContent = name;
+    document.getElementById('ppClientSelected').style.display = 'flex';
+    document.getElementById('ppSearchInput').value = '';
+    document.getElementById('ppSearchResults').style.display = 'none';
+    document.getElementById('ppSearchGroup').style.display = 'none';
+    loadServicesPP(id);
+}
+
+function clearClientPP() {
+    ppSelectedClient = null;
+    document.getElementById('ppClientSelected').style.display = 'none';
+    document.getElementById('ppSvcGroup').style.display = 'none';
+    document.getElementById('ppDateGroup').style.display = 'none';
+    document.getElementById('ppNotesGroup').style.display = 'none';
+    document.getElementById('ppFooter').style.display = 'none';
+    document.getElementById('ppSearchGroup').style.display = 'block';
+    document.getElementById('ppSearchInput').value = '';
+    document.getElementById('ppSearchInput').focus();
+}
+
+function loadServicesPP(clientId) {
+    fetch('/api/promesa/get_services?client_id=' + clientId)
+    .then(function(r) { return r.json(); })
+    .then(function(svcs) {
+        var list = document.getElementById('ppSvcList');
+        var html = '';
+        svcs.forEach(function(s) {
+            var hasPromesa = s.promesa_activa > 0;
+            var hasDeuda = s.facturas_vencidas > 0;
+            var isDisabled = hasPromesa || (s.status !== 'suspendido' && !hasDeuda);
+            html += '<div class="pp-svc-item">';
+            html += '<label>';
+            html += '<input type="checkbox" class="pp-svc-check" value="' + s.id + '" ' + (isDisabled ? 'disabled' : 'checked') + '>';
+            html += '<span>' + (s.plan_name || 'Sin plan') + '</span>';
+            if (hasPromesa) html += '<span class="pp-svc-warn">(ya tiene promesa)</span>';
+            else if (isDisabled) html += '<span class="pp-svc-ok">(al d&iacute;a)</span>';
+            else html += '<span class="pp-svc-warn">(adeuda)</span>';
+            html += '</label>';
+            html += '<span style="font-size:0.75rem;color:#94a3b8;">' + s.status + '</span>';
+            html += '</div>';
+        });
+        list.innerHTML = html || '<div style="padding:16px;text-align:center;color:#94a3b8;">No hay servicios para este cliente</div>';
+        document.getElementById('ppSvcGroup').style.display = 'block';
+        document.getElementById('ppDateGroup').style.display = 'block';
+        document.getElementById('ppNotesGroup').style.display = 'block';
+        document.getElementById('ppFooter').style.display = 'flex';
+        // Set min date to tomorrow
+        var tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        document.getElementById('ppDueDate').min = tomorrow.toISOString().split('T')[0];
+    });
+}
+
+function savePromisePP() {
+    if (!ppSelectedClient) { alert('Seleccione un cliente'); return; }
+    var svcChecks = document.querySelectorAll('.pp-svc-check:checked');
+    var svcIds = [];
+    svcChecks.forEach(function(c) { svcIds.push(parseInt(c.value)); });
+    if (svcIds.length === 0) { alert('Seleccione al menos un servicio'); return; }
+    var fecha = document.getElementById('ppDueDate').value;
+    if (!fecha) { alert('Seleccione una fecha l&iacute;mite'); return; }
+    var notas = document.getElementById('ppNotes').value;
+    
+    var btn = document.getElementById('ppSaveBtn');
+    btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creando...';
+    
+    fetch('/api/promesa/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ client_id: ppSelectedClient.id, services: svcIds, due_date: fecha, notes: notas })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+        if (d.status === 'success') {
+            alert('Promesa creada correctamente');
+            closeModalPP();
+            location.reload();
+        } else {
+            alert('Error: ' + (d.msg || 'desconocido'));
+        }
+        btn.disabled = false; btn.innerHTML = '<i class="fas fa-save"></i> Crear Promesa';
+    })
+    .catch(function() {
+        alert('Error de conexi&oacute;n');
+        btn.disabled = false; btn.innerHTML = '<i class="fas fa-save"></i> Crear Promesa';
+    });
+}
+
 </script>
