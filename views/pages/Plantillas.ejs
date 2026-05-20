@@ -91,6 +91,7 @@
     <div class="tpl-menu-item" onclick="selectTemplate('recordatorio_sms',this)"><div class="tpl-menu-icon" style="background:#fce7f3;color:#db2777;"><i class="fas fa-sms"></i></div><div class="tpl-menu-label">Recordatorio Pago<span class="tpl-menu-type">SMS</span></div></div>
     <div class="tpl-menu-item" onclick="selectTemplate('recordatorio_email',this)"><div class="tpl-menu-icon" style="background:#fee2e2;color:#dc2626;"><i class="fas fa-envelope"></i></div><div class="tpl-menu-label">Recordatorio Pago<span class="tpl-menu-type">Correo</span></div></div>
     <div class="tpl-menu-item" onclick="selectTemplate('notif_suspension',this)"><div class="tpl-menu-icon" style="background:#fef2f2;color:#991b1b;"><i class="fas fa-ban"></i></div><div class="tpl-menu-label">Notificación Suspensión<span class="tpl-menu-type">SMS/WhatsApp</span></div></div>
+    <div class="tpl-menu-item" onclick="selectTemplate('reactivar_servicio',this)"><div class="tpl-menu-icon" style="background:#dcfce7;color:#16a34a;"><i class="fas fa-play-circle"></i></div><div class="tpl-menu-label">Reactivar Servicio<span class="tpl-menu-type">WhatsApp</span></div></div>
     <div class="tpl-menu-item" onclick="selectTemplate('confirmacion_pago',this)"><div class="tpl-menu-icon" style="background:#dcfce7;color:#16a34a;"><i class="fas fa-check-circle"></i></div><div class="tpl-menu-label">Confirmación de Pago<span class="tpl-menu-type">SMS/WhatsApp</span></div></div>
     <div class="tpl-menu-item" onclick="selectTemplate('bienvenida_sms',this)"><div class="tpl-menu-icon" style="background:#d1fae5;color:#059669;"><i class="fas fa-comment-dots"></i></div><div class="tpl-menu-label">Bienvenida - Pago<span class="tpl-menu-type">WhatsApp</span></div></div>
     <div class="tpl-menu-item" onclick="selectTemplate('detalles_servicio',this)"><div class="tpl-menu-icon" style="background:#dbeafe;color:#2563eb;"><i class="fas fa-info-circle"></i></div><div class="tpl-menu-label">Detalles del Servicio<span class="tpl-menu-type">WhatsApp</span></div></div>
@@ -258,6 +259,7 @@ const tplMeta = {
   recordatorio_sms:{icon:'fa-sms',color:'#db2777',title:'Recordatorio de Pago (SMS)',previewType:'sms',type:'sms'},
   recordatorio_email:{icon:'fa-envelope',color:'#dc2626',title:'Recordatorio de Pago (Correo)',previewType:'full',type:'html'},
   notif_suspension:{icon:'fa-ban',color:'#991b1b',title:'Notificación de Suspensión',previewType:'sms',type:'sms'},
+  reactivar_servicio:{icon:'fa-play-circle',color:'#16a34a',title:'Reactivar Servicio',previewType:'sms',type:'sms'},
   confirmacion_pago:{icon:'fa-check-circle',color:'#16a34a',title:'Confirmación de Pago',previewType:'sms',type:'sms'},
   bienvenida_sms:{icon:'fa-comment-dots',color:'#059669',title:'Bienvenida - Métodos de Pago (WhatsApp)',previewType:'sms',type:'html'},
   detalles_servicio:{icon:'fa-info-circle',color:'#2563eb',title:'Detalles del Servicio (WhatsApp)',previewType:'sms',type:'html'},
@@ -286,6 +288,8 @@ const sampleData = {
   '{bancos_listado}':'🏦 Banco Popular\n   Titular: Joel Wifi Dominicana\n   Cuenta Corriente: 123-456-789-0\n   Cédula/RNC: 130-123456-7\n\n🏦 Banreservas\n   Titular: Joel Wifi Dominicana\n   Cuenta Ahorros: 987-654-321-0\n   Cédula/RNC: 130-123456-7',
   '{oficina_direccion}':'Calle Principal #10, Puerto Plata','{oficina_horario}':'8:00 AM - 5:00 PM','{no_cobro_msg}':'No realizamos cobros los días domingos.',
   '{payment_day}':'10','{grace_days}':'7','{promise_extra_days}':'3','{promesa_por_mes}':'1',
+  '{promesa_msg}':'⏳ Tu servicio fue reactivado por una promesa de pago. Tienes hasta el 25 de mayo para pagar antes de que se suspenda nuevamente.',
+  '{promesa_fecha}':'25 de mayo',
   '{proximo_pago}':'30 de mayo','{monto_prorrateado}':'RD$533.33','{dias_facturados}':'20','{dias_hasta_corte}':'15',
   '{primer_pago_gratis}':'✅ Este primer período no tiene costo, está dentro de los días de gracia.',
   '{speed}':'100Mbps'

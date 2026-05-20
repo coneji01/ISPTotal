@@ -351,6 +351,20 @@ app.all('/modulo', requireAuth, (req, res) => {
         ids.forEach(function(id) {
           if (action === 'activar') {
             db.prepare("UPDATE servicios SET estado='activo' WHERE cliente_id=?").run(id);
+            
+            // Enviar notificación de reactivación
+            (async function() {
+              try {
+                // Buscar los servicios que se activaron
+                var svcs = db.prepare('SELECT s.id, s.direccion, p.nombre as plan_nombre FROM servicios s LEFT JOIN planes p ON p.id=s.plan_id WHERE s.cliente_id=? AND s.estado=?').all(id, 'activo');
+                if (svcs.length > 0) {
+                  svcs.forEach(function(s) {
+                    sendReactivationNotification(id, s.id, null);
+                  });
+                }
+              } catch(e) {}
+            })();
+            
             // Quitar IP de la lista de suspendidos en MikroTik
             (async function() {
               try {
@@ -632,6 +646,13 @@ app.all('/modulo', requireAuth, (req, res) => {
         // Activar servicio si se solicitó
         if (activar === 'si') {
           db.prepare(`UPDATE servicios SET estado='activo' WHERE cliente_id=? AND estado='suspendido'`).run(clientId);
+          // Enviar notificación de reactivación
+          (async function() {
+            try {
+              var svcs = db.prepare('SELECT id FROM servicios WHERE cliente_id=? AND estado=?').all(clientId, 'activo');
+              svcs.forEach(function(s) { sendReactivationNotification(clientId, s.id, null); });
+            } catch(e) {}
+          })();
         }
 
         var msg = 'Pago registrado exitosamente por $' + montoPagar.toFixed(2);
@@ -679,6 +700,13 @@ app.all('/modulo', requireAuth, (req, res) => {
 
         if (activar === 'si') {
           db.prepare(`UPDATE servicios SET estado='activo' WHERE cliente_id=? AND estado='suspendido'`).run(clientId);
+          // Enviar notificación de reactivación
+          (async function() {
+            try {
+              var svcs = db.prepare('SELECT id FROM servicios WHERE cliente_id=? AND estado=?').all(clientId, 'activo');
+              svcs.forEach(function(s) { sendReactivationNotification(clientId, s.id, null); });
+            } catch(e) {}
+          })();
         }
 
         return res.json({ status: 'success', msg: 'Adelanto registrado por $' + montoPagar.toFixed(2), payment_ids: paymentIds.map(function(p){return p.id;}) });
@@ -2164,6 +2192,18 @@ app.all('/modulo', requireAuth, (req, res) => {
         }
         const svcIds = JSON.stringify(typeof services === 'string' ? JSON.parse(services) : services);
         db.prepare('INSERT INTO promesas_pago (cliente_id, servicio_ids, fecha_limite, notas, estado, usuario_id) VALUES (?,?,?,?,?,?)').run(client_id, svcIds, due_date, notes || '', 'activa', req.session.user.id);
+        
+        // Enviar notificación de reactivación por promesa
+        (async function() {
+          try {
+            var svcIdList = [];
+            try { svcIdList = JSON.parse(svcIds); } catch(e) {}
+            svcIdList.forEach(function(sid) {
+              sendReactivationNotification(client_id, sid, due_date);
+            });
+          } catch(e) {}
+        })();
+        
         return res.json({ status: 'success', msg: 'Promesa creada correctamente' });
       }
       if (ajax === 'cancel') {
@@ -2619,6 +2659,18 @@ app.post('/api/promesa/create', requireAuth, (req, res) => {
   }
   const svcIds = JSON.stringify(typeof services === 'string' ? JSON.parse(services) : services);
   const r = db.prepare('INSERT INTO promesas_pago (cliente_id, servicio_ids, fecha_limite, notas, estado, usuario_id) VALUES (?,?,?,?,?,?)').run(client_id, svcIds, due_date, notes || '', 'activa', req.session.user.id);
+  
+  // Enviar notificación de reactivación por promesa de pago
+  (async function() {
+    try {
+      var svcIdList = [];
+      try { svcIdList = JSON.parse(svcIds); } catch(e) {}
+      svcIdList.forEach(function(sid) {
+        sendReactivationNotification(client_id, sid, due_date);
+      });
+    } catch(e) {}
+  })();
+  
   res.json({ status: 'success', msg: 'Promesa creada correctamente', id: r.lastInsertRowid });
 });
 
@@ -3561,6 +3613,44 @@ function sendWelcomeMessage(servicioId, clienteId, planId, cicloId) {
     });
   } catch(e) {
     console.log('[Bienvenida] Error general: ' + e.message);
+  }
+}
+
+// Función: enviar notificación de reactivación de servicio
+function sendReactivationNotification(clienteId, servicioId, promesaFecha) {
+  try {
+    var openwa = require('./openwa-service');
+    var cliente = db.prepare('SELECT nombre, telefono FROM clientes WHERE id=?').get(clienteId);
+    if (!cliente || !cliente.telefono) return;
+    
+    var svc = db.prepare('SELECT s.direccion, p.nombre as plan_nombre FROM servicios s LEFT JOIN planes p ON p.id=s.plan_id WHERE s.id=?').get(servicioId);
+    if (!svc) return;
+    
+    var config = {};
+    var cr = db.prepare("SELECT key, value FROM configuracion WHERE key IN ('empresa_nombre','empresa_telefono','empresa_correo')").all();
+    cr.forEach(function(r) { config[r.key] = r.value || ''; });
+    
+    var tpl = db.prepare("SELECT content FROM templates WHERE template_key='reactivar_servicio'").get();
+    if (!tpl || !tpl.content) return;
+    
+    var promesaMsg = '';
+    if (promesaFecha) {
+      promesaMsg = '⏳ Este servicio fue reactivado por una promesa de pago. Tienes hasta el ' + promesaFecha + ' para pagar. Si no pagas antes de esa fecha, el servicio volverá a suspenderse.';
+    }
+    
+    var msg = tpl.content
+      .replace(/{client_name}/g, cliente.nombre || '')
+      .replace(/{service_address}/g, svc.direccion || '')
+      .replace(/{plan_name}/g, svc.plan_nombre || '')
+      .replace(/{promesa_msg}/g, promesaMsg)
+      .replace(/{promesa_fecha}/g, promesaFecha || '')
+      .replace(/{company_phone}/g, config.empresa_telefono || '')
+      .replace(/{company_name}/g, config.empresa_nombre || '')
+      .replace(/{current_date}/g, new Date().toLocaleDateString('es-DO'));
+    
+    openwa.encolarMensaje(clienteId, servicioId, cliente.telefono, msg, 'reactivacion');
+  } catch(e) {
+    console.log('[Reactivacion] Error:', e.message);
   }
 }
 
@@ -5960,6 +6050,13 @@ app.post('/api/servicios/:id/suspender', requireAuth, (req, res) => {
     if (!svc) return res.json({ success: false, message: 'Servicio no encontrado' });
     const nuevoEstado = svc.estado === 'suspendido' ? 'activo' : 'suspendido';
     db.prepare('UPDATE servicios SET estado=? WHERE id=?').run(nuevoEstado, id);
+    
+    // Si se reactivó, enviar notificación
+    if (nuevoEstado === 'activo') {
+      (async function() {
+        try { sendReactivationNotification(svc.cliente_id, id, null); } catch(e) {}
+      })();
+    }
     
     // MikroTik: agregar/quitar IP de lista de suspendidos
     (async function() {
