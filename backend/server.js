@@ -178,7 +178,6 @@ app.all('/modulo', requireAuth, (req, res) => {
   
   let data = { zonas, planes, empleados, cajasNap, splitters, proveedores, inventario, pagina };
   
-  console.log('[DBG] MODULO handler: pagina=' + pagina + ' ajax=' + (req.query.ajax||'') + ' url=' + req.url);
   switch(pagina) {
     case 'Dashboard': {
       const servicios = db.prepare("SELECT COUNT(*) as total FROM servicios WHERE estado != 'retirado'").get();
@@ -650,7 +649,7 @@ app.all('/modulo', requireAuth, (req, res) => {
           LEFT JOIN planes p ON p.id=s.plan_id
           WHERE f.servicio_id IN (${placeholders}) AND f.monto > COALESCE((SELECT SUM(pg.monto) FROM pagos pg WHERE pg.factura_id=f.id),0)
           ORDER BY f.fecha_vencimiento ASC
-        `).all.apply(db, serviceIds);
+        `).all(...serviceIds);
         const totalAdeudado = invs.reduce(function(sum, inv) { return sum + parseFloat(inv.remaining || 0); }, 0);
         return res.json({ status: 'success', data: invs, total_adeudado: totalAdeudado });
       }
@@ -688,7 +687,7 @@ app.all('/modulo', requireAuth, (req, res) => {
           FROM facturas f
           WHERE f.servicio_id IN (${placeholders}) AND f.monto > COALESCE((SELECT SUM(pg.monto) FROM pagos pg WHERE pg.factura_id=f.id),0)
           ORDER BY f.fecha_vencimiento ASC
-        `).all.apply(db, serviceIds);
+        `).all(...serviceIds);
 
         let remainingTotal = montoPagar;
         const paymentIds = [];
@@ -814,7 +813,7 @@ app.all('/modulo', requireAuth, (req, res) => {
           LEFT JOIN clientes c ON c.id=p.cliente_id
           ${where}
           ORDER BY p.created_at DESC LIMIT ? OFFSET ?
-        `).all.apply(db, params);
+        `).all(...params);
         return res.json({ status: 'success', data: rows, total: total, page: page, totalPages: totalPages });
       }
 
@@ -996,7 +995,7 @@ app.all('/modulo', requireAuth, (req, res) => {
         const total = totalRow ? totalRow.count : 0;
         const totalPages = all ? 1 : Math.max(1, Math.ceil(total / perPage));
 
-        const items = db.prepare('SELECT i.* FROM inventario i ' + whereClause + ' ORDER BY i.nombre ASC LIMIT ? OFFSET ?').all.apply(db, params.concat([perPage, offset]));
+        const items = db.prepare('SELECT i.* FROM inventario i ' + whereClause + ' ORDER BY i.nombre ASC LIMIT ? OFFSET ?').all(...params.concat([perPage, offset]));
 
         // Get distinct categories for the filter dropdown
         const allCats = db.prepare('SELECT DISTINCT categoria FROM inventario WHERE categoria IS NOT NULL AND categoria != \'\' ORDER BY categoria').all();
@@ -1157,7 +1156,7 @@ app.all('/modulo', requireAuth, (req, res) => {
           LEFT JOIN usuarios u ON u.id=v.usuario_id
           ${where}
           ORDER BY v.created_at DESC LIMIT ? OFFSET ?
-        `).all.apply(db, params);
+        `).all(...params);
 
         return res.json({ status: 'success', data: rows, page: page, pages: totalPages, total: total });
       }
@@ -2028,7 +2027,7 @@ app.all('/modulo', requireAuth, (req, res) => {
           where + ' ' +
           'ORDER BY o.id DESC ' +
           'LIMIT ? OFFSET ?'
-        ).all.apply(db, params);
+        ).all(...params);
 
         return res.json({ success: true, data: rows, total: total, pages: pages, page: page });
       }
@@ -2515,7 +2514,6 @@ app.all('/modulo', requireAuth, (req, res) => {
     }
   }
   
-  console.log('[DBG] renderPage: pagina=' + pagina + ' ajax=' + (req.query.ajax||'') + ' keys=' + Object.keys(data).join(','));
   renderPage(req, res, pagina, data);
 });
 
@@ -3269,7 +3267,7 @@ app.get('/api/config/get', requireAuth, (req, res) => {
     // Devolver solo las keys solicitadas (usado por Clientes.ejs)
     var placeholders = keys.map(function() { return '?'; }).join(',');
     var stmt = db.prepare('SELECT key, value FROM configuracion WHERE key IN (' + placeholders + ')');
-    var rows = stmt.all.apply(stmt, keys);
+    var rows = stmt.all(...keys);
     var data = {};
     rows.forEach(function(r) { data[r.key] = r.value; });
     return res.json({ status: 'success', data: data });
