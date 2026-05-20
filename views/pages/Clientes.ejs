@@ -410,7 +410,8 @@
 </style>
 
 <script>
-let bulkSelectedIds = [];
+let bulkSelectedIds
+let _bulkServicioIds = [];
 let currentPage = 1;
 let totalPages = 1;
 let statusFilter = 'todos';
@@ -530,6 +531,11 @@ function actualizarBulkSelection() {
     bulkSelectedIds.push(parseInt(cb.dataset.id));
   });
   document.getElementById('bulkCount').textContent = (bulkSelectedIds.length > 0 ? bulkSelectedIds.length : 'Ninguno') + ' seleccionado(s)';
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'\/g,"&#039;");
+}
 }
 
 function ejecutarBulk(action) {
@@ -546,9 +552,41 @@ function ejecutarBulk(action) {
 
   if (action === 'suspender') {
     icon.innerHTML = '<i class="fas fa-pause-circle" style="color:#dc2626; font-size:2rem;"></i>';
-    title.textContent = 'Suspender clientes';
-    msg.innerHTML = '<div style="text-align:center;">¿Estás seguro que deseas suspender los servicios de <b>' + count + '</b> cliente(s)?</div>';
-    btn.style.background = '#dc2626'; btn.textContent = 'Sí, Suspender';
+    title.textContent = 'Suspender servicios';
+    msg.innerHTML = '<div id="bulkSuspenderContent" style="text-align:center;"><i class="fas fa-spinner fa-spin"></i> Cargando servicios...</div>';
+    btn.style.display = 'none';
+    // Fetch services info
+    fetch('/api/clientes/servicios-info', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ids: bulkSelectedIds })
+    }).then(function(r) { return r.json(); }).then(function(resp) {
+      if (!resp.success || !resp.data || resp.data.length === 0) {
+        document.getElementById('bulkSuspenderContent').innerHTML = '<div style="color:#dc2626;">No se encontraron servicios activos.</div>';
+        return;
+      }
+      var html = '<div style="max-height:350px;overflow-y:auto;text-align:left;">';
+      resp.data.forEach(function(cli) {
+        html += '<div style="font-weight:700;font-size:0.85rem;color:#1e293b;padding:8px 0 4px;border-top:1px solid #e2e8f0;">' + escapeHtml(cli.cliente_nombre) + '</div>';
+        cli.servicios.forEach(function(svc) {
+          var bg = svc.estado === 'activo' ? (svc.deuda > 0 ? '#fef2f2' : '#f0fdf4') : '#fef3c7';
+          var label = svc.estado === 'activo' ? (svc.deuda > 0 ? 'RD$' + svc.deuda.toFixed(2) : 'Al día') : 'Suspendido';
+          var labelColor = svc.estado === 'activo' ? (svc.deuda > 0 ? '#dc2626' : '#16a34a') : '#d97706';
+          html += '<label style="display:flex;align-items:center;gap:8px;padding:6px 8px;margin:3px 0;border-radius:6px;background:' + bg + ';cursor:pointer;">';
+          html += '<input type="checkbox" class="svc-suspender-check" data-cliente="' + cli.cliente_id + '" data-svc="' + svc.id + '" value="' + svc.id + '" checked style="width:16px;height:16px;">';
+          html += '<span style="flex:1;font-size:0.82rem;"><b>#' + svc.id + '</b> ' + escapeHtml(svc.plan_nombre) + ' ' + (svc.direccion ? '- ' + escapeHtml(svc.direccion) : '') + '</span>';
+          html += '<span style="font-size:0.72rem;font-weight:600;color:' + labelColor + ';background:#fff;padding:2px 8px;border-radius:10px;border:1px solid ' + labelColor + ';">' + label + '</span>';
+          html += '</label>';
+        });
+      });
+      html += '</div><div style="margin-top:8px;"><button class="btn btn-sm" onclick="document.querySelectorAll('.svc-suspender-check').forEach(function(c){c.checked=true})">Seleccionar todos</button>';
+      html += '<button class="btn btn-sm" onclick="document.querySelectorAll('.svc-suspender-check').forEach(function(c){c.checked=false})">Deseleccionar todos</button></div>';
+      document.getElementById('bulkSuspenderContent').innerHTML = html;
+      btn.style.display = 'inline-flex'; btn.textContent = 'Sí, Suspender seleccionados';
+      _bulkServicioIds = [];
+    }).catch(function() {
+      document.getElementById('bulkSuspenderContent').innerHTML = '<div style="color:#dc2626;">Error al cargar servicios.</div>';
+    });
   } else if (action === 'activar') {
     icon.innerHTML = '<i class="fas fa-play-circle" style="color:#16a34a; font-size:2rem;"></i>';
     title.textContent = 'Activar clientes';
@@ -592,7 +630,39 @@ function confirmarBulk() {
     return;
   }
   
-  // Acciones normales: activar, suspender, retirar, eliminar
+  if (action === 'suspender') {
+    // Obtener servicios seleccionados
+    var checks = document.querySelectorAll('.svc-suspender-check:checked');
+    var servicioIds = [];
+    checks.forEach(function(c) { servicioIds.push(parseInt(c.value)); });
+    
+    if (servicioIds.length === 0) {
+      showToast('Selecciona al menos un servicio para suspender', 'error');
+      return;
+    }
+    
+    fetch('/api/servicios/batch-suspender', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ servicio_ids: servicioIds })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(res) {
+      if (res.success) {
+        showToast(res.message || servicioIds.length + ' servicio(s) suspendido(s)');
+        cerrarModal('bulkConfirmModal');
+        cargarTabla();
+      } else {
+        showToast('Error: ' + (res.message || 'desconocido'), 'error');
+      }
+    })
+    .catch(function() {
+      showToast('Error de conexión', 'error');
+    });
+    return;
+  }
+  
+  // Acciones normales: activar, retirar, eliminar
   fetch('/modulo?pagina=Clientes&ajax=toggle_status', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

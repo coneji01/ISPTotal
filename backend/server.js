@@ -1714,7 +1714,13 @@ app.all('/modulo', requireAuth, (req, res) => {
       const cid = parseInt(req.query.id) || 0;
       data.cliente = db.prepare('SELECT c.*, z.nombre as zona_nombre FROM clientes c LEFT JOIN zonas z ON z.id=c.zona_id WHERE c.id=?').get(cid);
       if (!data.cliente) return res.redirect('/modulo?pagina=Clientes');
-      data.servicios = db.prepare('SELECT s.*, p.nombre as plan_nombre, z.nombre as zona_nombre FROM servicios s LEFT JOIN planes p ON p.id=s.plan_id LEFT JOIN zonas z ON z.id=s.zona_id WHERE s.cliente_id=? ORDER BY s.id DESC').all(cid);
+      data.servicios = db.prepare('SELECT s.*, p.nombre as plan_nombre, p.precio as plan_precio, z.nombre as zona_nombre FROM servicios s LEFT JOIN planes p ON p.id=s.plan_id LEFT JOIN zonas z ON z.id=s.zona_id WHERE s.cliente_id=? ORDER BY s.id DESC').all(cid);
+      // Agregar información de deuda por servicio
+      data.servicios.forEach(function(s) {
+        var deuda = db.prepare("SELECT COALESCE(SUM(f.monto - COALESCE((SELECT SUM(pg.monto) FROM pagos pg WHERE pg.factura_id=f.id),0)),0) as total FROM facturas f WHERE f.servicio_id=? AND f.estado='pendiente'").get(s.id);
+        s.deuda_total = deuda ? deuda.total : 0;
+        s.al_dia = (s.deuda_total <= 0);
+      });
       data.facturas = db.prepare('SELECT f.* FROM facturas f JOIN servicios s ON s.id=f.servicio_id WHERE s.cliente_id=? ORDER BY f.id DESC LIMIT 20').all(cid);
       data.pagos = db.prepare('SELECT p.* FROM pagos p WHERE p.cliente_id=? ORDER BY p.id DESC LIMIT 20').all(cid);
       data.ordenes = db.prepare('SELECT o.*, e.nombre as tecnico_nombre FROM ordenes o LEFT JOIN empleados e ON e.id=o.tecnico_id WHERE o.cliente_id=? ORDER BY o.id DESC LIMIT 10').all(cid);
@@ -4071,6 +4077,43 @@ app.post("/api/clientes/save", requireAuth, (req, res) => {
   res.json({ success: true });
 });
 
+// POST /api/clientes/servicios-info - Obtener servicios con info de deuda para suspensión
+app.post("/api/clientes/servicios-info", requireAuth, (req, res) => {
+  const { ids } = req.body;
+  if (!ids || ids.length === 0) return res.json({ success: false, data: [] });
+  
+  var result = [];
+  ids.forEach(function(clienteId) {
+    var cliente = db.prepare('SELECT id, nombre, telefono FROM clientes WHERE id=?').get(clienteId);
+    if (!cliente) return;
+    
+    var servicios = db.prepare('SELECT s.id, s.estado, s.direccion, p.nombre as plan_nombre, p.precio as plan_precio FROM servicios s LEFT JOIN planes p ON p.id=s.plan_id WHERE s.cliente_id=? AND s.estado IN (\'activo\',\'suspendido\') ORDER BY s.id').all(clienteId);
+    
+    var serviciosInfo = [];
+    servicios.forEach(function(s) {
+      var deuda = db.prepare("SELECT COALESCE(SUM(f.monto - COALESCE((SELECT SUM(pg.monto) FROM pagos pg WHERE pg.factura_id=f.id),0)),0) as total FROM facturas f WHERE f.servicio_id=? AND f.estado='pendiente'").get(s.id);
+      serviciosInfo.push({
+        id: s.id,
+        estado: s.estado,
+        direccion: s.direccion || '',
+        plan_nombre: s.plan_nombre || 'Sin plan',
+        deuda: deuda ? deuda.total : 0
+      });
+    });
+    
+    if (serviciosInfo.length > 0) {
+      result.push({
+        cliente_id: cliente.id,
+        cliente_nombre: cliente.nombre,
+        telefono: cliente.telefono,
+        servicios: serviciosInfo
+      });
+    }
+  });
+  
+  res.json({ success: true, data: result });
+});
+
 app.post("/api/clientes/bulk", requireAuth, (req, res) => {
   const { action, ids } = req.body;
   if (!ids || ids.length === 0) return res.json({ success: false });
@@ -5854,6 +5897,55 @@ app.post('/api/servicios/:id/eliminar', requireAuth, (req, res) => {
     db.prepare('DELETE FROM ips_asignadas WHERE servicio_id=?').run(id);
     db.prepare('DELETE FROM servicios WHERE id=?').run(id);
     res.json({ success: true, message: 'Servicio eliminado permanentemente' });
+  } catch(e) {
+    res.json({ success: false, message: e.message });
+  }
+});
+
+// POST /api/servicios/batch-suspender - Suspender múltiples servicios
+app.post('/api/servicios/batch-suspender', requireAuth, (req, res) => {
+  var servicioIds = req.body.servicio_ids || [];
+  if (!Array.isArray(servicioIds) || servicioIds.length === 0) {
+    return res.json({ success: false, message: 'IDs de servicio requeridos' });
+  }
+  try {
+    var suspendidos = 0;
+    servicioIds.forEach(function(sid) {
+      var svc = db.prepare('SELECT s.*, c.id as cliente_id FROM servicios s JOIN clientes c ON c.id=s.cliente_id WHERE s.id=?').get(sid);
+      if (svc && svc.estado !== 'suspendido') {
+        db.prepare('UPDATE servicios SET estado=\'suspendido\' WHERE id=?').run(sid);
+        suspendidos++;
+        
+        // Enviar notificación
+        (async function() {
+          try {
+            var openwa = require('./openwa-service');
+            var clientData = db.prepare('SELECT nombre, telefono FROM clientes WHERE id=?').get(svc.cliente_id);
+            if (!clientData || !clientData.telefono) return;
+            
+            var deudaRow = db.prepare("SELECT COALESCE(SUM(f.monto - COALESCE((SELECT SUM(pg.monto) FROM pagos pg WHERE pg.factura_id=f.id),0)),0) as total FROM facturas f WHERE f.servicio_id=? AND f.estado='pendiente'").get(sid);
+            var deudaTotal = deudaRow ? deudaRow.total : 0;
+            
+            var config = {};
+            var cr = db.prepare("SELECT key, value FROM configuracion WHERE key IN ('empresa_nombre','empresa_telefono')").all();
+            cr.forEach(function(r) { config[r.key] = r.value || ''; });
+            
+            var tpl = db.prepare("SELECT content FROM templates WHERE template_key='notif_suspension'").get();
+            var msg = (tpl ? tpl.content : '')
+              .replace(/{client_name}/g, clientData.nombre || '')
+              .replace(/{service_address}/g, svc.direccion || '')
+              .replace(/{plan_name}/g, (db.prepare('SELECT nombre FROM planes WHERE id=?').get(svc.plan_id) || {}).nombre || '')
+              .replace(/{invoice_remaining}/g, '$' + deudaTotal.toFixed(2))
+              .replace(/{company_phone}/g, config.empresa_telefono)
+              .replace(/{company_name}/g, config.empresa_nombre);
+            
+            if (msg.trim()) openwa.encolarMensaje(svc.cliente_id, sid, clientData.telefono, msg, 'suspension');
+          } catch(e) {}
+        })();
+      }
+    });
+    
+    res.json({ success: true, message: suspendidos + ' servicio(s) suspendido(s)' });
   } catch(e) {
     res.json({ success: false, message: e.message });
   }

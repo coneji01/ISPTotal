@@ -330,6 +330,11 @@
               <div class="svc-expand-icon" id="svcIcon_<%= s.id %>"><i class="fas fa-chevron-down"></i></div>
               <span class="svc-plan-name"><%= s.plan_nombre || 'Sin plan' %></span>
               <span class="svc-badge svc-badge-<%= s.estado==='activo'?'activo':s.estado==='suspendido'?'suspendido':'retirado' %>"><%= s.estado.charAt(0).toUpperCase()+s.estado.slice(1) %></span>
+              <% if (s.deuda_total && s.deuda_total > 0) { %>
+              <span class="svc-badge" style="background:#fef2f2;color:#dc2626;border:1px solid #fecaca;"><%= 'RD$' + s.deuda_total.toFixed(2) %></span>
+              <% } else if (s.estado === 'activo') { %>
+              <span class="svc-badge" style="background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0;">Al día</span>
+              <% } %>
               <span class="svc-nic">NIC: <%= s.id %></span>
             </div>
             <div class="svc-summary-right">
