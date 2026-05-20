@@ -227,19 +227,29 @@ let ppSelectedClient = null;
 let ppSearchTimer = null;
 
 function openNewPromisePP(clienteId) {
+    console.log('[DBG] openNewPromisePP called with clienteId=' + clienteId);
     // Find client name from the table row
     var rows = document.querySelectorAll('[data-cliente-id="' + clienteId + '"]');
+    console.log('[DBG] Found rows: ' + rows.length);
     var nombre = '';
     if (rows.length > 0) {
         nombre = rows[0].getAttribute('data-cliente-nombre') || '';
+        console.log('[DBG] Client name from row: ' + nombre);
     }
     // Pre-select client
     ppSelectedClient = { id: clienteId, name: nombre };
-    document.getElementById('ppClientName').textContent = nombre || ('Cliente #' + clienteId);
-    document.getElementById('ppClientSelected').style.display = 'flex';
-    document.getElementById('ppSearchGroup').style.display = 'none';
+    var nameEl = document.getElementById('ppClientName');
+    console.log('[DBG] ppClientName element: ' + (nameEl ? 'FOUND' : 'NULL'));
+    if (nameEl) nameEl.textContent = nombre || ('Cliente #' + clienteId);
+    var selEl = document.getElementById('ppClientSelected');
+    if (selEl) selEl.style.display = 'flex';
+    var searchEl = document.getElementById('ppSearchGroup');
+    if (searchEl) searchEl.style.display = 'none';
+    console.log('[DBG] Calling loadServicesPP(' + clienteId + ')');
     loadServicesPP(clienteId);
-    document.getElementById('ppModal').classList.add('open');
+    var modal = document.getElementById('ppModal');
+    console.log('[DBG] ppModal element: ' + (modal ? 'FOUND' : 'NULL'));
+    if (modal) modal.classList.add('open');
 }
 
 function closeModalPP() {
@@ -294,9 +304,11 @@ function clearClientPP() {
 }
 
 function loadServicesPP(clientId) {
+    console.log('[DBG] loadServicesPP start, clientId=' + clientId);
     fetch('/api/promesa/get_services?client_id=' + clientId)
-    .then(function(r) { return r.json(); })
+    .then(function(r) { console.log('[DBG] get_services response status: ' + r.status); return r.json(); })
     .then(function(svcs) {
+        console.log('[DBG] get_services returned ' + (svcs ? svcs.length : 'NULL') + ' services');
         var list = document.getElementById('ppSvcList');
         var html = '';
         svcs.forEach(function(s) {
