@@ -143,7 +143,7 @@
   position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.4);
   z-index:4000; display:none; align-items:center; justify-content:center;
 }
-.pp-overlay.open { display:flex; }
+.pp-overlay.open { display:flex !important; }
 .pp-modal {
   background:#fff; border-radius:12px; width:100%; max-width:700px; max-height:90vh;
   overflow-y:auto; box-shadow:0 10px 40px rgba(0,0,0,0.15);
@@ -251,7 +251,8 @@ function openNewPromisePP(clienteId) {
     console.log('[DBG] ppModal element: ' + (modal ? 'FOUND' : 'NULL'));
     if (modal) {
         modal.classList.add('open');
-        console.log('[DBG] Modal opened via classList.add');
+        modal.style.display = 'flex';
+        console.log('[DBG] Modal opened via classList.add + inline style');
     } else {
         console.log('[DBG] Modal NOT found, trying inline style');
     }
