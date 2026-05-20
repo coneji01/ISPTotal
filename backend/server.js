@@ -815,7 +815,7 @@ app.all('/modulo', requireAuth, (req, res) => {
         if (dateFrom) { where += ' AND date(p.created_at) >= ?'; params.push(dateFrom); }
         if (dateTo) { where += ' AND date(p.created_at) <= ?'; params.push(dateTo); }
         
-        const totalRow = db.prepare(`SELECT COUNT(*) as total FROM pagos p LEFT JOIN clientes c ON c.id=p.cliente_id ${where}`).get.apply(db, params);
+        const totalRow = db.prepare(`SELECT COUNT(*) as total FROM pagos p LEFT JOIN clientes c ON c.id=p.cliente_id ${where}`).get(...params);
         const total = totalRow ? totalRow.total : 0;
         const totalPages = Math.ceil(total / perPage) || 1;
         const offset = (page - 1) * perPage;
@@ -1005,7 +1005,7 @@ app.all('/modulo', requireAuth, (req, res) => {
 
         const whereClause = where.length > 0 ? 'WHERE ' + where.join(' AND ') : '';
 
-        const totalRow = db.prepare('SELECT COUNT(*) as count FROM inventario i ' + whereClause).get.apply(db, params);
+        const totalRow = db.prepare('SELECT COUNT(*) as count FROM inventario i ' + whereClause).get(...params);
         const total = totalRow ? totalRow.count : 0;
         const totalPages = all ? 1 : Math.max(1, Math.ceil(total / perPage));
 
@@ -1221,11 +1221,11 @@ app.all('/modulo', requireAuth, (req, res) => {
 
         var invWC = invW.length > 0 ? 'WHERE ' + invW.join(' AND ') : '';
 
-        var invTR = db.prepare('SELECT COUNT(*) as cnt FROM inventario i ' + invWC).get.apply(db, invP);
+        var invTR = db.prepare('SELECT COUNT(*) as cnt FROM inventario i ' + invWC).get(...invP);
         var invTot = invTR ? invTR.cnt : 0;
         var invPags = Math.max(1, Math.ceil(invTot / invPP));
 
-        var invItms = db.prepare('SELECT i.*, COALESCE(i.oficina,\'General\') as oficina FROM inventario i ' + invWC + ' ORDER BY i.id DESC LIMIT ? OFFSET ?').all.apply(db, invP.concat([invPP, invOff]));
+        var invItms = db.prepare('SELECT i.*, COALESCE(i.oficina,\'General\') as oficina FROM inventario i ' + invWC + ' ORDER BY i.id DESC LIMIT ? OFFSET ?').all(...invP.concat([invPP, invOff]));
 
         return res.json({ success: true, items: invItms, total_items: invTot, paginas: invPags, pagina_actual: invPag });
       }
@@ -1661,7 +1661,7 @@ app.all('/modulo', requireAuth, (req, res) => {
         if (desde) { where += ' AND date(v.created_at) >= ?'; params.push(desde); }
         if (hasta) { where += ' AND date(v.created_at) <= ?'; params.push(hasta); }
 
-        const countRow = db.prepare(`SELECT COUNT(*) as total FROM ventas v ${where}`).get.apply(db, params);
+        const countRow = db.prepare(`SELECT COUNT(*) as total FROM ventas v ${where}`).get(...params);
         const total = countRow ? countRow.total : 0;
         const totalPages = Math.max(1, Math.ceil(total / perPage));
         const offset = (page - 1) * perPage;
@@ -2289,19 +2289,19 @@ app.all('/modulo', requireAuth, (req, res) => {
         let fechaWhere = '';
         let fechaParams = [];
         if (rango === 'dia') {
-          fechaWhere = "AND date(p.created_at)=date('now')";
+          fechaWhere = " AND date(p.created_at)=date('now')";
         } else if (rango === 'semana') {
-          fechaWhere = "AND p.created_at >= datetime('now', '-7 days')";
+          fechaWhere = " AND p.created_at >= datetime('now', '-7 days')";
         } else if (rango === 'mes') {
           if (mes > 0 && anio > 0) {
             var ms = String(mes).padStart(2,'0');
-            fechaWhere = "AND strftime('%Y-%m', p.created_at)=?";
+            fechaWhere = " AND strftime('%Y-%m', p.created_at)=?";
             fechaParams.push(anio+'-'+ms);
           } else {
-            fechaWhere = "AND strftime('%Y-%m', p.created_at)=strftime('%Y-%m','now')";
+            fechaWhere = " AND strftime('%Y-%m', p.created_at)=strftime('%Y-%m','now')";
           }
         } else if (rango === 'anio') {
-          fechaWhere = "AND strftime('%Y', p.created_at)=?";
+          fechaWhere = " AND strftime('%Y', p.created_at)=?";
           fechaParams.push(String(anio));
         }
 
@@ -2316,11 +2316,11 @@ app.all('/modulo', requireAuth, (req, res) => {
         if (modo === 'finanzas') {
           var tw = 'WHERE 1=1' + fechaWhere + zonaWhere;
           var ap = fechaParams.concat(zonaParams);
-          var cobradoTotal = db.prepare('SELECT COALESCE(SUM(p.monto),0) as t FROM pagos p LEFT JOIN servicios s ON s.id=p.servicio_id LEFT JOIN clientes c ON c.id=p.cliente_id ' + tw).get.apply(db, ap);
-          var pendienteTotal = db.prepare("SELECT COALESCE(SUM(f.monto - COALESCE((SELECT SUM(pg.monto) FROM pagos pg WHERE pg.factura_id=f.id),0)),0) as t FROM facturas f JOIN servicios s ON s.id=f.servicio_id WHERE f.estado='pendiente' AND f.monto > COALESCE((SELECT SUM(pg.monto) FROM pagos pg WHERE pg.factura_id=f.id),0)" + (zona>0?' AND s.zona_id=?':'')).get.apply(db, zona>0?[zona]:[]);
+          var cobradoTotal = db.prepare('SELECT COALESCE(SUM(p.monto),0) as t FROM pagos p LEFT JOIN servicios s ON s.id=p.servicio_id LEFT JOIN clientes c ON c.id=p.cliente_id ' + tw).get(...ap);
+          var pendienteTotal = db.prepare("SELECT COALESCE(SUM(f.monto - COALESCE((SELECT SUM(pg.monto) FROM pagos pg WHERE pg.factura_id=f.id),0)),0) as t FROM facturas f JOIN servicios s ON s.id=f.servicio_id WHERE f.estado='pendiente' AND f.monto > COALESCE((SELECT SUM(pg.monto) FROM pagos pg WHERE pg.factura_id=f.id),0)" + (zona>0?' AND s.zona_id=?':'')).get(...zona>0?[zona]:[]);
           var gastosTotal = db.prepare('SELECT COALESCE(SUM(monto),0) as t FROM gastos WHERE strftime(?,created_at)=?').get('%Y-%m', anio+'-'+String(mes).padStart(2,'0'));
-          var cobradoPorMetodo = db.prepare("SELECT p.metodo as metodo, COALESCE(SUM(p.monto),0) as total, COUNT(*) as cantidad FROM pagos p LEFT JOIN servicios s ON s.id=p.servicio_id LEFT JOIN clientes c ON c.id=p.cliente_id " + tw + " GROUP BY p.metodo ORDER BY total DESC").all.apply(db, ap);
-          var cobradoPorCobrador = db.prepare('SELECT u.nombre as cobrador, COALESCE(SUM(p.monto),0) as total, COUNT(*) as cantidad FROM pagos p LEFT JOIN servicios s ON s.id=p.servicio_id LEFT JOIN clientes c ON c.id=p.cliente_id LEFT JOIN usuarios u ON u.id=p.usuario_id ' + tw + (zona>0?' AND (s.zona_id=? OR c.zona_id=?)':'') + ' GROUP BY u.nombre ORDER BY total DESC').all.apply(db, ap.concat(zona>0?[zona,zona]:[]));
+          var cobradoPorMetodo = db.prepare("SELECT p.metodo as metodo, COALESCE(SUM(p.monto),0) as total, COUNT(*) as cantidad FROM pagos p LEFT JOIN servicios s ON s.id=p.servicio_id LEFT JOIN clientes c ON c.id=p.cliente_id " + tw + " GROUP BY p.metodo ORDER BY total DESC").all(...ap);
+          var cobradoPorCobrador = db.prepare('SELECT u.nombre as cobrador, COALESCE(SUM(p.monto),0) as total, COUNT(*) as cantidad FROM pagos p LEFT JOIN servicios s ON s.id=p.servicio_id LEFT JOIN clientes c ON c.id=p.cliente_id LEFT JOIN usuarios u ON u.id=p.usuario_id ' + tw + (zona>0?' AND (s.zona_id=? OR c.zona_id=?)':'') + ' GROUP BY u.nombre ORDER BY total DESC').all(...ap.concat(zona>0?[zona,zona]:[]));
           var pagosPorMes = db.prepare('SELECT strftime(?,created_at) as mes, COALESCE(SUM(monto),0) as total FROM pagos WHERE strftime(?,created_at)=? GROUP BY strftime(?,created_at) ORDER BY mes').all('%Y-%m', '%Y-%m', String(anio), '%Y-%m');
           var cobradoHoy = db.prepare("SELECT COALESCE(SUM(monto),0) as t FROM pagos WHERE date(created_at)=date('now')").get().t;
           var cobradoMesActual = db.prepare("SELECT COALESCE(SUM(monto),0) as t FROM pagos WHERE strftime('%Y-%m', created_at)=strftime('%Y-%m','now')").get().t;
@@ -2339,12 +2339,12 @@ app.all('/modulo', requireAuth, (req, res) => {
           var czw = '';
           var czp = [];
           if (zona > 0) { czw = 'WHERE c.zona_id=?'; czp.push(zona); }
-          var totalClientes = db.prepare('SELECT COUNT(*) as c FROM clientes c ' + czw).get.apply(db, czp);
-          var activos = db.prepare('SELECT COUNT(*) as c FROM servicios s LEFT JOIN clientes c ON c.id=s.cliente_id WHERE s.estado=?' + (zona>0?' AND (s.zona_id=? OR c.zona_id=?)':'')).get.apply(db, ['activo'].concat(zona>0?[zona,zona]:[]));
-          var suspendidos = db.prepare('SELECT COUNT(*) as c FROM servicios s LEFT JOIN clientes c ON c.id=s.cliente_id WHERE s.estado=?' + (zona>0?' AND (s.zona_id=? OR c.zona_id=?)':'')).get.apply(db, ['suspendido'].concat(zona>0?[zona,zona]:[]));
-          var sinServicio = db.prepare('SELECT COUNT(*) as c FROM clientes c WHERE (SELECT COUNT(*) FROM servicios s WHERE s.cliente_id=c.id AND s.estado!=?) = 0' + (zona>0?' AND c.zona_id=?':'')).get.apply(db, ['retirado'].concat(zona>0?[zona]:[]));
-          var serviciosPorPlan = db.prepare("SELECT p.nombre as plan, p.precio, COUNT(*) as total, SUM(CASE WHEN s.estado='activo' THEN 1 ELSE 0 END) as activos, SUM(CASE WHEN s.estado='suspendido' THEN 1 ELSE 0 END) as suspendidos FROM servicios s LEFT JOIN planes p ON p.id=s.plan_id LEFT JOIN clientes c ON c.id=s.cliente_id WHERE s.plan_id IS NOT NULL" + (zona>0?' AND s.zona_id=?':'') + ' GROUP BY s.plan_id ORDER BY total DESC').all.apply(db, zona>0?[zona]:[]);
-          var serviciosPorZona = db.prepare("SELECT z.nombre as zona, COUNT(*) as total, SUM(CASE WHEN s.estado='activo' THEN 1 ELSE 0 END) as activos, SUM(CASE WHEN s.estado='suspendido' THEN 1 ELSE 0 END) as suspendidos FROM servicios s LEFT JOIN zonas z ON z.id=s.zona_id LEFT JOIN clientes c ON c.id=s.cliente_id WHERE s.zona_id IS NOT NULL" + (zona>0?' AND s.zona_id=?':'') + ' GROUP BY s.zona_id ORDER BY total DESC').all.apply(db, zona>0?[zona]:[]);
+          var totalClientes = db.prepare('SELECT COUNT(*) as c FROM clientes c ' + czw).get(...czp);
+          var activos = db.prepare('SELECT COUNT(*) as c FROM servicios s LEFT JOIN clientes c ON c.id=s.cliente_id WHERE s.estado=?' + (zona>0?' AND (s.zona_id=? OR c.zona_id=?)':'')).get(...['activo'].concat(zona>0?[zona,zona]:[]));
+          var suspendidos = db.prepare('SELECT COUNT(*) as c FROM servicios s LEFT JOIN clientes c ON c.id=s.cliente_id WHERE s.estado=?' + (zona>0?' AND (s.zona_id=? OR c.zona_id=?)':'')).get(...['suspendido'].concat(zona>0?[zona,zona]:[]));
+          var sinServicio = db.prepare('SELECT COUNT(*) as c FROM clientes c WHERE (SELECT COUNT(*) FROM servicios s WHERE s.cliente_id=c.id AND s.estado!=?) = 0' + (zona>0?' AND c.zona_id=?':'')).get(...['retirado'].concat(zona>0?[zona]:[]));
+          var serviciosPorPlan = db.prepare("SELECT p.nombre as plan, p.precio, COUNT(*) as total, SUM(CASE WHEN s.estado='activo' THEN 1 ELSE 0 END) as activos, SUM(CASE WHEN s.estado='suspendido' THEN 1 ELSE 0 END) as suspendidos FROM servicios s LEFT JOIN planes p ON p.id=s.plan_id LEFT JOIN clientes c ON c.id=s.cliente_id WHERE s.plan_id IS NOT NULL" + (zona>0?' AND s.zona_id=?':'') + ' GROUP BY s.plan_id ORDER BY total DESC').all(...zona>0?[zona]:[]);
+          var serviciosPorZona = db.prepare("SELECT z.nombre as zona, COUNT(*) as total, SUM(CASE WHEN s.estado='activo' THEN 1 ELSE 0 END) as activos, SUM(CASE WHEN s.estado='suspendido' THEN 1 ELSE 0 END) as suspendidos FROM servicios s LEFT JOIN zonas z ON z.id=s.zona_id LEFT JOIN clientes c ON c.id=s.cliente_id WHERE s.zona_id IS NOT NULL" + (zona>0?' AND s.zona_id=?':'') + ' GROUP BY s.zona_id ORDER BY total DESC').all(...zona>0?[zona]:[]);
           var instaladosMes = db.prepare('SELECT strftime(?,fecha_activacion) as mes, COUNT(*) as total FROM servicios WHERE fecha_activacion IS NOT NULL AND strftime(?,fecha_activacion)=? GROUP BY strftime(?,fecha_activacion) ORDER BY mes').all('%Y-%m', '%Y-%m', String(anio)+'-'+String(mes).padStart(2,'0'), '%Y-%m');
           var retiradosMes = db.prepare('SELECT COUNT(*) as total FROM servicios WHERE fecha_suspension IS NOT NULL AND strftime(?,fecha_suspension)=?').get('%Y-%m', String(anio)+'-'+String(mes).padStart(2,'0'));
           return res.json({
@@ -2378,9 +2378,9 @@ app.all('/modulo', requireAuth, (req, res) => {
         else if (order==='cliente') oc = 'ORDER BY c.nombre '+dir;
         else if (order==='vencimiento') oc = 'ORDER BY f.fecha_vencimiento '+dir;
         else if (order==='periodo') oc = 'ORDER BY f.periodo '+dir;
-        var cr = db.prepare('SELECT COUNT(*) as total FROM facturas f LEFT JOIN servicios s ON s.id=f.servicio_id LEFT JOIN clientes c ON c.id=s.cliente_id '+where).get.apply(db,params);
+        var cr = db.prepare('SELECT COUNT(*) as total FROM facturas f LEFT JOIN servicios s ON s.id=f.servicio_id LEFT JOIN clientes c ON c.id=s.cliente_id '+where).get(...params);
         var total = cr?cr.total:0;
-        var rows = db.prepare('SELECT f.id, f.servicio_id, f.periodo, f.monto, f.estado, f.fecha_emision, f.fecha_vencimiento, f.created_at, c.nombre as cliente_nombre, c.id as cliente_id, COALESCE((SELECT SUM(pg.monto) FROM pagos pg WHERE pg.factura_id=f.id),0) as pagado FROM facturas f LEFT JOIN servicios s ON s.id=f.servicio_id LEFT JOIN clientes c ON c.id=s.cliente_id '+where+' '+oc+' LIMIT ? OFFSET ?').all.apply(db,params.concat([limit,offset]));
+        var rows = db.prepare('SELECT f.id, f.servicio_id, f.periodo, f.monto, f.estado, f.fecha_emision, f.fecha_vencimiento, f.created_at, c.nombre as cliente_nombre, c.id as cliente_id, COALESCE((SELECT SUM(pg.monto) FROM pagos pg WHERE pg.factura_id=f.id),0) as pagado FROM facturas f LEFT JOIN servicios s ON s.id=f.servicio_id LEFT JOIN clientes c ON c.id=s.cliente_id '+where+' '+oc+' LIMIT ? OFFSET ?').all(...params.concat([limit,offset]));
         rows.forEach(function(r){
           var pg = parseFloat(r.pagado)||0;
           var mt = parseFloat(r.monto)||0;
@@ -2413,9 +2413,9 @@ app.all('/modulo', requireAuth, (req, res) => {
         else if (order==='plan') oc = 'ORDER BY p.nombre '+dir;
         else if (order==='zona') oc = 'ORDER BY z.nombre '+dir;
         else if (order==='estado') oc = 'ORDER BY s.estado '+dir;
-        var cr = db.prepare('SELECT COUNT(*) as total FROM servicios s LEFT JOIN clientes c ON c.id=s.cliente_id LEFT JOIN planes p ON p.id=s.plan_id LEFT JOIN zonas z ON z.id=s.zona_id '+where).get.apply(db,params);
+        var cr = db.prepare('SELECT COUNT(*) as total FROM servicios s LEFT JOIN clientes c ON c.id=s.cliente_id LEFT JOIN planes p ON p.id=s.plan_id LEFT JOIN zonas z ON z.id=s.zona_id '+where).get(...params);
         var total = cr?cr.total:0;
-        var rows = db.prepare('SELECT s.id, s.cliente_id, s.estado, s.ip, s.direccion, s.fecha_activacion, s.fecha_suspension, s.created_at, c.nombre as cliente_nombre, c.telefono, p.nombre as plan_nombre, p.precio as plan_precio, z.nombre as zona_nombre FROM servicios s LEFT JOIN clientes c ON c.id=s.cliente_id LEFT JOIN planes p ON p.id=s.plan_id LEFT JOIN zonas z ON z.id=s.zona_id '+where+' '+oc+' LIMIT ? OFFSET ?').all.apply(db,params.concat([limit,offset]));
+        var rows = db.prepare('SELECT s.id, s.cliente_id, s.estado, s.ip, s.direccion, s.fecha_activacion, s.fecha_suspension, s.created_at, c.nombre as cliente_nombre, c.telefono, p.nombre as plan_nombre, p.precio as plan_precio, z.nombre as zona_nombre FROM servicios s LEFT JOIN clientes c ON c.id=s.cliente_id LEFT JOIN planes p ON p.id=s.plan_id LEFT JOIN zonas z ON z.id=s.zona_id '+where+' '+oc+' LIMIT ? OFFSET ?').all(...params.concat([limit,offset]));
         return res.json({ success:true, data:rows, total:total, page:page, pages:Math.max(1,Math.ceil(total/limit)) });
       }
 
@@ -2700,7 +2700,7 @@ var mesesEsp = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto
 
         var countRow = db.prepare(
           'SELECT COUNT(*) as total FROM onu o LEFT JOIN clientes c ON c.id=o.cliente_id LEFT JOIN servicios s ON s.id=o.servicio_id ' + where
-        ).get.apply(db, params);
+        ).get(...params);
         var total = countRow ? countRow.total : 0;
         var pages = Math.max(1, Math.ceil(total / perPage));
         params.push(perPage, offset);
