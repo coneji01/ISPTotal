@@ -158,6 +158,7 @@
       </div>
       <div class="tpl-tab-content" id="tabCode">
         <textarea class="tpl-textarea" id="tplTextarea" placeholder="Edite el código HTML..."></textarea>
+        <textarea class="sms-textarea" id="smsTextarea" placeholder="Escriba aquí el mensaje..." style="display:none;"></textarea>
       </div>
       <div class="tpl-tab-content" id="tabPreview">
         <div class="tpl-preview"><div id="previewContainer"></div></div>
@@ -356,6 +357,18 @@ function selectTemplate(key,el){
   document.querySelectorAll('.tpl-menu-item').forEach(i=>i.classList.remove('active'));el.classList.add('active');
   document.getElementById('editorIcon').className='fas '+m.icon;document.getElementById('editorIcon').style.color=m.color;document.getElementById('editorTitle').innerText=m.title;
   const content=templatesData[key]?templatesData[key].content:'';setAllEditors(content);renderKeys(key);
+  // Mostrar/ocultar editores según el tipo
+  var isSms=m.type==='sms';
+  var smsTa=document.getElementById('smsTextarea');
+  var wysiwyg=document.getElementById('wysiwygEditor');
+  var htmlTa=document.getElementById('tplTextarea');
+  if(smsTa) smsTa.style.display=isSms?'block':'none';
+  if(wysiwyg) wysiwyg.style.display=isSms?'none':'block';
+  if(htmlTa) htmlTa.style.display=isSms?'none':'block';
+  // Ocultar botón Visual para SMS, mostrar para HTML
+  document.querySelectorAll('.tpl-tab').forEach(function(t){
+    if(t.getAttribute('data-tab')==='visual') t.style.display=isSms?'none':'inline-block';
+  });
   switchTab('visual',document.querySelector('.tpl-tab[data-tab="visual"]'));
 }
 
