@@ -5936,7 +5936,16 @@ app.post('/api/servicios/:id/activar', requireAuth, (req, res) => {
   const id = parseInt(req.params.id) || 0;
   if (!id) return res.json({ success: false, message: 'ID requerido' });
   try {
+    const svc = db.prepare('SELECT s.cliente_id FROM servicios s WHERE s.id=?').get(id);
     db.prepare("UPDATE servicios SET estado='activo', fecha_activacion=date('now') WHERE id=?").run(id);
+    
+    // Enviar notificación de reactivación
+    if (svc) {
+      (async function() {
+        try { sendReactivationNotification(svc.cliente_id, id, null); } catch(e) {}
+      })();
+    }
+    
     res.json({ success: true, message: 'Servicio activado' });
   } catch(e) {
     res.json({ success: false, message: e.message });
