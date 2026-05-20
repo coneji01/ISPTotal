@@ -1547,22 +1547,13 @@
     })();
 
     // Auto-cargar cliente si viene con ?cliente_id=X
+    // Auto-cargar cliente desde datos embebidos (evita fetch innecesario)
     (function() {
-      var params = new URLSearchParams(window.location.search);
-      var clientId = params.get('cliente_id');
-      if (clientId) {
+      var clientData = <%- JSON.stringify(clienteData || null) %>;
+      if (clientData && clientData.name) {
         setTimeout(function() {
-          fetch('/modulo?pagina=RegistrarPago&ajax=get_client&client_id=' + clientId)
-          .then(function(r) { return r.json(); })
-          .then(function(d) {
-            if (d.status === 'success' && d.data) {
-              document.getElementById('inputBuscador').value = d.data.name;
-              seleccionarCliente(d.data);
-            }
-          })
-          .catch(function(e) {
-            console.error('Error auto-cargando cliente:', e);
-          });
+          document.getElementById('inputBuscador').value = clientData.name;
+          seleccionarCliente(clientData);
         }, 500);
       }
     })();

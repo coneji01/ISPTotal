@@ -550,6 +550,23 @@ app.all('/modulo', requireAuth, (req, res) => {
     case 'RegistrarPago': {
       const ajax = req.query.ajax;
 
+      // Pre-cargar datos del cliente si viene por ID (ej: desde PagosPendientes)
+      if (!ajax && req.query.cliente_id) {
+        var cid = parseInt(req.query.cliente_id) || 0;
+        if (cid) {
+          data.clienteData = db.prepare(`
+            SELECT c.id, c.nombre as name, c.cedula, c.apodo as alias, c.telefono,
+              COALESCE((SELECT SUM(f.monto - COALESCE(
+                (SELECT SUM(p.monto) FROM pagos p WHERE p.factura_id=f.id),0
+              )) FROM facturas f JOIN servicios s ON s.id=f.servicio_id WHERE s.cliente_id=c.id AND f.estado='pendiente' AND f.monto > COALESCE(
+                (SELECT SUM(p.monto) FROM pagos p WHERE p.factura_id=f.id),0
+              )),0) as total_pending,
+              (SELECT COUNT(*) FROM servicios WHERE cliente_id=c.id AND estado != 'retirado') as svc_count
+            FROM clientes c WHERE c.id=?
+          `).get(cid);
+        }
+      }
+
       // --- Buscar clientes ---
       if (ajax === 'search_clients') {
         const q = (req.query.q || '').trim();
