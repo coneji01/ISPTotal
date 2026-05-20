@@ -3650,53 +3650,59 @@ function sendWelcomeMessage(servicioId, clienteId, planId, cicloId) {
     var diasHastaCorte = '';
     var primerPagoGratis = false;
     
-    if (ciclo && planPriceNum > 0) {
-      var payDay = parseInt(ciclo.invoice_day) || 30;
-      var cutDay = parseInt(ciclo.suspend_day) || 15;
-      var graceD = parseInt(ciclo.grace_days) || 0;
+    if (planPriceNum > 0) {
+      var meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
       var precioPorDia = planPriceNum / 30;
       
-      // Calcular próxima fecha de pago
-      var nextPayDate = new Date(anioHoy, mesHoy, payDay);
-      if (diaHoy >= payDay) {
-        // Si ya pasó el día de pago este mes, es para el próximo
-        nextPayDate = new Date(anioHoy, mesHoy + 1, payDay);
-      }
-      
-      // Calcular días desde hoy hasta próximo pago
-      var diffMs = nextPayDate.getTime() - hoy.getTime();
-      var daysUntilPay = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
-      
-      // Formatear fecha de próximo pago
-      var meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
-      proximoPago = payDay + ' de ' + meses[nextPayDate.getMonth()];
-      
-      if (daysUntilPay <= graceD) {
-        // Primer período gratis (cae dentro de los días de gracia)
-        primerPagoGratis = true;
-        montoProrrateado = '$0.00';
-        diasFacturados = 0;
-      } else {
-        // Calcular monto prorrateado
-        diasFacturados = daysUntilPay;
-        var montoProrrateo = precioPorDia * diasFacturados;
-        montoProrrateado = config.moneda + montoProrrateo.toFixed(2);
-      }
-      
-      // Calcular días hasta corte (desde hoy hasta el día de corte después del pago)
-      var cutDate = new Date(anioHoy, mesHoy, cutDay);
-      if (diaHoy >= cutDay) {
-        cutDate = new Date(anioHoy, mesHoy + 1, cutDay);
-      } else if (diaHoy < payDay) {
-        // Si estamos antes del pago, el corte es del ciclo actual
-        cutDate = new Date(anioHoy, mesHoy, cutDay);
-        if (cutDay < payDay) {
-          // Si corte es antes del pago (ej: pago día 30, corte día 11 del mes siguiente)
-          cutDate = new Date(anioHoy, mesHoy + 1, cutDay);
+      if (ciclo) {
+        // Con ciclo de facturación: calcular según días de pago y corte configurados
+        var payDay = parseInt(ciclo.invoice_day) || 30;
+        var cutDay = parseInt(ciclo.suspend_day) || 15;
+        var graceD = parseInt(ciclo.grace_days) || 0;
+        
+        // Calcular próxima fecha de pago
+        var nextPayDate = new Date(anioHoy, mesHoy, payDay);
+        if (diaHoy >= payDay) {
+          nextPayDate = new Date(anioHoy, mesHoy + 1, payDay);
         }
+        
+        // Calcular días desde hoy hasta próximo pago
+        var diffMs = nextPayDate.getTime() - hoy.getTime();
+        var daysUntilPay = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+        
+        proximoPago = payDay + ' de ' + meses[nextPayDate.getMonth()];
+        
+        if (daysUntilPay <= graceD) {
+          primerPagoGratis = true;
+          montoProrrateado = '$0.00';
+          diasFacturados = 0;
+        } else {
+          diasFacturados = daysUntilPay;
+          var montoProrrateo = precioPorDia * diasFacturados;
+          montoProrrateado = config.moneda + montoProrrateo.toFixed(2);
+        }
+        
+        // Calcular días hasta corte
+        var cutDate = new Date(anioHoy, mesHoy, cutDay);
+        if (diaHoy >= cutDay) {
+          cutDate = new Date(anioHoy, mesHoy + 1, cutDay);
+        } else if (diaHoy < payDay) {
+          cutDate = new Date(anioHoy, mesHoy, cutDay);
+          if (cutDay < payDay) {
+            cutDate = new Date(anioHoy, mesHoy + 1, cutDay);
+          }
+        }
+        var diffCutMs = cutDate.getTime() - hoy.getTime();
+        diasHastaCorte = Math.ceil(diffCutMs / (1000 * 60 * 60 * 24)) + '';
+      } else {
+        // Sin ciclo: usar 30 días desde hoy como próximo pago
+        var nextPayDate = new Date(anioHoy, mesHoy + 1, diaHoy);
+        proximoPago = diaHoy + ' de ' + meses[nextPayDate.getMonth()];
+        diasFacturados = 30;
+        var montoProrrateo = precioPorDia * 30;
+        montoProrrateado = config.moneda + montoProrrateo.toFixed(2);
+        diasHastaCorte = '30';
       }
-      var diffCutMs = cutDate.getTime() - hoy.getTime();
-      diasHastaCorte = Math.ceil(diffCutMs / (1000 * 60 * 60 * 24)) + '';
     }
     
     // Función para reemplazar variables
