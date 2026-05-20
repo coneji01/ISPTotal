@@ -310,6 +310,7 @@ function loadServicesPP(clientId) {
     .then(function(svcs) {
         console.log('[DBG] get_services returned ' + (svcs ? svcs.length : 'NULL') + ' services');
         var list = document.getElementById('ppSvcList');
+        if (!list) { console.log('[DBG] ERROR: ppSvcList not found!'); return; }
         var html = '';
         svcs.forEach(function(s) {
             var hasPromesa = s.promesa_activa > 0;
@@ -335,6 +336,9 @@ function loadServicesPP(clientId) {
         var tomorrow = new Date();
         tomorrow.setDate(tomorrow.getDate() + 1);
         document.getElementById('ppDueDate').min = tomorrow.toISOString().split('T')[0];
+        console.log('[DBG] loadServicesPP completed successfully');
+    }).catch(function(e) {
+        console.log('[DBG] loadServicesPP ERROR: ' + e.message);
     });
 }
 
