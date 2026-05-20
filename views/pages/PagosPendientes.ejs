@@ -246,10 +246,16 @@ function openNewPromisePP(clienteId) {
     var searchEl = document.getElementById('ppSearchGroup');
     if (searchEl) searchEl.style.display = 'none';
     console.log('[DBG] Calling loadServicesPP(' + clienteId + ')');
-    loadServicesPP(clienteId);
+    // Force modal open BEFORE loading services
     var modal = document.getElementById('ppModal');
     console.log('[DBG] ppModal element: ' + (modal ? 'FOUND' : 'NULL'));
-    if (modal) modal.classList.add('open');
+    if (modal) {
+        modal.classList.add('open');
+        console.log('[DBG] Modal opened via classList.add');
+    } else {
+        console.log('[DBG] Modal NOT found, trying inline style');
+    }
+    loadServicesPP(clienteId);
 }
 
 function closeModalPP() {
