@@ -178,6 +178,7 @@ app.all('/modulo', requireAuth, (req, res) => {
   
   let data = { zonas, planes, empleados, cajasNap, splitters, proveedores, inventario, pagina };
   
+  console.log('[DBG] MODULO handler: pagina=' + pagina + ' ajax=' + (req.query.ajax||'') + ' url=' + req.url);
   switch(pagina) {
     case 'Dashboard': {
       const servicios = db.prepare("SELECT COUNT(*) as total FROM servicios WHERE estado != 'retirado'").get();
@@ -549,9 +550,11 @@ app.all('/modulo', requireAuth, (req, res) => {
     }
     case 'RegistrarPago': {
       const ajax = req.query.ajax;
+      data.clienteData = null;
+      console.log('[DBG] RegistrarPago: pagina=' + pagina + ' ajax=' + ajax + ' cid=' + (req.query.cliente_id||'') + ' cid2=' + (req.query.client_id||'') + ' clienteData=' + JSON.stringify(data.clienteData));
 
       // Pre-cargar datos del cliente si viene por ID (ej: desde PagosPendientes)
-      if (!ajax && req.query.cliente_id) {
+      if (req.query.cliente_id) {
         var cid = parseInt(req.query.cliente_id) || 0;
         if (cid) {
           data.clienteData = db.prepare(`
@@ -605,7 +608,7 @@ app.all('/modulo', requireAuth, (req, res) => {
       }
 
       // --- Obtener servicios del cliente ---
-      if (ajax === 'get_client_services') {
+      if (ajax === 'get_services' || ajax === 'get_client_services') {
         const clientId = parseInt(req.query.client_id) || 0;
         if (!clientId) return res.json({ status: 'error', msg: 'ID de cliente requerido' });
         const servicios = db.prepare(`
@@ -2512,6 +2515,7 @@ app.all('/modulo', requireAuth, (req, res) => {
     }
   }
   
+  console.log('[DBG] renderPage: pagina=' + pagina + ' ajax=' + (req.query.ajax||'') + ' keys=' + Object.keys(data).join(','));
   renderPage(req, res, pagina, data);
 });
 

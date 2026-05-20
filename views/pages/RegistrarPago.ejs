@@ -1549,7 +1549,7 @@
     // Auto-cargar cliente si viene con ?cliente_id=X
     // Auto-cargar cliente desde datos embebidos (evita fetch innecesario)
     (function() {
-      var clientData = <%- JSON.stringify(clienteData || null) %>;
+      var clientData = null; try { clientData = <%- JSON.stringify(clienteData || null) %>; } catch(e) {}
       if (clientData && clientData.name) {
         setTimeout(function() {
           document.getElementById('inputBuscador').value = clientData.name;
