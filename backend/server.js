@@ -2285,7 +2285,7 @@ app.all('/modulo', requireAuth, (req, res) => {
         const mes = parseInt(req.query.mes) || new Date().getMonth() + 1;
         const anio = parseInt(req.query.anio) || new Date().getFullYear();
         const zona = parseInt(req.query.zona) || 0;
-        const modo = req.query.modo || 'finanzas';
+        const modo = req.query.modo || req.query.mode || 'finanzas';
         const rango = req.query.rango || 'mes';
 
         let fechaWhere = '';
@@ -2328,11 +2328,28 @@ app.all('/modulo', requireAuth, (req, res) => {
           var cobradoMesActual = db.prepare("SELECT COALESCE(SUM(monto),0) as t FROM pagos WHERE strftime('%Y-%m', created_at)=strftime('%Y-%m','now')").get().t;
           var ultimosPagos = db.prepare('SELECT p.id, p.monto, p.metodo, p.created_at, c.nombre as cliente_nombre, c.id as cliente_id FROM pagos p LEFT JOIN clientes c ON c.id=p.cliente_id ORDER BY p.id DESC LIMIT 15').all();
           return res.json({
-            success: true, modo: 'finanzas',
+            status: 'success', modo: 'finanzas',
+            success: true,
             cobradoTotal: cobradoTotal.t, pendienteTotal: pendienteTotal.t, gastosTotal: gastosTotal.t,
             cobradoHoy: cobradoHoy, cobradoMesActual: cobradoMesActual,
             cobradoPorMetodo: cobradoPorMetodo, cobradoPorCobrador: cobradoPorCobrador,
-            pagosPorMes: pagosPorMes, ultimosPagos: ultimosPagos, mes: mes, anio: anio
+            pagosPorMes: pagosPorMes, ultimosPagos: ultimosPagos, mes: mes, anio: anio,
+            finanzas: {
+              total_ciclo: cobradoTotal.t + pendienteTotal.t,
+              cobrado_mes: cobradoTotal.t,
+              cobrado_hoy: cobradoHoy,
+              pendiente_mes: pendienteTotal.t,
+              total_gastos: gastosTotal.t,
+              total_vencido: 0,
+              gastos_desde: gastosTotal.t,
+              gastos_hasta: 0,
+              gastos_por_tipo: [],
+              por_metodo_ciclo: cobradoPorMetodo,
+              por_metodo_hoy: cobradoPorMetodo,
+              por_cobrador: cobradoPorCobrador,
+              por_dia: pagosPorMes,
+              planes_top: []
+            }
           });
         }
 
@@ -2350,11 +2367,28 @@ app.all('/modulo', requireAuth, (req, res) => {
           var instaladosMes = db.prepare('SELECT strftime(?,fecha_activacion) as mes, COUNT(*) as total FROM servicios WHERE fecha_activacion IS NOT NULL AND strftime(?,fecha_activacion)=? GROUP BY strftime(?,fecha_activacion) ORDER BY mes').all('%Y-%m', '%Y-%m', String(anio)+'-'+String(mes).padStart(2,'0'), '%Y-%m');
           var retiradosMes = db.prepare('SELECT COUNT(*) as total FROM servicios WHERE fecha_suspension IS NOT NULL AND strftime(?,fecha_suspension)=?').get('%Y-%m', String(anio)+'-'+String(mes).padStart(2,'0'));
           return res.json({
-            success: true, modo: 'clientes',
+            status: 'success', modo: 'clientes',
+            success: true,
             totalClientes: totalClientes.c, activos: activos.c, suspendidos: suspendidos.c, sinServicio: sinServicio.c,
             serviciosPorPlan: serviciosPorPlan, serviciosPorZona: serviciosPorZona,
             instaladosMes: instaladosMes, retiradosMes: retiradosMes?retiradosMes.total:0,
-            mes: mes, anio: anio
+            mes: mes, anio: anio,
+            clientes: {
+              activos: activos.c,
+              suspendidos: suspendidos.c,
+              suspendidos_largos: 0,
+              instalados_anio: 0,
+              instalados_mes: instaladosMes.length > 0 ? instaladosMes[0].total : 0,
+              suspendidos_mes: 0,
+              reactivados_mes: 0,
+              retirados_mes: retiradosMes ? retiradosMes.total : 0,
+              nuevos_mes: instaladosMes.length > 0 ? instaladosMes[0].total : 0,
+              nuevos_anio: 0,
+              suspended_over: 0,
+              por_mes: instaladosMes,
+              por_zona: serviciosPorZona.map(function(sz){return {zona_nombre: sz.zona, total: sz.activos || sz.total};}),
+              top_planes: serviciosPorPlan.map(function(sp){return {plan_nombre: sp.plan, total: sp.activos || sp.total};})
+            }
           });
         }
         return res.json({ success: false, message: 'Modo no especificado' });

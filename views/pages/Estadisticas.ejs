@@ -4,19 +4,18 @@
 .st-title i{color:#0ea5e9}
 .st-filters{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .st-mode-toggle{display:flex;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;background:#f8fafc}
-.st-mode-opt{display:flex;align-items:center;gap:5px;padding:6px 14px;font-size:0.82rem;font-weight:600;color:#64748b;cursor:pointer;user-select:none;margin:0}
+.st-mode-opt{display:flex;align-items:center;gap:5px;padding:6px 14px;font-size:0.82rem;font-weight:600;color:#64748b;cursor:pointer;transition:all .15s;user-select:none;margin:0}
 .st-mode-opt input{display:none}
 .st-mode-opt.active{background:#0ea5e9;color:#fff}
 .st-mode-opt:hover:not(.active){background:#f1f5f9}
 .st-select{padding:7px 12px;border:1px solid #e2e8f0;border-radius:8px;font-size:0.85rem;color:#475569;background:#fff;cursor:pointer}
 .st-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
-.st-card{background:#fff;border-radius:12px;padding:14px;border:1px solid #e2e8f0;box-shadow:0 1px 3px rgba(0,0,0,.04);cursor:pointer;transition:transform .15s,box-shadow .15s}
-.st-card:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.1)}
+.st-card{background:#fff;border-radius:12px;padding:14px;border:1px solid #e2e8f0;box-shadow:0 1px 3px rgba(0,0,0,.04);overflow:hidden}
 .st-card-inner{display:flex;align-items:center;gap:10px}
 .st-card-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .st-card-icon i{font-size:0.9rem}
 .st-card-text{min-width:0;flex:1}
-.st-card-val{font-size:1.1rem;font-weight:800;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.st-card-val{font-size:1.1rem;font-weight:800;line-height:1.2;margin-bottom:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .st-card-label{font-size:0.72rem;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:.3px}
 .st-card-sub{font-size:0.68rem;color:#94a3b8;margin-top:3px}
 .st-num-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px}
@@ -27,10 +26,10 @@
 .st-section-title{font-size:1rem;font-weight:700;color:#334155;margin-bottom:14px;display:flex;align-items:center;gap:8px}
 .st-section-title i{color:#0ea5e9;font-size:0.9rem}
 .st-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-.st-panel{background:#fff;border-radius:12px;padding:16px;border:1px solid #e2e8f0}
+.st-panel{background:#fff;border-radius:12px;padding:16px;border:1px solid #e2e8f0;box-shadow:0 1px 3px rgba(0,0,0,.04)}
 .st-bar-wrap{margin-bottom:8px}
 .st-bar-label{display:flex;justify-content:space-between;font-size:0.82rem;margin-bottom:4px}
-.st-bar-name{color:#334155;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.st-bar-name{color:#334155;font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
 .st-bar-val{color:#64748b;font-weight:600;flex-shrink:0;margin-left:8px}
 .st-bar-track{height:8px;background:#f1f5f9;border-radius:8px;overflow:hidden}
 .st-bar-fill{height:100%;border-radius:8px;transition:width .6s ease}
@@ -45,11 +44,9 @@
 .st-chart-labels{display:flex;gap:2px;font-size:0.55rem;color:#94a3b8;text-align:center}
 .st-chart-labels span{flex:1;overflow:hidden;text-overflow:ellipsis}
 .st-loading{padding:60px;text-align:center;color:#94a3b8}
-.st-tabs{display:flex;gap:0;margin-bottom:18px;background:#fff;border-radius:10px;border:1px solid #e2e8f0;overflow:hidden;width:fit-content}
-.st-tab{padding:10px 22px;font-size:0.88rem;font-weight:600;color:#64748b;cursor:pointer;display:flex;align-items:center;gap:7px;border-right:1px solid #e2e8f0;user-select:none}
-.st-tab:last-child{border-right:none}
-.st-tab:hover{background:#f8fafc;color:#334155}
-.st-tab.active{background:#0ea5e9;color:#fff}
+@media(max-width:900px){.st-grid{grid-template-columns:repeat(2,1fr)}.st-num-grid{grid-template-columns:repeat(4,1fr)}.st-row{grid-template-columns:1fr}}
+@media(max-width:600px){.st-grid{grid-template-columns:1fr 1fr}.st-num-grid{grid-template-columns:repeat(2,1fr)}.st-header{flex-direction:column;align-items:flex-start}.st-filters{width:100%}.st-select{flex:1}.st-card-val{font-size:0.95rem}.st-num-val{font-size:1.1rem}}
+.st-card-click{cursor:pointer;transition:transform .15s,box-shadow .15s}.st-card-click:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.1)}
 .st-modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.4);z-index:3000;display:none;align-items:center;justify-content:center;padding:16px}
 .st-modal{background:#fff;border-radius:14px;width:100%;max-width:700px;max-height:85vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.2)}
 .st-modal-head{padding:16px 20px;border-bottom:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center}
@@ -57,320 +54,504 @@
 .st-modal-close{cursor:pointer;font-size:1.4rem;color:#94a3b8;line-height:1}
 .st-modal-close:hover{color:#ef4444}
 .st-modal-toolbar{padding:10px 20px;border-bottom:1px solid #f1f5f9;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+.st-modal-total{font-size:0.85rem;font-weight:700}
 .st-modal-body{overflow-y:auto;flex:1}
 .st-modal-foot{padding:10px 20px;border-top:1px solid #e2e8f0;display:flex;justify-content:center}
 .st-inv-row{display:flex;justify-content:space-between;align-items:center;padding:10px 20px;border-bottom:1px solid #f8fafc;font-size:0.85rem}
 .st-inv-row:hover{background:#f8fafc}
-.st-modal-search{padding:5px 10px;border:1px solid #e2e8f0;border-radius:6px;font-size:0.82rem;outline:none}
+.st-inv-client{font-weight:600;color:#1e293b}
+.st-inv-nic{font-size:0.75rem;color:#94a3b8;font-family:monospace}
+.st-inv-plan{font-size:0.75rem;color:#64748b}
+.st-inv-monto{font-weight:700;font-size:0.95rem;text-align:right;white-space:nowrap}
+.st-inv-status{font-size:0.68rem;padding:2px 6px;border-radius:4px;font-weight:600;display:inline-block}
+.st-inv-status-paid{background:#dcfce7;color:#166534}.st-inv-status-pending{background:#fef3c7;color:#92400e}.st-inv-status-overdue{background:#fef2f2;color:#991b1b}.st-inv-status-partial{background:#dbeafe;color:#1e40af}
+.st-modal-search{padding:5px 10px;border:1px solid #e2e8f0;border-radius:6px;font-size:0.82rem;width:160px;outline:none}
 .st-modal-search:focus{border-color:#0ea5e9}
-.st-pag{display:flex;gap:4px;align-items:center;flex-wrap:wrap}
-.st-pag-btn{min-width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center;border:1px solid #e2e8f0;border-radius:6px;background:#fff;color:#475569;font-size:0.8rem;cursor:pointer;font-weight:500}
-.st-pag-btn:hover:not(:disabled){background:#f1f5f9}
+.st-pag{display:flex;gap:4px;align-items:center;justify-content:center;flex-wrap:wrap}
+.st-pag-btn{min-width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center;border:1px solid #e2e8f0;border-radius:6px;background:#fff;color:#475569;font-size:0.8rem;cursor:pointer;font-weight:500;transition:all .15s}
+.st-pag-btn:hover:not(:disabled):not(.st-pag-active){background:#f1f5f9;border-color:#cbd5e1}
 .st-pag-btn:disabled{opacity:.3;cursor:not-allowed}
 .st-pag-active{background:#0ea5e9;color:#fff;border-color:#0ea5e9;font-weight:700}
-@media(max-width:900px){.st-grid{grid-template-columns:repeat(2,1fr)}.st-num-grid{grid-template-columns:repeat(4,1fr)}.st-row{grid-template-columns:1fr}}
-@media(max-width:600px){.st-grid{grid-template-columns:1fr 1fr}.st-num-grid{grid-template-columns:repeat(2,1fr)}}
+.st-pag-info{font-size:0.75rem;color:#94a3b8;margin:0 6px}
+.st-tabs{display:flex;gap:0;margin-bottom:18px;background:#fff;border-radius:10px;border:1px solid #e2e8f0;overflow:hidden;width:fit-content}
+.st-tab{padding:10px 22px;font-size:0.88rem;font-weight:600;color:#64748b;cursor:pointer;display:flex;align-items:center;gap:7px;transition:all .15s;border-right:1px solid #e2e8f0;user-select:none}
+.st-tab:last-child{border-right:none}
+.st-tab:hover{background:#f8fafc;color:#334155}
+.st-tab.active{background:#0ea5e9;color:#fff}
+.st-tab.active:hover{background:#0284c7}
+.st-tab i{font-size:0.8rem}
+.st-susp-select{position:absolute;top:6px;right:6px;width:36px;height:22px;padding:0 2px;border:1px solid #e2e8f0;border-radius:4px;font-size:0.7rem;color:#991b1b;background:#fff;cursor:pointer;appearance:auto;-webkit-appearance:auto;text-align:center}
 </style>
 
 <div class="st-header">
-  <div class="st-title"><i class="fas fa-chart-line"></i> Estadisticas</div>
-  <div class="st-filters">
-    <div class="st-mode-toggle" id="stRangeToggle">
-      <label class="st-mode-opt active" onclick="stSetFilterMode('periodo')"><input type="radio" name="stFilterMode" checked><span>Periodo</span></label>
-      <label class="st-mode-opt" onclick="stSetFilterMode('rango')"><input type="radio" name="stFilterMode"><span>Rango</span></label>
+    <div class="st-title"><i class="fas fa-chart-line"></i> Estad&iacute;sticas</div>
+    <div class="st-filters">
+        <div class="st-mode-toggle" style="margin-right:4px;" id="stRangeToggle">
+            <label class="st-mode-opt active" id="stFilterModePeriodo" onclick="stSetFilterMode('periodo')"><input type="radio" name="stFilterMode" checked><span>Periodo</span></label>
+            <label class="st-mode-opt" id="stFilterModeRango" onclick="stSetFilterMode('rango')"><input type="radio" name="stFilterMode"><span>Rango</span></label>
+        </div>
+        <div id="stFilterPeriodo">
+            <select class="st-select" id="stPeriodo" onchange="stLoad()"></select>
+        </div>
+        <div id="stFilterRango" style="display:none;gap:6px;align-items:center;">
+            <input type="date" class="st-select" id="stDesde" onchange="stLoad()" style="padding:6px 10px;">
+            <span style="color:#94a3b8;font-size:0.8rem;">a</span>
+            <input type="date" class="st-select" id="stHasta" onchange="stLoad()" style="padding:6px 10px;">
+        </div>
+        <select class="st-select" id="stZona" onchange="stLoad()">
+            <option value="0">Todas las zonas</option>
+            <% (zonas || []).forEach(function(z){ %>
+            <option value="<%= z.id %>"><%= z.nombre %></option>
+            <% }); %>
+        </select>
     </div>
-    <div id="stFilterPeriodo"><select class="st-select" id="stPeriodo" onchange="stLoad()"></select></div>
-    <div id="stFilterRango" style="display:none;gap:6px;align-items:center;">
-      <input type="date" class="st-select" id="stDesde" onchange="stLoad()" style="padding:6px 10px;">
-      <span style="color:#94a3b8;font-size:0.8rem;">a</span>
-      <input type="date" class="st-select" id="stHasta" onchange="stLoad()" style="padding:6px 10px;">
-    </div>
-    <select class="st-select" id="stZona" onchange="stLoad()">
-      <option value="0">Todas las zonas</option>
-      <% (zonas || []).forEach(function(z){ %>
-      <option value="<%= z.id %>"><%= z.nombre %></option>
-      <% }); %>
-    </select>
-  </div>
 </div>
 
 <div class="st-tabs">
-  <div class="st-tab active" onclick="stSwitchTab('finanzas',this)"><i class="fas fa-dollar-sign"></i> Finanzas</div>
-  <div class="st-tab" onclick="stSwitchTab('clientes',this)"><i class="fas fa-users"></i> Clientes</div>
+    <div class="st-tab active" onclick="stSwitchTab('finanzas',this)"><i class="fas fa-dollar-sign"></i> Finanzas</div>
+    <div class="st-tab" onclick="stSwitchTab('clientes',this)"><i class="fas fa-users"></i> Clientes</div>
 </div>
 
-<div id="stTabFinanzas"><div class="st-loading" id="stFinanzasContent"><i class="fas fa-spinner fa-spin" style="font-size:1.5rem;margin-bottom:10px;display:block;"></i>Cargando...</div></div>
-<div id="stTabClientes" style="display:none;"><div class="st-loading" id="stClientesContent"><i class="fas fa-spinner fa-spin" style="font-size:1.5rem;margin-bottom:10px;display:block;"></i>Cargando...</div></div>
+<div id="stTabFinanzas">
+    <div class="st-mode-toggle" id="stModeToggle" style="margin-bottom:14px;">
+        <label class="st-mode-opt" id="stModeCiclo" onclick="stSetMode('ciclo')"><input type="radio" name="stMode"><span>Por Ciclo</span></label>
+        <label class="st-mode-opt active" id="stModeMes" onclick="stSetMode('mes')"><input type="radio" name="stMode" checked><span>Por Mes</span></label>
+    </div>
+    <div id="stFinanzasContent">
+        <div class="st-loading"><i class="fas fa-spinner fa-spin" style="font-size:1.5rem;margin-bottom:10px;display:block;"></i>Cargando...</div>
+    </div>
+</div>
+<div id="stTabClientes" style="display:none;">
+    <div id="stClientesContent">
+        <div class="st-loading"><i class="fas fa-spinner fa-spin" style="font-size:1.5rem;margin-bottom:10px;display:block;"></i>Cargando...</div>
+    </div>
+</div>
 
 <div class="st-modal-overlay" id="stModal">
-  <div class="st-modal">
-    <div class="st-modal-head"><h3 id="stModalTitle">Detalle</h3><span class="st-modal-close" onclick="stCloseModal()">&times;</span></div>
-    <div class="st-modal-toolbar">
-      <div class="st-modal-total" id="stModalTotal"></div>
-      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
-        <input type="text" class="st-modal-search" id="stModalSearch" placeholder="Buscar..." onkeyup="stModalSearchFn()">
-        <select class="st-select" id="stModalOrden" onchange="stLoadDetail(1)" style="font-size:0.8rem;padding:4px 8px;">
-          <option value="desc">Monto mayor</option>
-          <option value="asc">Monto menor</option>
-        </select>
-      </div>
+    <div class="st-modal">
+        <div class="st-modal-head">
+            <h3 id="stModalTitle">Detalle</h3>
+            <span class="st-modal-close" onclick="stCloseModal()">&times;</span>
+        </div>
+        <div class="st-modal-toolbar">
+            <div class="st-modal-total" id="stModalTotal"></div>
+            <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+                <input type="text" class="st-modal-search" id="stModalSearch" placeholder="Buscar cliente..." oninput="stModalSearchTimer=setTimeout(function(){stModalSearchFn()},400)">
+                <select class="st-select" id="stModalOrden" onchange="stLoadDetail(1)" style="font-size:0.8rem;padding:4px 8px;">
+                    <option value="desc">Monto mayor primero</option>
+                    <option value="asc">Monto menor primero</option>
+                </select>
+            </div>
+        </div>
+        <div class="st-modal-body" id="stModalBody"></div>
+        <div class="st-modal-foot" id="stModalPag"></div>
     </div>
-    <div class="st-modal-body" id="stModalBody"></div>
-    <div class="st-modal-foot" id="stModalPag"></div>
-  </div>
 </div>
 
 <script>
 var stPeriodos = <%- JSON.stringify(periodos || []) %>;
 var mesesNombres = ['','Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+
+(function(){
+    var sel = document.getElementById('stPeriodo');
+    if (!stPeriodos.length) {
+        var now = new Date();
+        sel.innerHTML = '<option value="' + (now.getMonth()+1) + '-' + now.getFullYear() + '">' + mesesNombres[now.getMonth()+1] + ' ' + now.getFullYear() + '</option>';
+        return;
+    }
+    var html = '';
+    for (var i = 0; i < stPeriodos.length; i++) {
+        var p = stPeriodos[i];
+        var sel2 = (i === 0) ? ' selected' : '';
+        html += '<option value="' + p.mes + '-' + p.anio + '"' + sel2 + '>' + mesesNombres[parseInt(p.mes)] + ' ' + p.anio + '</option>';
+    }
+    sel.innerHTML = html;
+})();
+
+var stSavedSuspMonths = 3;
 var stFilterMode = 'periodo';
 var stCurrentMode = 'mes';
 var stModalData = [];
 var stModalPage = 1;
 var stModalPerPage = 15;
 var stModalType = '';
-var stModalTimer = null;
-
-// Inicializar selector de periodo
-(function(){
-  var sel = document.getElementById('stPeriodo');
-  if (!stPeriodos || !stPeriodos.length) {
-    var now = new Date();
-    sel.innerHTML = '<option value="' + (now.getMonth()+1) + '-' + now.getFullYear() + '">' + mesesNombres[now.getMonth()+1] + ' ' + now.getFullYear() + '</option>';
-    return;
-  }
-  var h = '';
-  for (var i = 0; i < stPeriodos.length; i++) {
-    var p = stPeriodos[i];
-    h += '<option value="' + p.mes + '-' + p.anio + '"' + (i===0?' selected':'') + '>' + mesesNombres[parseInt(p.mes)] + ' ' + p.anio + '</option>';
-  }
-  sel.innerHTML = h;
-})();
+var stModalSearchTimer = null;
 
 function stSetFilterMode(mode) {
-  stFilterMode = mode;
-  document.querySelectorAll('#stRangeToggle .st-mode-opt').forEach(function(el){el.classList.toggle('active', el.onclick.toString().includes(mode))});
-  document.getElementById('stFilterPeriodo').style.display = mode === 'periodo' ? '' : 'none';
-  document.getElementById('stFilterRango').style.display = mode === 'rango' ? 'flex' : 'none';
-  if (mode === 'rango') {
+    stFilterMode = mode;
+    document.getElementById('stFilterModePeriodo').classList.toggle('active', mode === 'periodo');
+    document.getElementById('stFilterModeRango').classList.toggle('active', mode === 'rango');
+    document.getElementById('stFilterPeriodo').style.display = mode === 'periodo' ? '' : 'none';
+    document.getElementById('stFilterRango').style.display = mode === 'rango' ? 'flex' : 'none';
+    if (mode === 'rango') {
+        var pv = document.getElementById('stPeriodo').value.split('-');
+        var m = parseInt(pv[0]), a = parseInt(pv[1]);
+        var first = a + '-' + String(m).padStart(2,'0') + '-01';
+        var last = new Date(a, m, 0);
+        var lastStr = a + '-' + String(m).padStart(2,'0') + '-' + String(last.getDate()).padStart(2,'0');
+        document.getElementById('stDesde').value = first;
+        document.getElementById('stHasta').value = lastStr;
+    }
+    stLoad();
+}
+
+function stOpenPrintCobrador(nombre) {
+    var desde = '', hasta = '';
+    if (stFilterMode === 'rango') {
+        desde = document.getElementById('stDesde').value;
+        hasta = document.getElementById('stHasta').value;
+    } else {
+        var pv = document.getElementById('stPeriodo').value.split('-');
+        var m = parseInt(pv[0]), a = parseInt(pv[1]);
+        desde = a + '-' + String(m).padStart(2,'0') + '-01';
+        var last = new Date(a, m, 0);
+        hasta = a + '-' + String(m).padStart(2,'0') + '-' + String(last.getDate()).padStart(2,'0');
+    }
+    var zona = document.getElementById('stZona').value || 0;
+    var url = '/modulo?pagina=Estadisticas&ajax=print_cobrador&cobrador=' + encodeURIComponent(nombre) + '&desde=' + desde + '&hasta=' + hasta + '&zona=' + zona + '&mode=' + stCurrentMode;
+    window.open(url, '_blank');
+}
+
+function stPrintCobVsGas() {
+    var el = document.getElementById('stChartCobVsGas');
+    if (!el) return;
+    var w = window.open('', '_blank');
+    var mNombres = ['','Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
     var pv = document.getElementById('stPeriodo').value.split('-');
-    var m = parseInt(pv[0]), a = parseInt(pv[1]);
-    document.getElementById('stDesde').value = a + '-' + String(m).padStart(2,'0') + '-01';
-    var last = new Date(a, m, 0);
-    document.getElementById('stHasta').value = a + '-' + String(m).padStart(2,'0') + '-' + String(last.getDate()).padStart(2,'0');
-  }
-  stLoad();
-}
-
-function stSwitchTab(tab, el) {
-  document.querySelectorAll('.st-tab').forEach(function(t){t.classList.remove('active')});
-  el.classList.add('active');
-  document.getElementById('stTabFinanzas').style.display = tab === 'finanzas' ? '' : 'none';
-  document.getElementById('stTabClientes').style.display = tab === 'clientes' ? '' : 'none';
-  if (stCurrentMode !== 'ciclo') stLoad();
-}
-
-function stCard(val, label, sub, color, icon, tipo) {
-  var click = tipo ? ' onclick="stOpenModal(\'' + tipo + '\')"' : '';
-  return '<div class="st-card"' + click + '><div class="st-card-inner"><div class="st-card-icon" style="background:' + color + '15;"><i class="fas ' + icon + '" style="color:' + color + ';"></i></div><div class="st-card-text"><div class="st-card-val" style="color:' + color + ';">' + val + '</div><div class="st-card-label">' + label + '</div><div class="st-card-sub">' + sub + '</div></div></div></div>';
-}
-
-function stNum(val, label, color) {
-  return '<div class="st-num-card"><div class="st-num-val" style="color:' + color + ';">' + val + '</div><div class="st-num-label">' + label + '</div></div>';
+    var titulo = mNombres[parseInt(pv[0])] + ' ' + pv[1];
+    if (stFilterMode === 'rango') {
+        titulo = document.getElementById('stDesde').value + ' al ' + document.getElementById('stHasta').value;
+    }
+    w.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Ingresos vs Gastos - ' + titulo + '</title>');
+    w.document.write('<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">');
+    w.document.write('<style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:Arial,Helvetica,sans-serif;background:#f1f5f9;display:flex;flex-direction:column;align-items:center;padding:20px}');
+    w.document.write('.page{background:#fff;max-width:700px;width:100%;padding:30px;border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,.1)}');
+    w.document.write('h1{text-align:center;font-size:18px;color:#1e293b;margin-bottom:4px}.sub{text-align:center;color:#64748b;font-size:13px;margin-bottom:24px}');
+    w.document.write('.no-print{text-align:center;margin-bottom:15px}');
+    w.document.write('@media print{@page{margin:15mm}body{background:#fff;padding:0}.page{box-shadow:none;padding:0}.no-print{display:none}}</style></head><body>');
+    w.document.write('<div class="no-print"><button onclick="window.print()" style="padding:10px 30px;font-size:14px;font-weight:700;background:#6366f1;color:#fff;border:none;border-radius:8px;cursor:pointer;">Imprimir / Guardar PDF</button></div>');
+    w.document.write('<div class="page">');
+    w.document.write('<h1>Ingresos vs Gastos</h1>');
+    w.document.write('<div class="sub">' + titulo + '</div>');
+    w.document.write(el.innerHTML.replace(/onclick="[^"]*"/g, '').replace(/<button[^>]*>.*?<\/button>/gi, ''));
+    w.document.write('</div></body></html>');
+    w.document.close();
 }
 
 function stSetMode(mode) {
-  stCurrentMode = mode;
-  document.querySelectorAll('#stModeToggle .st-mode-opt').forEach(function(el){el.classList.remove('active')});
-  document.getElementById('stMode' + (mode==='ciclo'?'Ciclo':'Mes')).classList.add('active');
-  stLoad();
+    stCurrentMode = mode;
+    document.getElementById('stModeCiclo').classList.toggle('active', mode === 'ciclo');
+    document.getElementById('stModeMes').classList.toggle('active', mode === 'mes');
+    stLoad();
 }
 
-function stLoad() {
-  var pv = document.getElementById('stPeriodo').value.split('-');
-  var mes = pv[0], anio = pv[1], zona = document.getElementById('stZona').value;
-  var wrapF = document.getElementById('stFinanzasContent');
-  var wrapC = document.getElementById('stClientesContent');
-  wrapF.innerHTML = '<div class="st-loading"><i class="fas fa-spinner fa-spin"></i> Cargando...</div>';
-  wrapC.innerHTML = wrapF.innerHTML;
-
-  var params = '&mes=' + mes + '&anio=' + anio + '&zona=' + zona + '&mode=' + stCurrentMode;
-  if (stFilterMode === 'rango') {
-    var desde = document.getElementById('stDesde').value;
-    var hasta = document.getElementById('stHasta').value;
-    if (desde && hasta) params += '&desde=' + desde + '&hasta=' + hasta;
-  }
-
-  Promise.all([
-    fetch('/modulo?pagina=Estadisticas&ajax=get_stats' + params + '&modo=finanzas').then(function(r){return r.json()}),
-    fetch('/modulo?pagina=Estadisticas&ajax=get_stats' + params + '&modo=clientes').then(function(r){return r.json()})
-  ])
-  .then(function(results){
-    var df = results[0], dc = results[1];
-    if (!df.success || !dc.success) { wrapF.innerHTML = '<div class="st-loading">Error</div>'; return; }
-    var f = df, c = dc;
-    var fmt = function(n){return '$' + parseFloat(n||0).toLocaleString('es-DO',{minimumFractionDigits:2})};
-    var modeLabel = stFilterMode === 'rango' ? 'este rango' : (stCurrentMode === 'mes' ? 'este mes' : 'este ciclo');
-
-    // ===== TAB FINANZAS =====
-    var hf = '<div class="st-grid">';
-    hf += stCard(fmt((f.cobradoTotal||0)+(f.pendienteTotal||0)), 'Facturado', 'En ' + modeLabel, '#6366f1', 'fa-file-invoice-dollar', 'facturado');
-    hf += stCard(fmt(f.cobradoTotal || 0), 'Cobrado', 'En ' + modeLabel, '#16a34a', 'fa-hand-holding-usd', 'cobrado');
-    hf += stCard(fmt(f.cobradoHoy || 0), 'Cobrado Hoy', new Date().toLocaleDateString('es-DO'), '#8b5cf6', 'fa-calendar-day', 'cobrado_hoy');
-    hf += stCard(fmt(f.pendienteTotal || 0), 'Pendiente', 'De ' + modeLabel, '#f59e0b', 'fa-clock', 'pendiente');
-    hf += stCard(fmt(f.total_vencido || 0), 'Vencido', 'De ' + modeLabel, '#dc2626', 'fa-exclamation-triangle', 'vencido');
-    hf += stCard(fmt(f.gastosTotal || 0), 'Gastos', 'De ' + modeLabel, '#7c3aed', 'fa-shopping-cart', null);
-    hf += '</div>';
-
-    // Gráfico Cobrado vs Gastado
-    if (stCurrentMode === 'mes' || stFilterMode === 'rango') {
-      var cob = parseFloat(f.cobradoTotal || 0), gas = parseFloat(f.gastosTotal || 0);
-      var bal = cob - gas, maxV = Math.max(cob, gas, 1);
-      var pctC = Math.round((cob/maxV)*100), pctG = Math.round((gas/maxV)*100);
-      hf += '<div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:20px;margin-bottom:14px;">'
-        + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">'
-        + '<div style="font-size:0.85rem;font-weight:700;color:#1e293b;"><i class="fas fa-chart-bar" style="color:#6366f1;margin-right:6px;"></i>Ingresos vs Gastos</div>'
-        + '</div>';
-      hf += '<div><div style="display:flex;justify-content:space-between;margin-bottom:5px;"><span style="font-size:0.78rem;font-weight:600;color:#16a34a;"><i class="fas fa-hand-holding-usd"></i> Cobrado</span><span style="font-size:0.85rem;font-weight:800;color:#16a34a;">'+fmt(cob)+'</span></div>'
-        + '<div style="background:#f0fdf4;border-radius:8px;height:28px;overflow:hidden;"><div style="background:linear-gradient(90deg,#16a34a,#22c55e);height:100%;width:'+Math.max(pctC,2)+'%;border-radius:8px;"></div></div></div>';
-      hf += '<div style="margin-top:10px;"><div style="display:flex;justify-content:space-between;margin-bottom:5px;"><span style="font-size:0.78rem;font-weight:600;color:#7c3aed;"><i class="fas fa-shopping-cart"></i> Gastado</span><span style="font-size:0.85rem;font-weight:800;color:#7c3aed;">'+fmt(gas)+'</span></div>'
-        + '<div style="background:#f5f3ff;border-radius:8px;height:28px;overflow:hidden;"><div style="background:linear-gradient(90deg,#7c3aed,#8b5cf6);height:100%;width:'+Math.max(pctG,2)+'%;border-radius:8px;"></div></div></div>';
-      var balColor = bal >= 0 ? '#16a34a' : '#dc2626';
-      hf += '<div style="margin-top:14px;padding-top:12px;border-top:1px solid #e2e8f0;display:flex;justify-content:space-between;">'
-        + '<div><div style="font-size:0.72rem;color:#94a3b8;text-transform:uppercase;">' + (bal >= 0 ? 'Ganancia' : 'Deficit') + '</div>'
-        + '<div style="font-size:1.1rem;font-weight:800;color:'+balColor+';">'+fmt(Math.abs(bal))+'</div></div>'
-        + '<div style="text-align:right;"><div style="font-size:0.72rem;color:#94a3b8;text-transform:uppercase;">Margen</div>'
-        + '<div style="font-size:1.1rem;font-weight:800;color:'+balColor+';">'+ (cob > 0 ? Math.round((bal/cob)*100) : 0) + '%</div></div></div>';
-      hf += '</div>';
+function stSwitchTab(tab, el) {
+    document.querySelectorAll('.st-tab').forEach(function(t){t.classList.remove('active');});
+    el.classList.add('active');
+    document.getElementById('stTabFinanzas').style.display = tab === 'finanzas' ? '' : 'none';
+    document.getElementById('stTabClientes').style.display = tab === 'clientes' ? '' : 'none';
+    document.getElementById('stRangeToggle').style.display = tab === 'finanzas' ? '' : 'none';
+    if (tab === 'clientes' && stFilterMode === 'rango') {
+        stSetFilterMode('periodo');
     }
-
-    wrapF.innerHTML = hf;
-
-    // ===== TAB CLIENTES =====
-    var hc = '';
-    // Suspend months selector
-    var suspMonths = 3;
-    hc += '<div style="margin-bottom:14px;display:flex;align-items:center;gap:8px;font-size:0.85rem;color:#475569;">'
-      + '<span>Mostrar suspendidos con mas de</span>'
-      + '<select class="st-select" id="stSuspMonths" style="width:80px;padding:5px 8px;" onchange="stLoad()">'
-      + '<option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="6">6</option><option value="12">12</option>'
-      + '</select><span>mes(es)</span></div>';
-
-    hc += '<div class="st-num-grid">';
-    hc += stNum(c.activos || 0, 'Activos', '#16a34a');
-    hc += stNum(c.suspendidos || 0, 'Suspendidos', '#f59e0b');
-    hc += stNum(c.suspendidos_largos || 0, 'Susp. >'+suspMonths+'m', '#dc2626');
-    hc += stNum(c.nuevos_anio || 0, 'Nuevos (ano)', '#6366f1');
-    hc += stNum(c.nuevos_mes || 0, 'Nuevos (mes)', '#0ea5e9');
-    hc += stNum(c.suspendidos_mes || 0, 'Susp. (mes)', '#f59e0b');
-    hc += stNum(c.reactivados_mes || 0, 'Reactivados', '#8b5cf6');
-    hc += stNum(c.retiradosMes || 0, 'Retirados (mes)', '#dc2626');
-    hc += '</div>';
-
-    // Grafico 12 meses
-    if (c.instaladosMes && c.instaladosMes.length) {
-      hc += '<div class="st-section"><div class="st-section-title"><i class="fas fa-chart-bar"></i> Instalaciones (este mes)</div>';
-      var maxM = Math.max.apply(null, c.instaladosMes.map(function(x){return x.total})) || 1;
-      hc += '<div class="st-chart">';
-      for (var i = 0; i < c.instaladosMes.length; i++) {
-        var pct2 = Math.max((c.instaladosMes[i].total / maxM * 100), 2);
-        hc += '<div class="st-chart-bar" style="height:'+pct2+'%;background:#0ea5e9;" data-tip="' + (c.instaladosMes[i].mes||'') + ': ' + c.instaladosMes[i].total + '"></div>';
-      }
-      hc += '</div><div class="st-chart-labels">';
-      for (var i = 0; i < c.instaladosMes.length; i++) {
-        hc += '<span>' + (c.instaladosMes[i].mes||'').substring(0,3) + '</span>';
-      }
-      hc += '</div></div>';
-    }
-
-    // Nuevos por zona + Top planes
-    hc += '<div class="st-row">';
-    hc += '<div class="st-panel"><div class="st-section-title"><i class="fas fa-map-marker-alt"></i> Servicios por Zona</div>';
-    if (c.serviciosPorZona && c.serviciosPorZona.length) {
-      var maxZ = Math.max.apply(null, c.serviciosPorZona.map(function(x){return x.total || x.activos || 0})) || 1;
-      c.serviciosPorZona.forEach(function(z){
-        var total = z.total || z.activos || 0;
-        var pctZ = (total/maxZ*100);
-        hc += '<div class="st-bar-wrap"><div class="st-bar-label"><span class="st-bar-name">' + (z.zona||'Sin zona') + '</span><span class="st-bar-val">' + total + '</span></div><div class="st-bar-track"><div class="st-bar-fill" style="width:'+pctZ+'%;background:#6366f1;"></div></div></div>';
-      });
-    } else hc += '<div style="color:#94a3b8;text-align:center;padding:20px;">Sin datos</div>';
-    hc += '</div>';
-
-    hc += '<div class="st-panel"><div class="st-section-title"><i class="fas fa-tachometer-alt"></i> Servicios por Plan</div>';
-    if (c.serviciosPorPlan && c.serviciosPorPlan.length) {
-      var maxP = Math.max.apply(null, c.serviciosPorPlan.map(function(x){return x.total || x.activos || 0})) || 1;
-      c.serviciosPorPlan.forEach(function(p){
-        var total = p.total || p.activos || 0;
-        var pctP = (total/maxP*100);
-        hc += '<div class="st-bar-wrap"><div class="st-bar-label"><span class="st-bar-name">' + (p.plan||'Sin plan') + '</span><span class="st-bar-val">' + total + '</span></div><div class="st-bar-track"><div class="st-bar-fill" style="width:'+pctP+'%;background:#0ea5e9;"></div></div></div>';
-      });
-    } else hc += '<div style="color:#94a3b8;text-align:center;padding:20px;">Sin datos</div>';
-    hc += '</div></div>';
-
-    wrapC.innerHTML = hc;
-  });
+    stLoad();
 }
 
-function stOpenModal(tipo) {
-  stModalType = tipo;
-  stModalPage = 1;
-  document.getElementById('stModalTitle').textContent = tipo.charAt(0).toUpperCase() + tipo.slice(1);
-  document.getElementById('stModalSearch').value = '';
-  document.getElementById('stModal').style.display = 'flex';
-  stLoadDetail(1);
+function stCard(val, label, sub, color, icon, tipo) {
+    var click = tipo ? ' onclick="stOpenModal(\'' + tipo + '\',\'' + label + '\',\'' + color + '\')"' : '';
+    return '<div class="st-card' + (tipo ? ' st-card-click' : '') + '"' + click + '><div class="st-card-inner"><div class="st-card-icon" style="background:' + color + '15;"><i class="fas ' + icon + '" style="color:' + color + ';"></i></div><div class="st-card-text"><div class="st-card-val" style="color:' + color + ';">' + val + '</div><div class="st-card-label">' + label + '</div><div class="st-card-sub">' + sub + '</div></div></div></div>';
+}
+
+function stNum(val, label, color, tipo) {
+    var click = tipo ? ' onclick="stOpenSvcModal(\'' + tipo + '\',\'' + label + '\',\'' + color + '\')"' : '';
+    return '<div class="st-num-card' + (tipo ? ' st-card-click' : '') + '"' + click + '><div class="st-num-val" style="color:' + color + ';">' + val + '</div><div class="st-num-label">' + label + '</div></div>';
+}
+
+function stOpenSvcModal(tipo, label, color) {
+    stModalType = tipo;
+    stModalPage = 1;
+    stModalPerPage = 15;
+    document.getElementById('stModalTitle').textContent = label;
+    document.getElementById('stModalSearch').value = '';
+    document.getElementById('stModal').style.display = 'flex';
+    stLoadSvcDetail(1);
+}
+
+function stLoadSvcDetail(page) {
+    stModalPage = page || 1;
+    var params = '&tipo=' + stModalType + '&page=' + stModalPage + '&per_page=' + stModalPerPage + '&rango=' + (stFilterMode === 'rango' ? 'si' : 'no');
+    if (stFilterMode === 'rango') {
+        params += '&desde=' + document.getElementById('stDesde').value + '&hasta=' + document.getElementById('stHasta').value;
+    } else {
+        var pv = document.getElementById('stPeriodo').value.split('-');
+        params += '&mes=' + pv[0] + '&anio=' + pv[1];
+    }
+    var zona = document.getElementById('stZona').value || 0;
+    params += '&zona=' + zona + '&susp_months=' + stSavedSuspMonths;
+
+    fetch('/modulo?pagina=Estadisticas&ajax=get_services_detail' + params)
+    .then(function(r){return r.json()})
+    .then(function(d){
+        if (d.status !== 'success' && !d.success) {
+            document.getElementById('stModalBody').innerHTML = '<div class="st-loading">Error</div>';
+            document.getElementById('stModalPag').innerHTML = '';
+            return;
+        }
+        var data = d.data || [];
+        var total = d.total || 0;
+        var pages = d.pages || d.total_pages || 1;
+        document.getElementById('stModalTotal').textContent = 'Total: ' + (d.total_count || data.length) + ' registros';
+        var body = document.getElementById('stModalBody');
+        var h = '';
+        for (var i = 0; i < data.length; i++) {
+            var r = data[i];
+            h += '<div class="st-inv-row"><div><div class="st-inv-client">' + (r.cliente_nombre || r.cliente || 'N/A') + '</div><div class="st-inv-nic">' + (r.nic || '') + '</div><div class="st-inv-plan">' + (r.plan_nombre || r.plan || '') + '</div></div><div style="text-align:right;"><div class="st-inv-monto">$' + parseFloat(r.monto || r.precio || 0).toFixed(2) + '</div></div></div>';
+        }
+        body.innerHTML = h || '<div class="st-loading">Sin resultados</div>';
+        var pag = '';
+        if (pages > 1) {
+            pag += '<button class="st-pag-btn" onclick="stLoadSvcDetail(' + (parseInt(stModalPage)-1) + ')" ' + (stModalPage <= 1 ? 'disabled' : '') + '>‹</button>';
+            for (var p = 1; p <= pages && p <= 10; p++) {
+                pag += '<button class="st-pag-btn' + (p === parseInt(stModalPage) ? ' st-pag-active' : '') + '" onclick="stLoadSvcDetail(' + p + ')">' + p + '</button>';
+            }
+            pag += '<button class="st-pag-btn" onclick="stLoadSvcDetail(' + (parseInt(stModalPage)+1) + ')" ' + (stModalPage >= pages ? 'disabled' : '') + '>›</button>';
+        }
+        document.getElementById('stModalPag').innerHTML = pag;
+    });
+}
+
+function stOpenModal(tipo, label, color) {
+    stModalType = tipo;
+    stModalPage = 1;
+    stModalPerPage = 15;
+    document.getElementById('stModalTitle').textContent = label;
+    document.getElementById('stModalSearch').value = '';
+    document.getElementById('stModal').style.display = 'flex';
+    stLoadDetail(1);
 }
 
 function stCloseModal() {
-  document.getElementById('stModal').style.display = 'none';
-  stModalData = [];
+    document.getElementById('stModal').style.display = 'none';
+    stModalData = [];
+    stModalType = '';
 }
 
 function stModalSearchFn() {
-  clearTimeout(stModalTimer);
-  stModalTimer = setTimeout(function(){ stLoadDetail(1); }, 400);
+    stLoadDetail(1);
 }
 
 function stLoadDetail(page) {
-  stModalPage = page || 1;
-  var q = document.getElementById('stModalSearch').value.trim();
-  var orden = document.getElementById('stModalOrden').value;
-  var params = '&tipo=' + stModalType + '&page=' + stModalPage + '&orden=' + orden + '&per_page=' + stModalPerPage;
-  if (q) params += '&q=' + encodeURIComponent(q);
-
-  var pv = document.getElementById('stPeriodo').value.split('-');
-  params += '&mes=' + pv[0] + '&anio=' + pv[1];
-
-  fetch('/modulo?pagina=Estadisticas&ajax=get_invoices_detail' + params)
-  .then(function(r){return r.json()})
-  .then(function(d){
-    if (!d.success) { document.getElementById('stModalBody').innerHTML = '<div class="st-loading">Error</div>'; return; }
-    stModalData = d.data || [];
-    var body = document.getElementById('stModalBody');
-    var totalEl = document.getElementById('stModalTotal');
-    var totalCount = d.total_count || stModalData.length;
-    totalEl.textContent = 'Total: $' + (d.total || 0).toFixed(2) + ' (' + totalCount + ' registros)';
-
-    if (!stModalData.length) {
-      body.innerHTML = '<div class="st-loading">Sin resultados</div>';
-      document.getElementById('stModalPag').innerHTML = '';
-      return;
+    stModalPage = page || 1;
+    var q = document.getElementById('stModalSearch').value.trim();
+    var orden = document.getElementById('stModalOrden').value;
+    var params = '&tipo=' + stModalType + '&page=' + stModalPage + '&orden=' + orden + '&per_page=' + stModalPerPage + '&rango=' + (stFilterMode === 'rango' ? 'si' : 'no');
+    if (q) params += '&q=' + encodeURIComponent(q);
+    if (stFilterMode === 'rango') {
+        params += '&desde=' + document.getElementById('stDesde').value + '&hasta=' + document.getElementById('stHasta').value;
+    } else {
+        var pv = document.getElementById('stPeriodo').value.split('-');
+        params += '&mes=' + pv[0] + '&anio=' + pv[1];
     }
+    var zona = document.getElementById('stZona').value || 0;
+    params += '&zona=' + zona;
 
-    var h = '';
-    stModalData.forEach(function(r){
-      h += '<div class="st-inv-row"><div><div style="font-weight:600;color:#1e293b;">' + (r.cliente_nombre || 'N/A') + '</div><div style="font-size:0.75rem;color:#94a3b8;">' + (r.plan_nombre || r.estado_legible || '') + '</div></div><div style="text-align:right;"><div style="font-weight:700;color:#059669;">$' + parseFloat(r.monto || 0).toFixed(2) + '</div><div style="font-size:0.72rem;color:#64748b;">' + (r.fecha_pago ? new Date(r.fecha_pago).toLocaleDateString('es-DO') : r.created_at ? new Date(r.created_at).toLocaleDateString('es-DO') : '') + '</div></div></div>';
+    fetch('/modulo?pagina=Estadisticas&ajax=get_invoices_detail' + params)
+    .then(function(r){return r.json()})
+    .then(function(d){
+        if (d.status !== 'success' && !d.success) {
+            document.getElementById('stModalBody').innerHTML = '<div class="st-loading">Error</div>';
+            document.getElementById('stModalPag').innerHTML = '';
+            return;
+        }
+        stModalData = d.data || [];
+        var body = document.getElementById('stModalBody');
+        document.getElementById('stModalTotal').textContent = 'Total: $' + (d.total || 0).toFixed(2) + ' (' + (d.total_count || stModalData.length) + ' registros)';
+        if (!stModalData.length) {
+            body.innerHTML = '<div class="st-loading">Sin resultados</div>';
+            document.getElementById('stModalPag').innerHTML = '';
+            return;
+        }
+        var h = '';
+        for (var i = 0; i < stModalData.length; i++) {
+            var r = stModalData[i];
+            h += '<div class="st-inv-row"><div><div class="st-inv-client">' + (r.cliente_nombre || 'N/A') + '</div><div class="st-inv-plan">' + (r.plan_nombre || r.estado_legible || '') + '</div></div><div style="text-align:right;"><div class="st-inv-monto">$' + parseFloat(r.monto || 0).toFixed(2) + '</div><div style="font-size:0.72rem;color:#64748b;">' + (r.fecha_pago ? new Date(r.fecha_pago).toLocaleDateString('es-DO') : r.created_at ? new Date(r.created_at).toLocaleDateString('es-DO') : '') + '</div></div></div>';
+        }
+        body.innerHTML = h;
+        var pages = d.pages || d.total_pages || 1;
+        var pag = '<button class="st-pag-btn" onclick="stLoadDetail(' + (parseInt(stModalPage)-1) + ')" ' + (stModalPage <= 1 ? 'disabled' : '') + '>‹</button>';
+        for (var p = 1; p <= pages && p <= 10; p++) {
+            pag += '<button class="st-pag-btn' + (p === parseInt(stModalPage) ? ' st-pag-active' : '') + '" onclick="stLoadDetail(' + p + ')">' + p + '</button>';
+        }
+        pag += '<button class="st-pag-btn" onclick="stLoadDetail(' + (parseInt(stModalPage)+1) + ')" ' + (stModalPage >= pages ? 'disabled' : '') + '>›</button>';
+        document.getElementById('stModalPag').innerHTML = pag;
     });
-    body.innerHTML = h;
+}
 
-    // Pagination
-    var totalPages = d.pages || d.total_pages || 1;
-    var pag = '<button class="st-pag-btn" onclick="stLoadDetail(' + (stModalPage-1) + ')" ' + (stModalPage <= 1 ? 'disabled' : '') + '>‹</button>';
-    for (var p = 1; p <= totalPages && p <= 10; p++) {
-      pag += '<button class="st-pag-btn' + (p === stModalPage ? ' st-pag-active' : '') + '" onclick="stLoadDetail(' + p + ')">' + p + '</button>';
-    }
-    pag += '<button class="st-pag-btn" onclick="stLoadDetail(' + (stModalPage+1) + ')" ' + (stModalPage >= totalPages ? 'disabled' : '') + '>›</button>';
-    document.getElementById('stModalPag').innerHTML = pag;
-  });
+function stLoad() {
+    var pv = document.getElementById('stPeriodo').value.split('-');
+    var mes = pv[0], anio = pv[1], zona = document.getElementById('stZona').value;
+    var suspMonths = stSavedSuspMonths;
+    var wrapF = document.getElementById('stFinanzasContent');
+    var wrapC = document.getElementById('stClientesContent');
+    wrapF.innerHTML = '<div class="st-loading"><i class="fas fa-spinner fa-spin" style="font-size:1.5rem;margin-bottom:10px;display:block;"></i>Cargando...</div>';
+    wrapC.innerHTML = wrapF.innerHTML;
+
+    var rangoParams = '&mes=' + mes + '&anio=' + anio + '&zona=' + zona + '&susp_months=' + suspMonths + '&mode=' + stCurrentMode;
+    if (stFilterMode === 'rango') rangoParams += '&desde=' + document.getElementById('stDesde').value + '&hasta=' + document.getElementById('stHasta').value;
+
+    var xhrF = new XMLHttpRequest();
+    xhrF.open('GET', '/modulo?pagina=Estadisticas&ajax=get_stats' + rangoParams + '&modo=finanzas');
+    var xhrC = new XMLHttpRequest();
+    xhrC.open('GET', '/modulo?pagina=Estadisticas&ajax=get_stats' + rangoParams + '&modo=clientes');
+    var finResp = null, cliResp = null;
+    function checkDone() {
+        if (!finResp || !cliResp) return;
+        if (finResp.status !== 'success' && !finResp.success) { wrapF.innerHTML = '<div class="st-loading">' + (finResp.msg||'Error') + '</div>'; return; }
+        if (cliResp.status !== 'success' && !cliResp.success) { wrapC.innerHTML = '<div class="st-loading">' + (cliResp.msg||'Error') + '</div>'; return; }
+        var f = finResp.finanzas || finResp;
+        var c = cliResp.clientes || cliResp;
+        var fmt = function(n) { return '$' + parseFloat(n||0).toLocaleString('es-DO', {minimumFractionDigits:2, maximumFractionDigits:2}); };
+        var fmtN = function(n) { return String(parseInt(n||0)).replace(/\B(?=(\d{3})+(?!\d))/g, ','); };
+        var modeLabel = stFilterMode === 'rango' ? 'este rango' : (stCurrentMode === 'mes' ? 'este mes' : 'este ciclo');
+
+        // ===== TAB FINANZAS =====
+        var hf = '<div class="st-grid">';
+        hf += stCard(fmt(f.total_ciclo||0), 'Facturado', 'En ' + modeLabel, '#6366f1', 'fa-file-invoice-dollar', 'facturado');
+        hf += stCard(fmt(f.cobrado_mes||0), 'Cobrado', 'En ' + modeLabel, '#16a34a', 'fa-hand-holding-usd', 'cobrado');
+        hf += stCard(fmt(f.cobrado_hoy||0), 'Cobrado Hoy', new Date().toLocaleDateString('es-DO'), '#8b5cf6', 'fa-calendar-day', 'cobrado_hoy');
+        hf += stCard(fmt(f.pendiente_mes||0), 'Pendiente', 'De ' + modeLabel, '#f59e0b', 'fa-clock', 'pendiente');
+        hf += stCard(fmt(f.total_vencido||0), 'Vencido', 'De ' + modeLabel, '#dc2626', 'fa-exclamation-triangle', 'vencido');
+        hf += stCard(fmt(f.total_gastos||0), 'Gastos', 'De ' + modeLabel, '#7c3aed', 'fa-shopping-cart', null);
+        hf += '</div>';
+
+        // Grafico Cobrado vs Gastos
+        hf += '<div class="st-section"><div class="st-section-title"><i class="fas fa-chart-bar"></i> Ingresos vs Gastos <button onclick="stPrintCobVsGas()" style="margin-left:auto;padding:4px 14px;background:#6366f1;color:#fff;border:none;border-radius:6px;font-size:0.75rem;font-weight:600;cursor:pointer;"><i class="fas fa-print"></i> Imprimir</button></div><div id="stChartCobVsGas">';
+        if (stCurrentMode === 'mes' || stFilterMode === 'rango') {
+            var cob = parseFloat(f.cobrado_mes||0), gas = parseFloat(f.total_gastos||0);
+            var bal = cob - gas, maxV = Math.max(cob, gas, 1);
+            var pctC = Math.round((cob/maxV)*100), pctG = Math.round((gas/maxV)*100);
+            hf += '<div><div style="display:flex;justify-content:space-between;margin-bottom:5px;"><span style="font-size:0.78rem;font-weight:600;color:#16a34a;"><i class="fas fa-hand-holding-usd"></i> Cobrado ($' + parseFloat(cob).toLocaleString('es-DO',{minimumFractionDigits:2}) + ')</span><span style="font-size:0.85rem;font-weight:800;color:#16a34a;">'+pctC+'%</span></div><div style="background:#f0fdf4;border-radius:8px;height:28px;overflow:hidden;"><div style="background:linear-gradient(90deg,#16a34a,#22c55e);height:100%;width:'+Math.max(pctC,2)+'%;border-radius:8px;"></div></div></div>';
+            hf += '<div style="margin-top:10px;"><div style="display:flex;justify-content:space-between;margin-bottom:5px;"><span style="font-size:0.78rem;font-weight:600;color:#7c3aed;"><i class="fas fa-shopping-cart"></i> Gastos ($' + parseFloat(gas).toLocaleString('es-DO',{minimumFractionDigits:2}) + ')</span><span style="font-size:0.85rem;font-weight:800;color:#7c3aed;">'+pctG+'%</span></div><div style="background:#f5f3ff;border-radius:8px;height:28px;overflow:hidden;"><div style="background:linear-gradient(90deg,#7c3aed,#8b5cf6);height:100%;width:'+Math.max(pctG,2)+'%;border-radius:8px;"></div></div></div>';
+            var balColor = bal >= 0 ? '#16a34a' : '#dc2626';
+            hf += '<div style="margin-top:14px;padding-top:12px;border-top:1px solid #e2e8f0;display:flex;justify-content:space-between;"><div><div style="font-size:0.72rem;color:#94a3b8;text-transform:uppercase;">' + (bal >= 0 ? 'Ganancia' : 'Déficit') + '</div><div style="font-size:1.1rem;font-weight:800;color:'+balColor+';">'+fmt(Math.abs(bal))+'</div></div><div style="text-align:right;"><div style="font-size:0.72rem;color:#94a3b8;text-transform:uppercase;">Margen</div><div style="font-size:1.1rem;font-weight:800;color:'+balColor+';">'+ (cob > 0 ? Math.round((bal/cob)*100) : 0) + '%</div></div></div>';
+        } else {
+            var cobCiclo = parseFloat(f.total_ciclo||0), gasDesde = parseFloat(f.gastos_desde||f.total_gastos||0);
+            var balC = cobCiclo - gasDesde, maxVC = Math.max(cobCiclo, gasDesde, 1);
+            hf += '<div>...</div>';
+        }
+        hf += '</div></div>';
+
+        // Cobrado por metodo (hoy)
+        if (f.por_metodo_hoy && f.por_metodo_hoy.length) {
+            hf += '<div class="st-section"><div class="st-section-title"><i class="fas fa-credit-card"></i> Cobrado hoy por m&eacute;todo</div><div class="st-row">';
+            hf += '<div class="st-panel">';
+            for (var i = 0; i < f.por_metodo_hoy.length; i++) {
+                var m = f.por_metodo_hoy[i];
+                var total = parseFloat(m.total||0);
+                var maxMet = Math.max.apply(null, f.por_metodo_hoy.map(function(x){return parseFloat(x.total||0)}));
+                var pctMet = maxMet > 0 ? (total/maxMet*100) : 0;
+                hf += '<div class="st-bar-wrap"><div class="st-bar-label"><span class="st-bar-name"><i class="fas fa-circle" style="color:#0ea5e9;font-size:0.5rem;"></i> ' + (m.metodo||'Otro') + '</span><span class="st-bar-val">$' + total.toLocaleString('es-DO',{minimumFractionDigits:2}) + '</span></div><div class="st-bar-track"><div class="st-bar-fill" style="width:'+pctMet+'%;background:#0ea5e9;"></div></div></div>';
+            }
+            hf += '</div><div class="st-panel"><div class="st-section-title" style="margin-bottom:0;"><i class="fas fa-user"></i> Cobrado hoy por cobrador</div>';
+            if (f.por_cobrador && f.por_cobrador.length) {
+                for (var i = 0; i < f.por_cobrador.length; i++) {
+                    var cob2 = f.por_cobrador[i];
+                    hf += '<div class="st-bar-wrap"><div class="st-bar-label"><span class="st-bar-name">' + (cob2.cobrador||'Admin') + '</span><span class="st-bar-val">$' + parseFloat(cob2.total||0).toLocaleString('es-DO',{minimumFractionDigits:2}) + '</span></div></div>';
+                }
+            } else {
+                hf += '<div style="color:#94a3b8;text-align:center;padding:20px;">Sin datos hoy</div>';
+            }
+            hf += '</div></div></div>';
+        }
+
+        // Cobrado por metodo del ciclo
+        if (f.por_metodo_ciclo && f.por_metodo_ciclo.length) {
+            hf += '<div class="st-section"><div class="st-section-title"><i class="fas fa-chart-pie"></i> Cobrado del ' + modeLabel + ' por m&eacute;todo</div><div class="st-row">';
+            hf += '<div class="st-panel">';
+            for (var i = 0; i < f.por_metodo_ciclo.length; i++) {
+                var m = f.por_metodo_ciclo[i];
+                var total = parseFloat(m.total||0);
+                var maxMet = Math.max.apply(null, f.por_metodo_ciclo.map(function(x){return parseFloat(x.total||0)}));
+                var pctMet = maxMet > 0 ? (total/maxMet*100) : 0;
+                hf += '<div class="st-bar-wrap"><div class="st-bar-label"><span class="st-bar-name"><i class="fas fa-circle" style="color:#f59e0b;font-size:0.5rem;"></i> ' + (m.metodo||'Otro') + '</span><span class="st-bar-val">$' + total.toLocaleString('es-DO',{minimumFractionDigits:2}) + ' (' + m.cantidad + ')</span></div><div class="st-bar-track"><div class="st-bar-fill" style="width:'+pctMet+'%;background:#f59e0b;"></div></div></div>';
+            }
+            hf += '</div><div class="st-panel"><div class="st-section-title" style="margin-bottom:0;"><i class="fas fa-user-tie"></i> Cobrado del ' + modeLabel + ' por cobrador</div>';
+            if (f.por_cobrador && f.por_cobrador.length) {
+                for (var i = 0; i < f.por_cobrador.length; i++) {
+                    var cob2 = f.por_cobrador[i];
+                    var btnE = '<span style="cursor:pointer;color:#6366f1;font-size:0.7rem;" onclick="stOpenPrintCobrador(\'' + (cob2.cobrador||'') + '\')" title="Imprimir"><i class="fas fa-print"></i></span>';
+                    hf += '<div class="st-bar-wrap"><div class="st-bar-label"><span class="st-bar-name">' + (cob2.cobrador||'Admin') + ' ' + btnE + '</span><span class="st-bar-val">$' + parseFloat(cob2.total||0).toLocaleString('es-DO',{minimumFractionDigits:2}) + ' (' + (cob2.cantidad||0) + ')</span></div></div>';
+                }
+            } else {
+                hf += '<div style="color:#94a3b8;text-align:center;padding:20px;">Sin datos</div>';
+            }
+            hf += '</div></div></div>';
+        }
+
+        wrapF.innerHTML = hf;
+
+        // ===== TAB CLIENTES =====
+        var hc = '';
+        hc += '<div style="margin-bottom:14px;display:flex;align-items:center;gap:8px;font-size:0.85rem;color:#475569;position:relative;">';
+        hc += '<span>Mostrar suspendidos con m&aacute;s de</span><select class="st-select" id="stSuspMonths" style="width:70px;padding:4px 6px;" onchange="stSavedSuspMonths=parseInt(this.value);stLoad()"><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="6">6</option><option value="12">12</option></select><span>mes(es)</span>';
+        hc += '</div>';
+
+        hc += '<div class="st-num-grid">';
+        hc += stNum(c.activos||0, 'Activos', '#16a34a', 'activos');
+        hc += stNum(c.suspendidos||0, 'Suspendidos', '#f59e0b', 'suspendidos');
+        hc += stNum(c.suspended_over||0, 'Susp. >' + suspMonths + 'm', '#dc2626', 'suspendidos_largos');
+        hc += stNum(c.instalados_anio||0, 'Nuevos (año)', '#6366f1', 'nuevos_anio');
+        hc += stNum(c.instalados_mes||0, 'Nuevos (mes)', '#0ea5e9', 'nuevos_mes');
+        hc += stNum(c.suspendidos_mes||0, 'Susp. (mes)', '#f59e0b', 'suspendidos_mes');
+        hc += stNum(c.reactivados_mes||0, 'Reactivados', '#8b5cf6', 'reactivados_mes');
+        hc += stNum(c.retirados_mes||0, 'Retirados (mes)', '#dc2626', 'retirados_mes');
+        hc += '</div>';
+
+        // Grafico 12 meses
+        if (c.por_mes && c.por_mes.length) {
+            hc += '<div class="st-section"><div class="st-section-title"><i class="fas fa-chart-bar"></i> Instalaciones (12 meses)</div>';
+            var maxM = Math.max.apply(null, c.por_mes.map(function(x){return parseInt(x.total)})) || 1;
+            hc += '<div class="st-chart">';
+            for (var i = 0; i < c.por_mes.length; i++) {
+                var pct2 = Math.max((parseInt(c.por_mes[i].total) / maxM * 100), 2);
+                hc += '<div class="st-chart-bar" style="height:' + pct2 + '%;background:#0ea5e9;" data-tip="' + mesesNombres[parseInt(c.por_mes[i].mes)] + ': ' + c.por_mes[i].total + '"></div>';
+            }
+            hc += '</div><div class="st-chart-labels">';
+            for (var i = 0; i < c.por_mes.length; i++) {
+                hc += '<span>' + mesesNombres[parseInt(c.por_mes[i].mes)].substring(0,3) + '</span>';
+            }
+            hc += '</div></div>';
+        }
+
+        // Nuevos por zona + Top planes
+        hc += '<div class="st-row">';
+        hc += '<div class="st-panel"><div class="st-section-title"><i class="fas fa-map-marker-alt"></i> Nuevos por Zona</div>';
+        if (c.por_zona && c.por_zona.length) {
+            var maxZ = Math.max.apply(null, c.por_zona.map(function(x){return parseInt(x.total)})) || 1;
+            for (var i = 0; i < c.por_zona.length; i++) {
+                var z = c.por_zona[i];
+                var pctZ = (parseInt(z.total)/maxZ*100);
+                hc += '<div class="st-bar-wrap"><div class="st-bar-label"><span class="st-bar-name">' + (z.zona_nombre||'Sin zona') + '</span><span class="st-bar-val">' + z.total + '</span></div><div class="st-bar-track"><div class="st-bar-fill" style="width:'+pctZ+'%;background:#6366f1;"></div></div></div>';
+            }
+        } else hc += '<div style="color:#94a3b8;text-align:center;padding:20px;">Sin datos</div>';
+        hc += '</div>';
+        hc += '<div class="st-panel"><div class="st-section-title"><i class="fas fa-tachometer-alt"></i> Top Planes</div>';
+        if (f.planes_top && f.planes_top.length) {
+            var maxP = Math.max.apply(null, f.planes_top.map(function(x){return parseInt(x.total)})) || 1;
+            for (var i = 0; i < f.planes_top.length; i++) {
+                var p = f.planes_top[i];
+                var pctP = (parseInt(p.total)/maxP*100);
+                hc += '<div class="st-bar-wrap"><div class="st-bar-label"><span class="st-bar-name">' + (p.plan_nombre||'Sin plan') + '</span><span class="st-bar-val">' + p.total + '</span></div><div class="st-bar-track"><div class="st-bar-fill" style="width:'+pctP+'%;background:#0ea5e9;"></div></div></div>';
+            }
+        } else hc += '<div style="color:#94a3b8;text-align:center;padding:20px;">Sin datos</div>';
+        hc += '</div></div>';
+
+        wrapC.innerHTML = hc;
+    };
+    xhrF.onload = function() { try { finResp = JSON.parse(xhrF.responseText); } catch(e) { wrapF.innerHTML = 'Error'; } checkDone(); };
+    xhrC.onload = function() { try { cliResp = JSON.parse(xhrC.responseText); } catch(e) { wrapC.innerHTML = 'Error'; } checkDone(); };
+    xhrF.send();
+    xhrC.send();
 }
 
 stLoad();
