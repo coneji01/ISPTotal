@@ -1,0 +1,476 @@
+<div class="page-header" style="max-width:800px;margin:0 auto;padding:20px 10px;">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:25px;">
+    <div>
+      <h2 style="margin:0;font-size:1.3rem;color:var(--text-dark);display:flex;align-items:center;gap:10px;">
+        <i class="fas fa-sliders-h" style="color:var(--accent);"></i> Presets del Sistema
+      </h2>
+      <div style="font-size:0.85rem;color:var(--text-gray);margin-top:2px;">Opciones y comportamientos automáticos</div>
+    </div>
+    <a href="/modulo?pagina=Configuracion" class="btn" style="background:var(--text-gray);color:#fff;text-decoration:none;padding:8px 16px;border-radius:6px;border:none;font-size:0.82rem;font-weight:600;display:inline-flex;align-items:center;gap:5px;">
+      <i class="fas fa-arrow-left"></i> Volver
+    </a>
+  </div>
+
+  <!-- 1. Cobrar Instalaciones -->
+  <div class="pre-card active" id="card_cobrar">
+    <div class="pre-row">
+      <div class="pre-row-left">
+        <div class="pre-icon" style="background:#fef3c7;color:#b45309;"><i class="fas fa-tools"></i></div>
+        <div>
+          <div class="pre-label">Cobrar instalaciones</div>
+          <div class="pre-desc">Agregar cargo de instalación a nuevos clientes</div>
+        </div>
+      </div>
+      <label class="pre-toggle">
+        <input type="checkbox" checked onchange="togglePreset('cobrar_instalacion',this.checked,'card_cobrar')">
+        <span class="slider"></span>
+      </label>
+    </div>
+    <div class="pre-expand">
+      <div class="pre-expand-inner">
+        <div class="pre-field">
+          <label>Precio de instalación ($)</label>
+          <input type="number" id="val_precio_instalacion" value="1000" min="0" step="0.01" placeholder="0.00" onchange="savePresetValue('precio_instalacion',this.value,this)">
+          <span class="pre-saved" id="saved_precio_instalacion"><i class="fas fa-check"></i> Guardado</span>
+        </div>
+        <div class="pre-field">
+          <label>Zonas que aplican</label>
+          <div class="pre-zonas-box" id="zonasBox_instalacion">
+            <label class="pre-zona-chip all selected">
+              <input type="checkbox" checked onchange="toggleZonaAll('instalacion',this)"> Todas
+            </label>
+            <% if (typeof zonas !== 'undefined' && zonas) { zonas.forEach(function(z) { %>
+            <label class="pre-zona-chip selected">
+              <input type="checkbox" value="<%= z.id %>" checked onchange="saveZonas('instalacion')"> <%= z.nombre %>
+            </label>
+            <% }); } %>
+          </div>
+          <span class="pre-saved" id="saved_zonas_instalacion"><i class="fas fa-check"></i> Guardado</span>
+        </div>
+        <div class="pre-field" style="margin-top:12px;">
+          <label style="display:flex;align-items:center;gap:10px;cursor:pointer;">
+            <input type="checkbox" checked onchange="togglePreset('pagar_despues',this.checked,null)" style="width:18px;height:18px;accent-color:#f59e0b;">
+            <span style="font-weight:600;color:var(--text-dark);">Permitir pagar después</span>
+          </label>
+          <small style="color:var(--text-gray);margin-top:4px;display:block;">Si está deshabilitado, el cliente solo podrá pagar al contado al momento del registro.</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 1b. Cobrar Traslados -->
+  <div class="pre-card active" id="card_cobrar_traslado">
+    <div class="pre-row">
+      <div class="pre-row-left">
+        <div class="pre-icon" style="background:#ede9fe;color:#7c3aed;"><i class="fas fa-truck-moving"></i></div>
+        <div>
+          <div class="pre-label">Cobrar traslados</div>
+          <div class="pre-desc">Agregar cargo por traslado de servicio a clientes</div>
+        </div>
+      </div>
+      <label class="pre-toggle">
+        <input type="checkbox" checked onchange="togglePreset('cobrar_traslado',this.checked,'card_cobrar_traslado')">
+        <span class="slider"></span>
+      </label>
+    </div>
+    <div class="pre-expand">
+      <div class="pre-expand-inner">
+        <div class="pre-field">
+          <label>Precio de traslado ($)</label>
+          <input type="number" id="val_precio_traslado" value="500" min="0" step="0.01" placeholder="0.00" onchange="savePresetValue('precio_traslado',this.value,this)">
+          <span class="pre-saved" id="saved_precio_traslado"><i class="fas fa-check"></i> Guardado</span>
+        </div>
+        <div class="pre-field">
+          <label>Zonas que aplican</label>
+          <div class="pre-zonas-box" id="zonasBox_traslado">
+            <label class="pre-zona-chip all selected">
+              <input type="checkbox" checked onchange="toggleZonaAll('traslado',this)"> Todas
+            </label>
+            <% if (typeof zonas !== 'undefined' && zonas) { zonas.forEach(function(z) { %>
+            <label class="pre-zona-chip selected">
+              <input type="checkbox" value="<%= z.id %>" checked onchange="saveZonas('traslado')"> <%= z.nombre %>
+            </label>
+            <% }); } %>
+          </div>
+          <span class="pre-saved" id="saved_zonas_traslado"><i class="fas fa-check"></i> Guardado</span>
+        </div>
+        <div class="pre-field" style="margin-top:12px;">
+          <label style="display:flex;align-items:center;gap:10px;cursor:pointer;">
+            <input type="checkbox" checked onchange="togglePreset('pagar_despues_traslado',this.checked,null)" style="width:18px;height:18px;accent-color:#7c3aed;">
+            <span style="font-weight:600;color:var(--text-dark);">Permitir pagar después</span>
+          </label>
+          <small style="color:var(--text-gray);margin-top:4px;display:block;">Si está deshabilitado, el cliente solo podrá pagar al contado al momento del traslado.</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Productos de venta en factura -->
+  <div class="pre-card" id="card_productos_venta">
+    <div class="pre-row">
+      <div class="pre-row-left">
+        <div class="pre-icon" style="background:#dcfce7;color:#16a34a;"><i class="fas fa-shopping-cart"></i></div>
+        <div>
+          <div class="pre-label">Productos de venta en factura</div>
+          <div class="pre-desc">Permitir agregar productos del inventario (marcados como venta) a las facturas del cliente</div>
+        </div>
+      </div>
+      <label class="pre-toggle">
+        <input type="checkbox" onchange="togglePreset('productos_venta_factura',this.checked,'card_productos_venta')">
+        <span class="slider"></span>
+      </label>
+    </div>
+  </div>
+
+  <!-- Vender a todos -->
+  <div class="pre-card" id="card_vender_a_todos">
+    <div class="pre-row">
+      <div class="pre-row-left">
+        <div class="pre-icon" style="background:#fef3c7;color:#d97706;"><i class="fas fa-store"></i></div>
+        <div>
+          <div class="pre-label">Vender a todos</div>
+          <div class="pre-desc">Si está habilitado se podrá vender también a personas que no son clientes los productos del inventario (marcados como venta)</div>
+        </div>
+      </div>
+      <label class="pre-toggle">
+        <input type="checkbox" onchange="togglePreset('vender_a_todos',this.checked,'card_vender_a_todos')">
+        <span class="slider"></span>
+      </label>
+    </div>
+  </div>
+
+  <!-- Tipos de Ordenes -->
+  <div class="pre-card active" id="card_tipos_ordenes">
+    <div class="pre-row">
+      <div class="pre-row-left">
+        <div class="pre-icon" style="background:#dbeafe;color:#1d4ed8;"><i class="fas fa-list-alt"></i></div>
+        <div>
+          <div class="pre-label">Tipos de órdenes</div>
+          <div class="pre-desc">Tipos disponibles al crear órdenes de servicio</div>
+        </div>
+      </div>
+    </div>
+    <div class="pre-expand" style="display:block;">
+      <div class="pre-expand-inner">
+        <div class="pre-field">
+          <label>Agregar tipo de orden</label>
+          <div style="display:flex;gap:8px;">
+            <input type="text" id="nuevoTipoOrden" class="form-control" placeholder="Ej: FIBRA ROTA" style="flex:1;text-transform:uppercase;" oninput="this.value=this.value.toUpperCase()">
+            <button class="pre-btn pre-btn-primary" onclick="addTipoOrden()"><i class="fas fa-plus"></i> Añadir</button>
+          </div>
+        </div>
+        <div id="tiposOrdenesList" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;">
+          <span class="pre-tipo-chip" data-tipo="SIN SERVICIO">
+            SIN SERVICIO <button onclick="removeTipoOrden(this.parentElement.dataset.tipo,this.parentElement)" title="Eliminar"><i class="fas fa-times"></i></button>
+          </span>
+          <span class="pre-tipo-chip" data-tipo="FIBRA ROTA">
+            FIBRA ROTA <button onclick="removeTipoOrden(this.parentElement.dataset.tipo,this.parentElement)" title="Eliminar"><i class="fas fa-times"></i></button>
+          </span>
+          <span class="pre-tipo-chip" data-tipo="LENTITUD">
+            LENTITUD <button onclick="removeTipoOrden(this.parentElement.dataset.tipo,this.parentElement)" title="Eliminar"><i class="fas fa-times"></i></button>
+          </span>
+          <span class="pre-tipo-chip" data-tipo="INTERMITENCIA">
+            INTERMITENCIA <button onclick="removeTipoOrden(this.parentElement.dataset.tipo,this.parentElement)" title="Eliminar"><i class="fas fa-times"></i></button>
+          </span>
+          <span class="pre-tipo-chip" data-tipo="ONU/ROUTER NO ENCIENDE">
+            ONU/ROUTER NO ENCIENDE <button onclick="removeTipoOrden(this.parentElement.dataset.tipo,this.parentElement)" title="Eliminar"><i class="fas fa-times"></i></button>
+          </span>
+          <span class="pre-tipo-chip" data-tipo="TRASLADO">
+            TRASLADO <button onclick="removeTipoOrden(this.parentElement.dataset.tipo,this.parentElement)" title="Eliminar"><i class="fas fa-times"></i></button>
+          </span>
+          <span class="pre-tipo-chip" data-tipo="CAMBIO DE CLAVE WIFI">
+            CAMBIO DE CLAVE WIFI <button onclick="removeTipoOrden(this.parentElement.dataset.tipo,this.parentElement)" title="Eliminar"><i class="fas fa-times"></i></button>
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Métodos de Pago -->
+  <div class="pre-card active" id="card_metodos_pago">
+    <div class="pre-row">
+      <div class="pre-row-left">
+        <div class="pre-icon" style="background:#dcfce7;color:#15803d;"><i class="fas fa-credit-card"></i></div>
+        <div>
+          <div class="pre-label">Métodos de pago</div>
+          <div class="pre-desc">Métodos disponibles al registrar un pago</div>
+        </div>
+      </div>
+    </div>
+    <div class="pre-expand" style="display:block;">
+      <div class="pre-expand-inner">
+        <div class="pre-field">
+          <label>Agregar método de pago</label>
+          <div style="display:flex;gap:8px;">
+            <input type="text" id="nuevoMetodoPago" class="form-control" placeholder="Ej: TRANSFERENCIA" style="flex:1;text-transform:uppercase;" oninput="this.value=this.value.toUpperCase()">
+            <button class="pre-btn" style="background:#15803d;color:#fff;" onclick="addMetodoPago()"><i class="fas fa-plus"></i> Añadir</button>
+          </div>
+        </div>
+        <div id="metodosPagoList" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;">
+          <span class="pre-metodo-chip" data-metodo="TARJETA">
+            TARJETA <button onclick="removeMetodoPago(this.parentElement.dataset.metodo,this.parentElement)" title="Eliminar"><i class="fas fa-times"></i></button>
+          </span>
+          <span class="pre-metodo-chip" data-metodo="RECOGER EN CASA">
+            RECOGER EN CASA <button onclick="removeMetodoPago(this.parentElement.dataset.metodo,this.parentElement)" title="Eliminar"><i class="fas fa-times"></i></button>
+          </span>
+          <span class="pre-metodo-chip" data-metodo="OFICINA">
+            OFICINA <button onclick="removeMetodoPago(this.parentElement.dataset.metodo,this.parentElement)" title="Eliminar"><i class="fas fa-times"></i></button>
+          </span>
+          <span class="pre-metodo-chip" data-metodo="BANRESERVAS">
+            BANRESERVAS <button onclick="removeMetodoPago(this.parentElement.dataset.metodo,this.parentElement)" title="Eliminar"><i class="fas fa-times"></i></button>
+          </span>
+          <span class="pre-metodo-chip" data-metodo="POPULAR">
+            POPULAR <button onclick="removeMetodoPago(this.parentElement.dataset.metodo,this.parentElement)" title="Eliminar"><i class="fas fa-times"></i></button>
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Imprimir Contrato -->
+  <div class="pre-card active" id="card_contrato">
+    <div class="pre-row">
+      <div class="pre-row-left">
+        <div class="pre-icon" style="background:#fce7f3;color:#be185d;"><i class="fas fa-file-contract"></i></div>
+        <div>
+          <div class="pre-label">Imprimir contrato a nuevos clientes</div>
+          <div class="pre-desc">Generar contrato automáticamente al registrar un cliente</div>
+        </div>
+      </div>
+      <label class="pre-toggle">
+        <input type="checkbox" checked onchange="togglePreset('imprimir_contrato',this.checked,'card_contrato')">
+        <span class="slider"></span>
+      </label>
+    </div>
+  </div>
+
+  <!-- Imprimir Orden -->
+  <div class="pre-card active" id="card_orden">
+    <div class="pre-row">
+      <div class="pre-row-left">
+        <div class="pre-icon" style="background:#d1fae5;color:#047857;"><i class="fas fa-clipboard-check"></i></div>
+        <div>
+          <div class="pre-label">Imprimir órdenes a técnicos</div>
+          <div class="pre-desc">Generar orden de instalación imprimible al crear una orden</div>
+        </div>
+      </div>
+      <label class="pre-toggle">
+        <input type="checkbox" checked onchange="togglePreset('imprimir_orden',this.checked,'card_orden')">
+        <span class="slider"></span>
+      </label>
+    </div>
+  </div>
+
+  <!-- Notificar ordenes a tecnicos -->
+  <div class="pre-card active" id="card_notificar_ordenes">
+    <div class="pre-row">
+      <div class="pre-row-left">
+        <div class="pre-icon" style="background:#ede9fe;color:#7c3aed;"><i class="fas fa-bell"></i></div>
+        <div>
+          <div class="pre-label">Notificar órdenes a técnicos</div>
+          <div class="pre-desc">Enviar mensaje (WhatsApp/SMS) al técnico al asignarle o crearle una orden</div>
+        </div>
+      </div>
+      <label class="pre-toggle">
+        <input type="checkbox" checked onchange="togglePreset('notificar_ordenes',this.checked,'card_notificar_ordenes')">
+        <span class="slider"></span>
+      </label>
+    </div>
+  </div>
+
+  <!-- Mensaje Bienvenida -->
+  <div class="pre-card active" id="card_bienvenida">
+    <div class="pre-row">
+      <div class="pre-row-left">
+        <div class="pre-icon" style="background:#ede9fe;color:#6d28d9;"><i class="fas fa-comment-dots"></i></div>
+        <div>
+          <div class="pre-label">Enviar mensaje de bienvenida</div>
+          <div class="pre-desc">Enviar mensaje automático al registrar un nuevo cliente</div>
+        </div>
+      </div>
+      <label class="pre-toggle">
+        <input type="checkbox" checked onchange="togglePreset('mensaje_bienvenida',this.checked,'card_bienvenida')">
+        <span class="slider"></span>
+      </label>
+    </div>
+  </div>
+
+  <!-- Prefijo SSID -->
+  <div class="pre-card" id="card_prefijo_ssid">
+    <div class="pre-row">
+      <div class="pre-row-left">
+        <div class="pre-icon" style="background:#dbeafe;color:#1d4ed8;"><i class="fas fa-wifi"></i></div>
+        <div>
+          <div class="pre-label">Prefijo SSID</div>
+          <div class="pre-desc">Prefijo en SSID al autorizar ONU</div>
+        </div>
+      </div>
+      <label class="pre-toggle">
+        <input type="checkbox" onchange="togglePreset('prefijo_ssid',this.checked,'card_prefijo_ssid')">
+        <span class="slider"></span>
+      </label>
+    </div>
+    <div class="pre-expand">
+      <div class="pre-expand-inner">
+        <div class="pre-field">
+          <label>Prefijo</label>
+          <input type="text" id="val_prefijo_ssid" value="" placeholder="Ej: MIEMPRESA-" maxlength="32" onchange="savePresetValue('prefijo_ssid',this.value,this)">
+          <span class="pre-saved" id="saved_prefijo_ssid"><i class="fas fa-check"></i> Guardado</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.pre-container{max-width:800px;margin:0 auto;padding:20px 10px;}
+.pre-card{
+  background:var(--bg-card);border:1px solid var(--border-color);border-radius:10px;
+  margin-bottom:12px;overflow:hidden;transition:box-shadow 0.2s;
+}
+.pre-card:hover{box-shadow:0 2px 8px rgba(0,0,0,0.04);}
+.pre-card.active{border-color:#c4b5fd;}
+.pre-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 20px;cursor:default;
+}
+.pre-row-left{display:flex;align-items:center;gap:14px;flex:1;}
+.pre-icon{width:38px;height:38px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;}
+.pre-label{font-weight:600;font-size:0.92rem;color:var(--text-dark);}
+.pre-desc{font-size:0.78rem;color:var(--text-gray);margin-top:2px;}
+.pre-toggle{position:relative;width:46px;height:26px;flex-shrink:0;}
+.pre-toggle input{opacity:0;width:0;height:0;}
+.pre-toggle .slider{
+  position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;
+  background:#cbd5e1;border-radius:26px;transition:0.25s;
+}
+.pre-toggle .slider:before{
+  content:'';position:absolute;height:20px;width:20px;left:3px;bottom:3px;
+  background:white;border-radius:50%;transition:0.25s;
+  box-shadow:0 1px 3px rgba(0,0,0,0.15);
+}
+.pre-toggle input:checked+.slider{background:#8b5cf6;}
+.pre-toggle input:checked+.slider:before{transform:translateX(20px);}
+.pre-expand{display:none;padding:0 20px 16px;border-top:1px solid var(--border-color);}
+.pre-card.active .pre-expand{display:block;}
+.pre-expand-inner{padding-top:14px;}
+.pre-field{margin-bottom:12px;}
+.pre-field label{font-size:0.82rem;font-weight:600;color:var(--text-dark);margin-bottom:4px;display:block;}
+.pre-field input,.pre-field select{
+  width:100%;padding:9px 12px;border:1px solid var(--border-color);border-radius:6px;
+  font-size:0.88rem;box-sizing:border-box;transition:border-color 0.15s;
+}
+.pre-field input:focus,.pre-field select:focus{outline:none;border-color:#8b5cf6;box-shadow:0 0 0 3px rgba(139,92,246,0.1);}
+.pre-field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.pre-field-row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+.pre-btn{padding:8px 16px;border-radius:6px;border:none;font-size:0.82rem;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:5px;transition:background 0.15s;}
+.pre-btn-primary{background:#8b5cf6;color:#fff;}
+.pre-btn-primary:hover{background:#7c3aed;}
+.pre-saved{display:inline-block;font-size:0.75rem;color:#16a34a;font-weight:600;margin-left:8px;opacity:0;transition:opacity 0.3s;}
+.pre-saved.show{opacity:1;}
+.pre-zonas-box{display:flex;flex-wrap:wrap;gap:6px;padding:10px;background:var(--bg-body);border:1px solid var(--border-color);border-radius:8px;}
+.pre-zona-chip{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:20px;font-size:0.82rem;font-weight:500;color:#475569;background:#fff;border:1px solid var(--border-color);cursor:pointer;transition:all 0.15s;user-select:none;}
+.pre-zona-chip input{display:none;}
+.pre-zona-chip.selected{background:#ede9fe;color:#7c3aed;border-color:#c4b5fd;font-weight:600;}
+.pre-zona-chip.all.selected{background:#fef3c7;color:#b45309;border-color:#fbbf24;}
+.pre-zona-chip:hover{border-color:#8b5cf6;}
+.pre-tipo-chip{
+  display:inline-flex;align-items:center;gap:6px;padding:6px 12px;
+  background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;border-radius:20px;
+  font-size:0.82rem;font-weight:600;
+}
+.pre-tipo-chip button{
+  background:none;border:none;color:#93c5fd;cursor:pointer;font-size:1.1rem;font-weight:700;
+  line-height:1;padding:0 2px;
+}
+.pre-tipo-chip button:hover{color:#ef4444;}
+.pre-metodo-chip{
+  display:inline-flex;align-items:center;gap:6px;padding:6px 12px;
+  background:#f0fdf4;color:#15803d;border:1px solid #bbf7d0;border-radius:20px;
+  font-size:0.82rem;font-weight:600;
+}
+.pre-metodo-chip button{
+  background:none;border:none;color:#86efac;cursor:pointer;font-size:1.1rem;font-weight:700;
+  line-height:1;padding:0 2px;
+}
+.pre-metodo-chip button:hover{color:#ef4444;}
+@media(max-width:640px){
+  .pre-field-row,.pre-field-row3{grid-template-columns:1fr;}
+}
+</style>
+
+<script>
+var preBase = '/modulo?pagina=Presets';
+
+function togglePreset(key,active,cardId){
+  if(cardId){var card=document.getElementById(cardId);if(card){if(active)card.classList.add('active');else card.classList.remove('active');}}
+  var fd=new FormData();fd.append('key',key);fd.append('active',active?1:0);
+  fetch(preBase+'&ajax=toggle_preset',{method:'POST',body:fd}).then(r=>r.json()).then(d=>{if(d.status!=='success')showPreToast(d.msg||'Error','error');});
+}
+function savePresetValue(key,value,el){
+  var fd=new FormData();fd.append('key',key);fd.append('value',value);
+  fetch(preBase+'&ajax=save_preset_value',{method:'POST',body:fd}).then(r=>r.json()).then(d=>{
+    if(d.status==='success'){var s=document.getElementById('saved_'+key);if(s){s.classList.add('show');setTimeout(()=>s.classList.remove('show'),2000);}}
+    else showPreToast(d.msg||'Error','error');
+  });
+}
+function addTipoOrden(){
+  var inp=document.getElementById('nuevoTipoOrden'),val=inp.value.trim().toUpperCase();
+  if(!val){showPreToast('Escriba un tipo de orden','error');return;}
+  var chips=document.querySelectorAll('#tiposOrdenesList .pre-tipo-chip'),cur=[];
+  chips.forEach(function(c){cur.push(c.dataset.tipo);});
+  if(cur.includes(val)){showPreToast('Este tipo ya existe','error');return;}
+  cur.push(val);savePresetValue('tipos_ordenes',cur.join(','),null);
+  var chip=document.createElement('span');chip.className='pre-tipo-chip';chip.dataset.tipo=val;
+  chip.innerHTML=val+' <button onclick="removeTipoOrden(this.parentElement.dataset.tipo,this.parentElement)" title="Eliminar"><i class="fas fa-times"></i></button>';
+  document.getElementById('tiposOrdenesList').appendChild(chip);inp.value='';showPreToast('Tipo agregado','success');
+}
+function removeTipoOrden(tipo,chipEl){
+  var chips=document.querySelectorAll('#tiposOrdenesList .pre-tipo-chip'),cur=[];
+  chips.forEach(function(c){if(c.dataset.tipo!==tipo)cur.push(c.dataset.tipo);});
+  savePresetValue('tipos_ordenes',cur.join(','),null);chipEl.remove();showPreToast('Tipo eliminado','success');
+}
+function addMetodoPago(){
+  var inp=document.getElementById('nuevoMetodoPago'),val=inp.value.trim().toUpperCase();
+  if(!val){showPreToast('Escriba un método de pago','error');return;}
+  var chips=document.querySelectorAll('#metodosPagoList .pre-metodo-chip'),cur=[];
+  chips.forEach(function(c){cur.push(c.dataset.metodo);});
+  if(cur.includes(val)){showPreToast('Este método ya existe','error');return;}
+  cur.push(val);savePresetValue('metodos_pago',cur.join(','),null);
+  var chip=document.createElement('span');chip.className='pre-metodo-chip';chip.dataset.metodo=val;
+  chip.innerHTML=val+' <button onclick="removeMetodoPago(this.parentElement.dataset.metodo,this.parentElement)" title="Eliminar"><i class="fas fa-times"></i></button>';
+  document.getElementById('metodosPagoList').appendChild(chip);inp.value='';showPreToast('Método agregado','success');
+}
+function removeMetodoPago(metodo,chipEl){
+  var chips=document.querySelectorAll('#metodosPagoList .pre-metodo-chip'),cur=[];
+  chips.forEach(function(c){if(c.dataset.metodo!==metodo)cur.push(c.dataset.metodo);});
+  savePresetValue('metodos_pago',cur.join(','),null);chipEl.remove();showPreToast('Método eliminado','success');
+}
+function esc(s){if(!s)return '';var d=document.createElement('div');d.textContent=s;return d.innerHTML;}
+function showPreToast(msg,type){
+  var t=document.createElement('div');
+  t.style.cssText='position:fixed;top:20px;right:20px;z-index:99999;padding:12px 20px;border-radius:8px;font-size:0.88rem;font-weight:600;color:#fff;box-shadow:0 4px 15px rgba(0,0,0,0.15);transition:opacity 0.3s;display:flex;align-items:center;gap:8px;';
+  t.style.background=type==='success'?'#16a34a':'#dc2626';
+  var icon=type==='success'?'fa-check-circle':'fa-exclamation-circle';
+  t.innerHTML='<i class="fas '+icon+'"></i> '+msg;
+  document.body.appendChild(t);
+  setTimeout(function(){t.style.opacity='0';setTimeout(function(){t.remove();},300);},3000);
+}
+function toggleZonaAll(tipo,el){
+  var box=document.getElementById('zonasBox_'+tipo),chips=box.querySelectorAll('.pre-zona-chip:not(.all) input');
+  chips.forEach(function(c){c.checked=el.checked;c.parentElement.classList.toggle('selected',el.checked);});
+  el.parentElement.classList.toggle('selected',el.checked);saveZonas(tipo);
+}
+function saveZonas(tipo){
+  var box=document.getElementById('zonasBox_'+tipo),allChk=box.querySelector('.pre-zona-chip.all input'),chips=box.querySelectorAll('.pre-zona-chip:not(.all) input');
+  chips.forEach(function(c){c.parentElement.classList.toggle('selected',c.checked);});
+  var total=chips.length,checked=box.querySelectorAll('.pre-zona-chip:not(.all) input:checked').length;
+  allChk.checked=(checked===total);allChk.parentElement.classList.toggle('selected',checked===total);
+  var value;if(checked===total||checked===0){value='all';}
+  else{var ids=[];chips.forEach(function(c){if(c.checked)ids.push(parseInt(c.value));});value=JSON.stringify(ids);}
+  savePresetValue('zonas_'+tipo,value,null);
+  var saved=document.getElementById('saved_zonas_'+tipo);
+  if(saved){saved.classList.add('show');setTimeout(()=>saved.classList.remove('show'),2000);}
+}
+</script>
+</div>

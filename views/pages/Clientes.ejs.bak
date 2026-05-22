@@ -1,0 +1,1027 @@
+<div class="page-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:10px;">
+  <h2 style="margin:0; font-size:1.4rem; color:#1e293b;"><i class="fas fa-users"></i> Gestión de Clientes</h2>
+  <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+    <button class="btn btn-primary btn-sm" onclick="abrirModalInformal()" style="background:linear-gradient(135deg,#6366f1,#8b5cf6); border:none; border-radius:8px; padding:7px 16px; font-size:0.85rem; font-weight:600; transition:all 0.2s;">
+      <i class="fas fa-user-plus"></i> Nuevo Informal
+    </button>
+    <button class="btn btn-secondary btn-sm" onclick="abrirModalNuevo()" style="border-radius:8px; padding:7px 14px; font-size:0.85rem;">
+      <i class="fas fa-user-tie"></i> Nuevo Cliente
+    </button>
+    <button class="btn btn-secondary btn-sm" onclick="exportarLista()" style="border-radius:8px; padding:7px 14px; font-size:0.85rem;">
+      <i class="fas fa-print"></i> Imprimir PDF
+    </button>
+  </div>
+</div>
+
+<!-- Filter pills -->
+<div class="card" style="margin-bottom:16px; border-radius:12px; box-shadow:0 1px 4px rgba(0,0,0,0.06);">
+  <div class="card-body" style="padding:14px 18px;">
+    <div class="filters" style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+      <!-- Status pills -->
+      <div class="status-pills" style="display:flex; gap:4px; background:#f1f5f9; border-radius:10px; padding:3px;">
+        <button class="filter-pill active" data-value="todos" onclick="setFiltroEstado('todos')" style="border:none; background:transparent; padding:6px 14px; border-radius:8px; font-size:0.8rem; font-weight:500; cursor:pointer; transition:all 0.15s; color:#475569;">Todos</button>
+        <button class="filter-pill" data-value="activo" onclick="setFiltroEstado('activo')" style="border:none; background:transparent; padding:6px 14px; border-radius:8px; font-size:0.8rem; font-weight:500; cursor:pointer; transition:all 0.15s; color:#475569;">Activos</button>
+        <button class="filter-pill" data-value="suspendido" onclick="setFiltroEstado('suspendido')" style="border:none; background:transparent; padding:6px 14px; border-radius:8px; font-size:0.8rem; font-weight:500; cursor:pointer; transition:all 0.15s; color:#475569;">Suspendidos</button>
+        <button class="filter-pill" data-value="retirado" onclick="setFiltroEstado('retirado')" style="border:none; background:transparent; padding:6px 14px; border-radius:8px; font-size:0.8rem; font-weight:500; cursor:pointer; transition:all 0.15s; color:#475569;">Retirados</button>
+      </div>
+      <span style="color:#94a3b8; font-size:0.75rem;">|</span>
+      <!-- Dropdowns -->
+      <select id="filtroMostrar" class="form-control form-control-sm" style="width:auto; min-width:110px; border-radius:8px; font-size:0.8rem;" onchange="cargarTabla()">
+        <option value="15">Mostrar: 15</option>
+        <option value="30">Mostrar: 30</option>
+        <option value="50">Mostrar: 50</option>
+        <option value="100">Mostrar: 100</option>
+        <option value="all">Todo</option>
+      </select>
+      <select id="filtroZona" class="form-control form-control-sm" style="width:auto; min-width:120px; border-radius:8px; font-size:0.8rem;" onchange="cargarTabla()">
+        <option value="todas">Todas las Zonas</option>
+        <% (zonas || []).forEach(function(z) { %>
+        <option value="<%= z.id %>"><%= z.nombre %></option>
+        <% }) %>
+      </select>
+      <select id="filtroFacturas" class="form-control form-control-sm" style="width:auto; min-width:180px; border-radius:8px; font-size:0.8rem;" onchange="cargarTabla()">
+        <option value="">Filtrar por cantidad de facturas pendientes</option>
+        <option value="sin">Sin facturas</option>
+        <option value="1">Con 1 factura</option>
+        <option value="2+">Con 2 o más</option>
+      </select>
+      <select id="filtroFecha" class="form-control form-control-sm" style="width:auto; min-width:130px; border-radius:8px; font-size:0.8rem;" onchange="cargarTabla()">
+        <option value="">-- Todo el tiempo --</option>
+        <% 
+        var now = new Date();
+        for(var m = 0; m < 12; m++) {
+          var d = new Date(now.getFullYear(), now.getMonth() - m, 1);
+          var val = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
+          var label = d.toLocaleString('es-ES', { month:'long', year:'numeric' });
+        %>
+        <option value="<%= val %>"><%= label.charAt(0).toUpperCase() + label.slice(1) %></option>
+        <% } %>
+      </select>
+      <!-- Search -->
+      <div style="position:relative; flex:1; min-width:180px;">
+        <i class="fas fa-search" style="position:absolute; left:10px; top:50%; transform:translateY(-50%); color:#94a3b8; font-size:0.8rem;"></i>
+        <input type="text" id="buscador" class="form-control form-control-sm" style="padding-left:30px; border-radius:8px; width:100%; font-size:0.8rem; box-shadow:0 1px 3px rgba(0,0,0,0.06);" placeholder="Buscar nombre, NIC, cédula, tel, dir..." onkeyup="if(event.key==='Enter')cargarTabla()">
+      </div>
+      <!-- Total count -->
+      <span class="badge badge-info" id="totalClientesText" style="display:none; background:#eef2ff; color:#6366f1; border-radius:20px; padding:5px 12px; font-size:0.78rem; font-weight:600; white-space:nowrap;">Total: 0 titulares</span>
+    </div>
+  </div>
+</div>
+
+<!-- Bulk Actions Bar -->
+<div id="bulkActionsBar" style="display:flex; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:10px; padding:10px 16px; margin-bottom:14px; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;">
+  <span id="bulkCount" style="font-size:0.85rem; font-weight:600; color:#166534;">0 seleccionado(s)</span>
+  <div class="btn-group" style="display:flex; gap:6px; flex-wrap:wrap;">
+    <button class="btn btn-sm btn-success" onclick="ejecutarBulk('activar')" style="border-radius:8px; padding:5px 12px; font-size:0.78rem;"><i class="fas fa-play"></i> Activar</button>
+    <button class="btn btn-sm btn-warning" onclick="ejecutarBulk('suspender')" style="border-radius:8px; padding:5px 12px; font-size:0.78rem;"><i class="fas fa-pause"></i> Suspender</button>
+    <button class="btn btn-sm btn-danger" onclick="ejecutarBulk('retirar')" style="border-radius:8px; padding:5px 12px; font-size:0.78rem;"><i class="fas fa-minus-circle"></i> Retirar</button>
+    <button class="btn btn-sm btn-info" onclick="ejecutarBulk('whatsapp')" style="border-radius:8px; padding:5px 12px; font-size:0.78rem;background:#25D366;color:#fff;border:none;"><i class="fab fa-whatsapp"></i> WhatsApp</button>
+    <button class="btn btn-sm btn-primary" onclick="ejecutarBulk('facturar')" style="border-radius:8px; padding:5px 12px; font-size:0.78rem;"><i class="fas fa-file-invoice"></i> Facturar</button>
+    <button class="btn btn-sm btn-danger" onclick="ejecutarBulk('eliminar')" style="background:#991b1b; border-color:#991b1b; border-radius:8px; padding:5px 12px; font-size:0.78rem;"><i class="fas fa-trash"></i> Eliminar</button>
+  </div>
+</div>
+
+<!-- Table -->
+<div class="card" style="border-radius:12px; box-shadow:0 1px 4px rgba(0,0,0,0.06); overflow:hidden;">
+  <div class="card-body" style="padding:0;">
+    <div class="table-container" style="overflow-x:auto;">
+      <table style="width:100%; border-collapse:collapse; font-size:0.82rem;">
+        <thead>
+          <tr style="background:#f8fafc; border-bottom:2px solid #e2e8f0;">
+            <th style="width:32px; padding:10px 8px;"><input type="checkbox" id="selectAll" onchange="toggleAll()" style="width:16px; height:16px; accent-color:#6366f1; cursor:pointer;"></th>
+            <th style="padding:10px 8px; color:#64748b; font-weight:600; cursor:pointer; white-space:nowrap;" onclick="ordenarPor('id')">ID <span class="sort-icon" data-col="id">↑↓</span></th>
+            <th style="padding:10px 8px; color:#64748b; font-weight:600; cursor:pointer; min-width:180px;" onclick="ordenarPor('nombre')">Nombre <span class="sort-icon" data-col="nombre">↑↓</span></th>
+            <th style="padding:10px 8px; color:#64748b; font-weight:600; cursor:pointer; white-space:nowrap;" onclick="ordenarPor('zona')">Zona <span class="sort-icon" data-col="zona">↑↓</span></th>
+            <th style="padding:10px 8px; color:#64748b; font-weight:600; cursor:pointer; white-space:nowrap;" onclick="ordenarPor('registro')">Registro <span class="sort-icon" data-col="registro">↑↓</span></th>
+            <th style="padding:10px 8px; color:#64748b; font-weight:600; cursor:pointer; white-space:nowrap;" onclick="ordenarPor('suspendido')">Suspendido <span class="sort-icon" data-col="suspendido">↑↓</span></th>
+            <th style="padding:10px 8px; color:#64748b; font-weight:600; cursor:pointer; white-space:nowrap;" onclick="ordenarPor('contacto')">Contacto <span class="sort-icon" data-col="contacto">↑↓</span></th>
+            <th style="padding:10px 8px; color:#64748b; font-weight:600; white-space:nowrap;">Estado</th>
+            <th style="padding:10px 8px; color:#64748b; font-weight:600; white-space:nowrap;">Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="tablaResultados">
+          <tr><td colspan="9" style="text-align:center; padding:40px 10px; color:#94a3b8;"><i class="fas fa-spinner fa-spin"></i> Cargando datos...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Pagination -->
+<div id="paginacion" style="display:flex; justify-content:center; gap:4px; margin-top:16px; display:none;"></div>
+
+<!-- Modal Nuevo Cliente -->
+<div id="modalNuevoCliente" class="modal" style="display:none">
+  <div class="modal-content" style="max-width:550px; border-radius:14px;">
+    <div class="modal-header" style="padding:18px 22px; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center;">
+      <h3 style="margin:0; font-size:1.1rem;"><i class="fas fa-user-plus" style="color:#6366f1;"></i> Nuevo Cliente</h3>
+      <span class="modal-close" onclick="cerrarModal('modalNuevoCliente')" style="font-size:1.4rem; cursor:pointer; color:#94a3b8; line-height:1;">&times;</span>
+    </div>
+    <form onsubmit="guardarCliente(event)" id="formCliente">
+      <div class="modal-body" style="padding:20px 22px;">
+        <input type="hidden" name="accion" value="guardar_cliente">
+        <div class="form-group" style="margin-bottom:14px;">
+          <label style="font-weight:600; font-size:0.82rem; color:#374151; margin-bottom:4px; display:block;">Nombre <span style="color:#ef4444;">*</span></label>
+          <input type="text" name="nombre" class="form-control" required style="border-radius:8px; font-size:0.85rem;">
+        </div>
+        <div class="row" style="display:flex; gap:10px;">
+          <div class="form-group" style="flex:1; margin-bottom:14px;">
+            <label style="font-weight:600; font-size:0.82rem; color:#374151; margin-bottom:4px; display:block;">Cédula</label>
+            <input type="text" name="cedula" class="form-control" placeholder="000-0000000-0" style="border-radius:8px; font-size:0.85rem;">
+          </div>
+          <div class="form-group" style="flex:1; margin-bottom:14px;">
+            <label style="font-weight:600; font-size:0.82rem; color:#374151; margin-bottom:4px; display:block;">Teléfono</label>
+            <input type="text" name="telefono" class="form-control" placeholder="809-555-0101" style="border-radius:8px; font-size:0.85rem;">
+          </div>
+        </div>
+        <div class="form-group" style="margin-bottom:14px;">
+          <label style="font-weight:600; font-size:0.82rem; color:#374151; margin-bottom:4px; display:block;">Dirección</label>
+          <input type="text" name="direccion" class="form-control" placeholder="Calle, número, sector" style="border-radius:8px; font-size:0.85rem;">
+        </div>
+        <div class="row" style="display:flex; gap:10px;">
+          <div class="form-group" style="flex:1; margin-bottom:14px;">
+            <label style="font-weight:600; font-size:0.82rem; color:#374151; margin-bottom:4px; display:block;">Zona</label>
+            <select name="zona_id" class="form-control" style="border-radius:8px; font-size:0.85rem;">
+              <option value="">-- Sin zona --</option>
+              <% (zonas || []).forEach(function(z) { %>
+              <option value="<%= z.id %>"><%= z.nombre %></option>
+              <% }) %>
+            </select>
+          </div>
+          <div class="form-group" style="flex:1; margin-bottom:14px;">
+            <label style="font-weight:600; font-size:0.82rem; color:#374151; margin-bottom:4px; display:block;">Apodo</label>
+            <input type="text" name="apodo" class="form-control" placeholder="Alias / Apodo" style="border-radius:8px; font-size:0.85rem;">
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer" style="padding:14px 22px; border-top:1px solid #e2e8f0; display:flex; justify-content:flex-end; gap:8px;">
+        <button type="button" class="btn btn-secondary" onclick="cerrarModal('modalNuevoCliente')" style="border-radius:8px; padding:8px 18px; font-size:0.82rem;">Cancelar</button>
+        <button type="submit" class="btn btn-primary" style="border-radius:8px; padding:8px 18px; font-size:0.82rem; background:linear-gradient(135deg,#6366f1,#8b5cf6); border:none;"><i class="fas fa-save"></i> Guardar Cliente</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal Cliente Informal -->
+<div id="modalInformal" class="modal" style="display:none">
+  <div class="modal-content" style="max-width:450px; border-radius:14px;">
+    <div class="modal-header" style="padding:18px 22px; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center;">
+      <h3 style="margin:0; font-size:1.1rem;"><i class="fas fa-user-clock" style="color:#8b5cf6;"></i> Nuevo Cliente Informal</h3>
+      <span class="modal-close" onclick="cerrarModal('modalInformal')" style="font-size:1.4rem; cursor:pointer; color:#94a3b8; line-height:1;">&times;</span>
+    </div>
+    <form onsubmit="guardarInformal(event)" id="formInformal">
+      <div class="modal-body" style="padding:20px 22px;">
+        <p style="color:#64748b; font-size:0.82rem; margin-bottom:16px;">Crear cliente directo sin pasar por orden de trabajo.</p>
+        <div class="form-group" style="margin-bottom:14px;">
+          <label style="font-weight:600; font-size:0.82rem; color:#374151; margin-bottom:4px; display:block;">Nombre <span style="color:#ef4444;">*</span></label>
+          <input type="text" name="nombre" id="infNombre" class="form-control" required style="border-radius:8px; font-size:0.85rem;">
+        </div>
+        <div class="form-group" style="margin-bottom:14px;">
+          <label style="font-weight:600; font-size:0.82rem; color:#374151; margin-bottom:4px; display:block;">Cédula</label>
+          <input type="text" name="cedula" id="infCedula" class="form-control" placeholder="000-0000000-0" style="border-radius:8px; font-size:0.85rem;">
+        </div>
+        <div class="form-group" style="margin-bottom:14px;">
+          <label style="font-weight:600; font-size:0.82rem; color:#374151; margin-bottom:4px; display:block;">Teléfono</label>
+          <input type="text" name="telefono" id="infTelefono" class="form-control" style="border-radius:8px; font-size:0.85rem;">
+        </div>
+        <div class="form-group" style="margin-bottom:14px;">
+          <label style="font-weight:600; font-size:0.82rem; color:#374151; margin-bottom:4px; display:block;">Zona</label>
+          <select name="zona_id" id="infZona" class="form-control" style="border-radius:8px; font-size:0.85rem;">
+            <option value="">-- Sin zona --</option>
+            <% (zonas || []).forEach(function(z) { %>
+            <option value="<%= z.id %>"><%= z.nombre %></option>
+            <% }) %>
+          </select>
+        </div>
+        <div class="form-group" style="margin-bottom:14px;">
+          <label style="font-weight:600; font-size:0.82rem; color:#374151; margin-bottom:4px; display:block;">Apodo</label>
+          <input type="text" name="apodo" id="infApodo" class="form-control" placeholder="Alias" style="border-radius:8px; font-size:0.85rem;">
+        </div>
+        <div class="form-group" style="margin-bottom:14px;">
+          <label style="font-weight:600; font-size:0.82rem; color:#374151; margin-bottom:4px; display:block;">Dirección</label>
+          <input type="text" name="direccion" id="infDireccion" class="form-control" placeholder="Dirección" style="border-radius:8px; font-size:0.85rem;">
+        </div>
+      </div>
+      <div class="modal-footer" style="padding:14px 22px; border-top:1px solid #e2e8f0; display:flex; justify-content:flex-end; gap:8px;">
+        <button type="button" class="btn btn-secondary" onclick="cerrarModal('modalInformal')" style="border-radius:8px; padding:8px 18px; font-size:0.82rem;">Cancelar</button>
+        <button type="submit" class="btn btn-primary" style="border-radius:8px; padding:8px 18px; font-size:0.82rem; background:linear-gradient(135deg,#6366f1,#8b5cf6); border:none;"><i class="fas fa-save"></i> Guardar Cliente</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal Seleccionar Servicio -->
+<div id="modalSelectorServicios" class="modal" style="display:none">
+  <div class="modal-content" style="max-width:500px; border-radius:14px;">
+    <div class="modal-header" style="padding:18px 22px; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center;">
+      <h3 id="modalSelectorTitulo" style="margin:0; font-size:1rem;">Seleccionar Servicio</h3>
+      <span class="modal-close" onclick="cerrarModal('modalSelectorServicios')" style="font-size:1.4rem; cursor:pointer; color:#94a3b8; line-height:1;">&times;</span>
+    </div>
+    <div class="modal-body" style="padding:20px 22px;">
+      <p style="color:#64748b; margin-bottom:12px; font-size:0.85rem;">Selecciona el servicio al que aplicar la acción:</p>
+      <div id="modalSelectorLista"></div>
+      <div style="margin-top:16px; text-align:right;">
+        <button class="btn btn-secondary" onclick="cerrarModal('modalSelectorServicios')" style="border-radius:8px; padding:8px 18px; font-size:0.82rem;">Cancelar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Confirmación Bulk -->
+<div id="bulkConfirmModal" class="modal" style="display:none">
+  <div class="modal-content" style="max-width:450px; border-radius:14px;">
+    <div class="modal-header" id="bulkConfirmHeader" style="padding:18px 22px; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center;">
+      <h3 id="bulkConfirmTitle" style="margin:0; font-size:1rem;"></h3>
+      <span class="modal-close" onclick="cerrarModal('bulkConfirmModal')" style="font-size:1.4rem; cursor:pointer; color:#94a3b8; line-height:1;">&times;</span>
+    </div>
+    <div class="modal-body" style="padding:24px 22px; text-align:center;">
+      <div id="bulkConfirmIcon" style="font-size:2rem; margin-bottom:10px;"></div>
+      <div id="bulkConfirmMsg" style="color:#475569; line-height:1.5;"></div>
+      <div class="btn-group" style="display:flex; justify-content:center; gap:8px; margin-top:18px;">
+        <button class="btn btn-secondary" onclick="cerrarModal('bulkConfirmModal')" style="border-radius:8px; padding:8px 18px; font-size:0.82rem;">Cancelar</button>
+        <button class="btn btn-primary" id="bulkConfirmBtn" onclick="confirmarBulk()" style="border-radius:8px; padding:8px 18px; font-size:0.82rem;">Sí, Confirmar</button>
+        <button class="btn btn-secondary" id="bulkPrintBtn" style="display:none; border-radius:8px; padding:8px 18px; font-size:0.82rem;"><i class="fas fa-print"></i> Imprimir</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Confirmar Eliminar -->
+<div id="modalConfirmDelete" class="modal" style="display:none">
+  <div class="modal-content" style="max-width:400px; border-radius:14px;">
+    <div class="modal-header" style="padding:18px 22px; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center;">
+      <h3 style="margin:0; font-size:1rem; color:#ef4444;"><i class="fas fa-trash"></i> Eliminar Cliente</h3>
+      <span class="modal-close" onclick="cerrarModal('modalConfirmDelete')" style="font-size:1.4rem; cursor:pointer; color:#94a3b8; line-height:1;">&times;</span>
+    </div>
+    <div class="modal-body" style="padding:20px 22px; text-align:center;">
+      <p style="color:#64748b; margin-bottom:14px; font-size:0.85rem;">Lo ideal es retirar servicios para no perder la información del cliente.</p>
+      <p style="color:#991b1b; font-weight:600; margin-bottom:14px; font-size:0.9rem;">¿Estás seguro que deseas eliminar completamente?</p>
+      <p style="font-size:0.8rem; color:#64748b; margin-bottom:14px;">Esta acción es irrevocable y borrará todos los servicios del MikroTik.</p>
+      <label style="display:flex; align-items:center; gap:8px; justify-content:center; margin-bottom:16px; cursor:pointer; font-size:0.85rem; color:#475569;">
+        <input type="checkbox" id="chkEliminarOnuSmartolt" style="width:18px; height:18px; accent-color:#7c3aed;">
+        <span>Eliminar también la ONU de <strong>SmartOLT</strong></span>
+      </label>
+      <div class="btn-group" style="display:flex; justify-content:center; gap:8px;">
+        <button class="btn btn-secondary" onclick="cerrarModal('modalConfirmDelete')" style="border-radius:8px; padding:8px 18px; font-size:0.82rem;">Cancelar</button>
+        <button class="btn btn-danger" onclick="confirmarEliminar()" style="border-radius:8px; padding:8px 18px; font-size:0.82rem;">Sí, Eliminar Todo</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+/* Filter pills */
+.filter-pill.active {
+  background:#fff;
+  box-shadow:0 1px 3px rgba(0,0,0,0.12);
+  color:#1e293b;
+  font-weight:600;
+}
+.filter-pill:hover:not(.active) {
+  background:rgba(255,255,255,0.5);
+  color:#334155;
+}
+
+/* Table styles */
+#tablaResultados tr {
+  border-bottom:1px solid #f1f5f9;
+  transition:background 0.12s;
+}
+#tablaResultados tr:hover {
+  background:#f8fafc;
+}
+#tablaResultados td {
+  padding:10px 8px;
+  vertical-align:middle;
+}
+
+/* Badge styles */
+.badge-activo {
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  background:#dcfce7;
+  color:#16a34a;
+  padding:3px 10px;
+  border-radius:20px;
+  font-size:0.75rem;
+  font-weight:600;
+}
+.badge-suspendido {
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  background:#fef2f2;
+  color:#dc2626;
+  padding:3px 10px;
+  border-radius:20px;
+  font-size:0.75rem;
+  font-weight:600;
+}
+.badge-sin-servicio {
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  background:#f1f5f9;
+  color:#64748b;
+  padding:3px 10px;
+  border-radius:20px;
+  font-size:0.75rem;
+  font-weight:600;
+}
+
+/* Action buttons */
+.btn-accion {
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:30px;
+  height:30px;
+  border-radius:6px;
+  border:none;
+  cursor:pointer;
+  font-size:0.78rem;
+  transition:all 0.15s;
+}
+.btn-accion.ver {
+  color:#6366f1;
+  background:#eef2ff;
+}
+.btn-accion.ver:hover { background:#e0e7ff; }
+.btn-accion.reactivar {
+  color:#16a34a;
+  background:#dcfce7;
+}
+.btn-accion.reactivar:hover { background:#bbf7d0; }
+.btn-accion.suspender {
+  color:#dc2626;
+  background:#fef2f2;
+}
+.btn-accion.suspender:hover { background:#fecaca; }
+.btn-accion.retirar {
+  color:#ea580c;
+  background:#fff7ed;
+}
+.btn-accion.retirar:hover { background:#ffedd5; }
+.btn-accion.eliminar {
+  color:#991b1b;
+  background:#fef2f2;
+}
+.btn-accion.eliminar:hover { background:#fecaca; }
+
+/* Sort icons */
+.sort-icon {
+  font-size:0.68rem;
+  color:#94a3b8;
+  margin-left:2px;
+}
+.sort-icon.active {
+  color:#6366f1;
+}
+
+/* Expandable row */
+.expand-toggle {
+  cursor:pointer;
+  font-size:0.7rem;
+  color:#94a3b8;
+  transition:transform 0.15s;
+  border:none;
+  background:none;
+  padding:2px 6px;
+}
+.expand-toggle:hover {
+  color:#6366f1;
+}
+.expand-toggle.open {
+  transform:rotate(180deg);
+}
+
+@media print {
+  body { background: white; font-size: 11pt; }
+  .sidebar, nav, .modal, #bulkActionsBar, .page-header button, .filter-pill, #filtroMostrar, #filtroZona, #filtroFacturas, #filtroFecha, #buscador, #selectAll, .clienteCheck, .btn-accion.eliminar, .btn-accion.suspender, .btn-accion.retirar, .btn-accion.reactivar, .expand-toggle { display: none; }
+  .card { box-shadow: none; border: 1px solid #ddd; }
+  table { font-size: 9pt; }
+  th { background: #f5f5f5; color: #333; }
+  a { color: #333; text-decoration: none; }
+  .page-header h2 { font-size: 16pt; }
+  #totalClientesText { display: inline; }
+}
+
+</style>
+
+<script>
+let bulkSelectedIds
+let _bulkServicioIds = [];
+let currentPage = 1;
+let totalPages = 1;
+let statusFilter = 'todos';
+let sortColumn = '';
+let sortDirection = 'asc';
+let _bulkPendingAction = '';
+
+function abrirModalNuevo() { document.getElementById('formCliente').reset(); abrirModal('modalNuevoCliente'); }
+function abrirModalInformal() { document.getElementById('formInformal').reset(); abrirModal('modalInformal'); }
+
+function setFiltroEstado(valor) {
+  statusFilter = valor;
+  document.querySelectorAll('.filter-pill').forEach(function(p) {
+    p.classList.toggle('active', p.dataset.value === valor);
+  });
+  currentPage = 1;
+  cargarTabla();
+}
+
+function ordenarPor(col) {
+  if (sortColumn === col) {
+    sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+  } else {
+    sortColumn = col;
+    sortDirection = 'asc';
+  }
+  document.querySelectorAll('.sort-icon').forEach(function(ic) {
+    ic.classList.toggle('active', ic.dataset.col === col);
+  });
+  cargarTabla();
+}
+
+function cargarTabla(pagina) {
+  if (pagina) currentPage = pagina;
+  const zona = document.getElementById('filtroZona').value;
+  const facturas = document.getElementById('filtroFacturas').value;
+  const fecha = document.getElementById('filtroFecha').value;
+  const q = document.getElementById('buscador').value;
+  const mostrar = document.getElementById('filtroMostrar').value;
+  
+  const pagEl = document.getElementById('paginacion');
+  pagEl.style.display = (mostrar === 'all') ? 'none' : 'flex';
+  
+  var params = new URLSearchParams();
+  params.set('ajax', 'list');
+  params.set('status', statusFilter);
+  params.set('search', q);
+  params.set('zona', zona);
+  params.set('facturas', facturas);
+  if (fecha) params.set('fecha', fecha);
+  params.set('page', currentPage);
+  params.set('per_page', mostrar === 'all' ? '9999' : mostrar);
+  if (sortColumn) { params.set('sort', sortColumn); params.set('dir', sortDirection); }
+  params.set('_t', Date.now());
+  
+  fetch('/modulo?pagina=Clientes&' + params.toString())
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.status === 'success') {
+        document.getElementById('tablaResultados').innerHTML = data.html;
+        var total = data.total || 0;
+        var el = document.getElementById('totalClientesText');
+        el.textContent = 'Total: ' + total + ' titulares';
+        el.style.display = 'inline';
+        var pp = parseInt(mostrar) || 15;
+        totalPages = Math.max(1, Math.ceil(total / pp));
+        renderPaginacion();
+      } else {
+        document.getElementById('tablaResultados').innerHTML = '<tr><td colspan="9" style="text-align:center; padding:30px; color:#ef4444;">Error al cargar datos</td></tr>';
+      }
+    })
+    .catch(function(err) {
+      document.getElementById('tablaResultados').innerHTML = '<tr><td colspan="9" style="text-align:center; padding:30px; color:#ef4444;">Error de conexión</td></tr>';
+    });
+}
+
+function toggleExpand(btn, clienteId) {
+  btn.classList.toggle("open");
+  var row = document.querySelector(".svc-row[data-cliente='" + clienteId + "']");
+  if (row) {
+    row.style.display = (row.style.display === "none") ? "" : "none";
+  }
+}
+
+function renderPaginacion() {
+  var h = '<div style="display:flex; gap:4px; align-items:center;">';
+  if (currentPage > 1) {
+    h += '<button class="btn btn-sm btn-secondary" onclick="cargarTabla(' + (currentPage - 1) + ')" style="border-radius:6px; padding:5px 10px; font-size:0.78rem;">«</button>';
+  }
+  var start = Math.max(1, currentPage - 2);
+  var end = Math.min(totalPages, currentPage + 2);
+  for (let i = start; i <= end; i++) {
+    h += '<button class="btn btn-sm ' + (i === currentPage ? 'btn-primary' : 'btn-secondary') + '" onclick="cargarTabla(' + i + ')" style="border-radius:6px; padding:5px 10px; font-size:0.78rem;">' + i + '</button>';
+  }
+  if (currentPage < totalPages) {
+    h += '<button class="btn btn-sm btn-secondary" onclick="cargarTabla(' + (currentPage + 1) + ')" style="border-radius:6px; padding:5px 10px; font-size:0.78rem;">»</button>';
+  }
+  h += '</div>';
+  document.getElementById('paginacion').innerHTML = h;
+}
+
+function toggleAll() {
+  var checked = document.getElementById('selectAll').checked;
+  document.querySelectorAll('.clienteCheck').forEach(function(cb) { cb.checked = checked; cb.dispatchEvent(new Event('change')); });
+  actualizarBulkSelection();
+}
+
+function toggleCliente(id) {
+  var cb = document.querySelector('.clienteCheck[data-id="' + id + '"]');
+  if (cb) { cb.checked = !cb.checked; }
+  actualizarBulkSelection();
+}
+
+function actualizarBulkSelection() {
+  bulkSelectedIds = [];
+  document.querySelectorAll('.clienteCheck:checked').forEach(function(cb) {
+    bulkSelectedIds.push(parseInt(cb.dataset.id));
+  });
+  document.getElementById('bulkCount').textContent = (bulkSelectedIds.length > 0 ? bulkSelectedIds.length : 'Ninguno') + ' seleccionado(s)';
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,"&#039;");
+}
+
+function ejecutarBulk(action) {
+  if (bulkSelectedIds.length === 0) return;
+  _bulkPendingAction = action;
+  var count = bulkSelectedIds.length;
+  var modal = document.getElementById('bulkConfirmModal');
+  var icon = document.getElementById('bulkConfirmIcon');
+  var title = document.getElementById('bulkConfirmTitle');
+  var msg = document.getElementById('bulkConfirmMsg');
+  var btn = document.getElementById('bulkConfirmBtn');
+  var printBtn = document.getElementById('bulkPrintBtn');
+  printBtn.style.display = 'none';
+
+  if (action === 'suspender') {
+    icon.innerHTML = '<i class="fas fa-pause-circle" style="color:#dc2626; font-size:2rem;"></i>';
+    title.textContent = 'Suspender servicios';
+    msg.innerHTML = '<div id="bulkSuspenderContent" style="text-align:center;"><i class="fas fa-spinner fa-spin"></i> Cargando servicios...</div>';
+    btn.style.display = 'none';
+    // Fetch services info
+    fetch('/api/clientes/servicios-info', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ids: bulkSelectedIds })
+    }).then(function(r) { return r.json(); }).then(function(resp) {
+      if (!resp.success || !resp.data || resp.data.length === 0) {
+        document.getElementById('bulkSuspenderContent').innerHTML = '<div style="color:#dc2626;">No se encontraron servicios activos.</div>';
+        return;
+      }
+      var html = '<div style="max-height:350px;overflow-y:auto;text-align:left;">';
+      resp.data.forEach(function(cli) {
+        html += '<div style="font-weight:700;font-size:0.85rem;color:#1e293b;padding:8px 0 4px;border-top:1px solid #e2e8f0;">' + escapeHtml(cli.cliente_nombre) + '</div>';
+        cli.servicios.forEach(function(svc) {
+          var bg = svc.estado === 'activo' ? (svc.deuda > 0 ? '#fef2f2' : '#f0fdf4') : '#fef3c7';
+          var label = svc.estado === 'activo' ? (svc.deuda > 0 ? 'RD$' + svc.deuda.toFixed(2) : 'Al día') : 'Suspendido';
+          var labelColor = svc.estado === 'activo' ? (svc.deuda > 0 ? '#dc2626' : '#16a34a') : '#d97706';
+          html += '<label style="display:flex;align-items:center;gap:8px;padding:6px 8px;margin:3px 0;border-radius:6px;background:' + bg + ';cursor:pointer;">';
+          html += '<input type="checkbox" class="svc-suspender-check" data-cliente="' + cli.cliente_id + '" data-svc="' + svc.id + '" value="' + svc.id + '" checked style="width:16px;height:16px;">';
+          html += '<span style="flex:1;font-size:0.82rem;"><b>#' + svc.id + '</b> ' + escapeHtml(svc.plan_nombre) + ' ' + (svc.direccion ? '- ' + escapeHtml(svc.direccion) : '') + '</span>';
+          html += '<span style="font-size:0.72rem;font-weight:600;color:' + labelColor + ';background:#fff;padding:2px 8px;border-radius:10px;border:1px solid ' + labelColor + ';">' + label + '</span>';
+          html += '</label>';
+        });
+      });
+      html += '</div><div style="margin-top:8px;"><button class="btn btn-sm" onclick=\"document.querySelectorAll(\'.svc-suspender-check\').forEach(function(c){c.checked=true})\">Seleccionar todos</button>';
+      html += '<button class="btn btn-sm" onclick=\"document.querySelectorAll(\'.svc-suspender-check\').forEach(function(c){c.checked=false})\">Deseleccionar todos</button></div>';
+      document.getElementById('bulkSuspenderContent').innerHTML = html;
+      btn.style.display = 'inline-flex'; btn.textContent = 'Sí, Suspender seleccionados';
+      _bulkServicioIds = [];
+    }).catch(function() {
+      document.getElementById('bulkSuspenderContent').innerHTML = '<div style="color:#dc2626;">Error al cargar servicios.</div>';
+    });
+  } else if (action === 'activar') {
+    icon.innerHTML = '<i class="fas fa-play-circle" style="color:#16a34a; font-size:2rem;"></i>';
+    title.textContent = 'Activar clientes';
+    msg.innerHTML = '<div style="text-align:center;">¿Estás seguro que deseas activar los servicios de <b>' + count + '</b> cliente(s)?</div>';
+    btn.style.background = '#16a34a'; btn.textContent = 'Sí, Activar';
+  } else if (action === 'retirar') {
+    icon.innerHTML = '<i class="fas fa-exclamation-triangle" style="color:#ea580c; font-size:2rem;"></i>';
+    title.textContent = 'Retirar titulares';
+    msg.innerHTML = '<div style="background:#fff7ed; border:1px solid #fed7aa; border-radius:8px; padding:12px; color:#7c2d12;"><b>Estás retirando ' + count + ' titular(es).</b><br>Los servicios se eliminarán del MikroTik y de la OLT. ¿Seguro que deseas continuar?</div>';
+    btn.style.background = '#ea580c'; btn.textContent = 'Sí, Retirar';
+  } else if (action === 'eliminar') {
+    icon.innerHTML = '<i class="fas fa-exclamation-triangle" style="color:#991b1b; font-size:2rem;"></i>';
+    title.textContent = 'Eliminar titulares';
+    msg.innerHTML = '<div style="background:#fef2f2; border:1px solid #fecaca; border-radius:8px; padding:12px; color:#7f1d1d;"><b>Estás eliminando ' + count + ' titular(es).</b><br>Esta acción es irrevocable y borrará todos los servicios del MikroTik. ¿Seguro?</div>';
+    btn.style.background = '#991b1b'; btn.textContent = 'Sí, Eliminar';
+  } else if (action === 'whatsapp') {
+    icon.innerHTML = '<i class="fab fa-whatsapp" style="color:#25D366; font-size:2rem;"></i>';
+    title.textContent = 'Enviar WhatsApp';
+    msg.innerHTML = '<div style="text-align:center;">¿Enviar mensaje de bienvenida a <b>' + count + '</b> cliente(s)?<br><small style="color:#64748b;">Se enviará con 2 segundos de diferencia entre cada mensaje.</small></div>';
+    btn.style.background = '#25D366'; btn.textContent = 'Sí, Enviar';
+  } else if (action === 'facturar') {
+    icon.innerHTML = '<i class="fas fa-file-invoice-dollar" style="color:#2563eb; font-size:2rem;"></i>';
+    title.textContent = 'Generar Facturas';
+    msg.innerHTML = '<div style="text-align:center;">¿Generar factura para <b>' + count + '</b> cliente(s)?<br><small style="color:#64748b;">Se creará una factura por cada servicio activo.</small></div>';
+    btn.style.background = '#2563eb'; btn.textContent = 'Sí, Facturar';
+  }
+  abrirModal('bulkConfirmModal');
+}
+
+function confirmarBulk() {
+  if (!_bulkPendingAction || bulkSelectedIds.length === 0) return;
+  var action = _bulkPendingAction;
+  
+  if (action === 'whatsapp') {
+    enviarWhatsappBulk();
+    return;
+  }
+  
+  if (action === 'facturar') {
+    facturarBulk();
+    return;
+  }
+  
+  if (action === 'suspender') {
+    // Obtener servicios seleccionados
+    var checks = document.querySelectorAll('.svc-suspender-check:checked');
+    var servicioIds = [];
+    checks.forEach(function(c) { servicioIds.push(parseInt(c.value)); });
+    
+    if (servicioIds.length === 0) {
+      showToast('Selecciona al menos un servicio para suspender', 'error');
+      return;
+    }
+    
+    fetch('/api/servicios/batch-suspender', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ servicio_ids: servicioIds })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(res) {
+      if (res.success) {
+        showToast(res.message || servicioIds.length + ' servicio(s) suspendido(s)');
+        cerrarModal('bulkConfirmModal');
+        cargarTabla();
+      } else {
+        showToast('Error: ' + (res.message || 'desconocido'), 'error');
+      }
+    })
+    .catch(function() {
+      showToast('Error de conexión', 'error');
+    });
+    return;
+  }
+  
+  // Acciones normales: activar, retirar, eliminar
+  fetch('/modulo?pagina=Clientes&ajax=toggle_status', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: action, ids: bulkSelectedIds })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(res) {
+    if (res.success) {
+      showToast('Operación completada en ' + bulkSelectedIds.length + ' clientes');
+      cerrarModal('bulkConfirmModal');
+      cargarTabla();
+    } else {
+      showToast('Error: ' + (res.message || 'desconocido'), 'error');
+    }
+  })
+  .catch(function() {
+    showToast('Error de conexión', 'error');
+  });
+}
+
+function enviarWhatsappBulk() {
+  cerrarModal('bulkConfirmModal');
+  showToast('Enviando mensajes...');
+  var total = bulkSelectedIds.length;
+  var enviados = 0;
+  var errores = 0;
+  var idx = 0;
+  
+  function enviarSiguiente() {
+    if (idx >= total) {
+      showToast('WhatsApp: ' + enviados + ' enviados, ' + errores + ' errores');
+      return;
+    }
+    var id = bulkSelectedIds[idx];
+    
+    // Obtener datos del cliente y enviar mensaje
+    fetch('/api/clientes/' + id + '/info')
+      .then(function(r) { return r.json(); })
+      .then(function(cliente) {
+        if (cliente.success && cliente.data.telefono) {
+          // Send welcome message
+          enviarBienvenidaDirecta(cliente.data.telefono, cliente.data.nombre, function(ok) {
+            if (ok) enviados++; else errores++;
+            idx++;
+            setTimeout(enviarSiguiente, 2000);
+          });
+        } else {
+          errores++;
+          idx++;
+          setTimeout(enviarSiguiente, 500);
+        }
+      })
+      .catch(function() {
+        errores++;
+        idx++;
+        setTimeout(enviarSiguiente, 500);
+      });
+  }
+  
+  enviarSiguiente();
+}
+
+function enviarBienvenidaDirecta(telefono, nombre, callback) {
+  if (!telefono) { if (callback) callback(false); return; }
+  fetch('/api/template/get?key=bienvenida_sms')
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      var msg = (d.content || 'Hola {client_name}, bienvenido!')
+        .replace(/{client_name}/g, nombre)
+        .replace(/{company_name}/g, 'Joel Wifi Dominicana')
+        .replace(/{company_phone}/g, '8092470033')
+        .replace(/{current_date}/g, new Date().toLocaleDateString('es-DO'));
+      
+      fetch('/api/openwa/test', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: telefono, message: msg })
+      })
+      .then(function(r) { return r.json(); })
+      .then(function(res) {
+        if (callback) callback(res.success);
+      })
+      .catch(function() { if (callback) callback(false); });
+    })
+    .catch(function() { if (callback) callback(false); });
+}
+
+function facturarBulk() {
+  cerrarModal('bulkConfirmModal');
+  showToast('Generando facturas...');
+  fetch('/api/facturar/bulk', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ clientes: bulkSelectedIds })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    if (d.success) showToast(d.message || 'Facturas generadas');
+    else showToast('Error: ' + (d.message || ''), 'error');
+  })
+  .catch(function() { showToast('Error de conexión', 'error'); });
+}
+
+function guardarCliente(e) {
+  e.preventDefault();
+  var fd = new FormData(document.getElementById('formCliente'));
+  fetch('/modulo?pagina=Clientes&ajax=save', {
+    method: 'POST',
+    body: fd
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(res) {
+    if (res.success) {
+      showToast('Cliente guardado correctamente');
+      cerrarModal('modalNuevoCliente');
+      cargarTabla();
+    } else {
+      showToast('Error: ' + (res.message || 'desconocido'), 'error');
+    }
+  })
+  .catch(function() { showToast('Error de conexión', 'error'); });
+}
+
+function guardarInformal(e) {
+  e.preventDefault();
+  var nombre = document.getElementById('infNombre').value.trim();
+  if (!nombre) { showToast('El nombre es obligatorio', 'error'); return; }
+  
+  var fd = new FormData();
+  fd.append('nombre', nombre);
+  fd.append('cedula', document.getElementById('infCedula').value);
+  fd.append('telefono', document.getElementById('infTelefono').value);
+  fd.append('zona_id', document.getElementById('infZona').value);
+  fd.append('apodo', document.getElementById('infApodo').value);
+  fd.append('direccion', document.getElementById('infDireccion').value);
+  
+  fetch('/modulo?pagina=Clientes&ajax=save', {
+    method: 'POST',
+    body: fd
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(res) {
+    if (res.success) {
+      showToast('Cliente informal creado');
+      cerrarModal('modalInformal');
+      cargarTabla();
+    } else {
+      showToast('Error: ' + (res.message || 'desconocido'), 'error');
+    }
+  })
+  .catch(function() { showToast('Error de conexión', 'error'); });
+}
+
+var deleteId = null;
+function borrarCliente(id) { deleteId = id; abrirModal('modalConfirmDelete'); }
+function confirmarEliminar() {
+  if (!deleteId) return;
+  var eliminarOnu = document.getElementById('chkEliminarOnuSmartolt').checked;
+  var fd = new FormData();
+  fd.append('id', deleteId);
+  fd.append('eliminar_onu_smartolt', eliminarOnu ? '1' : '0');
+  
+  fetch('/modulo?pagina=Clientes&ajax=delete', {
+    method: 'POST',
+    body: fd
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(res) {
+    if (res.success) {
+      showToast('Cliente eliminado');
+      deleteId = null;
+      cerrarModal('modalConfirmDelete');
+      cargarTabla();
+    } else {
+      showToast('Error: ' + (res.message || 'desconocido'), 'error');
+    }
+  })
+  .catch(function() { showToast('Error de conexión', 'error'); });
+}
+
+function exportarLista() {
+  window.print();
+}
+
+// ===== ENVIAR BIENVENIDA WHATSAPP =====
+function enviarBienvenida(clienteId, telefono, nombre) {
+  if (!telefono) {
+    showToast('El cliente no tiene teléfono registrado', 'error');
+    return;
+  }
+  
+  // Get welcome template from templates table
+  fetch('/api/template/get?key=bienvenida_sms')
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (d.status !== 'success' || !d.content) {
+        showToast('Error al cargar plantilla', 'error');
+        return;
+      }
+      
+      var template = d.content;
+      var company = 'Joel Wifi Dominicana';
+      var cPhone = '8092470033';
+      var cEmail = 'info@joelwifi.com';
+      
+      // Also get company info
+      fetch('/api/config/get?keys=company_name,company_phone,company_email')
+        .then(function(r2) { return r2.json(); })
+        .then(function(d2) {
+          if (d2.status === 'success') {
+            company = d2.data.company_name || company;
+            cPhone = d2.data.company_phone || cPhone;
+            cEmail = d2.data.company_email || cEmail;
+          }
+          
+          // Replace placeholders
+          var msg = template
+            .replace(/{client_name}/g, nombre)
+            .replace(/{company_name}/g, company)
+            .replace(/{company_phone}/g, cPhone)
+            .replace(/{company_email}/g, cEmail)
+            .replace(/{current_date}/g, new Date().toLocaleDateString('es-DO'))
+            .replace(/{client_phone}/g, telefono)
+            .replace(/{plan_name}/g, 'Fibra')
+            .replace(/{plan_price}/g, '')
+            .replace(/{service_address}/g, '')
+            .replace(/{service_ip}/g, '');
+          
+          sendWelcome(telefono, nombre, msg);
+        })
+        .catch(function() {
+          sendWelcome(telefono, nombre, template.replace(/{client_name}/g, nombre));
+        });
+    })
+    .catch(function() {
+      showToast('Error al cargar plantilla', 'error');
+    });
+}
+
+function sendWelcome(telefono, nombre, msg) {
+  if (confirm('Enviar mensaje de bienvenida a ' + nombre + ' (' + telefono + ')?\n\n' + msg)) {
+    fetch('/api/openwa/test', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone: telefono, message: msg })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(res) {
+      if (res.success) showToast('Mensaje enviado a ' + nombre);
+      else showToast('Error: ' + (res.msg || 'desconocido'), 'error');
+    })
+    .catch(function() { showToast('Error de conexión', 'error'); });
+  }
+}
+
+function abrirModal(id) { document.getElementById(id).style.display = 'flex'; }
+function cerrarModal(id) { document.getElementById(id).style.display = 'none'; }
+
+// ===== ACCIONES POR CLIENTE =====
+function toggleAcciones(clienteId) {
+  var menu = document.getElementById('acciones-menu-' + clienteId);
+  if (menu.style.display === 'block') { menu.style.display = 'none'; return; }
+  // Cerrar otros menus abiertos
+  document.querySelectorAll('[id^="acciones-menu-"]').forEach(function(m) { m.style.display = 'none'; });
+  menu.style.display = 'block';
+}
+
+// Cerrar menus al hacer clic fuera
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('[id^="acciones-menu-"]') && !e.target.closest('button[onclick*="toggleAcciones"]')) {
+    document.querySelectorAll('[id^="acciones-menu-"]').forEach(function(m) { m.style.display = 'none'; });
+  }
+});
+
+function accionCliente(clienteId, accion) {
+  var nombres = { 'activar':'Activar', 'suspender':'Suspender', 'retirar':'Retirar', 'tr069':'TR069', 'eliminar':'Eliminar' };
+  
+  if (accion === 'eliminar') {
+    if (!confirm('¿Eliminar este cliente? Se borrarán todos sus datos.')) return;
+    fetch('/modulo?pagina=Clientes&ajax=delete', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: clienteId })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (d.success) { showToast('Cliente eliminado'); cargarTabla(); }
+      else showToast('Error: ' + (d.message || 'desconocido'), 'error');
+    })
+    .catch(function() { showToast('Error de conexión', 'error'); });
+    return;
+  }
+  
+  if (accion === 'tr069') {
+    window.location.href = '/modulo?pagina=TR069&cliente_id=' + clienteId;
+    return;
+  }
+  
+  // Activar, Suspender, Retirar: obtener servicios del cliente
+  mostrarSelectorServicios(clienteId, accion, nombres[accion]);
+}
+
+function mostrarSelectorServicios(clienteId, accion, nombreAccion) {
+  fetch('/api/clientes/' + clienteId + '/servicios')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (!data.success || !data.data || data.data.length === 0) {
+        showToast('El cliente no tiene servicios', 'error');
+        return;
+      }
+      
+      var servicios = data.data;
+      
+      if (servicios.length === 1) {
+        // Solo un servicio, ejecutar directamente
+        ejecutarAccion(clienteId, servicios[0].id, accion);
+        return;
+      }
+      
+      // Mostrar modal de seleccion
+      var modal = document.getElementById('modalSelectorServicios');
+      document.getElementById('modalSelectorTitulo').textContent = nombreAccion + ' - Seleccionar Servicio';
+      var lista = document.getElementById('modalSelectorLista');
+      lista.innerHTML = '';
+      servicios.forEach(function(s) {
+        var div = document.createElement('div');
+        div.style.cssText = 'padding:10px 14px;border:1px solid #e2e8f0;border-radius:8px;margin-bottom:6px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;transition:all 0.15s;';
+        div.onmouseover = function() { this.style.borderColor = '#6366f1'; this.style.background = '#f5f3ff'; };
+        div.onmouseout = function() { this.style.borderColor = '#e2e8f0'; this.style.background = ''; };
+        div.onclick = function() { ejecutarAccion(clienteId, s.id, accion); cerrarModal('modalSelectorServicios'); };
+        var estado = s.estado || 'activo';
+        var color = estado === 'activo' ? '#16a34a' : (estado === 'suspendido' ? '#d97706' : '#94a3b8');
+        div.innerHTML = '<div><strong>' + (s.plan_nombre || 'Servicio #' + s.id) + '</strong><br><small style="color:#64748b;">' + (s.direccion || '') + ' | IP: ' + (s.ip || '—') + '</small></div><span style="color:' + color + ';font-weight:600;font-size:0.78rem;">' + estado.toUpperCase() + '</span>';
+        lista.appendChild(div);
+      });
+      abrirModal('modalSelectorServicios');
+    })
+    .catch(function() { showToast('Error al cargar servicios', 'error'); });
+}
+
+function ejecutarAccion(clienteId, servicioId, accion) {
+  var url = '/api/servicios/' + servicioId + '/' + accion;
+  if (accion === 'retirar') url = '/api/servicios/' + servicioId + '/eliminar';
+  
+  if (!confirm('¿' + accion.charAt(0).toUpperCase() + accion.slice(1) + ' servicio #' + servicioId + '?')) return;
+  
+  fetch(url, { method: 'POST' })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (d.success) {
+        showToast('Servicio ' + (accion === 'retirar' ? 'retirado' : accion + 'do'));
+        cargarTabla();
+      } else {
+        showToast('Error: ' + (d.message || 'desconocido'), 'error');
+      }
+    })
+    .catch(function() { showToast('Error de conexión', 'error'); });
+}
+
+// Initialize on load
+cargarTabla();
+</script>

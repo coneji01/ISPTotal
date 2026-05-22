@@ -1,5 +1,5 @@
 <style>
-.zon-search { padding:14px 18px 10px; border-bottom:1px solid var(--border,#e2e8f0); }
+.zon-search { padding:14px 18px 10px; border-bottom:1px solid var(--border-color,#e2e8f0); }
 .zon-search-wrap { position:relative; max-width:400px; }
 .zon-search-icon { position:absolute; left:12px; top:50%; transform:translateY(-50%); color:#94a3b8; font-size:0.85rem; }
 .zon-search-input { width:100%; padding:9px 12px 9px 36px; border:1px solid #e2e8f0; border-radius:8px; font-size:0.88rem; box-sizing:border-box; outline:none; transition:border-color 0.15s; }
@@ -7,13 +7,14 @@
 </style>
 
 <div class="page-header">
-    <h2 class="page-title"><i class="fas fa-map-marker-alt" style="color:#2563eb;"></i> Gesti&oacute;n de Zonas</h2>
+    <h2 class="page-title">Gestión de Zonas</h2>
     <button class="btn-primary" onclick="zonAbrirModal()">
         <i class="fas fa-plus"></i> Nueva Zona
     </button>
 </div>
 
 <div class="card">
+    <!-- Buscador -->
     <div class="zon-search">
         <div class="zon-search-wrap">
             <i class="fas fa-search zon-search-icon"></i>
@@ -37,7 +38,7 @@
         <tbody>
             <% if (zonas && zonas.length) { zonas.forEach(function(z) { %>
                 <tr>
-                    <td><strong style="font-size:1rem;"><%= z.nombre %></strong></td>
+                    <td><strong style="font-size:1rem; color:var(--text-main);"><%= z.nombre %></strong></td>
                     <td>
                         <% if (z.router_nombre) { %>
                             <span class="badge" style="background:#f0f9ff; color:#0369a1; border:1px solid #bae6fd;"><i class="fas fa-server"></i> <%= z.router_nombre %></span>
@@ -68,65 +69,69 @@
                     </td>
                     <td><span class="badge badge-success"><%= z.activos || 0 %></span></td>
                     <td><span class="badge badge-danger"><%= z.suspendidos || 0 %></span></td>
-                    <td><strong><%= z.total || 0 %></strong></td>
-                    <td style="text-align:right;">
-                        <button class="btn-icon" style="color:var(--accent);" onclick="zonAbrirModalEditar(<%= z.id %>,'<%= z.nombre.replace(/'/g,"\\'") %>',<%= z.vlan_onu||'null' %>,<%= z.router_id||'null' %>,<%= z.smartolt_profile_id||'null' %>,'<%= (z.smartolt_zone||'').replace(/'/g,"\\'") %>')" title="Editar"><i class="fas fa-edit"></i></button>
-                        <button class="btn-icon" style="color:#dc2626;" onclick="zonConfirmarEliminar(<%= z.id %>,'<%= z.nombre.replace(/'/g,"\\'") %>',<%= z.total||0 %>)" title="Eliminar"><i class="fas fa-trash"></i></button>
+                    <td><strong><%= (parseInt(z.activos||0) + parseInt(z.suspendidos||0)) %></strong></td>
+                    <td style="text-align:right; white-space:nowrap;">
+                        <button class="btn-icon" style="color:var(--accent-primary);" onclick="zonAbrirModalEditar(<%= z.id %>, '<%= z.nombre.replace(/'/g,"\\'") %>', '<%= z.vlan_onu || '' %>', '<%= z.router_id || '' %>', '<%= z.smartolt_profile_id || '' %>', '<%= z.smartolt_zone || '' %>')" title="Editar"><i class="fas fa-edit"></i></button>
+                        <button class="btn-icon" style="color:var(--accent-danger);" onclick="zonConfirmarEliminar(<%= z.id %>, '<%= z.nombre.replace(/'/g,"\\'") %>', <%= (parseInt(z.activos||0) + parseInt(z.suspendidos||0)) %>)" title="Eliminar"><i class="fas fa-trash"></i></button>
                     </td>
                 </tr>
             <% }); } else { %>
-                <tr><td colspan="9" style="text-align:center;padding:40px;color:#94a3b8;"><i class="fas fa-map-marker-alt" style="font-size:2rem;display:block;margin-bottom:8px;opacity:0.3;"></i>No hay zonas registradas.</td></tr>
+                <tr><td colspan="9" style="padding:30px; text-align:center; color:#94a3b8;">No hay zonas registradas</td></tr>
             <% } %>
         </tbody>
     </table>
 </div>
 
 <!-- MODAL -->
-<div class="modal" id="zonModal" style="display:none;">
+<div class="modal-overlay" id="modalZona" style="display:none;">
     <div class="modal-content" style="width:440px;">
-        <div style="display:flex;justify-content:space-between;margin-bottom:20px;border-bottom:1px solid #eee;padding-bottom:10px;">
+        <div style="display:flex; justify-content:space-between; margin-bottom:20px; border-bottom:1px solid var(--border-color,#e2e8f0); padding-bottom:10px;">
             <h3 style="margin:0;" id="zonModalTitle">Nueva Zona</h3>
-            <button onclick="document.getElementById('zonModal').style.display='none'" style="background:none;border:none;font-size:1.5rem;cursor:pointer;">&times;</button>
+            <button onclick="zonCerrarModal()" style="background:none; border:none; font-size:1.5rem; cursor:pointer; color:#94a3b8;">&times;</button>
         </div>
-        <form method="POST" id="zonForm">
+        <form method="POST" action="/modulo?pagina=Zonas" id="zonForm">
             <input type="hidden" name="accion" value="guardar_zona">
-            <input type="hidden" name="id_zona" id="zonIdInput" value="">
+            <input type="hidden" name="id_zona" id="zonId" value="">
             <div class="form-group">
-                <label class="form-label">Nombre del Sector / Zona <span style="color:red">*</span></label>
+                <label class="form-label">Nombre del Sector / Zona</label>
                 <input type="text" name="nombre" id="zonNombre" class="form-control" required placeholder="Ej: Centro Ciudad">
             </div>
             <div class="form-group">
                 <label class="form-label">Router Asociado (Opcional)</label>
                 <select name="router_id" id="zonRouter" class="form-control">
-                    <option value="">-- Ninguno --</option>
+                    <option value="">-- Ninguno (Selección Manual) --</option>
                     <% (routers || []).forEach(function(r) { %>
-                    <option value="<%= r.id %>"><%= r.name %></option>
+                        <option value="<%= r.id %>"><%= r.name %></option>
                     <% }); %>
                 </select>
-                <small style="color:#64748b;font-size:0.75rem;">Se cargar&aacute; autom&aacute;ticamente al crear &oacute;rdenes en esta zona.</small>
+                <small style="color:#64748b; font-size:0.75rem;">Si seleccionas uno, se cargará automáticamente al crear órdenes.</small>
             </div>
             <div class="form-group">
                 <label class="form-label">OLT (Opcional)</label>
-                <select name="smartolt_profile_id" id="zonOlt" class="form-control" onchange="zonOnOltChange()">
+                <select name="smartolt_profile_id" id="zonProfile" class="form-control" onchange="zonOnProfileChange()">
                     <option value="">-- Ninguno --</option>
                     <% (olts || []).forEach(function(o) { %>
-                    <option value="<%= o.id %>"><%= o.nombre %> (<%= o.smartolt_subdomain %>)</option>
+                        <option value="<%= o.id %>"><%= o.nombre %></option>
                     <% }); %>
                 </select>
+                <small style="color:#64748b; font-size:0.75rem;">Instancia de OLT asociada a esta zona.</small>
             </div>
             <div class="form-group" id="zonZoneGroup" style="display:none;">
-                <label class="form-label">Zona en OLT <span style="color:red;">*</span></label>
-                <select name="smartolt_zone" id="zonZoneInput" class="form-control">
-                    <option value="">-- Seleccione zona --</option>
-                </select>
-                <small style="color:#64748b;font-size:0.75rem;">Zona configurada en SmartOLT para esta &aacute;rea.</small>
-                <div id="zonZoneError" style="display:none;color:#ef4444;font-size:0.78rem;margin-top:4px;"></div>
+                <label class="form-label">Zona en OLT <span style="color:#ef4444;">*</span></label>
+                <div style="position:relative;">
+                    <select name="smartolt_zone" id="zonZone" class="form-control">
+                        <option value="">-- Seleccione zona --</option>
+                    </select>
+                    <span id="zonZoneSpinner" style="display:none; position:absolute; right:30px; top:50%; transform:translateY(-50%); color:#94a3b8;"><i class="fas fa-spinner fa-spin"></i></span>
+                </div>
+                <small style="color:#64748b; font-size:0.75rem;"><strong>Obligatorio.</strong> Zona configurada en OLT.</small>
             </div>
             <div class="form-group">
-                <label class="form-label">VLAN ONU <span style="color:#94a3b8;font-size:0.75rem;">(Opcional)</span></label>
+                <label class="form-label">VLAN ONU <span style="color:#94a3b8; font-size:0.75rem;">(Opcional)</span></label>
                 <input type="number" name="vlan_onu" id="zonVlan" class="form-control" placeholder="Ej: 100" min="1" max="4094">
+                <small style="color:#64748b; font-size:0.75rem; display:block; margin-top:3px;">VLAN asignada a la ONU en esta zona.</small>
             </div>
-            <button type="submit" class="btn-primary" style="width:100%;margin-top:10px;" id="zonBtnGuardar">
+            <button type="submit" class="btn-primary" style="width:100%; margin-top:10px;">
                 <i class="fas fa-save"></i> Guardar
             </button>
         </form>
@@ -141,107 +146,79 @@ function zonFiltrar() {
     });
 }
 
-var _zonSmartoltZones = null;
-var _zonPendingZone = '';
-
 function zonAbrirModal() {
-    document.getElementById('zonModalTitle').innerText = 'Nueva Zona';
-    document.getElementById('zonIdInput').value = '';
-    document.getElementById('zonNombre').value = '';
-    document.getElementById('zonVlan').value = '';
-    document.getElementById('zonRouter').value = '';
-    document.getElementById('zonOlt').value = '';
+    document.getElementById('zonModalTitle').textContent = 'Nueva Zona';
+    document.getElementById('zonId').value = '';
+    document.getElementById('zonForm').reset();
     document.getElementById('zonZoneGroup').style.display = 'none';
-    document.getElementById('zonZoneError').style.display = 'none';
-    document.getElementById('zonModal').style.display = 'flex';
+    document.getElementById('modalZona').style.display = 'flex';
 }
 
-function zonAbrirModalEditar(id, nombre, vlan, routerId, oltId, smartoltZone) {
-    document.getElementById('zonModalTitle').innerText = 'Editar Zona';
-    document.getElementById('zonIdInput').value = id;
+function zonAbrirModalEditar(id, nombre, vlan, routerId, profileId, zone) {
+    document.getElementById('zonModalTitle').textContent = 'Editar Zona';
+    document.getElementById('zonId').value = id;
     document.getElementById('zonNombre').value = nombre;
     document.getElementById('zonVlan').value = vlan || '';
     document.getElementById('zonRouter').value = routerId || '';
-    document.getElementById('zonOlt').value = oltId || '';
-    _zonPendingZone = smartoltZone || '';
-    if (oltId) {
+    if (profileId) {
+        document.getElementById('zonProfile').value = profileId;
         document.getElementById('zonZoneGroup').style.display = 'block';
-        zonLoadOltZones(function() {
-            document.getElementById('zonZoneInput').value = _zonPendingZone;
-        });
+        document.getElementById('zonZone').value = zone || '';
     } else {
+        document.getElementById('zonProfile').value = '';
         document.getElementById('zonZoneGroup').style.display = 'none';
     }
-    document.getElementById('zonModal').style.display = 'flex';
+    document.getElementById('modalZona').style.display = 'flex';
 }
 
-function zonOnOltChange() {
-    var oltId = document.getElementById('zonOlt').value;
-    if (oltId) {
-        document.getElementById('zonZoneGroup').style.display = 'block';
-        _zonPendingZone = '';
-        zonLoadOltZones();
+function zonCerrarModal() {
+    document.getElementById('modalZona').style.display = 'none';
+}
+
+function zonOnProfileChange() {
+    var profileId = document.getElementById('zonProfile').value;
+    var zoneGroup = document.getElementById('zonZoneGroup');
+    if (profileId) {
+        zoneGroup.style.display = 'block';
+        // Try to load zones from OLT if smartolt-enabled
+        var zoneSelect = document.getElementById('zonZone');
+        zoneSelect.innerHTML = '<option value="">-- Seleccione zona --</option>';
+        fetch('/api/smartolt/zones?profile_id=' + profileId)
+            .then(function(r) { return r.json(); })
+            .then(function(d) {
+                if (d.status === 'success' && d.data) {
+                    d.data.forEach(function(z) {
+                        zoneSelect.innerHTML += '<option value="' + z.replace(/'/g,"\\'") + '">' + z + '</option>';
+                    });
+                }
+            })
+            .catch(function() {});
     } else {
-        document.getElementById('zonZoneGroup').style.display = 'none';
+        zoneGroup.style.display = 'none';
     }
 }
 
-function zonLoadOltZones(callback) {
-    var sel = document.getElementById('zonZoneInput');
-    sel.innerHTML = '<option value="">-- Cargando... --</option>';
-    if (_zonSmartoltZones !== null) {
-        zonRenderZones(_zonSmartoltZones);
-        if (callback) callback();
-        return;
+function zonConfirmarEliminar(id, nombre, total) {
+    if (total > 0) {
+        if (!confirm('La zona "' + nombre + '" tiene ' + total + ' servicio(s). Se eliminara la zona pero los servicios quedaran sin zona asignada. Continuar?')) return;
+    } else {
+        if (!confirm('Eliminar zona "' + nombre + '"?')) return;
     }
-    fetch('/api/smartolt/config')
-    .then(function(r) { return r.json(); })
-    .then(function(cfg) {
-        if (!cfg.subdomain || !cfg.api_key) throw new Error('SmartOLT no configurado');
-        return fetch('https://' + cfg.subdomain + '.smartolt.com/api/olt/list_zones', {
-            headers: { 'X-Token': cfg.api_key }
-        });
-    })
-    .then(function(r) { return r.json(); })
-    .then(function(d) {
-        var zones = d.zones || d.data || d.response || [];
-        if (Array.isArray(zones)) {
-            _zonSmartoltZones = zones;
-            zonRenderZones(zones);
-            if (callback) callback();
-        } else {
-            sel.innerHTML = '<option value="">-- Sin zonas --</option>';
-        }
-    })
-    .catch(function(e) {
-        sel.innerHTML = '<option value="">-- Error: ' + e.message + ' --</option>';
-        document.getElementById('zonZoneError').style.display = 'block';
-        document.getElementById('zonZoneError').textContent = 'Error: ' + e.message;
-    });
-}
-
-function zonRenderZones(zones) {
-    var sel = document.getElementById('zonZoneInput');
-    var h = '<option value="">-- Seleccione zona --</option>';
-    zones.forEach(function(z) {
-        var name = z.name || z.zone_name || z;
-        var val = (typeof z === 'string') ? z : (z.name || z.zone_name || '');
-        if (val) h += '<option value="' + val.replace(/"/g,'&quot;') + '">' + val + '</option>';
-    });
-    sel.innerHTML = h;
-    if (_zonPendingZone) { sel.value = _zonPendingZone; }
-}
-
-function zonConfirmarEliminar(id, nombre, totalServicios) {
-    if (totalServicios > 0) {
-        alert('Esta zona cuenta con ' + totalServicios + ' servicio(s) asignado(s). Primero elimine o mueva los servicios a otra zona.');
-        return;
-    }
-    if (!confirm('¿Eliminar la zona "' + nombre + '"? Esta acción no se puede deshacer.')) return;
+    
     var form = document.createElement('form');
     form.method = 'POST';
-    form.innerHTML = '<input type="hidden" name="accion" value="eliminar_zona"><input type="hidden" name="id_zona" value="' + id + '">';
+    form.action = '/modulo?pagina=Zonas';
+    var inp1 = document.createElement('input');
+    inp1.type = 'hidden'; inp1.name = 'accion'; inp1.value = 'eliminar_zona';
+    var inp2 = document.createElement('input');
+    inp2.type = 'hidden'; inp2.name = 'id_zona'; inp2.value = id;
+    form.appendChild(inp1); form.appendChild(inp2);
     document.body.appendChild(form);
     form.submit();
 }
+
+// Close modal on overlay click
+document.getElementById('modalZona').addEventListener('click', function(e) {
+    if (e.target === this) zonCerrarModal();
+});
 </script>

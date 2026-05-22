@@ -1,49 +1,49 @@
 <style>
 .emp-header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:18px}
-.emp-title{font-size:1.3rem;font-weight:700;color:var(--text-dark,#1e293b);display:flex;align-items:center;gap:10px}.emp-title i{color:var(--accent,#6366f1)}
-.emp-card{background:var(--bg-card,#fff);border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,.06);border:1px solid var(--border-color,#e2e8f0);overflow:hidden}
-.emp-toolbar{padding:14px 16px;border-bottom:1px solid var(--border-color,#e2e8f0);display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.emp-search{padding:8px 14px;border:1px solid var(--border-color,#e2e8f0);border-radius:8px;font-size:0.88rem;flex:1;min-width:200px;outline:none;background:var(--bg-input,#fff);color:var(--text-dark,#1e293b)}.emp-search:focus{border-color:var(--accent,#6366f1)}
+.emp-title{font-size:1.3rem;font-weight:700;color:#1e293b;display:flex;align-items:center;gap:10px}.emp-title i{color:#2563eb}
+.emp-card{background:#fff;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,.06);border:1px solid #e2e8f0;overflow:hidden}
+.emp-toolbar{padding:14px 16px;border-bottom:1px solid #e2e8f0;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.emp-search{padding:8px 14px;border:1px solid #e2e8f0;border-radius:8px;font-size:0.88rem;flex:1;min-width:200px;outline:none}.emp-search:focus{border-color:#2563eb}
 .emp-btn{padding:8px 16px;border:none;border-radius:8px;font-size:0.85rem;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all .15s}
-.emp-btn-primary{background:var(--accent,#6366f1);color:#fff}.emp-btn-primary:hover{opacity:.9}
-.emp-btn-green{background:var(--accent-success,#16a34a);color:#fff}.emp-btn-green:hover{opacity:.9}
-.emp-btn-red{background:var(--accent-danger,#dc2626);color:#fff;font-size:0.8rem;padding:5px 10px}.emp-btn-red:hover{opacity:.9}
-.emp-btn-gray{background:var(--bg-input,#f1f5f9);color:var(--text-gray,#475569);border:1px solid var(--border-color,#e2e8f0)}.emp-btn-gray:hover{background:var(--border-color,#e2e8f0)}
+.emp-btn-primary{background:#2563eb;color:#fff}.emp-btn-primary:hover{background:#1d4ed8}
+.emp-btn-green{background:#16a34a;color:#fff}.emp-btn-green:hover{background:#15803d}
+.emp-btn-red{background:#dc2626;color:#fff;font-size:0.8rem;padding:5px 10px}.emp-btn-red:hover{background:#b91c1c}
+.emp-btn-gray{background:#f1f5f9;color:#475569;border:1px solid #e2e8f0}.emp-btn-gray:hover{background:#e2e8f0}
 .emp-btn-sm{font-size:0.8rem;padding:5px 12px}
 .emp-table{width:100%;border-collapse:collapse}
-.emp-table th{text-align:left;padding:10px 14px;font-size:0.75rem;font-weight:600;color:var(--text-gray,#64748b);text-transform:uppercase;letter-spacing:.5px;border-bottom:2px solid var(--border-color,#e2e8f0);background:var(--bg-body,#f8fafc)}
-.emp-table td{padding:10px 14px;border-bottom:1px solid #f1f5f9;font-size:0.88rem;color:var(--text-dark,#334155)}
-.emp-table tr{cursor:pointer;transition:background .1s}.emp-table tr:hover{background:var(--hover-bg,#eff6ff)}
-.emp-name{font-weight:700;color:var(--text-dark,#1e293b)}
+.emp-table th{text-align:left;padding:10px 14px;font-size:0.75rem;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.5px;border-bottom:2px solid #e2e8f0;background:#f8fafc}
+.emp-table td{padding:10px 14px;border-bottom:1px solid #f1f5f9;font-size:0.88rem;color:#334155}
+.emp-table tr{cursor:pointer;transition:background .1s}.emp-table tr:hover{background:#eff6ff}
+.emp-name{font-weight:700;color:#1e293b}
 .emp-type{font-size:0.75rem;padding:2px 8px;border-radius:4px;font-weight:600;display:inline-block}
 .emp-type-Tecnico{background:#dbeafe;color:#1e40af}.emp-type-Secretaria{background:#fce7f3;color:#9d174d}
-.emp-type-Contable{background:#d1fae5;color:#065f46}.emp-type-Cobrador{background:#fef3c7;color:#92400e}.emp-type-Otro{background:var(--bg-input,#f1f5f9);color:var(--text-gray,#475569)}
-.emp-salary{font-weight:700;color:var(--accent-success,#16a34a)}.emp-loan{font-size:0.78rem;color:var(--accent-danger,#dc2626);font-weight:600}
-.emp-empty{padding:40px;text-align:center;color:var(--text-muted,#94a3b8)}.emp-loading{padding:30px;text-align:center;color:var(--text-muted,#94a3b8)}
+.emp-type-Contable{background:#d1fae5;color:#065f46}.emp-type-Cobrador{background:#fef3c7;color:#92400e}.emp-type-Otro{background:#f1f5f9;color:#475569}
+.emp-salary{font-weight:700;color:#16a34a}.emp-loan{font-size:0.78rem;color:#dc2626;font-weight:600}
+.emp-empty{padding:40px;text-align:center;color:#94a3b8}.emp-loading{padding:30px;text-align:center;color:#94a3b8}
 .emp-pag{display:flex;gap:4px;align-items:center;justify-content:center;padding:12px 16px;flex-wrap:wrap}
-.emp-pag-btn{min-width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--border-color,#e2e8f0);border-radius:6px;background:var(--bg-card,#fff);color:var(--text-gray,#475569);font-size:0.8rem;cursor:pointer;font-weight:500;transition:all .15s}
-.emp-pag-btn:hover:not(:disabled):not(.emp-pag-active){background:var(--bg-input,#f1f5f9)}.emp-pag-btn:disabled{opacity:.3;cursor:not-allowed}
-.emp-pag-active{background:var(--accent,#6366f1);color:#fff;border-color:var(--accent,#6366f1)}.emp-pag-info{font-size:0.75rem;color:var(--text-muted,#94a3b8);margin:0 6px}
+.emp-pag-btn{min-width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center;border:1px solid #e2e8f0;border-radius:6px;background:#fff;color:#475569;font-size:0.8rem;cursor:pointer;font-weight:500;transition:all .15s}
+.emp-pag-btn:hover:not(:disabled):not(.emp-pag-active){background:#f1f5f9}.emp-pag-btn:disabled{opacity:.3;cursor:not-allowed}
+.emp-pag-active{background:#2563eb;color:#fff;border-color:#2563eb}.emp-pag-info{font-size:0.75rem;color:#94a3b8;margin:0 6px}
 .emp-modal{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.4);z-index:3000;display:none;align-items:center;justify-content:center;padding:16px}
-.emp-modal-box{background:var(--bg-card,#fff);border-radius:14px;width:100%;max-width:600px;max-height:90vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.2)}
-.emp-modal-head{padding:16px 20px;border-bottom:1px solid var(--border-color,#e2e8f0);display:flex;justify-content:space-between;align-items:center}
-.emp-modal-head h3{margin:0;font-size:1rem;color:var(--text-dark,#1e293b);display:flex;align-items:center;gap:8px}
-.emp-modal-close{cursor:pointer;font-size:1.4rem;color:var(--text-muted,#94a3b8)}.emp-modal-close:hover{color:var(--accent-danger,#ef4444)}
-.emp-modal-body{overflow-y:auto;flex:1;padding:20px}.emp-modal-foot{padding:12px 20px;border-top:1px solid var(--border-color,#e2e8f0);display:flex;justify-content:flex-end;gap:8px}
-.emp-field{margin-bottom:14px}.emp-field label{display:block;font-size:0.8rem;font-weight:600;color:var(--text-gray,#475569);margin-bottom:4px}
-.emp-field input,.emp-field select,.emp-field textarea{width:100%;padding:8px 12px;border:1px solid var(--border-color,#e2e8f0);border-radius:8px;font-size:0.88rem;outline:none;box-sizing:border-box;background:var(--bg-input,#fff);color:var(--text-dark,#1e293b)}
-.emp-field input:focus,.emp-field select:focus{border-color:var(--accent,#6366f1)}
+.emp-modal-box{background:#fff;border-radius:14px;width:100%;max-width:600px;max-height:90vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.emp-modal-head{padding:16px 20px;border-bottom:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center}
+.emp-modal-head h3{margin:0;font-size:1rem;color:#1e293b;display:flex;align-items:center;gap:8px}
+.emp-modal-close{cursor:pointer;font-size:1.4rem;color:#94a3b8}.emp-modal-close:hover{color:#ef4444}
+.emp-modal-body{overflow-y:auto;flex:1;padding:20px}.emp-modal-foot{padding:12px 20px;border-top:1px solid #e2e8f0;display:flex;justify-content:flex-end;gap:8px}
+.emp-field{margin-bottom:14px}.emp-field label{display:block;font-size:0.8rem;font-weight:600;color:#475569;margin-bottom:4px}
+.emp-field input,.emp-field select,.emp-field textarea{width:100%;padding:8px 12px;border:1px solid #e2e8f0;border-radius:8px;font-size:0.88rem;outline:none;box-sizing:border-box}
+.emp-field input:focus,.emp-field select:focus{border-color:#2563eb}
 .emp-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.emp-detail-tabs{display:flex;gap:0;border-bottom:2px solid var(--border-color,#e2e8f0);margin-bottom:16px}
-.emp-detail-tab{padding:10px 18px;font-size:0.85rem;font-weight:600;color:var(--text-gray,#64748b);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s}
-.emp-detail-tab:hover{color:var(--text-dark,#334155)}.emp-detail-tab.active{color:var(--accent,#6366f1);border-bottom-color:var(--accent,#6366f1)}
+.emp-detail-tabs{display:flex;gap:0;border-bottom:2px solid #e2e8f0;margin-bottom:16px}
+.emp-detail-tab{padding:10px 18px;font-size:0.85rem;font-weight:600;color:#64748b;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s}
+.emp-detail-tab:hover{color:#334155}.emp-detail-tab.active{color:#2563eb;border-bottom-color:#2563eb}
 .emp-info-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.emp-info-item{padding:10px 14px;background:var(--bg-body,#f8fafc);border-radius:8px}
-.emp-info-label{font-size:0.72rem;font-weight:600;color:var(--text-muted,#94a3b8);text-transform:uppercase;letter-spacing:.3px}
-.emp-info-val{font-size:0.95rem;font-weight:600;color:var(--text-dark,#1e293b);margin-top:2px}
-.emp-order-row{padding:10px 14px;border-bottom:1px solid #f1f5f9;display:flex;justify-content:space-between;align-items:center;font-size:0.85rem}.emp-order-row:hover{background:var(--hover-bg,#f8fafc)}
+.emp-info-item{padding:10px 14px;background:#f8fafc;border-radius:8px}
+.emp-info-label{font-size:0.72rem;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:.3px}
+.emp-info-val{font-size:0.95rem;font-weight:600;color:#1e293b;margin-top:2px}
+.emp-order-row{padding:10px 14px;border-bottom:1px solid #f1f5f9;display:flex;justify-content:space-between;align-items:center;font-size:0.85rem}.emp-order-row:hover{background:#f8fafc}
 .emp-loan-row{padding:10px 14px;border:1px solid #f1f5f9;border-radius:8px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:0.85rem}
-.emp-loan-active{border-left:3px solid var(--accent-danger,#dc2626)}.emp-loan-paid{border-left:3px solid var(--accent-success,#16a34a);opacity:.6}
+.emp-loan-active{border-left:3px solid #dc2626}.emp-loan-paid{border-left:3px solid #16a34a;opacity:.6}
 .emp-status-badge{font-size:0.72rem;padding:2px 8px;border-radius:4px;font-weight:600}
 @media(max-width:600px){.emp-row,.emp-info-grid{grid-template-columns:1fr}.emp-toolbar{flex-direction:column}.emp-search{width:100%}}
 </style>
@@ -64,7 +64,7 @@
 <!-- Modal Formulario Nuevo/Editar -->
 <div class="emp-modal" id="empFormModal">
     <div class="emp-modal-box" style="max-width:550px;">
-        <div class="emp-modal-head"><h3 id="empFormTitle"><i class="fas fa-user-plus" style="color:var(--accent,#6366f1);"></i> Nuevo Empleado</h3><span class="emp-modal-close" onclick="empCloseForm()">&times;</span></div>
+        <div class="emp-modal-head"><h3 id="empFormTitle"><i class="fas fa-user-plus" style="color:#2563eb;"></i> Nuevo Empleado</h3><span class="emp-modal-close" onclick="empCloseForm()">&times;</span></div>
         <div class="emp-modal-body">
             <input type="hidden" id="empFormId" value="0">
             <div class="emp-field"><label>Nombre completo *</label><input type="text" id="empName"></div>
@@ -114,7 +114,7 @@
 <!-- Modal Detalle Empleado -->
 <div class="emp-modal" id="empDetailModal">
     <div class="emp-modal-box" style="max-width:680px;">
-        <div class="emp-modal-head"><h3><i class="fas fa-user" style="color:var(--accent,#6366f1);"></i> <span id="empDetailName"></span></h3><span class="emp-modal-close" onclick="document.getElementById('empDetailModal').style.display='none'">&times;</span></div>
+        <div class="emp-modal-head"><h3><i class="fas fa-user" style="color:#2563eb;"></i> <span id="empDetailName"></span></h3><span class="emp-modal-close" onclick="document.getElementById('empDetailModal').style.display='none'">&times;</span></div>
         <div class="emp-modal-body" style="padding:0;">
             <div class="emp-detail-tabs">
                 <div class="emp-detail-tab active" onclick="empDTab('info',this)">Información</div>
@@ -131,7 +131,7 @@
 <!-- Modal Préstamo -->
 <div class="emp-modal" id="empLoanModal">
     <div class="emp-modal-box" style="max-width:420px;">
-        <div class="emp-modal-head"><h3 id="empLoanTitle"><i class="fas fa-hand-holding-usd" style="color:var(--accent,#6366f1);"></i> Préstamo</h3><span class="emp-modal-close" onclick="document.getElementById('empLoanModal').style.display='none'">&times;</span></div>
+        <div class="emp-modal-head"><h3 id="empLoanTitle"><i class="fas fa-hand-holding-usd" style="color:#2563eb;"></i> Préstamo</h3><span class="emp-modal-close" onclick="document.getElementById('empLoanModal').style.display='none'">&times;</span></div>
         <div class="emp-modal-body">
             <input type="hidden" id="empLoanId" value="0">
             <div class="emp-field"><label>Monto (RD$) *</label><input type="number" id="empLoanAmount" step="0.01" min="0"></div>
@@ -148,10 +148,10 @@
 <!-- Modal Abonar -->
 <div class="emp-modal" id="empPayModal">
     <div class="emp-modal-box" style="max-width:380px;">
-        <div class="emp-modal-head"><h3><i class="fas fa-coins" style="color:var(--accent-success,#16a34a);"></i> Abonar</h3><span class="emp-modal-close" onclick="document.getElementById('empPayModal').style.display='none'">&times;</span></div>
+        <div class="emp-modal-head"><h3><i class="fas fa-coins" style="color:#16a34a;"></i> Abonar</h3><span class="emp-modal-close" onclick="document.getElementById('empPayModal').style.display='none'">&times;</span></div>
         <div class="emp-modal-body">
             <input type="hidden" id="empPayLoanId" value="0">
-            <div style="margin-bottom:12px;font-size:0.85rem;color:var(--text-gray,#64748b);">Restante: <b id="empPayMax" style="color:var(--accent-danger,#dc2626);">$0.00</b></div>
+            <div style="margin-bottom:12px;font-size:0.85rem;color:#64748b;">Restante: <b id="empPayMax" style="color:#dc2626;">$0.00</b></div>
             <div class="emp-field"><label>Monto a abonar (RD$)</label><input type="number" id="empPayAmount" step="0.01" min="0"></div>
         </div>
         <div class="emp-modal-foot">
@@ -181,11 +181,11 @@ function empLoad(page){
         for(var i=0;i<d.data.length;i++){
             var e=d.data[i],tp=e.tipo==='Otro'?(e.tipo_otro||'Otro'):e.tipo,lb=parseFloat(e.deuda||0);
             h+='<tr onclick="empOpenDetail('+e.id+')">';
-            h+='<td><span class="emp-name">'+e.nombre+'</span><br><span style="font-size:0.75rem;color:var(--text-muted,#94a3b8);">'+(e.cedula||'-')+(e.usuario_nombre?' | <i class="fas fa-link" style="font-size:0.6rem;"></i> '+e.usuario_nombre:'')+'</span></td>';
+            h+='<td><span class="emp-name">'+e.nombre+'</span><br><span style="font-size:0.75rem;color:#94a3b8;">'+(e.cedula||'-')+(e.usuario_nombre?' | <i class="fas fa-link" style="font-size:0.6rem;"></i> '+e.usuario_nombre:'')+'</span></td>';
             h+='<td><span class="emp-type emp-type-'+e.tipo+'">'+tp+'</span></td>';
             h+='<td>'+(e.telefono||'-')+'</td><td><span class="emp-salary">'+fmt(e.salario)+'</span></td>';
             h+='<td style="font-size:0.82rem;">'+(e.periodo==='quincenal'?'Quincenal':'Mensual')+'</td>';
-            h+='<td>'+(lb>0?'<span class="emp-loan">'+fmt(lb)+'</span>':'<span style="color:var(--accent-success,#16a34a);font-size:0.8rem;">Sin deuda</span>')+'</td></tr>';
+            h+='<td>'+(lb>0?'<span class="emp-loan">'+fmt(lb)+'</span>':'<span style="color:#16a34a;font-size:0.8rem;">Sin deuda</span>')+'</td></tr>';
         }
         h+='</tbody></table>';wrap.innerHTML=h;
         var pg='';
@@ -201,7 +201,7 @@ function empLoad(page){
 
 function empOpenForm(id){
     document.getElementById('empFormId').value=id;
-    document.getElementById('empFormTitle').innerHTML=id?'<i class="fas fa-user-edit" style="color:var(--accent,#6366f1);"></i> Editar Empleado':'<i class="fas fa-user-plus" style="color:var(--accent,#6366f1);"></i> Nuevo Empleado';
+    document.getElementById('empFormTitle').innerHTML=id?'<i class="fas fa-user-edit" style="color:#2563eb;"></i> Editar Empleado':'<i class="fas fa-user-plus" style="color:#2563eb;"></i> Nuevo Empleado';
     if(id){
         var xhr=new XMLHttpRequest();xhr.open('GET','/api/empleados/'+id);
         xhr.setRequestHeader('X-Requested-With','XMLHttpRequest');
@@ -269,11 +269,11 @@ function empOpenDetail(id){
         h+='<div class="emp-info-item"><div class="emp-info-label">Cédula</div><div class="emp-info-val">'+(e.cedula||'-')+'</div></div>';
         h+='<div class="emp-info-item"><div class="emp-info-label">Teléfono</div><div class="emp-info-val">'+(e.telefono||'-')+'</div></div>';
         h+='<div class="emp-info-item"><div class="emp-info-label">Tipo</div><div class="emp-info-val"><span class="emp-type emp-type-'+e.tipo+'">'+tp+'</span></div></div>';
-        h+='<div class="emp-info-item"><div class="emp-info-label">Salario</div><div class="emp-info-val" style="color:var(--accent-success,#16a34a);">'+fmt(e.salario)+'</div></div>';
+        h+='<div class="emp-info-item"><div class="emp-info-label">Salario</div><div class="emp-info-val" style="color:#16a34a;">'+fmt(e.salario)+'</div></div>';
         h+='<div class="emp-info-item"><div class="emp-info-label">Periodo</div><div class="emp-info-val">'+(e.periodo==='quincenal'?'Quincenal':'Mensual')+'</div></div>';
         h+='<div class="emp-info-item"><div class="emp-info-label">Días de pago</div><div class="emp-info-val">'+payDays+'</div></div>';
         h+='<div class="emp-info-item"><div class="emp-info-label">Ingreso</div><div class="emp-info-val">'+hireFmt+'</div></div>';
-        h+='<div class="emp-info-item"><div class="emp-info-label">Usuario asociado</div><div class="emp-info-val">'+(e.usuario_nombre||'<span style="color:var(--text-muted,#94a3b8);">Sin asociar</span>')+'</div></div>';
+        h+='<div class="emp-info-item"><div class="emp-info-label">Usuario asociado</div><div class="emp-info-val">'+(e.usuario_nombre||'<span style="color:#94a3b8;">Sin asociar</span>')+'</div></div>';
         h+='</div>';
         h+='<div style="margin-top:16px;display:flex;gap:8px;">';
         h+='<button class="emp-btn emp-btn-primary emp-btn-sm" onclick="empOpenForm('+e.id+');document.getElementById(\'empDetailModal\').style.display=\'none\'"><i class="fas fa-edit"></i> Editar</button>';
@@ -306,21 +306,21 @@ function empLoadOrders(mes,anio){
         if(!d.success){wrap.innerHTML='<div class="emp-empty">'+(d.message||'Error')+'</div>';return;}
         var mN=['','Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
         var h='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;">';
-        h+='<div style="font-size:0.85rem;color:var(--text-gray,#64748b);"><b>'+d.total+'</b> órdenes | <b style="color:var(--accent-success,#16a34a);">'+d.completadas+'</b> completadas</div>';
-        h+='<div style="display:flex;gap:4px;"><select style="padding:4px 8px;border:1px solid var(--border-color,#e2e8f0);border-radius:6px;font-size:0.82rem;background:var(--bg-input,#fff);color:var(--text-dark,#1e293b);" onchange="empLoadOrders(this.value,'+anio+')">';
+        h+='<div style="font-size:0.85rem;color:#64748b;"><b>'+d.total+'</b> órdenes | <b style="color:#16a34a;">'+d.completadas+'</b> completadas</div>';
+        h+='<div style="display:flex;gap:4px;"><select style="padding:4px 8px;border:1px solid #e2e8f0;border-radius:6px;font-size:0.82rem;" onchange="empLoadOrders(this.value,'+anio+')">';
         for(var m=1;m<=12;m++){h+='<option value="'+m+'" '+(m==mes?'selected':'')+'>'+mN[m]+'</option>';}
-        h+='</select><select style="padding:4px 8px;border:1px solid var(--border-color,#e2e8f0);border-radius:6px;font-size:0.82rem;background:var(--bg-input,#fff);color:var(--text-dark,#1e293b);" onchange="empLoadOrders('+mes+',this.value)">';
+        h+='</select><select style="padding:4px 8px;border:1px solid #e2e8f0;border-radius:6px;font-size:0.82rem;" onchange="empLoadOrders('+mes+',this.value)">';
         for(var y=now.getFullYear();y>=now.getFullYear()-2;y--){h+='<option value="'+y+'" '+(y==anio?'selected':'')+'>'+y+'</option>';}
         h+='</select></div></div>';
         if(!d.data.length){h+='<div class="emp-empty">Sin órdenes para este período</div>';}
         else{for(var i=0;i<d.data.length;i++){var o=d.data[i];
-            var stColors={completada:'#16a34a',completed:'#16a34a',in_progress:'#6366f1',pendiente:'#f59e0b',cancelada:'#dc2626',cancelled:'#dc2626',cerrada:'#16a34a'};
+            var stColors={completada:'#16a34a',completed:'#16a34a',in_progress:'#2563eb',pendiente:'#f59e0b',cancelada:'#dc2626',cancelled:'#dc2626',cerrada:'#16a34a'};
             var stNames={completada:'Completada',completed:'Completada',in_progress:'En progreso',pendiente:'Pendiente',cancelada:'Cancelada',cancelled:'Cancelada',cerrada:'Cerrada'};
             var stC=stColors[o.estado]||'#94a3b8',stN=stNames[o.estado]||o.estado;
             var dt=o.created_at?new Date(o.created_at).toLocaleDateString('es-DO'):'';
             h+='<div class="emp-order-row"><div style="min-width:0;flex:1;"><div style="font-weight:600;">#'+o.id+' '+(o.tipo||'')+'</div>';
-            h+='<div style="font-size:0.78rem;color:var(--text-gray,#64748b);">'+(o.detalle||'')+'</div>';
-            h+='<div style="font-size:0.75rem;color:var(--text-muted,#94a3b8);margin-top:2px;">'+(o.cliente_nombre?'<span style="color:var(--accent,#6366f1);">'+o.cliente_nombre+'</span>':'')+(o.zona_nombre?' | '+o.zona_nombre:'')+' | '+dt+'</div></div>';
+            h+='<div style="font-size:0.78rem;color:#64748b;">'+(o.detalle||'')+'</div>';
+            h+='<div style="font-size:0.75rem;color:#94a3b8;margin-top:2px;">'+(o.cliente_nombre?'<span style="color:#2563eb;">'+o.cliente_nombre+'</span>':'')+(o.zona_nombre?' | '+o.zona_nombre:'')+' | '+dt+'</div></div>';
             h+='<span class="emp-status-badge" style="background:'+stC+'15;color:'+stC+';">'+stN+'</span></div>';
         }}
         wrap.innerHTML=h;
@@ -336,7 +336,7 @@ function empLoadLoans(){
         try{var d=JSON.parse(xhr.responseText);}catch(e){wrap.innerHTML='<div class="emp-empty">Error</div>';return;}
         if(!d.success){wrap.innerHTML='<div class="emp-empty">'+(d.message||'Error')+'</div>';return;}
         var h='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">';
-        h+='<div style="font-size:0.85rem;color:var(--text-gray,#64748b);">Deuda: <b style="color:'+(d.balance>0?'var(--accent-danger,#dc2626)':'var(--accent-success,#16a34a)')+';">'+fmt(d.balance)+'</b></div>';
+        h+='<div style="font-size:0.85rem;">Deuda: <b style="color:'+(d.balance>0?'#dc2626':'#16a34a')+';">'+fmt(d.balance)+'</b></div>';
         h+='<button class="emp-btn emp-btn-primary emp-btn-sm" onclick="empOpenLoanForm(0)"><i class="fas fa-plus"></i> Nuevo Préstamo</button></div>';
         if(!d.data.length){h+='<div class="emp-empty">Sin préstamos registrados</div>';}
         else{for(var i=0;i<d.data.length;i++){var l=d.data[i];
@@ -344,13 +344,13 @@ function empLoadLoans(){
             var cls=rem<=0?'emp-loan-paid':'emp-loan-active';
             h+='<div class="emp-loan-row '+cls+'"><div style="min-width:0;flex:1;">';
             h+='<div style="font-weight:600;">'+fmt(l.monto)+(l.descripcion?' - '+l.descripcion:'')+'</div>';
-            h+='<div style="font-size:0.75rem;color:var(--text-muted,#94a3b8);">'+(l.fecha?new Date(l.fecha+'T12:00:00').toLocaleDateString('es-DO'):'')+' | Pagado: '+fmt(pag)+' | Resta: '+fmt(Math.max(0,rem))+'</div></div>';
+            h+='<div style="font-size:0.75rem;color:#94a3b8;">'+(l.fecha?new Date(l.fecha+'T12:00:00').toLocaleDateString('es-DO'):'')+' | Pagado: '+fmt(pag)+' | Resta: '+fmt(Math.max(0,rem))+'</div></div>';
             h+='<div style="display:flex;gap:4px;flex-shrink:0;">';
             if(rem>0){
                 h+='<button class="emp-btn emp-btn-green emp-btn-sm" onclick="event.stopPropagation();empOpenPayLoan('+l.id+','+rem.toFixed(2)+')"><i class="fas fa-coins"></i></button>';
-                h+='<button class="emp-btn emp-btn-sm" style="background:#dbeafe;color:var(--accent,#6366f1);" onclick="event.stopPropagation();empOpenLoanForm('+l.id+')"><i class="fas fa-edit"></i></button>';
+                h+='<button class="emp-btn emp-btn-sm" style="background:#dbeafe;color:#2563eb;" onclick="event.stopPropagation();empOpenLoanForm('+l.id+')"><i class="fas fa-edit"></i></button>';
                 h+='<button class="emp-btn emp-btn-red emp-btn-sm" onclick="event.stopPropagation();empDeleteLoan('+l.id+')"><i class="fas fa-trash"></i></button>';
-            } else { h+='<span style="color:var(--accent-success,#16a34a);font-size:0.78rem;font-weight:600;">Saldado</span>'; }
+            } else { h+='<span style="color:#16a34a;font-size:0.78rem;font-weight:600;">Saldado</span>'; }
             h+='</div></div>';
         }}
         wrap.innerHTML=h;
@@ -359,7 +359,7 @@ function empLoadLoans(){
 
 function empOpenLoanForm(loanId){
     document.getElementById('empLoanId').value=loanId;
-    document.getElementById('empLoanTitle').innerHTML=loanId?'<i class="fas fa-edit" style="color:var(--accent,#6366f1);"></i> Editar Préstamo':'<i class="fas fa-hand-holding-usd" style="color:var(--accent,#6366f1);"></i> Nuevo Préstamo';
+    document.getElementById('empLoanTitle').innerHTML=loanId?'<i class="fas fa-edit" style="color:#2563eb;"></i> Editar Préstamo':'<i class="fas fa-hand-holding-usd" style="color:#2563eb;"></i> Nuevo Préstamo';
     if(loanId){
         var xhr=new XMLHttpRequest();xhr.open('GET','/api/empleados/'+empCurrentId+'/prestamos');
         xhr.setRequestHeader('X-Requested-With','XMLHttpRequest');

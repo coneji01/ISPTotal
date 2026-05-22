@@ -1,0 +1,222 @@
+<div class="page-header" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
+  <div>
+    <h2 style="margin:0;font-size:1.3rem;color:var(--text-dark);display:flex;align-items:center;gap:10px;">
+      <i class="fas fa-shield-alt" style="color:var(--accent);"></i> Servidores VPN
+    </h2>
+    <div style="font-size:0.85rem;color:var(--text-gray);margin-top:2px;">OpenVPN sobre TCP — Debian como servidor, MikroTik como cliente</div>
+  </div>
+  <button class="btn btn-primary" onclick="vpnOpenCreate()" style="padding:10px 20px;border:none;border-radius:8px;background:var(--accent);color:#fff;font-weight:700;font-size:0.9rem;cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:0.15s;">
+    <i class="fas fa-plus"></i> Nuevo Túnel
+  </button>
+</div>
+
+<div id="vpnDepBanner" class="vdb" style="display:none;">
+  <div class="dt"><i class="fas fa-exclamation-triangle"></i> Dependencias</div>
+  <div id="vpnDepList"><span class="vdi ok"><i class="fas fa-check-circle"></i> OpenVPN</span></div>
+</div>
+
+<div id="vpnList" class="vg">
+  <div style="text-align:center;padding:60px 20px;color:var(--text-gray);">
+    <i class="fas fa-spinner fa-spin" style="font-size:2rem;display:block;margin-bottom:12px;"></i>
+    Cargando servidores VPN...
+  </div>
+</div>
+
+<!-- Modal Crear -->
+<div id="vpnCreateModal" class="modal" style="display:none">
+  <div class="modal-content" style="max-width:500px;">
+    <div class="modal-header">
+      <h3 style="display:flex;align-items:center;gap:8px;"><i class="fas fa-plus-circle" style="color:var(--accent);"></i> Nuevo Servidor OpenVPN</h3>
+      <button onclick="vpnCloseCreate()" style="background:var(--accent-danger);color:white;border:none;border-radius:6px;padding:5px 12px;cursor:pointer;font-size:0.78rem;font-weight:600;">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Nombre</label>
+        <input type="text" id="vpnName" class="form-control" placeholder="enlace-sucursal1" oninput="this.value=this.value.replace(/[^a-zA-Z0-9\-]/g,'')">
+        <div style="font-size:0.75rem;color:var(--text-gray);margin-top:4px;">Solo letras, números, guiones</div>
+      </div>
+      <div style="margin-bottom:14px;">
+        <label style="display:flex;align-items:center;gap:8px;font-size:0.85rem;font-weight:600;color:var(--text-dark);cursor:pointer;">
+          <input type="checkbox" id="vpnAutoIp" checked onchange="vpnToggleIpMode()"> Asignar IP automáticamente <span style="font-size:0.75rem;color:var(--text-gray);font-weight:400;">(10.7.117.x)</span>
+        </label>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;" id="vpnIpFields">
+        <div class="form-group">
+          <label class="form-label">IP Local (Gateway)</label>
+          <input type="text" id="vpnLocalIp" class="form-control" value="10.7.117.1" readonly style="background:var(--bg-body);">
+        </div>
+        <div class="form-group">
+          <label class="form-label">IP Remota (Cliente)</label>
+          <input type="text" id="vpnRemoteIp" class="form-control" placeholder="10.7.117.2" readonly style="background:var(--bg-body);">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Puerto TCP</label>
+          <input type="number" id="vpnPort" class="form-control" value="4443" min="1" max="65535">
+        </div>
+      </div>
+      <div style="background:var(--bg-success);padding:12px 14px;border-radius:8px;font-size:0.82rem;color:var(--text-success);line-height:1.5;">
+        <i class="fas fa-info-circle"></i> Se generan certificados TLS automáticamente.<br>
+        En MikroTik: <b>Interfaces → OVPN Client</b>, IP del servidor, puerto TCP, user/pass.
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="vpnCloseCreate()">Cancelar</button>
+      <button class="btn btn-primary" id="vpnBtnCreate" onclick="vpnCreate()"><i class="fas fa-check"></i> Crear</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Logs -->
+<div id="vpnLogsModal" class="modal" style="display:none">
+  <div class="modal-content" style="max-width:680px;">
+    <div class="modal-header">
+      <h3 style="display:flex;align-items:center;gap:8px;"><i class="fas fa-terminal"></i> <span id="vpnLogsTitle">Logs</span></h3>
+      <button onclick="document.getElementById('vpnLogsModal').style.display='none'" style="background:var(--accent-danger);color:white;border:none;border-radius:6px;padding:5px 12px;cursor:pointer;font-size:0.78rem;font-weight:600;">×</button>
+    </div>
+    <div class="modal-body">
+      <pre class="vlp" id="vpnLogsContent" style="background:#0f172a;color:#e2e8f0;padding:14px 16px;border-radius:8px;font-size:0.75rem;font-family:monospace;max-height:300px;overflow-y:auto;white-space:pre-wrap;word-break:break-all;line-height:1.5;">Cargando...</pre>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Certificados -->
+<div id="vpnCertsModal" class="modal" style="display:none">
+  <div class="modal-content" style="max-width:680px;">
+    <div class="modal-header">
+      <h3 style="display:flex;align-items:center;gap:8px;"><i class="fas fa-key"></i> <span id="vpnCertsTitle">Certificados</span></h3>
+      <button onclick="document.getElementById('vpnCertsModal').style.display='none'" style="background:var(--accent-danger);color:white;border:none;border-radius:6px;padding:5px 12px;cursor:pointer;font-size:0.78rem;font-weight:600;">×</button>
+    </div>
+    <div class="modal-body" id="vpnCertsContent">Cargando...</div>
+  </div>
+</div>
+
+<style>
+:root{--vp:#16a34a;--vpbg:#f0fdf4;--vpd:#15803d;--vg:#059669;--vgb:#ecfdf5;--vr:#dc2626;--va:#d97706;--vab:#fffbeb;--vb:#e2e8f0;--vt:#0f172a;--vm:#64748b;--vf:#f8fafc;}
+.vg{display:grid;grid-template-columns:repeat(auto-fill,minmax(380px,1fr));gap:16px}@media(max-width:500px){.vg{grid-template-columns:1fr}}
+.vc{background:var(--bg-card);border:1px solid var(--border-color);border-radius:14px;overflow:hidden;transition:0.2s}.vc:hover{box-shadow:0 6px 20px rgba(0,0,0,0.06)}.vc.on{border-color:var(--vg)}
+.vct{padding:18px 20px;display:flex;align-items:flex-start;gap:14px}
+.vci{width:10px;height:10px;border-radius:50%;margin-top:6px;flex-shrink:0;background:#cbd5e1}.vc.on .vci{background:var(--vg);box-shadow:0 0 8px rgba(5,150,105,0.4);animation:vpu 2s infinite}
+@keyframes vpu{0%,100%{box-shadow:0 0 4px rgba(5,150,105,0.3)}50%{box-shadow:0 0 12px rgba(5,150,105,0.6)}}
+.vcf{flex:1;min-width:0}.vcn{font-weight:800;font-size:1.05rem;color:var(--text-dark);margin-bottom:4px;display:flex;align-items:center;gap:8px}
+.vcp{font-size:0.68rem;font-weight:800;padding:2px 7px;border-radius:4px;text-transform:uppercase;background:#dcfce7;color:#166534}
+.vips{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px 12px;margin-top:10px}.vil{font-size:0.7rem;color:var(--text-gray);font-weight:600;text-transform:uppercase}.viv{font-size:0.85rem;color:var(--text-dark);font-family:monospace;font-weight:600}
+.vcs{margin-top:10px;padding-top:10px;border-top:1px dashed var(--border-color);font-size:0.78rem;display:flex;align-items:center;gap:6px}
+.vsd{width:7px;height:7px;border-radius:50%;display:inline-block}.vsd.li{background:var(--vg)}.vsd.dn{background:#cbd5e1}
+.vcr{background:var(--bg-body);padding:10px 20px;border-top:1px solid var(--border-color);display:grid;grid-template-columns:1fr 1fr;gap:4px 16px}
+.vcrl{font-size:0.7rem;color:var(--text-gray);font-weight:600;text-transform:uppercase}.vcrv{font-size:0.82rem;color:var(--text-dark);font-family:monospace;display:flex;align-items:center;gap:6px}
+.vcrv .cb{background:none;border:none;color:var(--text-gray);cursor:pointer;font-size:0.75rem;padding:2px}.vcrv .cb:hover{color:var(--vp)}
+.vca{padding:10px 20px;border-top:1px solid var(--border-color);display:flex;justify-content:space-between;align-items:center;gap:6px}
+.vb{border:none;padding:7px 14px;border-radius:6px;cursor:pointer;font-weight:700;font-size:0.8rem;display:inline-flex;align-items:center;gap:5px;transition:0.15s}
+.vbc{background:var(--vgb);color:var(--vg)}.vbc:hover{background:#d1fae5}
+.vbd{background:var(--vab);color:var(--va)}.vbd:hover{background:#fef3c7}
+.vbl{background:var(--bg-body);color:var(--text-gray)}.vbl:hover{background:#e2e8f0;color:var(--text-dark)}
+.vbk{background:#eff6ff;color:#2563eb}.vbk:hover{background:#dbeafe}
+.vbx{background:transparent;color:#94a3b8;font-size:0.85rem;padding:7px 10px}.vbx:hover{color:var(--vr)}
+.vdb{background:var(--vab);border:1px solid #fde68a;border-radius:10px;padding:14px 18px;margin-bottom:20px;display:none}
+.vdb .dt{font-weight:700;color:var(--va);font-size:0.9rem;margin-bottom:8px}
+.vdi{display:inline-flex;align-items:center;gap:6px;font-size:0.82rem;padding:4px 12px;border-radius:6px;margin:3px 4px 3px 0;cursor:pointer;font-weight:600;transition:0.15s}
+.vdi.ok{background:#dcfce7;color:#166534;cursor:default}.vdi.mi{background:#fee2e2;color:#991b1b}.vdi.mi:hover{background:#fecaca}
+.vto{position:fixed;bottom:20px;right:20px;z-index:99999;padding:12px 20px;border-radius:10px;font-size:0.85rem;font-weight:600;color:#fff;opacity:0;transform:translateY(20px);transition:0.3s;max-width:360px}
+.vto.sh{opacity:1;transform:translateY(0)}.vto.ok{background:var(--vg)}.vto.er{background:var(--vr)}
+.vlpl{background:#0f172a;color:#e2e8f0;padding:14px 16px;border-radius:8px;font-size:0.75rem;font-family:monospace;max-height:300px;overflow-y:auto;white-space:pre-wrap;word-break:break-all;line-height:1.5}
+.ve{text-align:center;padding:60px 20px;color:var(--text-gray)}.ve i{font-size:3rem;opacity:0.2;margin-bottom:14px;display:block}
+</style>
+
+<script>
+(function(){
+function aj(action,data,cb){
+  var url='<%= '/modulo?pagina=VPN&ajax=' %>'+action;
+  if(!data){fetch(url).then(r=>r.json()).then(cb).catch(e=>cb({status:'error',msg:e.message}));return;}
+  if(typeof data==='string'){fetch(url+'&'+data).then(r=>r.json()).then(cb).catch(e=>cb({status:'error',msg:e.message}));return;}
+  var fd=new FormData();for(var k in data)fd.append(k,data[k]);
+  fetch(url,{method:'POST',body:fd}).then(r=>r.json()).then(cb).catch(e=>cb({status:'error',msg:e.message}));
+}
+function toast(m,t){
+  var e=document.getElementById('vpnToast');
+  if(!e){e=document.createElement('div');e.id='vpnToast';e.className='vto';document.body.appendChild(e);}
+  e.textContent=m;e.className='vto '+(t==='error'?'er':'ok');
+  setTimeout(()=>e.classList.add('sh'),10);setTimeout(()=>e.classList.remove('sh'),3500);
+}
+function esc(s){var d=document.createElement('div');d.textContent=s;return d.innerHTML;}
+
+function load(){
+  aj('list',null,function(d){
+    var el=document.getElementById('vpnList');
+    if(d.status!=='success'||!d.data||!d.data.length){
+      el.innerHTML='<div class="ve"><i class="fas fa-shield-alt"></i><p>No hay servidores VPN</p><button class="btn btn-primary" onclick="vpnOpenCreate()" style="margin-top:12px;padding:8px 20px;border:none;border-radius:8px;background:var(--accent);color:#fff;font-weight:600;cursor:pointer;"><i class="fas fa-plus"></i> Crear primero</button></div>';
+      return;
+    }
+    var h='';d.data.forEach(function(t){
+      var up=t.live_status==='listening',st=up?'Escuchando TCP:'+(t.listen_port||4443):'Detenido';
+      h+='<div class="vc '+(up?'on':'')+'">';
+      h+='<div class="vct"><div class="vci"></div><div class="vcf">';
+      h+='<div class="vcn">'+esc(t.name)+' <span class="vcp">OVPN</span></div>';
+      h+='<div class="vips"><div><div class="vil">Local</div><div class="viv">'+esc(t.local_ip)+'</div></div>';
+      h+='<div><div class="vil">Remota</div><div class="viv">'+esc(t.remote_ip)+'</div></div>';
+      h+='<div><div class="vil">Puerto</div><div class="viv">TCP:'+(t.listen_port||4443)+'</div></div></div>';
+      h+='<div class="vcs"><span class="vsd '+(up?'li':'dn')+'"></span> '+st+'</div>';
+      h+='</div></div>';
+      h+='<div class="vcr"><div><div class="vcrl">Usuario</div><div class="vcrv">'+esc(t.username)+' <button class="cb" onclick="event.stopPropagation();vpnCopy(\''+esc(t.username).replace(/'/g,"\\'")+'\')"><i class="fas fa-copy"></i></button></div></div>';
+      h+='<div><div class="vcrl">Password</div><div class="vcrv">'+esc(t.password)+' <button class="cb" onclick="event.stopPropagation();vpnCopy(\''+esc(t.password).replace(/'/g,"\\'")+'\')"><i class="fas fa-copy"></i></button></div></div></div>';
+      h+='<div class="vca">';
+      h+=up?'<button class="vb vbd" onclick="vpnStop('+t.id+')"><i class="fas fa-stop"></i> Detener</button>':'<button class="vb vbc" onclick="vpnStart('+t.id+')"><i class="fas fa-play"></i> Iniciar</button>';
+      h+=' <div><button class="vb vbk" onclick="vpnCerts('+t.id+',\''+esc(t.name).replace(/'/g,"\\'")+'\')"><i class="fas fa-key"></i> Certs</button>';
+      h+=' <button class="vb vbl" onclick="vpnLogs('+t.id+',\''+esc(t.name).replace(/'/g,"\\'")+'\')"><i class="fas fa-terminal"></i></button>';
+      h+=' <button class="vb vbx" onclick="vpnDel('+t.id+',\''+esc(t.name).replace(/'/g,"\\'")+'\')"><i class="fas fa-trash-alt"></i></button></div>';
+      h+='</div></div>';
+    });el.innerHTML=h;
+  });
+}
+function checkDeps(){
+  aj('check_deps',null,function(d){
+    if(d.status!=='success')return;var dp=d.data,el=document.getElementById('vpnDepList'),b=document.getElementById('vpnDepBanner'),h='',miss=false;
+    [{ok:dp.openvpn,p:'openvpn',l:'OpenVPN'}].forEach(function(i){
+      if(i.ok)h+='<span class="vdi ok"><i class="fas fa-check-circle"></i> '+i.l+'</span>';
+      else{miss=true;h+='<span class="vdi mi" onclick="vpnInst(\''+i.p+'\',this)"><i class="fas fa-download"></i> '+i.l+'</span>';}
+    });el.innerHTML=h;b.style.display=miss?'block':'none';
+  });
+}
+window.vpnInst=function(p,el){el.innerHTML='<i class="fas fa-spinner fa-spin"></i> ...';el.style.pointerEvents='none';aj('install_deps',{package:p},function(d){d.status==='success'?(toast(d.msg),checkDeps()):(toast(d.msg,'error'),el.innerHTML='Error',el.style.pointerEvents='auto');});};
+window.vpnOpenCreate=function(){
+  document.getElementById('vpnName').value='';
+  document.getElementById('vpnPort').value='4443';
+  document.getElementById('vpnAutoIp').checked=true;vpnToggleIpMode();
+  document.getElementById('vpnCreateModal').style.display='flex';
+  aj('next_ip',null,function(d){if(d.status==='success'){document.getElementById('vpnLocalIp').value=d.local_ip;document.getElementById('vpnRemoteIp').value=d.remote_ip;}});
+};
+window.vpnToggleIpMode=function(){
+  var auto=document.getElementById('vpnAutoIp').checked,lip=document.getElementById('vpnLocalIp'),rip=document.getElementById('vpnRemoteIp');
+  if(auto){lip.readOnly=true;lip.style.background='var(--bg-body)';rip.readOnly=true;rip.style.background='var(--bg-body)';aj('next_ip',null,function(d){if(d.status==='success'){lip.value=d.local_ip;rip.value=d.remote_ip;}});}
+  else{lip.readOnly=false;lip.style.background='';rip.readOnly=false;rip.style.background='';}
+};
+window.vpnCloseCreate=function(){document.getElementById('vpnCreateModal').style.display='none';};
+window.vpnCreate=function(){
+  var n=document.getElementById('vpnName').value.trim(),l=document.getElementById('vpnLocalIp').value.trim(),r=document.getElementById('vpnRemoteIp').value.trim(),p=document.getElementById('vpnPort').value;
+  if(!n||!l||!r){toast('Completa todos los campos','error');return;}
+  var btn=document.getElementById('vpnBtnCreate');btn.disabled=true;btn.innerHTML='<i class="fas fa-spinner fa-spin"></i>';
+  aj('create',{name:n,local_ip:l,remote_ip:r,listen_port:p},function(d){btn.disabled=false;btn.innerHTML='<i class="fas fa-check"></i> Crear';d.status==='success'?(toast('Creado'),vpnCloseCreate(),load()):toast(d.msg,'error');});
+};
+window.vpnStart=function(id){toast('Iniciando...');aj('connect',{id:id},function(d){toast(d.status==='success'?'Iniciado':d.msg,d.status==='success'?'':'error');setTimeout(load,2000);});};
+window.vpnStop=function(id){aj('disconnect',{id:id},function(d){toast(d.status==='success'?'Detenido':d.msg,d.status==='success'?'':'error');load();});};
+window.vpnDel=function(id,n){if(!confirm('Eliminar "'+n+'"?'))return;aj('delete',{id:id},function(d){toast(d.status==='success'?'Eliminado':d.msg,d.status==='success'?'':'error');load();});};
+window.vpnLogs=function(id,n){document.getElementById('vpnLogsTitle').textContent='Logs: '+n;document.getElementById('vpnLogsContent').textContent='Cargando...';document.getElementById('vpnLogsModal').style.display='flex';aj('logs','id='+id,function(d){document.getElementById('vpnLogsContent').textContent=d.status==='success'?(d.logs||'Sin logs'):d.msg;});};
+window.vpnCerts=function(id,n){
+  document.getElementById('vpnCertsTitle').textContent='Certificados: '+n;
+  document.getElementById('vpnCertsContent').innerHTML='<div style="text-align:center;padding:20px;color:var(--text-gray);"><i class="fas fa-spinner fa-spin"></i> Cargando certificados...</div>';
+  document.getElementById('vpnCertsModal').style.display='flex';
+  aj('certs','id='+id,function(d){
+    if(d.status!=='success'){document.getElementById('vpnCertsContent').textContent=d.msg;return;}
+    var c=d.data,h='';
+    h+='<div style="font-size:0.78rem;font-weight:700;color:var(--text-dark);margin-bottom:4px;">Server Certificate (importar en MikroTik)</div>';
+    h+='<div style="background:#0f172a;color:#a5f3fc;padding:10px 14px;border-radius:8px;font-size:0.72rem;font-family:monospace;max-height:180px;overflow-y:auto;white-space:pre-wrap;word-break:break-all;margin-bottom:12px;position:relative;" id="certKey">'+esc(c.server_crt)+'<button class="vcert-copy" onclick="vpnCopyCert(\'certKey\')" style="position:absolute;top:6px;right:6px;background:rgba(255,255,255,0.15);border:none;color:#fff;padding:4px 8px;border-radius:4px;cursor:pointer;font-size:0.7rem;"><i class="fas fa-copy"></i></button></div>';
+    h+='<div style="background:#eff6ff;padding:10px 14px;border-radius:8px;font-size:0.8rem;color:#1e40af;line-height:1.6;margin-top:8px">';
+    h+='<b>En MikroTik:</b><br>1. Copiar el certificado y guardarlo como archivo .crt en Files<br>2. System → Certificates → Import → seleccionar el .crt<br>3. PPP → Profiles → crear perfil OVPN con local/remote address<br>4. Interfaces → OVPN Client → Add:<br>&nbsp;&nbsp;• Connect To: <b>IP_publica</b>, Port: <b>4443</b><br>&nbsp;&nbsp;• Protocol: <b>tcp</b><br>&nbsp;&nbsp;• User/Password: credenciales de la tarjeta<br>&nbsp;&nbsp;• Cipher: <b>aes 256 cbc</b>, Auth: <b>sha256</b><br>&nbsp;&nbsp;• Certificate: el cert importado<br>&nbsp;&nbsp;• Verify Server Certificate: <b>no</b></div>';
+    document.getElementById('vpnCertsContent').innerHTML=h;
+  });
+};
+window.vpnCopyCert=function(id){var t=document.getElementById(id).innerText;navigator.clipboard?navigator.clipboard.writeText(t).then(()=>toast('Copiado')):toast('Error copiando','error');};
+window.vpnCopy=function(t){navigator.clipboard?navigator.clipboard.writeText(t).then(()=>toast('Copiado')):(function(){var a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();document.execCommand('copy');document.body.removeChild(a);toast('Copiado');})();};
+checkDeps();load();setInterval(load,15000);
+})();
+</script>
+</div>

@@ -1,75 +1,126 @@
 <style>
-.modal-overlay-tr { display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(15,23,42,0.5); backdrop-filter:blur(4px); z-index:9999; justify-content:center; align-items:center; padding:12px; }
-.modal-content-tr { background:white; width:90%; max-width:820px; border-radius:12px; max-height:90vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,0.2); }
-.modal-header-tr { padding:16px 20px; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center; position:sticky; top:0; background:white; border-radius:12px 12px 0 0; }
-.modal-body-tr { padding:20px; }
-.badge { padding:3px 10px; border-radius:5px; font-size:0.72rem; font-weight:700; }
-.tr-grid-2col { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
-@media(max-width:768px){ .tr-grid-2col { grid-template-columns:1fr; } }
+/* ===== TABS ===== */
+.tabs-container { display:flex; gap:0; margin-bottom:20px; border-bottom:2px solid #e2e8f0; overflow-x:auto; }
+.tab-btn { padding:12px 24px; background:none; border:none; font-weight:600; cursor:pointer; color:#64748b; font-size:0.9rem; white-space:nowrap; transition:all 0.2s; position:relative; }
+.tab-btn:hover { color:#334155; background:#f8fafc; }
+.tab-btn.active { color:#2563eb; }
+.tab-btn.active::after { content:''; position:absolute; bottom:-2px; left:0; right:0; height:3px; background:#2563eb; border-radius:3px 3px 0 0; }
+.btn-action { padding:6px 12px; border:none; border-radius:6px; cursor:pointer; color:white; font-size:0.8rem; font-weight:500; transition:opacity 0.2s; }
+.btn-action:hover { opacity:0.85; }
+.badge { display:inline-block; padding:3px 10px; border-radius:20px; font-size:0.72rem; font-weight:600; }
+.modal-overlay { display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(15,23,42,0.5); backdrop-filter:blur(4px); z-index:9999; justify-content:center; align-items:center; padding:12px; }
+.modal-overlay.active { display:flex; }
+.modal-content { background:var(--bg-card,#fff); border-radius:12px; box-shadow:0 20px 60px rgba(0,0,0,0.15); width:90%; max-width:820px; max-height:90vh; overflow-y:auto; }
+.modal-header { display:flex; justify-content:space-between; align-items:center; padding:16px 20px; border-bottom:1px solid #e2e8f0; position:sticky; top:0; background:var(--bg-card,#fff); border-radius:12px 12px 0 0; }
+.modal-header h3 { margin:0; font-size:1.05rem; color:var(--text-main,#1e293b); }
+.client-name-link { color:var(--text-main,#1e293b); text-decoration:none; font-weight:600; }
+.client-name-link:hover { color:#2563eb; text-decoration:underline; }
+.client-result-item { padding:12px 15px; cursor:pointer; border-bottom:1px solid #f1f5f9; transition:background 0.15s; }
+.client-result-item:hover { background:#eff6ff; }
+.service-select-item { padding:12px 15px; cursor:pointer; border-bottom:1px solid #fcd34d; transition:background 0.15s; }
+.service-select-item:hover { background:#fef3c7; }
+.service-select-item.selected { background:#dcfce7; }
+.det-info-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px; }
+.det-card { background:#f8fafc; border-radius:8px; padding:14px; border:1px solid #e2e8f0; }
+.det-card h4 { margin:0 0 10px; font-size:0.8rem; color:#64748b; text-transform:uppercase; letter-spacing:0.5px; }
+.det-card .info-line { font-size:0.85rem; line-height:1.9; color:#334155; }
+.det-card .info-line b { color:#475569; }
+.comment-item { padding:10px 14px; margin-bottom:6px; background:#f8fafc; border-radius:8px; border-left:3px solid #8b5cf6; }
+.comment-meta { display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; }
+.comment-user { font-weight:600; font-size:0.78rem; color:#6b21a8; }
+.comment-date { font-size:0.7rem; color:#94a3b8; }
+.comment-text { font-size:0.85rem; color:#334155; }
+.onu-item { padding:8px 12px; border-bottom:1px solid #f1f5f9; cursor:pointer; transition:background 0.15s; font-size:0.85rem; }
+.onu-item:hover { background:#eff6ff; }
+.det-inline-edit { display:none; margin-top:4px; }
+.det-inline-edit.active { display:flex; gap:4px; align-items:center; }
+.det-inline-edit input, .det-inline-edit textarea { font-size:0.82rem; padding:5px 8px; border:1px solid #2563eb; border-radius:4px; flex:1; background:var(--bg-input,#fff); color:var(--text-main,#1e293b); }
+.det-save-btn { background:#2563eb; color:white; border:none; border-radius:4px; padding:5px 10px; cursor:pointer; font-size:0.75rem; }
+.det-cancel-btn { background:#f1f5f9; color:#64748b; border:1px solid #e2e8f0; border-radius:4px; padding:5px 8px; cursor:pointer; font-size:0.75rem; }
+.det-edit-pencil { background:none; border:none; cursor:pointer; color:#94a3b8; font-size:0.7rem; padding:2px 4px; margin-left:4px; border-radius:3px; }
+.det-edit-pencil:hover { color:#2563eb; background:#eff6ff; }
+
+@media(max-width:768px) {
+    .tabs-container { margin-bottom:12px; }
+    .tab-btn { padding:10px 16px; font-size:0.82rem; }
+    #tablaPendientes thead, #tablaCerradas thead { display:none; }
+    #tablaPendientes tbody tr, #tablaCerradas tbody tr { display:flex; flex-wrap:wrap; padding:12px 14px; border-bottom:1px solid #e2e8f0; gap:4px 8px; align-items:center; }
+    #tablaPendientes td, #tablaCerradas td { padding:0; border:none; font-size:0.84rem; }
+    #tablaPendientes td:nth-child(1) { font-size:0.7rem; color:#94a3b8; font-weight:600; }
+    #tablaPendientes td:nth-child(4) { width:100%; }
+    #tablaPendientes td:nth-child(6) { width:100%; }
+    #tablaPendientes td:last-child { width:100%; display:flex; flex-wrap:wrap; gap:8px; margin-top:6px; padding-top:8px; }
+    .filters-row { flex-direction:column; }
+    .filters-row > * { width:100%; flex:none; }
+    .det-info-grid { grid-template-columns:1fr; gap:10px; }
+    .modal-content { max-width:100%; width:100%; max-height:100vh; border-radius:0; }
+    .modal-overlay { align-items:flex-start; padding:0; }
+}
 </style>
 
 <div class="page-header">
     <h2 class="page-title"><i class="fas fa-clipboard-list" style="color:#7c3aed;"></i> Órdenes de Servicio</h2>
-    <button class="btn btn-primary" onclick="showAlert('info','Nueva Orden','Función próximamente')"><i class="fas fa-plus-circle"></i> Nueva Orden</button>
+    <button class="btn btn-primary" onclick="abrirNuevaOrden()"><i class="fas fa-plus-circle"></i> Nueva Orden</button>
 </div>
 
-<div class="tabs-container" style="display:flex; gap:0; margin-bottom:16px; border:1px solid #e2e8f0; border-radius:8px; overflow:hidden;">
-    <button class="tab-btn active" onclick="openTab('tabPendientes', this)" style="flex:1; padding:10px 16px; border:none; background:var(--tab-bg,#f1f5f9); cursor:pointer; font-weight:700; font-size:0.88rem; color:#64748b;" id="tabBtnPendientes">Pendientes (<%= (ordenesPendientes || []).length %>)</button>
-    <button class="tab-btn" onclick="openTab('tabCerradas', this)" style="flex:1; padding:10px 16px; border:none; background:var(--tab-bg,#f1f5f9); cursor:pointer; font-weight:700; font-size:0.88rem; color:#64748b;" id="tabBtnCerradas">Cerradas (<%= (ordenesCerradas || []).length %>)</button>
+<div class="tabs-container">
+    <button class="tab-btn active" onclick="openTab('tabPendientes', this)">Pendientes (<%= (ordenesPendientes || []).length %>)</button>
+    <button class="tab-btn" onclick="openTab('tabCerradas', this)">Cerradas (<%= (ordenesCerradas || []).length %>)</button>
 </div>
 
 <div id="tabPendientes" class="tab-content" style="display:block;">
     <div class="filters-row" style="display:flex; gap:10px; margin-bottom:15px;">
-        <input type="text" id="buscarPendiente" onkeyup="filtrarPendientes()" class="form-control" placeholder="Buscar cliente, NIC, dirección..." style="flex:2;">
+        <input type="text" id="buscarPendiente" onkeyup="filtrarPendientes()" class="form-control" placeholder="Buscar..." style="flex:2;">
         <input type="text" id="filtroZonaP" list="dlZonas" class="form-control" oninput="filtrarPendientes()" placeholder="Todas las Zonas" style="flex:1;">
         <datalist id="dlZonas">
-            <% (zonas || []).forEach(function(z) { %><option value='<%= z.nombre %>'><% }); %>
+            <% (zonas || []).forEach(function(z) { %><option value="<%= z.nombre %>"><% }); %>
         </datalist>
     </div>
     <div class="card" style="overflow-x:auto;">
-        <table id="tablaPendientes" class="table" style="width:100%; border-collapse:collapse;">
+        <table id="tablaPendientes">
             <thead>
                 <tr>
-                    <th style="padding:10px 8px; text-align:left; border-bottom:2px solid #e2e8f0;">#</th>
-                    <th style="padding:10px 8px; text-align:left; border-bottom:2px solid #e2e8f0;">Tipo</th>
-                    <th style="padding:10px 8px; text-align:left; border-bottom:2px solid #e2e8f0;">Cliente</th>
-                    <th style="padding:10px 8px; text-align:left; border-bottom:2px solid #e2e8f0;">Detalles</th>
-                    <th style="padding:10px 8px; text-align:left; border-bottom:2px solid #e2e8f0;">Zona</th>
-                    <th style="padding:10px 8px; text-align:left; border-bottom:2px solid #e2e8f0;">Fecha</th>
-                    <th style="padding:10px 8px; text-align:right; border-bottom:2px solid #e2e8f0;">Acciones</th>
+                    <th style="padding:10px 14px; font-size:0.78rem; text-transform:uppercase; color:#64748b; font-weight:600; text-align:left; border-bottom:2px solid #e2e8f0;">#</th>
+                    <th style="padding:10px 14px; font-size:0.78rem; text-transform:uppercase; color:#64748b; font-weight:600; text-align:left; border-bottom:2px solid #e2e8f0;">Tipo</th>
+                    <th style="padding:10px 14px; font-size:0.78rem; text-transform:uppercase; color:#64748b; font-weight:600; text-align:left; border-bottom:2px solid #e2e8f0;">Cliente</th>
+                    <th style="padding:10px 14px; font-size:0.78rem; text-transform:uppercase; color:#64748b; font-weight:600; text-align:left; border-bottom:2px solid #e2e8f0;">Detalles</th>
+                    <th style="padding:10px 14px; font-size:0.78rem; text-transform:uppercase; color:#64748b; font-weight:600; text-align:left; border-bottom:2px solid #e2e8f0;">Zona</th>
+                    <th style="padding:10px 14px; font-size:0.78rem; text-transform:uppercase; color:#64748b; font-weight:600; text-align:left; border-bottom:2px solid #e2e8f0;">Fecha</th>
+                    <th style="padding:10px 14px; text-align:right; border-bottom:2px solid #e2e8f0;">Acciones</th>
                 </tr>
             </thead>
             <tbody>
                 <% (ordenesPendientes || []).forEach(function(o) { %>
                 <tr data-tecnico="<%= o.tecnico_nombre || '' %>">
-                    <td style="padding:10px 8px; border-bottom:1px solid #f1f5f9;"><%= o.id %></td>
-                    <td style="padding:10px 8px; border-bottom:1px solid #f1f5f9;">
-                        <% var tipo = (o.tipo || 'trash').toLowerCase(); %>
-                        <span class="badge" style="background:<%= tipo==='traslado'?'#ede9fe':'#dcfce7' %>; color:<%= tipo==='traslado'?'#6b21a8':'#166534' %>;">
+                    <td style="padding:10px 14px; border-bottom:1px solid #f1f5f9; font-size:0.85rem;"><%= o.id %></td>
+                    <td style="padding:10px 14px; border-bottom:1px solid #f1f5f9;">
+                        <span class="badge" style="background:<%= (o.tipo||'').toLowerCase()==='instalacion'?'#dcfce7':(o.tipo||'').toLowerCase()==='traslado'?'#ede9fe':'#fef3c7' %>; color:<%= (o.tipo||'').toLowerCase()==='instalacion'?'#166534':(o.tipo||'').toLowerCase()==='traslado'?'#6b21a8':'#92400e' %>;">
                             <%= o.tipo %>
                         </span>
                     </td>
-                    <td style="padding:10px 8px; border-bottom:1px solid #f1f5f9;">
-                        <a href="/modulo?pagina=VerCliente&id=<%= o.cliente_id %>" style="font-weight:600; color:#2563eb; text-decoration:none;"><%= o.cliente_nombre || '—' %></a>
-                        <% if (o.tecnico_nombre) { %><div style="font-size:0.75rem; margin-top:4px;"><span style="background:#ede9fe; color:#6b21a8; padding:2px 7px; border-radius:10px;"><i class="fas fa-user-check"></i> <%= o.tecnico_nombre %></span></div><% } %>
-                    </td>
-                    <td style="padding:10px 8px; border-bottom:1px solid #f1f5f9; font-size:0.82rem; color:#64748b; max-width:200px; overflow:hidden; text-overflow:ellipsis;"><%= o.detalle || '' %></td>
-                    <td style="padding:10px 8px; border-bottom:1px solid #f1f5f9;"><%= o.zona_nombre || '—' %></td>
-                    <td style="padding:10px 8px; border-bottom:1px solid #f1f5f9; font-size:0.82rem; white-space:nowrap;"><%= (o.created_at || '').substring(0,16).replace('T',' ') %></td>
-                    <td style="padding:10px 8px; border-bottom:1px solid #f1f5f9; text-align:right; white-space:nowrap;">
-                        <button class="btn btn-sm btn-info" onclick="abrirDetalle('<%= o.id %>')" title="Ver Detalle"><i class="fas fa-eye"></i></button>
-                        <button class="btn btn-sm btn-primary" onclick="abrirAsignar('<%= o.id %>')" title="Asignar"><i class="fas fa-user-tag"></i></button>
-                        <% if (o.tipo && o.tipo.toLowerCase() === 'traslado') { %>
-                        <button class="btn btn-sm" style="background:#7c3aed;color:#fff;" onclick="abrirCompletarTraslado(<%= o.id %>, '<%= o.tipo %>')" title="Completar Traslado"><i class="fas fa-truck-moving"></i> Completar</button>
-                        <% } else { %>
-                        <button class="btn btn-sm btn-success" onclick="completarOrden(<%= o.id %>, '<%= (o.cliente_nombre || "").replace(/'/g, "\\'") %>')" title="Completar Orden"><i class="fas fa-check-circle"></i> Completar</button>
+                    <td style="padding:10px 14px; border-bottom:1px solid #f1f5f9;">
+                        <% if (o.cliente_nombre) { %>
+                            <a href="/modulo?pagina=VerCliente&id=<%= o.cliente_id %>" class="client-name-link"><b><%= o.cliente_nombre %></b></a>
                         <% } %>
-                        <button class="btn btn-sm btn-danger" onclick="showAlert('info','Cancelar','Función próximamente')"><i class="fas fa-ban"></i></button>
+                    </td>
+                    <td style="padding:10px 14px; border-bottom:1px solid #f1f5f9; max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                        <%= (o.detalle || '').substring(0, 60) %>
+                    </td>
+                    <td style="padding:10px 14px; border-bottom:1px solid #f1f5f9; font-size:0.82rem;"><%= o.zona_nombre || '' %></td>
+                    <td style="padding:10px 14px; border-bottom:1px solid #f1f5f9; font-size:0.82rem;">
+                        <%= new Date(o.created_at).toLocaleDateString('es', {day:'2-digit',month:'2-digit'}) %> <%= new Date(o.created_at).toLocaleTimeString('es', {hour:'2-digit',minute:'2-digit'}) %>
+                        <% if (o.tecnico_nombre) { %>
+                            <div style="margin-top:3px;"><span style="font-size:0.7rem; background:#ede9fe; color:#6b21a8; padding:2px 7px; border-radius:10px; white-space:nowrap;"><i class="fas fa-user-check"></i> <%= o.tecnico_nombre %></span></div>
+                        <% } %>
+                    </td>
+                    <td style="padding:10px 14px; border-bottom:1px solid #f1f5f9; text-align:right; white-space:nowrap;">
+                        <button class="btn-icon" style="color:#3b82f6; background:none; border:none; cursor:pointer; font-size:1rem; padding:4px 6px;" onclick="abrirDetalleOrden(<%= o.id %>)" title="Ver Detalle"><i class="fas fa-eye"></i></button>
+                        <button class="btn-icon" style="color:#10b981; background:none; border:none; cursor:pointer; font-size:1rem; padding:4px 6px;" onclick="completarOrden(<%= o.id %>)" title="Completar"><i class="fas fa-check-circle"></i></button>
                     </td>
                 </tr>
                 <% }); %>
-                <% if (!ordenesPendientes || ordenesPendientes.length === 0) { %>
-                <tr><td colspan="7" style="text-align:center; padding:30px; color:#94a3b8;"><i class="fas fa-inbox"></i> No hay órdenes pendientes</td></tr>
+                <% if ((ordenesPendientes || []).length === 0) { %>
+                <tr><td colspan="7" style="padding:30px; text-align:center; color:#94a3b8;">No hay órdenes pendientes</td></tr>
                 <% } %>
             </tbody>
         </table>
@@ -78,171 +129,111 @@
 
 <div id="tabCerradas" class="tab-content" style="display:none;">
     <div class="filters-row" style="display:flex; gap:10px; margin-bottom:15px;">
-        <input type="text" id="buscarCerrada" onkeyup="filtrarCerradas()" class="form-control" placeholder="Buscar cliente, técnico..." style="flex:2;">
+        <input type="text" id="buscarCerrada" onkeyup="filtrarCerradas()" class="form-control" placeholder="Buscar..." style="flex:2;">
         <input type="text" id="filtroZonaC" list="dlZonas" class="form-control" oninput="filtrarCerradas()" placeholder="Todas las Zonas" style="flex:1;">
     </div>
     <div class="card" style="overflow-x:auto;">
-        <table id="tablaCerradas" class="table" style="width:100%; border-collapse:collapse;">
+        <table id="tablaCerradas">
             <thead>
                 <tr>
-                    <th style="padding:10px 8px; border-bottom:2px solid #e2e8f0;">#</th>
-                    <th style="padding:10px 8px; border-bottom:2px solid #e2e8f0;">Tipo</th>
-                    <th style="padding:10px 8px; border-bottom:2px solid #e2e8f0;">Cliente</th>
-                    <th style="padding:10px 8px; border-bottom:2px solid #e2e8f0;">Estado</th>
-                    <th style="padding:10px 8px; border-bottom:2px solid #e2e8f0;">Zona</th>
-                    <th style="padding:10px 8px; border-bottom:2px solid #e2e8f0;">Técnico</th>
-                    <th style="padding:10px 8px; border-bottom:2px solid #e2e8f0;">Fechas</th>
-                    <th style="padding:10px 8px; border-bottom:2px solid #e2e8f0;">Cerrado Por</th>
-                    <th style="padding:10px 8px; border-bottom:2px solid #e2e8f0;"></th>
+                    <th style="padding:10px 14px; font-size:0.78rem; text-transform:uppercase; color:#64748b; font-weight:600; text-align:left; border-bottom:2px solid #e2e8f0;">#</th>
+                    <th style="padding:10px 14px; font-size:0.78rem; text-transform:uppercase; color:#64748b; font-weight:600; text-align:left; border-bottom:2px solid #e2e8f0;">Tipo</th>
+                    <th style="padding:10px 14px; font-size:0.78rem; text-transform:uppercase; color:#64748b; font-weight:600; text-align:left; border-bottom:2px solid #e2e8f0;">Cliente</th>
+                    <th style="padding:10px 14px; font-size:0.78rem; text-transform:uppercase; color:#64748b; font-weight:600; text-align:left; border-bottom:2px solid #e2e8f0;">Técnico</th>
+                    <th style="padding:10px 14px; font-size:0.78rem; text-transform:uppercase; color:#64748b; font-weight:600; text-align:left; border-bottom:2px solid #e2e8f0;">Completada</th>
+                    <th style="padding:10px 14px; text-align:right; border-bottom:2px solid #e2e8f0;">Acciones</th>
                 </tr>
             </thead>
             <tbody>
                 <% (ordenesCerradas || []).forEach(function(o) { %>
                 <tr>
-                    <td style="padding:10px 8px; border-bottom:1px solid #f1f5f9;"><%= o.id %></td>
-                    <td style="padding:10px 8px; border-bottom:1px solid #f1f5f9;">
+                    <td style="padding:10px 14px; border-bottom:1px solid #f1f5f9;"><%= o.id %></td>
+                    <td style="padding:10px 14px; border-bottom:1px solid #f1f5f9;">
                         <span class="badge" style="background:#dcfce7; color:#166534;"><%= o.tipo %></span>
                     </td>
-                    <td style="padding:10px 8px; border-bottom:1px solid #f1f5f9;">
-                        <a href="/modulo?pagina=VerCliente&id=<%= o.cliente_id %>" style="font-weight:600; color:#2563eb; text-decoration:none;"><%= o.cliente_nombre || '—' %></a>
+                    <td style="padding:10px 14px; border-bottom:1px solid #f1f5f9;">
+                        <% if (o.cliente_nombre) { %><b><%= o.cliente_nombre %></b><% } %>
                     </td>
-                    <td style="padding:10px 8px; border-bottom:1px solid #f1f5f9;">
-                        <span class="badge" style="background:#16a34a; color:#fff;">Completada</span>
+                    <td style="padding:10px 14px; border-bottom:1px solid #f1f5f9;"><%= o.tecnico_nombre || o.cerrado_por || '—' %></td>
+                    <td style="padding:10px 14px; border-bottom:1px solid #f1f5f9; font-size:0.82rem;">
+                        <%= o.fecha_completada ? new Date(o.fecha_completada).toLocaleDateString('es', {day:'2-digit',month:'2-digit',year:'numeric'}) : '' %>
                     </td>
-                    <td style="padding:10px 8px; border-bottom:1px solid #f1f5f9;"><%= o.zona_nombre || '—' %></td>
-                    <td style="padding:10px 8px; border-bottom:1px solid #f1f5f9;"><%= o.tecnico_nombre || '—' %></td>
-                    <td style="padding:10px 8px; border-bottom:1px solid #f1f5f9; font-size:0.8rem;">
-                        <small>Creada: <%= (o.created_at || '').substring(0,10) %></small>
-                        <% if (o.fecha_completada) { %><br><small>Completada: <%= (o.fecha_completada || '').substring(0,10) %></small><% } %>
-                    </td>
-                    <td style="padding:10px 8px; border-bottom:1px solid #f1f5f9;"><%= o.cerrado_por || '—' %></td>
-                    <td style="padding:10px 8px; border-bottom:1px solid #f1f5f9; text-align:right;">
-                        <button class="btn btn-sm btn-info" onclick="abrirDetalle('<%= o.id %>')"><i class="fas fa-eye"></i></button>
+                    <td style="padding:10px 14px; border-bottom:1px solid #f1f5f9; text-align:right; white-space:nowrap;">
+                        <button class="btn-icon" style="color:#3b82f6; background:none; border:none; cursor:pointer; font-size:1rem; padding:4px 6px;" onclick="abrirDetalleOrden(<%= o.id %>)" title="Ver Detalle"><i class="fas fa-eye"></i></button>
+                        <button class="btn-icon" style="color:#f59e0b; background:none; border:none; cursor:pointer; font-size:1rem; padding:4px 6px;" onclick="reabrirOrden(<%= o.id %>)" title="Reabrir"><i class="fas fa-undo-alt"></i></button>
                     </td>
                 </tr>
                 <% }); %>
-                <% if (!ordenesCerradas || ordenesCerradas.length === 0) { %>
-                <tr><td colspan="9" style="text-align:center; padding:30px; color:#94a3b8;"><i class="fas fa-check-double"></i> No hay órdenes cerradas</td></tr>
+                <% if ((ordenesCerradas || []).length === 0) { %>
+                <tr><td colspan="6" style="padding:30px; text-align:center; color:#94a3b8;">No hay órdenes cerradas</td></tr>
                 <% } %>
             </tbody>
         </table>
     </div>
 </div>
 
-<!-- Modal: Asignar Técnico -->
-<div class="modal-overlay-tr" id="modalAsignar">
-    <div class="modal-content-tr" style="max-width:420px;">
-        <div class="modal-header-tr">
-            <h3 style="margin:0;"><i class="fas fa-user-tag" style="color:#8b5cf6;"></i> Asignar Técnico</h3>
-            <button class="btn-modal-close" onclick="closeModalAsig()" style="background:none;border:none;font-size:1.3rem;cursor:pointer;color:#94a3b8;">&times;</button>
+<!-- Modal Nueva Orden -->
+<div id="modalNuevaOrden" class="modal-overlay" onclick="if(event.target===this)cerrarModal('modalNuevaOrden')">
+    <div class="modal-content" style="max-width:700px;">
+        <div class="modal-header">
+            <h3><i class="fas fa-plus-circle" style="color:#7c3aed;"></i> Nueva Orden</h3>
+            <span style="font-size:1.8rem; cursor:pointer; color:#94a3b8;" onclick="cerrarModal('modalNuevaOrden')">&times;</span>
         </div>
-        <div class="modal-body-tr" style="text-align:center;">
-            <input type="hidden" id="asignarOrdenId">
-            <div style="margin-bottom:16px;">
-                <label style="font-weight:600;color:#475569;display:block;margin-bottom:6px;">Seleccionar técnico</label>
-                <select id="asignarTecnico" class="form-control" style="width:100%;">
-                    <option value="">-- Sin asignar --</option>
-                    <% (empleados || []).forEach(function(e) { %>
-                    <option value="<%= e.id %>"><%= e.nombre %></option>
-                    <% }); %>
-                </select>
-            </div>
-            <button class="btn btn-primary" onclick="asignarOrden()" style="width:100%;">Asignar</button>
-        </div>
-    </div>
-</div>
-
-<!-- Modal: Completar Traslado -->
-<div class="modal-overlay-tr" id="modalCompletarTraslado">
-    <div class="modal-content-tr">
-        <div class="modal-header-tr">
-            <h3 style="margin:0;"><i class="fas fa-truck-moving" style="color:#7c3aed;"></i> Completar Traslado</h3>
-            <button class="btn-modal-close" onclick="closeModal('modalCompletarTraslado')" style="background:none;border:none;font-size:1.3rem;cursor:pointer;color:#94a3b8;">&times;</button>
-        </div>
-        <div class="modal-body-tr">
-            <form id="formCompletarTraslado" onsubmit="procesarCompletarTraslado(event)">
-                <input type="hidden" name="orden_id" id="ct_orden_id">
-                <input type="hidden" name="accion" value="finalizar_traslado">
-
-                <div style="margin-bottom:14px; padding:12px 16px; background:#f5f3ff; border:1px solid #d8b4fe; border-radius:8px;">
-                    <label style="font-weight:600; color:#6b21a8; font-size:0.88rem; display:block; margin-bottom:6px;">
-                        <i class="fas fa-user-cog"></i> Técnico asignado
-                    </label>
-                    <select name="tecnico_id" id="ct_tecnico" class="form-control" required>
-                        <option value="">-- Seleccionar técnico --</option>
-                        <% (empleados || []).forEach(function(e) { %>
-                        <option value="<%= e.id %>"><%= e.nombre %></option>
-                        <% }); %>
+        <div class="modal-body" style="padding:20px;">
+            <form id="formNuevaOrden" onsubmit="return enviarNuevaOrden(event)">
+                <div class="form-group">
+                    <label class="form-label">Tipo de Orden</label>
+                    <select name="tipo" class="form-control" required>
+                        <option value="Instalacion">Instalación</option>
+                        <option value="Traslado">Traslado</option>
+                        <option value="Administrativo">Administrativo</option>
+                        <option value="Soporte">Soporte Técnico</option>
                     </select>
                 </div>
-
-                <div class="tr-grid-2col">
-                    <div>
-                        <h4 style="color:#475569; margin-bottom:12px;">Configuración de Red</h4>
-                        <div class="form-group">
-                            <label class="form-label">Zona Nueva</label>
-                            <select name="sector_id" id="ct_zona" class="form-control" required>
-                                <option value="">-- Seleccionar --</option>
-                                <% (zonas || []).forEach(function(z) { %>
-                                <option value="<%= z.id %>"><%= z.nombre %></option>
-                                <% }); %>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Dirección Nueva</label>
-                            <input type="text" name="direccion" id="ct_direccion" class="form-control" placeholder="Dirección del traslado">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Observaciones</label>
-                            <input type="text" name="observaciones" id="ct_observaciones" class="form-control" placeholder="Resultado del traslado...">
-                        </div>
-                    </div>
-                    <div>
-                        <h4 style="color:#475569; margin-bottom:12px;">Información de Servicio</h4>
-                        <div id="ct_svc_info" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:14px; font-size:0.85rem; color:#334155; line-height:1.9;">
-                            <i class="fas fa-spinner fa-spin"></i> Cargando...
-                        </div>
-                    </div>
+                <div class="form-group">
+                    <label class="form-label">Buscar Cliente</label>
+                    <input type="text" id="buscarCliente" class="form-control" placeholder="Nombre, cédula o teléfono..." oninput="buscarClientes(this.value)">
+                    <input type="hidden" name="cliente_id" id="clienteId">
+                    <div id="resultadosClientes" style="border:1px solid #e2e8f0; border-radius:6px; margin-top:4px; max-height:200px; overflow-y:auto; display:none;"></div>
                 </div>
-
-                <div style="margin-top:20px; text-align:right;">
-                    <button type="button" onclick="closeModal('modalCompletarTraslado')" class="btn btn-secondary">Cancelar</button>
-                    <button type="submit" class="btn btn-primary" style="background:#7c3aed;" id="btnFinTraslado">
-                        <i class="fas fa-truck-moving"></i> COMPLETAR TRASLADO
-                    </button>
+                <div class="form-group">
+                    <label class="form-label">Detalle</label>
+                    <textarea name="detalle" class="form-control" rows="2" placeholder="Descripción de la orden..."></textarea>
                 </div>
+                <button type="submit" class="btn btn-primary" style="width:100%;"><i class="fas fa-save"></i> Crear Orden</button>
             </form>
         </div>
     </div>
 </div>
 
-<script>
-// Simple alert/toast
-function showAlert(type, title, text) {
-    var bg = type === 'error' ? '#ef4444' : type === 'success' ? '#16a34a' : '#3b82f6';
-    var icon = type === 'error' ? 'times-circle' : type === 'success' ? 'check-circle' : 'info-circle';
-    var t = document.createElement('div');
-    t.style.cssText = 'position:fixed;top:20px;right:20px;z-index:99999;padding:12px 20px;border-radius:8px;font-size:0.88rem;font-weight:600;color:#fff;box-shadow:0 4px 15px rgba(0,0,0,0.15);background:' + bg + ';';
-    t.innerHTML = '<i class="fas fa-' + icon + '"></i> ' + text;
-    document.body.appendChild(t);
-    setTimeout(function() { t.style.opacity='0'; t.style.transition='opacity 0.3s'; setTimeout(function() { t.remove(); }, 300); }, 3000);
-}
+<!-- Modal Detalle Orden -->
+<div id="modalDetalle" class="modal-overlay" onclick="if(event.target===this)cerrarModal('modalDetalle')">
+    <div class="modal-content" style="max-width:800px;">
+        <div class="modal-header">
+            <h3><i class="fas fa-clipboard-list" style="color:#7c3aed;"></i> Detalle de Orden #<span id="detOrdenId"></span></h3>
+            <span style="font-size:1.8rem; cursor:pointer; color:#94a3b8;" onclick="cerrarModal('modalDetalle')">&times;</span>
+        </div>
+        <div class="modal-body" style="padding:20px;">
+            <div id="detalleContent"><p style="text-align:center; color:#94a3b8;"><i class="fas fa-spinner fa-spin"></i> Cargando...</p></div>
+        </div>
+    </div>
+</div>
 
+<script>
 function openTab(tabId, btn) {
     document.querySelectorAll('.tab-content').forEach(function(t) { t.style.display = 'none'; });
-    document.querySelectorAll('.tab-btn').forEach(function(b) { b.style.background = '#f1f5f9'; b.style.color = '#64748b'; });
+    document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
     document.getElementById(tabId).style.display = 'block';
-    btn.style.background = '#7c3aed20';
-    btn.style.color = '#7c3aed';
+    if (btn) btn.classList.add('active');
 }
 
 function filtrarPendientes() {
     var q = (document.getElementById('buscarPendiente').value || '').toLowerCase();
     var z = (document.getElementById('filtroZonaP').value || '').toLowerCase();
     document.querySelectorAll('#tablaPendientes tbody tr').forEach(function(r) {
-        var text = r.textContent.toLowerCase();
-        var zona = (r.cells[4] || {}).textContent || '';
-        r.style.display = (!q || text.includes(q)) && (!z || zona.toLowerCase().includes(z)) ? '' : 'none';
+        var texto = r.textContent.toLowerCase();
+        var zona = r.querySelector('td:nth-child(5)') ? r.querySelector('td:nth-child(5)').textContent.toLowerCase() : '';
+        r.style.display = (texto.indexOf(q) !== -1 && zona.indexOf(z) !== -1) ? '' : 'none';
     });
 }
 
@@ -250,158 +241,231 @@ function filtrarCerradas() {
     var q = (document.getElementById('buscarCerrada').value || '').toLowerCase();
     var z = (document.getElementById('filtroZonaC').value || '').toLowerCase();
     document.querySelectorAll('#tablaCerradas tbody tr').forEach(function(r) {
-        var text = r.textContent.toLowerCase();
-        var zona = (r.cells[4] || {}).textContent || '';
-        r.style.display = (!q || text.includes(q)) && (!z || zona.toLowerCase().includes(z)) ? '' : 'none';
+        var texto = r.textContent.toLowerCase();
+        r.style.display = (texto.indexOf(q) !== -1) ? '' : 'none';
     });
 }
 
-function abrirDetalle(id) {
-    fetch('/api/ordenes/detalle/' + id)
-    .then(r => r.json()).then(function(d) {
-        if (d.status !== 'success') { showAlert('error', 'Error', d.msg); return; }
-        var o = d.data;
-        var html = '<div style="text-align:left;">';
-        html += '<p><b># Orden:</b> ' + o.id + '</p>';
-        html += '<p><b>Tipo:</b> ' + o.tipo + '</p>';
-        html += '<p><b>Cliente:</b> ' + (o.cliente_nombre || '—') + '</p>';
-        html += '<p><b>Detalle:</b> ' + (o.detalle || '—') + '</p>';
-        html += '<p><b>Dirección:</b> ' + (o.direccion || '—') + '</p>';
-        html += '<p><b>Zona:</b> ' + (o.zona_nombre || '—') + '</p>';
-        html += '<p><b>Técnico:</b> ' + (o.tecnico_nombre || '—') + '</p>';
-        html += '<p><b>Estado:</b> ' + o.estado + '</p>';
-        html += '<p><b>Creada:</b> ' + (o.created_at || '—') + '</p>';
-        if (o.fecha_completada) html += '<p><b>Completada:</b> ' + o.fecha_completada + '</p>';
-        html += '</div>';
-        showAlert('info', 'Detalle de Orden #' + o.id, html);
-    }).catch(function() { showAlert('error', 'Error', 'No se pudo cargar el detalle'); });
+// ===== NUEVA ORDEN =====
+function abrirNuevaOrden() {
+    document.getElementById('formNuevaOrden').reset();
+    document.getElementById('clienteId').value = '';
+    document.getElementById('resultadosClientes').style.display = 'none';
+    document.getElementById('resultadosClientes').innerHTML = '';
+    document.getElementById('modalNuevaOrden').classList.add('active');
 }
 
-function abrirAsignar(ordenId) {
-    document.getElementById('asignarOrdenId').value = ordenId;
-    document.getElementById('modalAsignar').style.display = 'flex';
+function cerrarModal(id) {
+    document.getElementById(id).classList.remove('active');
 }
 
-function closeModalAsig() {
-    document.getElementById('modalAsignar').style.display = 'none';
+var busquedaTimer = null;
+function buscarClientes(q) {
+    clearTimeout(busquedaTimer);
+    if (q.length < 2) { document.getElementById('resultadosClientes').style.display = 'none'; return; }
+    busquedaTimer = setTimeout(function() {
+        fetch('/api/clientes/buscar?q=' + encodeURIComponent(q))
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                var div = document.getElementById('resultadosClientes');
+                if (!data.length) { div.style.display = 'none'; return; }
+                div.innerHTML = data.map(function(c) {
+                    return '<div class="client-result-item" onclick="seleccionarCliente(' + c.id + ', \'' + (c.nombre || '').replace(/\'/g, '\\\'') + '\')">'
+                        + '<b>' + (c.nombre || '') + '</b>'
+                        + (c.cedula ? ' <span style="color:#64748b;">| ' + c.cedula + '</span>' : '')
+                        + (c.telefono ? ' <span style="color:#64748b;">| ' + c.telefono + '</span>' : '')
+                        + '</div>';
+                }).join('');
+                div.style.display = 'block';
+            });
+    }, 300);
 }
 
-function asignarOrden() {
-    var id = document.getElementById('asignarOrdenId').value;
-    var tec = document.getElementById('asignarTecnico').value;
-    fetch('/api/ordenes/asignar', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ orden_id: id, tecnico_id: tec })
-    })
-    .then(r => r.json()).then(function(d) {
-        if (d.success) { showAlert('success', 'Asignado', 'Técnico asignado correctamente'); closeModalAsig(); window.location.reload(); }
-        else showAlert('error', 'Error', d.message || 'No se pudo asignar');
-    });
+function seleccionarCliente(id, nombre) {
+    document.getElementById('clienteId').value = id;
+    document.getElementById('buscarCliente').value = nombre;
+    document.getElementById('resultadosClientes').style.display = 'none';
 }
 
-// ---- Completar Orden (instalación) ----
-function completarOrden(ordenId, clienteNombre) {
-    if (!confirm('Completar orden de instalación para ' + (clienteNombre || '') + '? El servicio será activado.')) return;
-    
-    fetch('/api/ordenes/completar', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ orden_id: ordenId })
-    })
-    .then(function(r) { return r.json(); })
-    .then(function(resp) {
-        if (resp.status === 'success') {
-            showAlert('success', 'Orden Completada', resp.msg);
-            setTimeout(function() { location.reload(); }, 1500);
-        } else {
-            showAlert('error', 'Error', resp.msg);
-        }
-    })
-    .catch(function() { showAlert('error', 'Error', 'Error de conexión'); });
-}
-
-// ---- Completar Traslado ----
-var _ctOrdenData = null;
-
-function abrirCompletarTraslado(ordenId, tipo) {
-    fetch('/api/ordenes/detalle/' + ordenId)
-    .then(r => r.json())
-    .then(function(resp) {
-        if (resp.status !== 'success') { showAlert('error', 'Error', resp.msg); return; }
-        var o = resp.data;
-        _ctOrdenData = o;
-        document.getElementById('ct_orden_id').value = o.id;
-        document.getElementById('ct_direccion').value = o.direccion || '';
-        document.getElementById('ct_observaciones').value = '';
-
-        if (o.zona_id) document.getElementById('ct_zona').value = o.zona_id;
-        else document.getElementById('ct_zona').value = '';
-
-        document.getElementById('ct_svc_info').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cargando...';
-        fetch('/api/ordenes/servicio-info/' + o.servicio_id)
-        .then(r => r.json()).then(function(d) {
-            if (d.status === 'success' && d.data) {
-                var svc = d.data;
-                var info = '';
-                if (svc.plan_name) info += '<b>Plan:</b> ' + svc.plan_name + '<br>';
-                if (svc.pppoe_user) info += '<b>Usuario PPPoE:</b> <span style="font-family:monospace;">' + svc.pppoe_user + '</span><br>';
-                if (svc.ip) info += '<b>IP:</b> <span style="font-family:monospace;">' + svc.ip + '</span><br>';
-                if (svc.onu_sn) info += '<b>SN ONU:</b> <span style="font-family:monospace;">' + svc.onu_sn + '</span><br>';
-                info += '<b>Zona actual:</b> ' + (o.zona_nombre || '—') + '<br>';
-                info += '<b>Dirección actual:</b> ' + (o.direccion || '—') + '<br>';
-                document.getElementById('ct_svc_info').innerHTML = info || 'Sin datos disponibles';
-            } else {
-                document.getElementById('ct_svc_info').innerHTML = '<span style="color:#ef4444;">No se pudo cargar información del servicio</span>';
-            }
-        }).catch(function() {
-            document.getElementById('ct_svc_info').innerHTML = '<span style="color:#ef4444;">Error al cargar</span>';
-        });
-
-        document.getElementById('modalCompletarTraslado').style.display = 'flex';
-    })
-    .catch(function() {
-        showAlert('error', 'Error', 'No se pudo cargar la orden');
-    });
-}
-
-function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-
-function procesarCompletarTraslado(e) {
+function enviarNuevaOrden(e) {
     e.preventDefault();
-    var btn = document.getElementById('btnFinTraslado');
-    btn.disabled = true;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
-
-    fetch('/api/ordenes/completar-traslado', {
+    var form = document.getElementById('formNuevaOrden');
+    var fd = new FormData(form);
+    var clienteId = document.getElementById('clienteId').value;
+    if (!clienteId) { showToast('Selecciona un cliente', 'error'); return; }
+    
+    fetch('/api/ordenes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-            orden_id: parseInt(document.getElementById('ct_orden_id').value),
-            tecnico_id: parseInt(document.getElementById('ct_tecnico').value) || null,
-            sector_id: parseInt(document.getElementById('ct_zona').value) || null,
-            direccion: document.getElementById('ct_direccion').value.trim(),
-            observaciones: document.getElementById('ct_observaciones').value.trim()
+            tipo: fd.get('tipo'),
+            cliente_id: parseInt(clienteId),
+            detalle: fd.get('detalle') || ''
         })
     })
-    .then(r => r.json()).then(function(d) {
-        btn.disabled = false;
-        btn.innerHTML = '<i class="fas fa-truck-moving"></i> COMPLETAR TRASLADO';
-        if (d.status === 'success') {
-            closeModal('modalCompletarTraslado');
-            showAlert('success', 'Traslado Completado', 'El servicio ha sido trasladado correctamente.');
-            setTimeout(function() { window.location.reload(); }, 2000);
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+        if (d.message || d.id) {
+            showToast('Orden #' + d.id + ' creada');
+            cerrarModal('modalNuevaOrden');
+            setTimeout(function() { window.location.reload(); }, 500);
         } else {
-            showAlert('error', 'Error en Traslado', d.msg || 'Error desconocido');
+            showToast('Error: ' + (d.msg || 'Desconocido'), 'error');
         }
-    }).catch(function(err) {
-        btn.disabled = false;
-        btn.innerHTML = '<i class="fas fa-truck-moving"></i> COMPLETAR TRASLADO';
-        showAlert('error', 'Error', 'Error de red: ' + err.message);
     });
 }
 
-// Close modals on overlay click
-document.addEventListener('click', function(e) {
-    if (e.target.classList.contains('modal-overlay-tr')) e.target.style.display = 'none';
-});
+// ===== DETALLE ORDEN =====
+function abrirDetalleOrden(id) {
+    document.getElementById('detOrdenId').textContent = id;
+    document.getElementById('detalleContent').innerHTML = '<p style="text-align:center; color:#94a3b8;"><i class="fas fa-spinner fa-spin"></i> Cargando...</p>';
+    document.getElementById('modalDetalle').classList.add('active');
+    
+    fetch('/api/ordenes/detalle/' + id)
+        .then(function(r) { return r.json(); })
+        .then(function(res) {
+            if (res.status !== 'success') {
+                document.getElementById('detalleContent').innerHTML = '<p style="color:#dc2626;">Error: ' + (res.msg || '') + '</p>';
+                return;
+            }
+            var o = res.data;
+            var estadoBadge = o.estado === 'pendiente' 
+                ? '<span class="badge" style="background:#fef3c7;color:#92400e;">Pendiente</span>'
+                : '<span class="badge" style="background:#dcfce7;color:#166534;">Completada</span>';
+            
+            var html = '<div class="det-info-grid">'
+                + '<div class="det-card"><h4>Orden</h4>'
+                + '<div class="info-line"><b>#</b> ' + o.id + ' ' + estadoBadge + '</div>'
+                + '<div class="info-line"><b>Tipo:</b> ' + (o.tipo || '—') + '</div>'
+                + '<div class="info-line"><b>Estado:</b> ' + o.estado + '</div>'
+                + '</div>'
+                + '<div class="det-card"><h4>Cliente</h4>'
+                + '<div class="info-line"><b>Nombre:</b> ' + (o.cliente_nombre || '—') + '</div>'
+                + '<div class="info-line"><b>Cédula:</b> ' + (o.cedula || '—') + '</div>'
+                + '</div>'
+                + '<div class="det-card"><h4>Ubicación</h4>'
+                + '<div class="info-line"><b>Dirección:</b> <span id="detDir">' + (o.direccion || '—') + '</span> <button class="det-edit-pencil" onclick="editarCampo(\'direccion\',' + o.id + ')" title="Editar"><i class="fas fa-pencil-alt"></i></button>'
+                + '<div class="det-inline-edit" id="editDireccion"><input type="text" id="inputDireccion" value="' + (o.direccion || '') + '"><button class="det-save-btn" onclick="guardarCampo(\'direccion\',' + o.id + ')">OK</button><button class="det-cancel-btn" onclick="cancelarEdicion(\'direccion\')">X</button></div></div>'
+                + '<div class="info-line"><b>Zona:</b> ' + (o.zona_nombre || '—') + '</div>'
+                + '<div class="info-line"><b>GPS:</b> <span id="detGps">' + (o.coordenadas || '—') + '</span> <button class="det-edit-pencil" onclick="editarCampo(\'coordenadas\',' + o.id + ')" title="Editar"><i class="fas fa-pencil-alt"></i></button>'
+                + '<div class="det-inline-edit" id="editCoordenadas"><input type="text" id="inputCoordenadas" value="' + (o.coordenadas || '') + '"><button class="det-save-btn" onclick="guardarCampo(\'coordenadas\',' + o.id + ')">OK</button><button class="det-cancel-btn" onclick="cancelarEdicion(\'coordenadas\')">X</button></div></div>'
+                + '</div>'
+                + '<div class="det-card"><h4>Asignación</h4>'
+                + '<div class="info-line"><b>Técnico:</b> ' + (o.tecnico_nombre || '<span style="color:#94a3b8;">Sin asignar</span>') + '</div>'
+                + '<div class="info-line"><b>Creada:</b> ' + (o.created_at || '—') + '</div>'
+                + '<div class="info-line"><b>Completada:</b> ' + (o.fecha_completada || '—') + '</div>'
+                + '</div>'
+                + '<div class="det-card" style="grid-column:1/-1;"><h4>Detalle</h4>'
+                + '<div class="info-line"><span id="detDetalle">' + (o.detalle || '—') + '</span> <button class="det-edit-pencil" onclick="editarCampo(\'detalle\',' + o.id + ')" title="Editar"><i class="fas fa-pencil-alt"></i></button>'
+                + '<div class="det-inline-edit" id="editDetalle"><textarea id="inputDetalle" rows="2">' + (o.detalle || '') + '</textarea><button class="det-save-btn" onclick="guardarCampo(\'detalle\',' + o.id + ')">OK</button><button class="det-cancel-btn" onclick="cancelarEdicion(\'detalle\')">X</button></div></div>'
+                + '</div>'
+                + '</div>';
+            
+            // Comments section
+            html += '<div class="det-card" style="padding:14px; border:1px solid #e2e8f0; border-radius:8px; margin-top:10px;"><h4 style="margin:0 0 10px; font-size:0.8rem; color:#64748b; text-transform:uppercase;">Comentarios</h4>'
+                + '<div id="comentariosList"><p style="font-size:0.85rem; color:#94a3b8;">Sin comentarios</p></div>'
+                + '<div style="display:flex; gap:8px; margin-top:10px;"><input type="text" id="nuevoComentario" class="form-control" placeholder="Escribe un comentario..." style="flex:1;"><button class="btn btn-primary" style="white-space:nowrap; padding:8px 16px;" onclick="enviarComentario(' + o.id + ')"><i class="fas fa-paper-plane"></i></button></div>'
+                + '</div>';
+            
+            // Action buttons
+            if (o.estado === 'pendiente') {
+                html += '<div style="margin-top:16px; display:flex; gap:10px;">'
+                    + '<button class="btn btn-primary" onclick="completarOrden(' + o.id + ')" style="flex:1;"><i class="fas fa-check-circle"></i> Completar Orden</button>'
+                    + '</div>';
+            } else {
+                html += '<div style="margin-top:16px;">'
+                    + '<button class="btn btn-secondary" onclick="reabrirOrden(' + o.id + ')"><i class="fas fa-undo-alt"></i> Reabrir Orden</button>'
+                    + '</div>';
+            }
+            
+            document.getElementById('detalleContent').innerHTML = html;
+        });
+}
+
+function editarCampo(campo, id) {
+    document.getElementById('edit' + campo.charAt(0).toUpperCase() + campo.slice(1)).classList.add('active');
+}
+
+function cancelarEdicion(campo) {
+    document.getElementById('edit' + campo.charAt(0).toUpperCase() + campo.slice(1)).classList.remove('active');
+}
+
+function guardarCampo(campo, id) {
+    var inputId = 'input' + campo.charAt(0).toUpperCase() + campo.slice(1);
+    var valor = document.getElementById(inputId).value;
+    
+    fetch('/api/ordenes/actualizar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: id, campo: campo, valor: valor })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+        if (d.status === 'success') {
+            document.getElementById('det' + campo.charAt(0).toUpperCase() + campo.slice(1)).textContent = valor || '—';
+            cancelarEdicion(campo);
+            showToast('Actualizado');
+        } else {
+            showToast('Error: ' + (d.msg || ''), 'error');
+        }
+    });
+}
+
+function completarOrden(id) {
+    if (!confirm('Completar orden #' + id + '?')) return;
+    fetch('/api/ordenes/completar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: id })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+        if (d.status === 'success') {
+            showToast('Orden #' + id + ' completada');
+            cerrarModal('modalDetalle');
+            setTimeout(function() { window.location.reload(); }, 500);
+        } else {
+            showToast('Error: ' + (d.msg || ''), 'error');
+        }
+    });
+}
+
+function reabrirOrden(id) {
+    if (!confirm('Reabrir orden #' + id + '?')) return;
+    fetch('/api/ordenes/reabrir', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: id })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+        if (d.status === 'success') {
+            showToast('Orden #' + id + ' reabierta');
+            cerrarModal('modalDetalle');
+            setTimeout(function() { window.location.reload(); }, 500);
+        } else {
+            showToast('Error: ' + (d.msg || ''), 'error');
+        }
+    });
+}
+
+function enviarComentario(ordenId) {
+    var texto = document.getElementById('nuevoComentario');
+    if (!texto.value.trim()) return;
+    
+    fetch('/api/ordenes/comentario', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orden_id: ordenId, comentario: texto.value })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+        if (d.status === 'success') {
+            texto.value = '';
+            abrirDetalleOrden(ordenId); // Refresh detail
+        } else {
+            showToast('Error: ' + (d.msg || ''), 'error');
+        }
+    });
+}
 </script>

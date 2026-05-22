@@ -1,173 +1,819 @@
-<style>
-.plan-actions{display:flex;gap:4px;}
-.plan-btn{width:32px;height:32px;border:none;border-radius:6px;cursor:pointer;color:#fff;font-size:0.82rem;transition:opacity 0.2s;}
-.plan-btn:hover{opacity:0.85;}
-.plan-btn-edit{background:#f59e0b;}
-.plan-btn-del{background:#ef4444;}
-.plan-code{background:#f1f5f9;padding:2px 6px;border-radius:4px;font-family:monospace;font-size:0.82rem;}
-.plan-tag{display:inline-block;padding:2px 8px;border-radius:4px;font-size:0.78rem;font-weight:600;}
-.plan-tag-all{background:#e0f2fe;color:#0369a1;}
-.plan-tag-sel{background:#fef3c7;color:#92400e;}
-.modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;justify-content:center;align-items:center;padding:16px;}
-.modal-content{background:#fff;width:95%;max-width:700px;padding:25px;border-radius:12px;box-shadow:0 20px 25px rgba(0,0,0,0.2);max-height:90vh;overflow-y:auto;}
-.modal-header{display:flex;justify-content:space-between;margin-bottom:20px;border-bottom:1px solid #eee;padding-bottom:10px;}
-.modal-header h3{margin:0;color:#1e293b;}
-.form-group{margin-bottom:14px;}
-.form-label{display:block;font-weight:600;margin-bottom:5px;color:#64748b;font-size:0.88rem;}
-.form-control{width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:6px;font-size:0.9rem;box-sizing:border-box;transition:border-color 0.2s;}
-.form-control:focus{outline:none;border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,0.1);}
-.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-.form-grid .full-w{grid-column:1/-1;}
-.section-title{font-weight:700;font-size:0.82rem;color:#475569;text-transform:uppercase;letter-spacing:0.5px;margin:18px 0 10px;padding-bottom:6px;border-bottom:1px solid #f1f5f9;grid-column:1/-1;}
-input[type="checkbox"]{width:18px;height:18px;cursor:pointer;}
-</style>
-
 <div class="page-header">
-  <h2><i class="fas fa-tachometer-alt"></i> Planes de Internet</h2>
-  <button class="btn btn-primary btn-sm" onclick="abrirModalPlan()"><i class="fas fa-plus"></i> Nuevo Plan</button>
+    <h2 class="page-title">Planes de Internet</h2>
+    <button class="btn btn-primary" onclick="abrirModalNuevo()">
+        <i class="fas fa-plus"></i> Nuevo Plan
+    </button>
 </div>
 
-<div class="card">
-  <div style="padding:15px 20px 10px;border-bottom:1px solid #f1f5f9;">
-    <div style="position:relative;max-width:400px;">
-      <i class="fas fa-search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#94a3b8;"></i>
-      <input type="text" id="buscarPlan" class="form-control" placeholder="Buscar por nombre o precio..." oninput="filtrarPlanes()" style="padding-left:36px;">
+<style>
+:root {
+  --pl-bg: var(--card-bg, #fff);
+  --pl-border: var(--border-color, #e2e8f0);
+  --pl-text: var(--text-primary, #1e293b);
+  --pl-muted: var(--text-muted, #64748b);
+  --pl-light: var(--bg-light, #f8fafc);
+  --pl-accent: var(--accent, #6366f1);
+  --pl-danger: var(--accent-danger, #ef4444);
+  --pl-success: var(--accent-success, #10b981);
+  --pl-warning: #d97706;
+}
+.pl-card{background:var(--pl-bg);border:1px solid var(--pl-border);border-radius:12px;overflow-x:auto;margin-bottom:20px;box-shadow:0 1px 3px rgba(0,0,0,0.04);}
+.pl-card table{width:100%;border-collapse:collapse;font-size:0.85rem;}
+.pl-card thead th{text-align:left;padding:10px 12px;color:var(--pl-muted);font-size:0.72rem;text-transform:uppercase;letter-spacing:.5px;font-weight:700;border-bottom:2px solid var(--pl-border);white-space:nowrap;background:var(--pl-light);}
+.pl-card tbody td{padding:10px 12px;border-bottom:1px solid var(--pl-border);vertical-align:middle;}
+.pl-card tbody tr:hover{background:var(--pl-light);}
+.pl-card tbody tr:last-child td{border-bottom:none;}
+.pl-price{background:#dcfce7;color:#166534;padding:2px 8px;border-radius:10px;font-weight:bold;font-size:0.85rem;white-space:nowrap;}
+.pl-tax-tag{background:#eff6ff;color:#2563eb;padding:1px 6px;border-radius:8px;font-size:0.7rem;font-weight:600;margin-left:2px;white-space:nowrap;cursor:help;}
+.pl-clients{display:inline-flex;align-items:center;gap:4px;background:#dbeafe;color:#1d4ed8;padding:3px 10px;border-radius:10px;font-weight:700;font-size:0.85rem;cursor:pointer;transition:all 0.15s;}
+.pl-clients:hover{background:#bfdbfe;transform:scale(1.05);}
+.pl-code{background:var(--pl-light);padding:2px 5px;border-radius:4px;font-family:monospace;font-size:0.82rem;color:var(--pl-text);}
+.pl-zone-tag{background:#e0f2fe;color:#0369a1;padding:2px 6px;border-radius:4px;font-size:0.8rem;white-space:nowrap;}
+.pl-unavail-badge{display:inline-block;background:#fee2e2;color:#991b1b;padding:1px 7px;border-radius:10px;font-size:0.7rem;font-weight:700;margin-left:5px;vertical-align:middle;}
+.pl-actions{display:flex;gap:3px;flex-wrap:nowrap;}
+.pl-btn-icon{width:30px;height:30px;border:none;background:none;cursor:pointer;border-radius:6px;font-size:0.82rem;display:inline-flex;align-items:center;justify-content:center;transition:all 0.12s;}
+.pl-btn-icon:hover{background:var(--pl-light);}
+.pl-empty{text-align:center;padding:40px;color:var(--pl-muted);}
+.pl-empty i{font-size:2rem;display:block;margin-bottom:10px;opacity:0.4;}
+.pl-speed{font-size:0.82rem;color:var(--pl-text);}
+.pl-olt{display:block;color:#7c3aed;font-weight:600;font-size:0.78rem;}
+@keyframes plFadeIn{from{transform:scale(0.9);opacity:0;}to{transform:scale(1);opacity:1;}}
+</style>
+
+<div class="pl-card">
+    <div style="padding:15px 20px 10px;border-bottom:1px solid var(--pl-border);">
+        <div style="position:relative;max-width:400px;">
+            <i class="fas fa-search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#94a3b8;font-size:0.85rem;"></i>
+            <input type="text" id="buscarPlan" placeholder="Buscar por nombre o precio..." oninput="filtrarPlanes()" style="width:100%;padding:9px 12px 9px 36px;border:1px solid var(--pl-border);border-radius:8px;font-size:0.88rem;box-sizing:border-box;outline:none;transition:border-color 0.15s;" onfocus="this.style.borderColor='#2563eb';this.style.boxShadow='0 0 0 3px rgba(37,99,235,0.1)'" onblur="this.style.borderColor='var(--pl-border)';this.style.boxShadow='none'">
+        </div>
     </div>
-  </div>
-  <div class="table-container">
     <table>
-      <thead>
-        <tr>
-          <th>Nombre</th><th>Código</th><th>Precio</th><th>Impuestos</th><th>Clientes</th>
-          <th>Velocidad</th><th>SmartOLT</th><th>Perfil MT</th><th>Zonas</th><th>Acciones</th>
-        </tr>
-      </thead>
-      <tbody id="tablaPlanes">
-        <tr><td colspan="10" class="loading"><i class="fas fa-spinner fa-spin"></i> Cargando...</td></tr>
-      </tbody>
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Precio</th>
+                <th>Clientes</th>
+                <th>Velocidad (Sub/Baj)</th>
+                <th>SmartOLT</th>
+                <th>Perfil MikroTik</th>
+                <th>Zonas</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody id="tablaPlanes">
+            <tr><td colspan="8" class="pl-empty"><i class="fas fa-spinner fa-spin"></i> Cargando...</td></tr>
+        </tbody>
     </table>
-  </div>
 </div>
 
 <!-- Modal Plan -->
 <div class="modal-overlay" id="modalPlan" style="display:none;">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h3 id="modalTitle">Nuevo Plan</h3>
-      <button onclick="cerrarModal()" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:#64748b;">&times;</button>
+    <div class="modal-content" style="width:95%;max-width:700px;padding:25px;border-radius:12px;box-shadow:0 20px 25px rgba(0,0,0,0.2);max-height:90vh;overflow-y:auto;">
+        <div style="display:flex;justify-content:space-between;margin-bottom:20px;border-bottom:1px solid var(--pl-border);padding-bottom:10px;">
+            <h3 style="margin:0;color:var(--pl-text);" id="modalTitle">Nuevo Plan</h3>
+            <button onclick="cerrarModal()" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--pl-muted);">&times;</button>
+        </div>
+
+        <form id="formPlan">
+            <input type="hidden" name="accion" value="guardar">
+            <input type="hidden" name="id_plan" id="id_plan">
+            
+            <div style="display:grid;grid-template-columns:2fr 1fr;gap:15px;margin-bottom:15px;">
+                <div class="form-group">
+                    <label class="form-label">Nombre Comercial</label>
+                    <input type="text" name="name" id="name" class="form-control" required placeholder="Ej: Fibra 50 Megas">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Precio ($)</label>
+                    <input type="number" step="0.01" name="price" id="price" class="form-control" required oninput="recalcularImpuestos()">
+                </div>
+            </div>
+
+            <div style="background:var(--pl-light);padding:15px;border-radius:8px;margin-bottom:15px;border:1px solid var(--pl-border);">
+                <label class="form-label" style="color:var(--pl-accent);font-weight:700;margin-bottom:10px;display:block;">Velocidad Simple (Queue / Profile)</label>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;">
+                    <div>
+                        <label style="font-size:0.85rem;">Subida (Upload)</label>
+                        <input type="text" name="upload_speed" id="upload_speed" class="form-control" placeholder="Ej: 20M">
+                    </div>
+                    <div>
+                        <label style="font-size:0.85rem;">Bajada (Download)</label>
+                        <input type="text" name="download_speed" id="download_speed" class="form-control" placeholder="Ej: 50M">
+                    </div>
+                </div>
+            </div>
+
+            <details style="margin-bottom:15px;border:1px solid var(--pl-border);border-radius:8px;padding:10px;">
+                <summary style="cursor:pointer;font-weight:600;color:var(--pl-muted);">Configuración Avanzada (Burst / Ráfaga)</summary>
+                <div style="margin-top:15px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+                    <div style="font-size:0.8rem;font-weight:bold;text-align:center">Límite Burst</div>
+                    <div style="font-size:0.8rem;font-weight:bold;text-align:center">Umbral (Threshold)</div>
+                    <div style="font-size:0.8rem;font-weight:bold;text-align:center">Tiempo (s)</div>
+                    <input type="text" name="upload_burst" id="upload_burst" placeholder="Up" style="padding:5px;border:1px solid var(--pl-border);border-radius:4px;">
+                    <input type="text" name="burst_threshold_up" id="burst_threshold_up" placeholder="Up" style="padding:5px;border:1px solid var(--pl-border);border-radius:4px;">
+                    <input type="text" name="burst_time_up" id="burst_time_up" placeholder="Up" style="padding:5px;border:1px solid var(--pl-border);border-radius:4px;">
+                    <input type="text" name="download_burst" id="download_burst" placeholder="Down" style="padding:5px;border:1px solid var(--pl-border);border-radius:4px;">
+                    <input type="text" name="burst_threshold_down" id="burst_threshold_down" placeholder="Down" style="padding:5px;border:1px solid var(--pl-border);border-radius:4px;">
+                    <input type="text" name="burst_time_down" id="burst_time_down" placeholder="Down" style="padding:5px;border:1px solid var(--pl-border);border-radius:4px;">
+                </div>
+            </details>
+
+            <!-- SmartOLT Speed Profiles -->
+            <div style="background:#f3e8ff;padding:15px;border-radius:8px;margin-bottom:15px;border:1px solid #d8b4fe;">
+                <label class="form-label" style="color:#7c3aed;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
+                    <i class="fas fa-cloud"></i> Perfiles de Velocidad SmartOLT
+                    <span id="speedProfileSpinner" style="display:none;margin-left:6px;"><i class="fas fa-spinner fa-spin" style="font-size:0.8rem;color:#94a3b8;"></i></span>
+                </label>
+                <div id="speedProfileError" style="display:none;color:#991b1b;font-size:0.82rem;margin-bottom:8px;padding:6px 10px;background:#fef2f2;border-radius:6px;"></div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;">
+                    <div>
+                        <label style="font-size:0.85rem;font-weight:600;color:#6b21a8;"><i class="fas fa-arrow-down" style="font-size:0.75rem;"></i> Descarga (Download)</label>
+                        <select name="olt_download_profile" id="olt_download_profile" class="form-control" style="border-color:#d8b4fe;">
+                            <option value="">-- Sin perfil --</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="font-size:0.85rem;font-weight:600;color:#6b21a8;"><i class="fas fa-arrow-up" style="font-size:0.75rem;"></i> Subida (Upload)</label>
+                        <select name="olt_upload_profile" id="olt_upload_profile" class="form-control" style="border-color:#d8b4fe;">
+                            <option value="">-- Sin perfil --</option>
+                        </select>
+                    </div>
+                </div>
+                <small style="color:#7c3aed;font-size:0.75rem;margin-top:6px;display:block;">Perfiles cargados desde SmartOLT Cloud. Se asignan a la ONU al autorizar.</small>
+            </div>
+
+            <div class="form-group" style="margin-bottom:15px;">
+                <label class="form-label">Acción en MikroTik</label>
+                <div style="display:flex;gap:20px;margin-top:5px;flex-wrap:wrap;">
+                    <label style="cursor:pointer;display:flex;align-items:center;gap:5px;">
+                        <input type="radio" name="mk_action" value="create" id="mk_create" checked onchange="toggleMkInput('create')">
+                        Crear/Actualizar Automáticamente
+                    </label>
+                    <label style="cursor:pointer;display:flex;align-items:center;gap:5px;">
+                        <input type="radio" name="mk_action" value="manual" id="mk_manual" onchange="toggleMkInput('manual')">
+                        Vincular Manualmente
+                    </label>
+                    <label style="cursor:pointer;display:flex;align-items:center;gap:5px;">
+                        <input type="radio" name="mk_action" value="none" id="mk_none" onchange="toggleMkInput('none')">
+                        Solo limitar en OLT
+                    </label>
+                </div>
+                <input type="text" id="mk_profile_manual" name="mk_profile_manual" class="form-control" style="margin-top:10px;display:none;" placeholder="Nombre exacto del perfil en MikroTik">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Disponible en Zonas</label>
+                <div id="zonasContainer" style="max-height:100px;overflow-y:auto;border:1px solid var(--pl-border);padding:10px;border-radius:6px;">
+                    <label style="display:block;margin-bottom:5px;">
+                        <input type="checkbox" name="zones[]" value="all" id="zone_all" checked onchange="onZoneAllChange()"> Todas las zonas
+                    </label>
+                    <% (zonas || []).forEach(function(z) { %>
+                    <label style="display:block;margin-bottom:5px;">
+                        <input type="checkbox" name="zones[]" class="zone-check" value="<%= z.nombre %>" onchange="onZoneCheckChange()">
+                        <%= z.nombre %>
+                    </label>
+                    <% }); %>
+                </div>
+            </div>
+
+            <div style="background:#f0fdf4;padding:15px;border-radius:8px;margin-bottom:15px;border:1px solid #bbf7d0;">
+                <label class="form-label" style="color:#166534;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:6px;cursor:pointer;" onclick="toggleTaxPanel()">
+                    <i class="fas fa-percentage"></i> Facturar Impuestos
+                    <i class="fas fa-chevron-down" id="taxChevron" style="margin-left:auto;font-size:0.7rem;transition:transform 0.2s;"></i>
+                </label>
+                <div id="taxPanel" style="display:none;">
+                    <div style="font-size:0.8rem;color:#475569;margin-bottom:12px;">
+                        Seleccione los impuestos aplicables al plan. El sistema calculará el monto de cada impuesto sobre el precio del plan.
+                    </div>
+                    <div id="taxList">
+                        <label style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:#fff;border:1px solid var(--pl-border);border-radius:6px;margin-bottom:6px;cursor:pointer;">
+                            <input type="checkbox" class="tax-check" data-name="ITBIS" data-rate="18" onchange="recalcularImpuestos()">
+                            <span style="font-weight:600;flex:1;">ITBIS</span>
+                            <span style="background:#dbeafe;color:#2563eb;padding:2px 8px;border-radius:10px;font-size:0.8rem;font-weight:600;">18%</span>
+                            <span class="tax-amount" data-tax="ITBIS" style="font-weight:700;color:#166534;min-width:80px;text-align:right;">$0.00</span>
+                        </label>
+                        <label style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:#fff;border:1px solid var(--pl-border);border-radius:6px;margin-bottom:6px;cursor:pointer;">
+                            <input type="checkbox" class="tax-check" data-name="CDT" data-rate="2" onchange="recalcularImpuestos()">
+                            <span style="font-weight:600;flex:1;">CDT <small style="color:#94a3b8;">(Contribución)</small></span>
+                            <span style="background:#fef3c7;color:#92400e;padding:2px 8px;border-radius:10px;font-size:0.8rem;font-weight:600;">2%</span>
+                            <span class="tax-amount" data-tax="CDT" style="font-weight:700;color:#166534;min-width:80px;text-align:right;">$0.00</span>
+                        </label>
+                        <label style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:#fff;border:1px solid var(--pl-border);border-radius:6px;margin-bottom:6px;cursor:pointer;">
+                            <input type="checkbox" class="tax-check" data-name="ISC" data-rate="10" onchange="recalcularImpuestos()">
+                            <span style="font-weight:600;flex:1;">ISC <small style="color:#94a3b8;">(Selectivo al Consumo)</small></span>
+                            <span style="background:#fee2e2;color:#991b1b;padding:2px 8px;border-radius:10px;font-size:0.8rem;font-weight:600;">10%</span>
+                            <span class="tax-amount" data-tax="ISC" style="font-weight:700;color:#166534;min-width:80px;text-align:right;">$0.00</span>
+                        </label>
+                    </div>
+                    <div style="display:flex;gap:6px;align-items:center;margin-top:8px;">
+                        <input type="text" id="customTaxName" placeholder="Nombre" style="flex:1;padding:7px 10px;border:1px solid var(--pl-border);border-radius:6px;font-size:0.85rem;">
+                        <input type="number" id="customTaxRate" placeholder="%" step="0.01" min="0.01" max="100" style="width:70px;padding:7px 10px;border:1px solid var(--pl-border);border-radius:6px;font-size:0.85rem;text-align:center;">
+                        <button type="button" onclick="agregarImpuestoPersonalizado()" style="padding:7px 12px;background:#16a34a;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.85rem;white-space:nowrap;">
+                            <i class="fas fa-plus"></i> Agregar
+                        </button>
+                    </div>
+                    <div id="taxSummary" style="display:none;margin-top:12px;padding:10px 12px;background:#fff;border:1px solid #bbf7d0;border-radius:6px;">
+                        <div style="display:flex;justify-content:space-between;font-size:0.85rem;color:#475569;margin-bottom:4px;">
+                            <span>Subtotal (base):</span>
+                            <span id="taxBase" style="font-weight:700;">$0.00</span>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;font-size:0.85rem;color:#475569;margin-bottom:4px;">
+                            <span>Total impuestos:</span>
+                            <span id="taxTotalAmount" style="font-weight:700;color:#dc2626;">$0.00</span>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;font-size:0.9rem;color:var(--pl-text);border-top:1px solid var(--pl-border);padding-top:6px;margin-top:4px;">
+                            <span><b>Precio del plan (con imp.):</b></span>
+                            <span id="taxPlanTotal" style="font-weight:700;">$0.00</span>
+                        </div>
+                    </div>
+                </div>
+                <input type="hidden" name="tax_config" id="tax_config_input">
+            </div>
+
+            <div style="display:flex;gap:8px;margin-top:20px;">
+                <button type="button" class="btn btn-secondary" onclick="cerrarModal()" style="flex:1;">Cancelar</button>
+                <button type="submit" class="btn btn-primary" style="flex:2;" id="btnGuardarPlan"><i class="fas fa-save"></i> Guardar Plan</button>
+            </div>
+        </form>
     </div>
-    <form id="formPlan" onsubmit="return guardarPlan(event)">
-      <input type="hidden" name="accion" value="guardar">
-      <input type="hidden" name="id_plan" id="id_plan">
-      <div class="form-grid">
-        <div class="form-group">
-          <label class="form-label">Nombre Comercial</label>
-          <input type="text" name="name" id="name" class="form-control" required placeholder="Ej: Fibra 50 Megas">
+</div>
+
+<!-- Modal Clientes por Plan -->
+<div id="modalClientes" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:10000;justify-content:center;align-items:center;">
+    <div style="background:var(--pl-bg);width:95%;max-width:800px;border-radius:12px;box-shadow:0 20px 40px rgba(0,0,0,0.25);max-height:90vh;display:flex;flex-direction:column;overflow:hidden;">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:18px 24px;border-bottom:1px solid var(--pl-border);">
+            <div>
+                <h3 style="margin:0;color:var(--pl-text);font-size:1.1rem;" id="pcTitle">Clientes del Plan</h3>
+                <small style="color:var(--pl-muted);" id="pcInfo"></small>
+            </div>
+            <button onclick="cerrarModalClientes()" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--pl-muted);line-height:1;padding:0 4px;">&times;</button>
         </div>
-        <div class="form-group">
-          <label class="form-label">Precio ($)</label>
-          <input type="number" step="0.01" name="price" id="price" class="form-control" required>
+        <div style="padding:12px 24px 0;">
+            <div style="position:relative;">
+                <i class="fas fa-search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#94a3b8;font-size:0.85rem;"></i>
+                <input type="text" id="pcSearch" placeholder="Buscar por nombre, cédula, teléfono o ID..." oninput="pcBuscar()" style="width:100%;padding:9px 12px 9px 36px;border:1px solid var(--pl-border);border-radius:8px;font-size:0.88rem;box-sizing:border-box;outline:none;" onfocus="this.style.borderColor='#2563eb';this.style.boxShadow='0 0 0 3px rgba(37,99,235,0.1)'" onblur="this.style.borderColor='var(--pl-border)';this.style.boxShadow='none'">
+            </div>
         </div>
-        <div class="section-title">Velocidad</div>
-        <div class="form-group">
-          <label class="form-label">Subida</label>
-          <input type="text" name="upload_speed" id="upload_speed" class="form-control" placeholder="Ej: 20M">
+        <div style="flex:1;overflow-y:auto;padding:12px 24px;">
+            <table style="width:100%;border-collapse:collapse;">
+                <thead><tr>
+                    <th style="text-align:left;padding:8px 10px;color:var(--pl-muted);font-size:0.75rem;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--pl-border);font-weight:700;">ID</th>
+                    <th style="text-align:left;padding:8px 10px;color:var(--pl-muted);font-size:0.75rem;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--pl-border);font-weight:700;">Nombre</th>
+                    <th style="text-align:left;padding:8px 10px;color:var(--pl-muted);font-size:0.75rem;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--pl-border);font-weight:700;">Cédula</th>
+                    <th style="text-align:left;padding:8px 10px;color:var(--pl-muted);font-size:0.75rem;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--pl-border);font-weight:700;">Teléfono</th>
+                    <th style="text-align:left;padding:8px 10px;color:var(--pl-muted);font-size:0.75rem;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--pl-border);font-weight:700;">IP</th>
+                    <th style="text-align:left;padding:8px 10px;color:var(--pl-muted);font-size:0.75rem;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--pl-border);font-weight:700;">Estado</th>
+                </tr></thead>
+                <tbody id="pcBody"></tbody>
+            </table>
         </div>
-        <div class="form-group">
-          <label class="form-label">Bajada</label>
-          <input type="text" name="download_speed" id="download_speed" class="form-control" placeholder="Ej: 50M">
+        <div id="pcPager" style="padding:12px 24px 16px;border-top:1px solid var(--pl-border);"></div>
+    </div>
+</div>
+
+<!-- Modal Resync Plan -->
+<div id="modalResync" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:10001;justify-content:center;align-items:center;backdrop-filter:blur(3px);">
+    <div style="background:var(--pl-bg);width:95%;max-width:450px;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,0.3);overflow:hidden;">
+        <div style="background:linear-gradient(135deg,#7c3aed 0%,#5b21b6 100%);color:white;padding:20px 24px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+                <h3 style="margin:0;font-size:1.1rem;"><i class="fas fa-sync-alt"></i> Resync Plan</h3>
+                <button onclick="document.getElementById('modalResync').style.display='none'" style="background:none;border:none;color:white;font-size:1.3rem;cursor:pointer;">&times;</button>
+            </div>
+            <div id="resyncPlanName" style="font-size:0.85rem;opacity:0.85;margin-top:4px;"></div>
         </div>
-        <div class="form-group">
-          <label class="form-label">Upload Burst</label>
-          <input type="text" name="upload_burst" id="upload_burst" class="form-control">
+        <div id="resyncBody" style="padding:24px;">
+            <input type="hidden" id="resyncPlanId">
+            <p style="font-size:0.88rem;color:#475569;margin:0 0 18px;">Seleccione dónde desea aplicar los cambios del plan a todos los clientes activos:</p>
+            <label id="labelMk" style="display:flex;align-items:center;gap:12px;padding:14px 16px;background:var(--pl-light);border:2px solid var(--pl-border);border-radius:10px;cursor:pointer;margin-bottom:10px;transition:all 0.15s;" onmouseover="this.style.borderColor='#2563eb'" onmouseout="if(!this.querySelector('input').checked)this.style.borderColor='var(--pl-border)'">
+                <input type="checkbox" id="resyncMk" style="width:18px;height:18px;accent-color:#2563eb;" onchange="document.getElementById('labelMk').style.borderColor=this.checked?'#2563eb':'var(--pl-border)';document.getElementById('labelMk').style.background=this.checked?'#eff6ff':'var(--pl-light)'">
+                <div>
+                    <div style="font-weight:700;color:var(--pl-text);font-size:0.92rem;"><i class="fas fa-server" style="color:#2563eb;margin-right:4px;"></i> Actualizar en MikroTik</div>
+                    <div style="font-size:0.78rem;color:var(--pl-muted);">Actualiza queues y profiles PPPoE de todos los clientes</div>
+                </div>
+            </label>
+            <button id="btnResync" onclick="ejecutarResync()" style="width:100%;padding:13px;background:#2563eb;color:white;border:none;border-radius:10px;font-weight:700;font-size:0.95rem;cursor:pointer;transition:background 0.15s;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:10px;" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'">
+                <i class="fas fa-sync-alt"></i> Ejecutar Resync
+            </button>
         </div>
-        <div class="form-group">
-          <label class="form-label">Download Burst</label>
-          <input type="text" name="download_burst" id="download_burst" class="form-control">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Burst Threshold Up</label>
-          <input type="text" name="burst_threshold_up" id="burst_threshold_up" class="form-control">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Burst Threshold Down</label>
-          <input type="text" name="burst_threshold_down" id="burst_threshold_down" class="form-control">
-        </div>
-        <div class="section-title">Perfiles</div>
-        <div class="form-group">
-          <label class="form-label">Perfil MikroTik</label>
-          <input type="text" name="mikrotik_profile" id="mikrotik_profile" class="form-control" placeholder="Ej: DIM-PLAN001">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Perfil OLT Descarga</label>
-          <input type="text" name="olt_download" id="olt_download" class="form-control" placeholder="Ej: 1G">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Perfil OLT Subida</label>
-          <input type="text" name="olt_upload" id="olt_upload" class="form-control" placeholder="Ej: 1G">
-        </div>
-        <div class="section-title">Configuración</div>
-        <div class="form-group" style="display:flex;align-items:center;gap:10px;">
-          <input type="checkbox" name="available" id="available" value="1" checked>
-          <label class="form-label" style="margin:0;">Disponible para nuevos clientes</label>
-        </div>
-        <div class="form-group full-w">
-          <label class="form-label">Zonas vinculadas</label>
-          <select name="linked_zones" id="linked_zones" class="form-control">
-            <option value="all">Todas las zonas</option>
-            <% (zonas || []).forEach(function(z) { %>
-            <option value="<%= z.id %>"><%= z.nombre %></option>
-            <% }) %>
-          </select>
-        </div>
-      </div>
-      <div id="planResult"></div>
-      <div style="text-align:right;margin-top:16px;border-top:1px solid #eee;padding-top:16px;">
-        <button type="button" class="btn btn-secondary" onclick="cerrarModal()" style="margin-right:8px;">Cancelar</button>
-        <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Guardar</button>
-      </div>
-    </form>
-  </div>
+        <div id="resyncResult" style="display:none;padding:24px;"></div>
+    </div>
 </div>
 
 <script>
-function abrirModalPlan(id) {
-  if (id) {
-    fetch('/api/planes/' + id)
-      .then(r => r.json())
-      .then(p => {
-        document.getElementById('modalTitle').textContent = 'Editar: ' + (p.nombre || p.name);
-        document.getElementById('id_plan').value = p.id;
-        document.getElementById('name').value = p.nombre || p.name || '';
-        document.getElementById('price').value = p.precio || p.price || '';
-        document.getElementById('upload_speed').value = p.velocidad_subida || '';
-        document.getElementById('download_speed').value = p.velocidad_bajada || '';
-        document.getElementById('upload_burst').value = p.upload_burst || '';
-        document.getElementById('download_burst').value = p.download_burst || '';
-        document.getElementById('burst_threshold_up').value = p.burst_threshold_up || '';
-        document.getElementById('burst_threshold_down').value = p.burst_threshold_down || '';
-        document.getElementById('mikrotik_profile').value = p.perfil_mikrotik || '';
-        document.getElementById('olt_download').value = p.perfil_olt_descarga || '';
-        document.getElementById('olt_upload').value = p.perfil_olt_subida || '';
-        document.getElementById('linked_zones').value = p.zonas || 'all';
-        document.getElementById('available').checked = p.disponible !== 0;
-        document.getElementById('modalPlan').style.display = 'flex';
-      });
-  } else {
-    document.getElementById('formPlan').reset();
-    document.getElementById('modalTitle').textContent = 'Nuevo Plan';
-    document.getElementById('id_plan').value = '';
-    document.getElementById('available').checked = true;
-    document.getElementById('modalPlan').style.display = 'flex';
+var planesData = [];
+var _speedProfilesCache = null;
+var _pendingDownProfile = '';
+var _pendingUpProfile = '';
+var customTaxCounter = 0;
+
+// ============ CARGA DE PLANES ============
+function cargarPlanes() {
+  var tb = document.getElementById('tablaPlanes');
+  tb.innerHTML = '<tr><td colspan="8" class="pl-empty" style="text-align:center;padding:30px;"><i class="fas fa-spinner fa-spin"></i> Cargando...</td></tr>';
+  
+  fetch('/api/planes')
+    .then(function(r) { return r.json(); })
+    .then(function(planes) {
+      planesData = planes || [];
+      if (!planesData.length) {
+        tb.innerHTML = '<tr><td colspan="8" class="pl-empty"><i class="fas fa-box-open"></i> No hay planes registrados. Cree el primero.</td></tr>';
+        return;
+      }
+      var h = '';
+      for (var i = 0; i < planesData.length; i++) {
+        var p = planesData[i];
+        var codigo = 'PLAN' + String(p.id).padStart(3, '0');
+        var dispo = p.disponible == 0;
+        var rowStyle = dispo ? 'opacity:0.55;' : '';
+        var unavailBadge = dispo ? '<span class="pl-unavail-badge">No disponible</span>' : '';
+        
+        // Parse tax config
+        var taxTags = '';
+        var taxInfo = '';
+        try {
+          if (p.tax_config && typeof p.tax_config === 'string') {
+            taxInfo = JSON.parse(p.tax_config);
+          } else if (typeof p.tax_config === 'object' && p.tax_config !== null) {
+            taxInfo = p.tax_config;
+          }
+        } catch(e) {}
+        
+        if (Array.isArray(taxInfo) && taxInfo.length > 0) {
+          var taxNames = [];
+          for (var ti = 0; ti < taxInfo.length; ti++) {
+            taxNames.push(taxInfo[ti].name);
+          }
+          taxTags = '<span class="pl-tax-tag" title="Impuestos: ' + taxNames.join(', ') + '"><i class="fas fa-percentage" style="font-size:0.6rem;"></i> ' + taxNames.join('+') + '</span>';
+        }
+        
+        var clientCount = p.servicios_count || 0;
+        var clientHtml = clientCount > 0
+          ? '<span class="pl-clients" onclick="verClientesPlan(' + p.id + ', \'' + (p.nombre || '').replace(/'/g, "\\'") + '\')"><i class="fas fa-users" style="font-size:0.7rem;"></i> ' + clientCount + '</span>'
+          : '<span style="color:#cbd5e1;font-size:0.85rem;">0</span>';
+        
+        var speedUp = p.velocidad_subida || p.velocidad || '?';
+        var speedDown = p.velocidad_bajada || p.velocidad || '?';
+        
+        var oltDown = p.perfil_olt_descarga || '—';
+        var oltUp = p.perfil_olt_subida || '—';
+        var oltHtml = (oltDown !== '—' || oltUp !== '—')
+          ? '<small class="pl-olt"><i class="fas fa-arrow-down" style="font-size:0.65rem;"></i> ' + oltDown + '</small><small class="pl-olt"><i class="fas fa-arrow-up" style="font-size:0.65rem;"></i> ' + oltUp + '</small>'
+          : '<span style="color:#94a3b8;font-size:0.8rem;">—</span>';
+        
+        var mkProfile = p.perfil_mikrotik ? '<span class="pl-code">' + p.perfil_mikrotik + '</span>' : '<span style="color:#94a3b8;">—</span>';
+        
+        var zonaTag = (!p.zonas || p.zonas === 'all')
+          ? '<span class="pl-zone-tag">Todas</span>'
+          : '<span class="pl-zone-tag" style="background:#fef3c7;color:#92400e;">' + p.zonas + '</span>';
+        
+        // Toggle button icon
+        var toggleIcon = dispo ? 'fa-eye' : 'fa-eye-slash';
+        var toggleColor = dispo ? '#16a34a' : '#d97706';
+        var toggleTitle = dispo ? 'Marcar Disponible' : 'Marcar No disponible';
+        
+        h += '<tr style="' + rowStyle + '">';
+        h += '<td><strong>' + (p.nombre || '') + '</strong>' + unavailBadge + '</td>';
+        h += '<td><span class="pl-price">$' + parseFloat(p.precio || 0).toFixed(2) + '</span>' + taxTags + '</td>';
+        h += '<td style="text-align:center;">' + clientHtml + '</td>';
+        h += '<td class="pl-speed"><i class="fas fa-arrow-up" style="color:var(--pl-muted);font-size:0.8rem"></i> ' + speedUp + ' <span style="color:#ccc">|</span> <i class="fas fa-arrow-down" style="color:var(--pl-muted);font-size:0.8rem"></i> ' + speedDown + '</td>';
+        h += '<td>' + oltHtml + '</td>';
+        h += '<td>' + mkProfile + '</td>';
+        h += '<td>' + zonaTag + '</td>';
+        h += '<td class="pl-actions">';
+        h += '<button type="button" class="pl-btn-icon" title="' + toggleTitle + '" style="color:' + toggleColor + ';" onclick="toggleDisponible(' + p.id + ', this)"><i class="fas ' + toggleIcon + '"></i></button>';
+        h += '<button type="button" class="pl-btn-icon" title="Editar" style="color:var(--pl-accent);" onclick="abrirModalEditar(' + p.id + ')"><i class="fas fa-edit"></i></button>';
+        h += '<button type="button" class="pl-btn-icon" title="Resync" style="color:#7c3aed;" onclick="abrirResync(' + p.id + ', \'' + (p.nombre || '').replace(/'/g, "\\'") + '\')"><i class="fas fa-sync-alt"></i></button>';
+        h += '<button type="button" class="pl-btn-icon" title="Eliminar" style="color:var(--pl-danger);" onclick="confirmarEliminar(' + p.id + ', \'' + (p.nombre || '').replace(/'/g, "\\'") + '\', ' + clientCount + ')"><i class="fas fa-trash"></i></button>';
+        h += '</td></tr>';
+      }
+      tb.innerHTML = h;
+    })
+    .catch(function() {
+      tb.innerHTML = '<tr><td colspan="8" class="pl-empty"><i class="fas fa-exclamation-triangle" style="color:#ef4444;"></i> Error al cargar planes</td></tr>';
+    });
+}
+
+// ============ FILTRO ============
+function filtrarPlanes() {
+  var q = document.getElementById('buscarPlan').value.toLowerCase().trim();
+  var rows = document.querySelectorAll('#tablaPlanes tr');
+  for (var i = 0; i < rows.length; i++) {
+    rows[i].style.display = (!q || rows[i].textContent.toLowerCase().includes(q)) ? '' : 'none';
   }
 }
 
-function cerrarModal() { document.getElementById('modalPlan').style.display = 'none'; }
+// ============ TOGGLE DISPONIBILIDAD ============
+function toggleDisponible(planId, btn) {
+  btn.disabled = true;
+  var plan = null;
+  for (var i = 0; i < planesData.length; i++) {
+    if (planesData[i].id === planId) { plan = planesData[i]; break; }
+  }
+  if (!plan) return;
+  var newDisponible = plan.disponible == 0 ? 1 : 0;
+  
+  fetch('/api/planes/save', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      id: planId,
+      nombre: plan.nombre,
+      precio: plan.precio,
+      velocidad_subida: plan.velocidad_subida || plan.velocidad,
+      velocidad_bajada: plan.velocidad_bajada || plan.velocidad,
+      upload_burst: plan.upload_burst || '',
+      download_burst: plan.download_burst || '',
+      burst_threshold_up: plan.burst_threshold_up || '',
+      burst_threshold_down: plan.burst_threshold_down || '',
+      perfil_mikrotik: plan.perfil_mikrotik || '',
+      perfil_olt_descarga: plan.perfil_olt_descarga || '',
+      perfil_olt_subida: plan.perfil_olt_subida || '',
+      zonas: plan.zonas || 'all',
+      disponible: newDisponible
+    })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    if (d.success) {
+      cargarPlanes();
+    } else {
+      mostrarAlerta(d.message || 'Error al cambiar disponibilidad', 'error');
+      btn.disabled = false;
+    }
+  })
+  .catch(function() {
+    mostrarAlerta('Error de conexión', 'error');
+    btn.disabled = false;
+  });
+}
 
-function guardarPlan(e) {
+// ============ MODAL PLAN ============
+var modal = document.getElementById('modalPlan');
+var form = document.getElementById('formPlan');
+var title = document.getElementById('modalTitle');
+
+function abrirModalNuevo() {
+  form.reset();
+  document.getElementById('id_plan').value = '';
+  title.innerText = 'Nuevo Plan';
+  document.getElementById('zone_all').checked = true;
+  document.getElementById('mk_create').checked = true;
+  toggleMkInput('create');
+  _pendingDownProfile = '';
+  _pendingUpProfile = '';
+  loadSpeedProfiles();
+  limpiarImpuestos();
+  modal.style.display = 'flex';
+}
+
+function abrirModalEditar(planId) {
+  fetch('/api/planes/' + planId)
+    .then(function(r) { return r.json(); })
+    .then(function(plan) {
+      if (!plan || plan.error) {
+        mostrarAlerta('Error al cargar plan', 'error');
+        return;
+      }
+      form.reset();
+      title.innerText = 'Editar Plan: ' + (plan.nombre || '');
+      
+      document.getElementById('id_plan').value = plan.id;
+      document.getElementById('name').value = plan.nombre || '';
+      document.getElementById('price').value = plan.precio || '';
+      document.getElementById('upload_speed').value = plan.velocidad_subida || plan.velocidad || '';
+      document.getElementById('download_speed').value = plan.velocidad_bajada || plan.velocidad || '';
+      
+      // SmartOLT speed profiles
+      _pendingDownProfile = plan.perfil_olt_descarga || '';
+      _pendingUpProfile = plan.perfil_olt_subida || '';
+      loadSpeedProfiles(function() {
+        document.getElementById('olt_download_profile').value = _pendingDownProfile;
+        document.getElementById('olt_upload_profile').value = _pendingUpProfile;
+      });
+      
+      document.getElementById('upload_burst').value = plan.upload_burst || '';
+      document.getElementById('download_burst').value = plan.download_burst || '';
+      document.getElementById('burst_threshold_up').value = plan.burst_threshold_up || '';
+      document.getElementById('burst_threshold_down').value = plan.burst_threshold_down || '';
+      document.getElementById('burst_time_up').value = plan.burst_time_up || '';
+      document.getElementById('burst_time_down').value = plan.burst_time_down || '';
+      
+      // MikroTik action
+      var action = plan.mikrotik_action || 'create';
+      if (action === 'create') document.getElementById('mk_create').checked = true;
+      if (action === 'manual') {
+        document.getElementById('mk_manual').checked = true;
+        document.getElementById('mk_profile_manual').value = plan.perfil_mikrotik || '';
+      }
+      if (action === 'none') document.getElementById('mk_none').checked = true;
+      toggleMkInput(action);
+      
+      // Zones
+      var allZonesCb = document.getElementById('zone_all');
+      var zoneCbs = document.querySelectorAll('.zone-check');
+      allZonesCb.checked = false;
+      for (var zi = 0; zi < zoneCbs.length; zi++) zoneCbs[zi].checked = false;
+      
+      if (plan.zonas === 'all' || !plan.zonas) {
+        allZonesCb.checked = true;
+      } else {
+        var zonesArr = plan.zonas.split(',');
+        for (var zj = 0; zj < zoneCbs.length; zj++) {
+          if (zonesArr.indexOf(zoneCbs[zj].value) !== -1) zoneCbs[zj].checked = true;
+        }
+      }
+      
+      // Cargar impuestos
+      cargarImpuestos(plan.tax_config);
+      
+      modal.style.display = 'flex';
+    })
+    .catch(function() {
+      mostrarAlerta('Error de conexión', 'error');
+    });
+}
+
+function cerrarModal() {
+  modal.style.display = 'none';
+}
+
+function toggleMkInput(action) {
+  var manualInput = document.getElementById('mk_profile_manual');
+  manualInput.style.display = (action === 'manual') ? 'block' : 'none';
+  manualInput.required = (action === 'manual');
+}
+
+// Zones
+function onZoneAllChange() {
+  var cb = document.getElementById('zone_all');
+  var checks = document.querySelectorAll('.zone-check');
+  if (cb.checked) {
+    for (var i = 0; i < checks.length; i++) checks[i].checked = false;
+  }
+}
+
+function onZoneCheckChange() {
+  var allCb = document.getElementById('zone_all');
+  var checks = document.querySelectorAll('.zone-check');
+  var anyChecked = false;
+  for (var i = 0; i < checks.length; i++) {
+    if (checks[i].checked) { anyChecked = true; break; }
+  }
+  if (anyChecked) allCb.checked = false;
+}
+
+// ============ SMARTOLT SPEED PROFILES ============
+function loadSpeedProfiles(callback) {
+  var downSel = document.getElementById('olt_download_profile');
+  var upSel = document.getElementById('olt_upload_profile');
+  var spinner = document.getElementById('speedProfileSpinner');
+  var errDiv = document.getElementById('speedProfileError');
+  errDiv.style.display = 'none';
+  
+  if (_speedProfilesCache !== null) {
+    renderSpeedOptions(_speedProfilesCache);
+    if (callback) callback();
+    return;
+  }
+  
+  spinner.style.display = 'inline';
+  downSel.innerHTML = '<option value="">-- Cargando... --</option>';
+  upSel.innerHTML = '<option value="">-- Cargando... --</option>';
+  downSel.disabled = true;
+  upSel.disabled = true;
+  
+  fetch('/api/smartolt/speed-profiles', { method: 'POST' })
+    .then(function(r) {
+      var ct = r.headers.get('content-type') || '';
+      if (ct.indexOf('json') === -1) return r.text().then(function(t) { throw new Error('No JSON: ' + t.substring(0,200)); });
+      return r.json();
+    })
+    .then(function(d) {
+      spinner.style.display = 'none';
+      downSel.disabled = false;
+      upSel.disabled = false;
+      if (d.status === 'success') {
+        _speedProfilesCache = d.data;
+        renderSpeedOptions(d.data);
+        if (callback) callback();
+      } else {
+        errDiv.textContent = d.msg || 'Error al cargar perfiles';
+        errDiv.style.display = 'block';
+        downSel.innerHTML = '<option value="">-- Error --</option>';
+        upSel.innerHTML = '<option value="">-- Error --</option>';
+      }
+    })
+    .catch(function(e) {
+      spinner.style.display = 'none';
+      downSel.disabled = false;
+      upSel.disabled = false;
+      errDiv.textContent = 'Error: ' + e.message;
+      errDiv.style.display = 'block';
+      downSel.innerHTML = '<option value="">-- Error --</option>';
+      upSel.innerHTML = '<option value="">-- Error --</option>';
+    });
+}
+
+function renderSpeedOptions(profiles) {
+  var downSel = document.getElementById('olt_download_profile');
+  var upSel = document.getElementById('olt_upload_profile');
+  var hDown = '<option value="">-- Sin perfil --</option>';
+  var hUp = '<option value="">-- Sin perfil --</option>';
+  
+  if (Array.isArray(profiles)) {
+    for (var i = 0; i < profiles.length; i++) {
+      var p = profiles[i];
+      var name = p.name || p.speed_profile_name || (typeof p === 'string' ? p : '');
+      var val = (typeof p === 'string') ? p : (p.name || p.speed_profile_name || '');
+      if (!val) continue;
+      var esc = val.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+      var dir = (typeof p === 'object' && p.direction) ? p.direction.toLowerCase() : '';
+      if (dir === 'download') {
+        hDown += '<option value="' + esc + '">' + esc + '</option>';
+      } else if (dir === 'upload') {
+        hUp += '<option value="' + esc + '">' + esc + '</option>';
+      } else {
+        hDown += '<option value="' + esc + '">' + esc + '</option>';
+        hUp += '<option value="' + esc + '">' + esc + '</option>';
+      }
+    }
+  }
+  downSel.innerHTML = hDown;
+  upSel.innerHTML = hUp;
+  
+  if (_pendingDownProfile) downSel.value = _pendingDownProfile;
+  if (_pendingUpProfile) upSel.value = _pendingUpProfile;
+}
+
+// ============ IMPUESTOS ============
+function toggleTaxPanel() {
+  var panel = document.getElementById('taxPanel');
+  var chev = document.getElementById('taxChevron');
+  var isHidden = panel.style.display === 'none' || panel.style.display === '';
+  panel.style.display = isHidden ? 'block' : 'none';
+  chev.style.transform = isHidden ? 'rotate(180deg)' : '';
+}
+
+function agregarImpuestoPersonalizado() {
+  var nameInput = document.getElementById('customTaxName');
+  var rateInput = document.getElementById('customTaxRate');
+  var name = nameInput.value.trim();
+  var rate = parseFloat(rateInput.value);
+  if (!name || isNaN(rate) || rate <= 0) return;
+  
+  customTaxCounter++;
+  var row = document.createElement('label');
+  row.style.cssText = 'display:flex;align-items:center;gap:8px;padding:8px 10px;background:#fff;border:1px solid var(--pl-border);border-radius:6px;margin-bottom:6px;cursor:pointer;';
+  row.innerHTML = '<input type="checkbox" class="tax-check" data-name="' + name.replace(/"/g,'&quot;') + '" data-rate="' + rate + '" checked onchange="recalcularImpuestos()">' +
+    '<span style="font-weight:600;flex:1;">' + name.replace(/</g,'&lt;') + '</span>' +
+    '<span style="background:#ede9fe;color:#6d28d9;padding:2px 8px;border-radius:10px;font-size:0.8rem;font-weight:600;">' + rate + '%</span>' +
+    '<span class="tax-amount" data-tax="' + name.replace(/"/g,'&quot;') + '" style="font-weight:700;color:#166534;min-width:80px;text-align:right;">$0.00</span>' +
+    '<button type="button" onclick="this.closest(\'label\').remove();recalcularImpuestos();" style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:0.9rem;padding:0 4px;"><i class="fas fa-times"></i></button>';
+  document.getElementById('taxList').appendChild(row);
+  nameInput.value = '';
+  rateInput.value = '';
+  recalcularImpuestos();
+}
+
+function recalcularImpuestos() {
+  var price = parseFloat(document.getElementById('price').value) || 0;
+  var checks = document.querySelectorAll('.tax-check');
+  var activeTaxes = [];
+  var totalTaxRate = 0;
+  
+  for (var i = 0; i < checks.length; i++) {
+    if (checks[i].checked) {
+      totalTaxRate += parseFloat(checks[i].dataset.rate);
+      activeTaxes.push({ name: checks[i].dataset.name, rate: parseFloat(checks[i].dataset.rate) });
+    }
+  }
+  
+  // Cálculo inverso: precio incluye impuestos
+  var divisor = 1 + (totalTaxRate / 100);
+  var base = price / divisor;
+  var totalTaxAmount = 0;
+  
+  for (var j = 0; j < activeTaxes.length; j++) {
+    var amount = base * (activeTaxes[j].rate / 100);
+    totalTaxAmount += amount;
+    var amounts = document.querySelectorAll('.tax-amount');
+    for (var k = 0; k < amounts.length; k++) {
+      if (amounts[k].dataset.tax === activeTaxes[j].name) amounts[k].textContent = '$' + amount.toFixed(2);
+    }
+  }
+  
+  // Clear unselected
+  for (var m = 0; m < checks.length; m++) {
+    if (!checks[m].checked) {
+      var amts = document.querySelectorAll('.tax-amount');
+      for (var n = 0; n < amts.length; n++) {
+        if (amts[n].dataset.tax === checks[m].dataset.name) amts[n].textContent = '$0.00';
+      }
+    }
+  }
+  
+  var summary = document.getElementById('taxSummary');
+  if (activeTaxes.length > 0 && price > 0) {
+    summary.style.display = 'block';
+    document.getElementById('taxBase').textContent = '$' + base.toFixed(2);
+    document.getElementById('taxTotalAmount').textContent = '$' + totalTaxAmount.toFixed(2);
+    document.getElementById('taxPlanTotal').textContent = '$' + price.toFixed(2);
+  } else {
+    summary.style.display = 'none';
+  }
+  
+  serializarImpuestos();
+}
+
+function serializarImpuestos() {
+  var checks = document.querySelectorAll('.tax-check');
+  var config = [];
+  for (var i = 0; i < checks.length; i++) {
+    if (checks[i].checked) {
+      config.push({ name: checks[i].dataset.name, rate: parseFloat(checks[i].dataset.rate) });
+    }
+  }
+  document.getElementById('tax_config_input').value = config.length > 0 ? JSON.stringify(config) : '';
+}
+
+function limpiarImpuestos() {
+  var checks = document.querySelectorAll('.tax-check');
+  for (var i = 0; i < checks.length; i++) checks[i].checked = false;
+  // Remove custom taxes
+  var taxList = document.getElementById('taxList');
+  var labels = taxList.querySelectorAll('label');
+  for (var j = labels.length - 1; j >= 3; j--) labels[j].remove();
+  
+  document.getElementById('taxPanel').style.display = 'none';
+  document.getElementById('taxChevron').style.transform = '';
+  document.getElementById('taxSummary').style.display = 'none';
+  document.getElementById('tax_config_input').value = '';
+  recalcularImpuestos();
+}
+
+function cargarImpuestos(taxJson) {
+  var checks = document.querySelectorAll('.tax-check');
+  for (var i = 0; i < checks.length; i++) checks[i].checked = false;
+  var taxList = document.getElementById('taxList');
+  var labels = taxList.querySelectorAll('label');
+  for (var j = labels.length - 1; j >= 3; j--) labels[j].remove();
+  
+  if (!taxJson) {
+    document.getElementById('taxPanel').style.display = 'none';
+    document.getElementById('taxChevron').style.transform = '';
+    recalcularImpuestos();
+    return;
+  }
+  
+  var taxes = [];
+  try { taxes = JSON.parse(typeof taxJson === 'string' ? taxJson : JSON.stringify(taxJson)); } catch(e) { return; }
+  if (!Array.isArray(taxes) || taxes.length === 0) { recalcularImpuestos(); return; }
+  
+  var predefined = { ITBIS: true, CDT: true, ISC: true };
+  
+  for (var t = 0; t < taxes.length; t++) {
+    if (predefined[taxes[t].name]) {
+      for (var c = 0; c < checks.length; c++) {
+        if (checks[c].dataset.name === taxes[t].name) checks[c].checked = true;
+      }
+    } else {
+      customTaxCounter++;
+      var row = document.createElement('label');
+      row.style.cssText = 'display:flex;align-items:center;gap:8px;padding:8px 10px;background:#fff;border:1px solid var(--pl-border);border-radius:6px;margin-bottom:6px;cursor:pointer;';
+      row.innerHTML = '<input type="checkbox" class="tax-check" data-name="' + taxes[t].name.replace(/"/g,'&quot;') + '" data-rate="' + taxes[t].rate + '" checked onchange="recalcularImpuestos()">' +
+        '<span style="font-weight:600;flex:1;">' + taxes[t].name.replace(/</g,'&lt;') + '</span>' +
+        '<span style="background:#ede9fe;color:#6d28d9;padding:2px 8px;border-radius:10px;font-size:0.8rem;font-weight:600;">' + taxes[t].rate + '%</span>' +
+        '<span class="tax-amount" data-tax="' + taxes[t].name.replace(/"/g,'&quot;') + '" style="font-weight:700;color:#166534;min-width:80px;text-align:right;">$0.00</span>' +
+        '<button type="button" onclick="this.closest(\'label\').remove();recalcularImpuestos();" style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:0.9rem;padding:0 4px;"><i class="fas fa-times"></i></button>';
+      taxList.appendChild(row);
+    }
+  }
+  
+  document.getElementById('taxPanel').style.display = 'block';
+  document.getElementById('taxChevron').style.transform = 'rotate(180deg)';
+  recalcularImpuestos();
+}
+
+// ============ GUARDAR PLAN ============
+form.addEventListener('submit', function(e) {
   e.preventDefault();
-  const id = document.getElementById('id_plan').value;
-  const data = {
+  serializarImpuestos();
+  
+  var id = document.getElementById('id_plan').value;
+  var mkActionEl = document.querySelector('input[name="mk_action"]:checked');
+  var mkAction = mkActionEl ? mkActionEl.value : 'create';
+  
+  // Build zones string
+  var allCb = document.getElementById('zone_all');
+  var zonesVal = 'all';
+  if (!allCb.checked) {
+    var zoneChecks = document.querySelectorAll('.zone-check:checked');
+    var zoneParts = [];
+    for (var zi = 0; zi < zoneChecks.length; zi++) zoneParts.push(zoneChecks[zi].value);
+    zonesVal = zoneParts.join(',');
+  }
+  
+  var data = {
     id: id || 0,
     nombre: document.getElementById('name').value,
     precio: parseFloat(document.getElementById('price').value) || 0,
@@ -177,79 +823,237 @@ function guardarPlan(e) {
     download_burst: document.getElementById('download_burst').value,
     burst_threshold_up: document.getElementById('burst_threshold_up').value,
     burst_threshold_down: document.getElementById('burst_threshold_down').value,
-    perfil_mikrotik: document.getElementById('mikrotik_profile').value,
-    perfil_olt_descarga: document.getElementById('olt_download').value,
-    perfil_olt_subida: document.getElementById('olt_upload').value,
-    zonas: document.getElementById('linked_zones').value,
-    disponible: document.getElementById('available').checked ? 1 : 0
+    perfil_mikrotik: mkAction === 'manual' ? document.getElementById('mk_profile_manual').value : document.getElementById('upload_speed').value + 'M_' + document.getElementById('download_speed').value + 'M',
+    perfil_olt_descarga: document.getElementById('olt_download_profile').value,
+    perfil_olt_subida: document.getElementById('olt_upload_profile').value,
+    zonas: zonesVal,
+    disponible: 1,
+    mikrotik_action: mkAction,
+    tax_config: document.getElementById('tax_config_input').value
   };
   
-  const btn = e.target.querySelector('button[type="submit"]');
-  btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+  var btn = document.getElementById('btnGuardarPlan');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
   
   fetch('/api/planes/save', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data)
   })
-  .then(r => r.json())
-  .then(d => {
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-save"></i> Guardar Plan';
     if (d.success) {
       cerrarModal();
       cargarPlanes();
     } else {
-      document.getElementById('planResult').innerHTML = '<div style="color:#ef4444;padding:6px 0;">' + (d.message || 'Error') + '</div>';
+      mostrarAlerta(d.message || 'Error al guardar', 'error');
     }
-    btn.disabled = false; btn.innerHTML = '<i class="fas fa-save"></i> Guardar';
   })
-  .catch(() => { btn.disabled = false; btn.innerHTML = '<i class="fas fa-save"></i> Guardar'; });
-}
+  .catch(function() {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-save"></i> Guardar Plan';
+    mostrarAlerta('Error de conexión', 'error');
+  });
+});
 
-function cargarPlanes() {
-  fetch('/api/planes')
-    .then(r => r.json())
-    .then(planes => {
-      const tb = document.getElementById('tablaPlanes');
-      if (!planes || planes.length === 0) {
-        tb.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:40px;color:#94a3b8;">No hay planes registrados</td></tr>';
-        return;
+// ============ ELIMINAR ============
+function confirmarEliminar(id, nombre, totalServicios) {
+  if (totalServicios > 0) {
+    mostrarAlerta('Este plan cuenta con ' + totalServicios + ' servicio(s) asignado(s). Primero elimine o mueva los servicios a otro plan.', 'error');
+    return;
+  }
+  
+  if (!confirm('¿Está seguro que desea eliminar el plan "' + nombre + '"? Esta acción no se puede deshacer.')) return;
+  
+  fetch('/api/planes/' + id + '/delete', { method: 'POST' })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (d.success) {
+        mostrarAlerta('Plan eliminado', 'success');
+        cargarPlanes();
+      } else {
+        mostrarAlerta(d.message || 'Error al eliminar', 'error');
       }
-      let h = '';
-      planes.forEach(function(p) {
-        const codigo = 'PLAN' + String(p.id).padStart(3, '0');
-        const zonaTag = p.zonas === 'all' || !p.zonas ? '<span class="plan-tag plan-tag-all">Todas</span>' : '<span class="plan-tag plan-tag-sel">' + (p.zonas || '') + '</span>';
-        h += '<tr>';
-        h += '<td><strong>' + (p.nombre || '') + '</strong></td>';
-        h += '<td><span class="plan-code">' + codigo + '</span></td>';
-        h += '<td><strong>$' + parseFloat(p.precio || 0).toFixed(2) + '</strong></td>';
-        h += '<td style="font-size:0.82rem;color:#64748b;">' + (p.impuestos || '—') + '</td>';
-        h += '<td>' + (p.servicios_count || 0) + '</td>';
-        h += '<td>' + (p.velocidad_subida || '?') + ' | ' + (p.velocidad_bajada || '?') + '</td>';
-        h += '<td>' + (p.perfil_olt_descarga || '—') + '/' + (p.perfil_olt_subida || '—') + '</td>';
-        h += '<td style="font-size:0.82rem;color:#6366f1;">' + (p.perfil_mikrotik || '—') + '</td>';
-        h += '<td>' + zonaTag + '</td>';
-        h += '<td class="plan-actions">';
-        h += '<button class="plan-btn plan-btn-edit" onclick="abrirModalPlan(' + p.id + ')" title="Editar"><i class="fas fa-edit"></i></button>';
-        h += '<button class="plan-btn plan-btn-del" onclick="eliminarPlan(' + p.id + ')" title="Eliminar"><i class="fas fa-trash"></i></button>';
-        h += '</td></tr>';
-      });
-      tb.innerHTML = h;
+    })
+    .catch(function() {
+      mostrarAlerta('Error de conexión', 'error');
     });
 }
 
-function eliminarPlan(id) {
-  if (!confirm('Eliminar este plan?')) return;
-  fetch('/api/planes/' + id + '/delete', { method: 'POST' })
-    .then(r => r.json())
-    .then(d => { if (d.success) cargarPlanes(); });
+// ============ CLIENTES POR PLAN ============
+var _pcPlanId = 0, _pcPage = 1, _pcSearch = '', _pcDebounce = null;
+
+function verClientesPlan(planId, planName) {
+  _pcPlanId = planId; _pcPage = 1; _pcSearch = '';
+  document.getElementById('pcTitle').textContent = 'Clientes: ' + planName;
+  document.getElementById('pcSearch').value = '';
+  document.getElementById('modalClientes').style.display = 'flex';
+  cargarClientesPlan();
 }
 
-function filtrarPlanes() {
-  const q = document.getElementById('buscarPlan').value.toLowerCase().trim();
-  document.querySelectorAll('#tablaPlanes tr').forEach(function(row) {
-    row.style.display = (!q || row.textContent.toLowerCase().includes(q)) ? '' : 'none';
-  });
+function cerrarModalClientes() {
+  document.getElementById('modalClientes').style.display = 'none';
 }
 
+function pcBuscar() {
+  clearTimeout(_pcDebounce);
+  _pcDebounce = setTimeout(function() {
+    _pcSearch = document.getElementById('pcSearch').value.trim();
+    _pcPage = 1;
+    cargarClientesPlan();
+  }, 300);
+}
+
+function pcPagina(p) { _pcPage = p; cargarClientesPlan(); }
+
+function cargarClientesPlan() {
+  var url = '/api/planes/' + _pcPlanId + '/clients?page=' + _pcPage + '&q=' + encodeURIComponent(_pcSearch);
+  document.getElementById('pcBody').innerHTML = '<tr><td colspan="6" style="text-align:center;padding:30px;color:#94a3b8;"><i class="fas fa-spinner fa-spin"></i> Cargando...</td></tr>';
+  document.getElementById('pcPager').innerHTML = '';
+  
+  fetch(url)
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.status !== 'success') {
+        document.getElementById('pcBody').innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:#ef4444;">' + (data.msg || 'Error') + '</td></tr>';
+        return;
+      }
+      var clients = data.clients;
+      document.getElementById('pcInfo').textContent = data.total + ' cliente' + (data.total !== 1 ? 's' : '') + ' en este plan';
+      if (!clients.length) {
+        document.getElementById('pcBody').innerHTML = '<tr><td colspan="6" style="text-align:center;padding:30px;color:#94a3b8;">No se encontraron clientes</td></tr>';
+        return;
+      }
+      var h = '';
+      for (var i = 0; i < clients.length; i++) {
+        var c = clients[i];
+        var stColor = c.status === 'activo' || c.status === 'active' ? '#16a34a' : (c.status === 'suspendido' || c.status === 'suspended' ? '#d97706' : '#94a3b8');
+        var stBg = c.status === 'activo' || c.status === 'active' ? '#dcfce7' : (c.status === 'suspendido' || c.status === 'suspended' ? '#fef3c7' : '#f1f5f9');
+        var stText = c.status === 'activo' || c.status === 'active' ? 'Activo' : (c.status === 'suspendido' || c.status === 'suspended' ? 'Suspendido' : (c.status || '-'));
+        h += '<tr style="cursor:pointer;" onclick="window.location.href=\'/modulo?pagina=VerCliente&id=' + c.id + '\';">';
+        h += '<td style="font-weight:600;color:var(--pl-text);">' + c.id + '</td>';
+        h += '<td style="font-weight:600;">' + (c.nombre || c.name || '-') + '</td>';
+        h += '<td style="color:var(--pl-muted);font-size:0.85rem;">' + (c.cedula || '-') + '</td>';
+        h += '<td style="color:var(--pl-muted);font-size:0.85rem;">' + (c.telefono || c.phone || '-') + '</td>';
+        h += '<td><span class="pl-code">' + (c.ip || c.ip_address || '-') + '</span></td>';
+        h += '<td><span style="background:' + stBg + ';color:' + stColor + ';padding:2px 8px;border-radius:10px;font-size:0.75rem;font-weight:700;">' + stText + '</span></td>';
+        h += '</tr>';
+      }
+      document.getElementById('pcBody').innerHTML = h;
+      
+      // Paginador
+      if (data.pages > 1) {
+        var pg = '<div style="display:flex;gap:4px;justify-content:center;align-items:center;flex-wrap:wrap;">';
+        if (data.page > 1) pg += '<button onclick="pcPagina(' + (data.page - 1) + ')" style="padding:5px 10px;border:1px solid var(--pl-border);border-radius:6px;background:var(--pl-bg);cursor:pointer;font-size:0.8rem;">&laquo;</button>';
+        var startP = Math.max(1, data.page - 2);
+        var endP = Math.min(data.pages, data.page + 2);
+        if (startP > 1) pg += '<span style="color:#94a3b8;font-size:0.8rem;padding:0 4px;">...</span>';
+        for (var p = startP; p <= endP; p++) {
+          if (p === data.page) {
+            pg += '<button style="padding:5px 10px;border:1px solid #2563eb;border-radius:6px;background:#2563eb;color:#fff;font-weight:700;font-size:0.8rem;">' + p + '</button>';
+          } else {
+            pg += '<button onclick="pcPagina(' + p + ')" style="padding:5px 10px;border:1px solid var(--pl-border);border-radius:6px;background:var(--pl-bg);cursor:pointer;font-size:0.8rem;">' + p + '</button>';
+          }
+        }
+        if (endP < data.pages) pg += '<span style="color:#94a3b8;font-size:0.8rem;padding:0 4px;">...</span>';
+        if (data.page < data.pages) pg += '<button onclick="pcPagina(' + (data.page + 1) + ')" style="padding:5px 10px;border:1px solid var(--pl-border);border-radius:6px;background:var(--pl-bg);cursor:pointer;font-size:0.8rem;">&raquo;</button>';
+        pg += '</div>';
+        document.getElementById('pcPager').innerHTML = pg;
+      }
+    })
+    .catch(function() {
+      document.getElementById('pcBody').innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:#ef4444;">Error de conexión</td></tr>';
+    });
+}
+
+// ============ RESYNC ============
+function abrirResync(planId, planName) {
+  document.getElementById('resyncPlanId').value = planId;
+  document.getElementById('resyncPlanName').textContent = planName;
+  document.getElementById('resyncMk').checked = false;
+  document.getElementById('labelMk').style.borderColor = 'var(--pl-border)';
+  document.getElementById('labelMk').style.background = 'var(--pl-light)';
+  document.getElementById('resyncBody').style.display = 'block';
+  document.getElementById('resyncResult').style.display = 'none';
+  document.getElementById('btnResync').disabled = false;
+  document.getElementById('btnResync').innerHTML = '<i class="fas fa-sync-alt"></i> Ejecutar Resync';
+  document.getElementById('btnResync').style.background = '#2563eb';
+  document.getElementById('modalResync').style.display = 'flex';
+}
+
+function ejecutarResync() {
+  var planId = document.getElementById('resyncPlanId').value;
+  var doMk = document.getElementById('resyncMk').checked ? 1 : 0;
+  
+  if (!doMk) {
+    mostrarAlerta('Debe marcar la casilla para confirmar', 'error');
+    return;
+  }
+  
+  var btn = document.getElementById('btnResync');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando, espere...';
+  btn.style.background = '#94a3b8';
+  
+  var fd = new FormData();
+  fd.append('plan_id', planId);
+  fd.append('do_mikrotik', doMk);
+  
+  fetch('/api/planes/' + planId + '/resync', { method: 'POST', body: fd })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      var resDiv = document.getElementById('resyncResult');
+      resDiv.style.display = 'block';
+      
+      if (d.status === 'success') {
+        var html = '<div style="text-align:center;margin-bottom:16px;"><i class="fas fa-check-circle" style="font-size:2.2rem;color:#16a34a;"></i></div>';
+        html += '<div style="font-weight:700;text-align:center;color:var(--pl-text);font-size:1rem;margin-bottom:14px;">Resync completado</div>';
+        if (d.results && d.results.mikrotik && d.results.mikrotik.length > 0) {
+          html += '<div style="background:#eff6ff;padding:10px 14px;border-radius:8px;margin-bottom:8px;font-size:0.85rem;">';
+          html += '<b style="color:#2563eb;"><i class="fas fa-server"></i> MikroTik:</b><br>';
+          for (var i = 0; i < d.results.mikrotik.length; i++) {
+            html += '<span style="color:#334155;">' + d.results.mikrotik[i] + '</span><br>';
+          }
+          html += '</div>';
+        }
+        html += '<button onclick="document.getElementById(\'modalResync\').style.display=\'none\'" style="width:100%;margin-top:16px;padding:11px;background:#16a34a;color:white;border:none;border-radius:8px;font-weight:600;cursor:pointer;">Cerrar</button>';
+        resDiv.innerHTML = html;
+        document.getElementById('resyncBody').style.display = 'none';
+      } else {
+        resDiv.innerHTML = '<div style="text-align:center;"><i class="fas fa-times-circle" style="font-size:2rem;color:#ef4444;"></i></div>' +
+          '<p style="text-align:center;color:#ef4444;font-weight:600;margin:12px 0;">' + (d.msg || 'Error desconocido') + '</p>' +
+          '<button onclick="document.getElementById(\'resyncResult\').style.display=\'none\';document.getElementById(\'resyncBody\').style.display=\'block\';document.getElementById(\'btnResync\').disabled=false;document.getElementById(\'btnResync\').innerHTML=\'<i class=\\\'fas fa-sync-alt\\\'></i> Ejecutar Resync\';document.getElementById(\'btnResync\').style.background=\'#7c3aed\'" style="width:100%;margin-top:12px;padding:10px;background:#64748b;color:white;border:none;border-radius:8px;font-weight:600;cursor:pointer;">Reintentar</button>';
+      }
+    })
+    .catch(function() {
+      var resDiv = document.getElementById('resyncResult');
+      resDiv.style.display = 'block';
+      resDiv.innerHTML = '<div style="text-align:center;"><i class="fas fa-times-circle" style="font-size:2rem;color:#ef4444;"></i></div>' +
+        '<p style="text-align:center;color:#ef4444;font-weight:600;margin:12px 0;">Error de conexión</p>' +
+        '<button onclick="document.getElementById(\'modalResync\').style.display=\'none\'" style="width:100%;margin-top:12px;padding:10px;background:#64748b;color:white;border:none;border-radius:8px;font-weight:600;cursor:pointer;">Cerrar</button>';
+    });
+}
+
+// ============ ALERTAS ============
+function mostrarAlerta(msg, tipo) {
+  var isErr = (tipo === 'error');
+  var icon = isErr ? 'fa-times-circle' : 'fa-check-circle';
+  var iconColor = isErr ? '#ef4444' : '#10b981';
+  var overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.4);z-index:99998;display:flex;align-items:center;justify-content:center;';
+  var box = document.createElement('div');
+  box.style.cssText = 'background:var(--card-bg,#fff);border-radius:14px;padding:24px;max-width:420px;width:90%;box-shadow:0 10px 40px rgba(0,0,0,0.2);text-align:center;animation:plFadeIn 0.2s ease;';
+  box.innerHTML = '<div style="font-size:2.2rem;color:' + iconColor + ';margin-bottom:12px;"><i class="fas ' + icon + '"></i></div>' +
+    '<div style="font-weight:700;font-size:1.05rem;color:var(--text-primary,#1e293b);margin-bottom:8px;">' + (isErr ? 'Error' : 'Correcto') + '</div>' +
+    '<div style="font-size:0.88rem;color:var(--text-muted,#64748b);margin-bottom:20px;line-height:1.5;">' + msg + '</div>' +
+    '<button style="padding:9px 28px;background:' + iconColor + ';color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;font-size:0.9rem;" onclick="this.closest(\'div[style*=fixed]\').remove()">OK</button>';
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);
+}
+
+// ============ INIT ============
 document.addEventListener('DOMContentLoaded', cargarPlanes);
 </script>

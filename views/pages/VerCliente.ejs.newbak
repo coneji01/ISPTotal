@@ -165,14 +165,6 @@
         .inv-item-row input { width: 100% !important; }
         .modal-box { width: 95% !important; max-width: 95% !important; padding: 16px; max-height: 85vh; overflow-y: auto; }
     }
-/* Backup modal styles */
-.cli-modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.4);z-index:9999;justify-content:center;align-items:center;padding:16px;}
-.cli-modal-box{background:var(--bg-card,#fff);border-radius:14px;width:600px;max-width:100%;max-height:90vh;overflow-y:auto;padding:24px 28px;box-shadow:0 20px 60px rgba(0,0,0,0.15);position:relative;}
-.cli-modal-title{font-size:1.1rem;font-weight:700;color:var(--text-main,#1e293b);margin:0 0 4px;display:flex;align-items:center;gap:8px;}
-.cli-modal-footer{display:flex;justify-content:flex-end;gap:10px;padding-top:16px;border-top:1px solid var(--border-color,#e2e8f0);}
-.cli-btn-confirm{background:var(--accent-primary,#6366f1);color:#fff;border:none;padding:9px 20px;border-radius:8px;font-weight:600;font-size:0.88rem;cursor:pointer;}
-.cli-btn-cancel{background:#e2e8f0;color:#475569;border:none;padding:9px 20px;border-radius:8px;font-weight:600;font-size:0.88rem;cursor:pointer;}
-.btn-gen{background:#f0fdf4;color:#16a34a;border:1px solid #86efac;padding:6px 14px;border-radius:6px;font-weight:600;font-size:0.82rem;cursor:pointer;}
 </style>
 
 <div class="page-header" style="display:flex; align-items:center; gap:10px; margin-bottom:20px;">
@@ -251,7 +243,7 @@
         <div id="tab-servicios" class="tab-content">
             <div class="svc-header">
                 <h4 class="section-title" style="margin:0; border:none;">Servicios Contratados</h4>
-                <button class="btn-new-svc" onclick="openNuevoServicio()"><i class="fas fa-plus-circle"></i> Nuevo Servicio</button>
+                <button class="btn-new-svc" onclick="abrirModalNuevoServicio()"><i class="fas fa-plus-circle"></i> Nuevo Servicio</button>
             </div>
 
             <% if (servicios && servicios.length > 0) { %>
@@ -572,179 +564,28 @@
     </div>
 </div>
 
-<!-- Modal Nuevo Servicio Informal -->
-<div class="cli-modal-overlay" id="modalNuevoSrv" style="display:none;">
-  <div class="cli-modal-box" style="max-width:600px;border-top:5px solid #2563eb;">
-    <h3 class="cli-modal-title" style="color:#1e40af;"><i class="fas fa-plus-circle"></i> Nuevo Servicio Informal</h3>
-    <p style="font-size:0.85rem;color:#64748b;margin-bottom:18px;">Nuevo servicio para <b><%= cliente.nombre %></b></p>
-    
-    <div class="f-group" style="margin-bottom:18px;">
-      <label style="font-weight:600;font-size:0.88rem;color:#1e293b;display:block;margin-bottom:6px;">Tipo de Servicio <span style="color:#ef4444;">*</span></label>
-      <select id="nsTipoServicio" class="f-input" onchange="nsOnTipoChange()" style="font-weight:600;padding:12px;border:2px solid #2563eb;border-radius:8px;">
-        <option value="internet">🌐 Servicio de Internet</option>
-        <option value="netflix">🎬 Cuenta de Netflix</option>
-        <option value="servicio_247">🔄 Servicio 24/7</option>
-      </select>
-    </div>
-
-    <div id="nsInternetFields">
-    <div class="form-grid">
-      <div class="f-group">
-        <label>Zona <span style="color:#ef4444;">*</span></label>
-        <select id="nsZona" class="f-input" onchange="nsUpdatePlans(); nsUpdateZonaRouter();" required>
-          <option value="">-- Seleccionar --</option>
-          <% (zonas || []).forEach(function(z) { %>
-          <option value="<%= z.id %>"><%= z.nombre %></option>
-          <% }) %>
-        </select>
-      </div>
-      <div class="f-group">
-        <label>Plan <span style="color:#ef4444;">*</span></label>
-        <select id="nsPlan" class="f-input" required>
-          <option value="">-- Seleccionar zona --</option>
-        </select>
-      </div>
-      <div class="f-group">
-        <label>Router <span style="color:#ef4444;">*</span></label>
-        <select id="nsRouter" class="f-input" onchange="nsOnRouterChange()" required>
-          <option value="">-- Seleccionar --</option>
-        </select>
-      </div>
-      <div class="f-group">
-        <label>Método de Conexión</label>
-        <select id="nsMetodo" class="f-input" onchange="nsOnMetodoChange()">
-          <option value="dhcp">DHCP (IPoE)</option>
-          <option value="pppoe">PPPoE</option>
-          <option value="static">IP Estática</option>
-        </select>
-      </div>
-      
-      <div id="nsPppoeFields" class="form-grid" style="display:none;">
-        <div class="f-group"><label>Usuario PPPoE</label><input type="text" id="nsPppoeUser" class="f-input" placeholder="Usuario"></div>
-        <div class="f-group"><label>Contraseña</label><input type="text" id="nsPppoePass" class="f-input" placeholder="Contraseña"></div>
-        <div class="f-group" style="display:flex;align-items:flex-end;">
-          <button type="button" class="btn-gen" onclick="nsGenerateCredentials()" style="margin-bottom:10px;">Generar</button>
+<!-- Modal: Nuevo Servicio -->
+<div class="modal-overlay" id="modalNuevoServicio" style="display:none;" onclick="if(event.target===this)cerrarModalNuevoServicio()">
+    <div class="modal-content" style="width:450px;">
+        <div class="modal-header">
+            <h3><i class="fas fa-plus-circle" style="color:var(--accent-primary);"></i> Nuevo Servicio</h3>
+            <span style="font-size:1.5rem;cursor:pointer;color:var(--text-muted);" onclick="cerrarModalNuevoServicio()">&times;</span>
         </div>
-      </div>
-      
-      <div id="nsStaticFields" class="form-grid" style="display:none;">
-        <input type="hidden" id="nsStaticMask" value="24">
-        <input type="hidden" id="nsStaticGw" value="">
-        <input type="hidden" id="nsStaticDns1" value="8.8.8.8">
-        <input type="hidden" id="nsStaticDns2" value="8.8.4.4">
-      </div>
-    </div>
-      
-      <div class="f-group" style="background:#f8fafc;padding:10px;border:1px solid #e2e8f0;border-radius:8px;">
-        <div id="nsIpSectionLabel" style="font-weight:600;font-size:0.85rem;color:#334155;margin-bottom:5px;">SELECCIONE IP DISPONIBLE</div>
-        <select id="nsPool" class="f-input" style="margin-bottom:5px;font-size:0.85rem;" onchange="nsOnPoolChange()">
-          <option value="">-- Seleccionar router --</option>
-        </select>
-        <select id="nsIpSelect" class="f-input" style="font-size:0.85rem;font-family:monospace;" onchange="nsOnIpSelectChange()">
-          <option value="">-- Seleccionar pool --</option>
-        </select>
-        <small id="nsIpMsg" style="color:#64748b;font-size:0.75rem;margin-top:3px;display:block;"></small>
-      </div>
-        <div id="nsWifiFields">
-          <div class="form-grid" style="margin-top:8px;background:#faf5ff;padding:12px;border-radius:8px;border:1px solid #e9d5ff;">
-            <div class="f-group">
-              <label><i class="fas fa-wifi" style="color:#7c3aed;"></i> Nombre WiFi (SSID)</label>
-              <input type="text" id="nsWifiSsid" class="f-input" placeholder="Ej: ISP_Total_Fibra">
-            </div>
-            <div class="f-group">
-              <label><i class="fas fa-lock" style="color:#7c3aed;"></i> Contraseña WiFi</label>
-              <input type="text" id="nsWifiPass" class="f-input" minlength="8" placeholder="Mín. 8 caracteres">
-            </div>
-          </div>
-        </div>
-        <div class="f-group full-w" style="margin-top:8px;">
-          <label>Dirección Exacta</label>
-          <input type="text" id="nsAddress" class="f-input" placeholder="Dirección del servicio">
-        </div>
-        <div class="f-group full-w">
-          <label>Observaciones</label>
-          <input type="text" id="nsObs" class="f-input" placeholder="Notas adicionales">
-        </div>
-        <div class="f-group full-w" style="margin-top:8px;background:#f0f9ff;padding:12px;border-radius:8px;border:1px solid #dbeafe;">
-          <label style="font-weight:600;font-size:0.88rem;color:#1e293b;display:block;margin-bottom:6px;">
-            <i class="fas fa-file-invoice-dollar" style="color:#2563eb;"></i> Ciclo de Facturación
-          </label>
-          <select id="nsCiclo" class="f-input" onchange="nsOnCicloChange()">
-            <option value="">-- Seleccionar plantilla --</option>
-            <option value="custom">⚙️ Personalizada</option>
-            <% if (typeof ciclos !== 'undefined' && ciclos) { ciclos.forEach(function(c) { %>
-            <option value="<%= c.id %>" data-type="<%= c.billing_type %>" data-invoice="<%= c.invoice_day %>" data-suspend="<%= c.suspend_day %>"><%= c.name || (c.billing_type.toUpperCase()+' | Gen: Día '+c.invoice_day+' | Corte: Día '+c.suspend_day) %></option>
-            <% }); } %>
-          </select>
-          <div id="nsCicloInfo" style="display:none;margin-top:6px;background:#fff;border-radius:6px;font-size:0.82rem;font-weight:600;"></div>
-          <div id="nsCicloCustom" style="display:none;margin-top:8px;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:12px;">
-            <div class="form-grid" style="margin:0;">
-              <div class="f-group" style="margin-bottom:0;">
-                <label>Fecha para crear factura</label>
-                <select id="nsCustomInvoiceDay" class="f-input">
-                  <% for(var d=1; d<=31; d++) { %>
-                  <option value="<%= d %>" <%= d===25?'selected':'' %>>Día <%= d %></option>
-                  <% } %>
+        <div style="padding:20px;">
+            <div class="form-group">
+                <label class="form-label">Plan</label>
+                <select id="nsPlan" class="form-control">
+                    <option value="">Seleccione un plan...</option>
+                    <% (planes || []).forEach(function(p) { %>
+                        <option value="<%= p.id %>"><%= p.nombre %> - $<%= parseFloat(p.precio).toFixed(2) %></option>
+                    <% }); %>
                 </select>
-              </div>
-              <div class="f-group" style="margin-bottom:0;">
-                <label>Fecha de suspensión</label>
-                <select id="nsCustomSuspendDay" class="f-input">
-                  <% for(var d=1; d<=31; d++) { %>
-                  <option value="<%= d %>" <%= d===11?'selected':'' %>>Día <%= d %></option>
-                  <% } %>
-                </select>
-              </div>
-              <div class="f-group" style="margin-bottom:0;">
-                <label>¿Suspender con cuántos meses vencidos?</label>
-                <input type="number" id="nsCustomTolerance" class="f-input" min="1" max="12" value="1">
-              </div>
             </div>
-          </div>
+            <button class="btn-new-svc" onclick="guardarNuevoServicio()" style="width:100%;margin-top:10px;text-align:center;justify-content:center;">
+                <i class="fas fa-save"></i> Crear Servicio
+            </button>
         </div>
     </div>
-
-    <div id="nsNetflixFields" style="display:none;">
-      <div class="form-grid">
-        <div class="f-group">
-          <label>Correo Electrónico (Netflix) <span style="color:#ef4444;">*</span></label>
-          <input type="email" id="nsNfEmail" class="f-input" placeholder="correo@ejemplo.com">
-        </div>
-        <div class="f-group">
-          <label>Contraseña <span style="color:#ef4444;">*</span></label>
-          <input type="text" id="nsNfPassword" class="f-input" placeholder="Contraseña">
-        </div>
-        <div class="f-group">
-          <label>Perfil</label>
-          <input type="text" id="nsNfPerfil" class="f-input" placeholder="Ej: Principal, Kids, etc.">
-        </div>
-        <div class="f-group">
-          <label>Fecha de Vencimiento</label>
-          <input type="date" id="nsNfVencimiento" class="f-input">
-        </div>
-      </div>
-    </div>
-
-    <div id="ns247Fields" style="display:none;">
-      <div class="form-grid">
-        <div class="f-group full-w">
-          <label>Descripción del Servicio <span style="color:#ef4444;">*</span></label>
-          <textarea id="ns247Desc" class="f-input" rows="2" placeholder="Describe el servicio que se ofrece..."></textarea>
-        </div>
-        <div class="f-group">
-          <label>Precio Mensual (RD$) <span style="color:#ef4444;">*</span></label>
-          <input type="number" id="ns247Precio" class="f-input" step="0.01" min="0" placeholder="0.00">
-        </div>
-      </div>
-    </div>
-
-    <div class="cli-modal-footer" style="margin-top:20px;">
-      <button type="button" onclick="closeModal('modalNuevoSrv')" class="cli-btn-cancel">Cancelar</button>
-      <button type="button" onclick="nsGuardar()" id="btnGuardarNS" class="cli-btn-confirm" style="background:#2563eb;">
-        <i class="fas fa-save"></i> Crear Servicio
-      </button>
-    </div>
-  </div>
 </div>
 
 <script>
@@ -1071,199 +912,41 @@
         if (_sysDialogResolve) { _sysDialogResolve(true); _sysDialogResolve = null; }
     }
 
-    function nsOnTipoChange() {
-      var tipo = document.getElementById('nsTipoServicio').value;
-      document.getElementById('nsInternetFields').style.display = tipo === 'internet' ? 'block' : 'none';
-      document.getElementById('nsNetflixFields').style.display = tipo === 'netflix' ? 'block' : 'none';
-      document.getElementById('ns247Fields').style.display = tipo === 'servicio_247' ? 'block' : 'none';
-    }
-
     // ==================================================================
-    // NUEVO SERVICIO (funciones originales)
+    // NUEVO SERVICIO
     // ==================================================================
-    let nsRoutersCache = [];
-    let nsPlansCache = [];
-
-    function openNuevoServicio() {
-      document.getElementById('modalNuevoSrv').style.display = 'flex';
-      nsOnTipoChange();
-      loadNsRouters();
-      loadNsPlans();
+    function abrirModalNuevoServicio() {
+        document.getElementById('modalNuevoServicio').style.display = 'flex';
     }
 
-    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+    function cerrarModalNuevoServicio() {
+        document.getElementById('modalNuevoServicio').style.display = 'none';
+    }
 
-    function loadNsRouters() {
-      fetch('/api/routers')
-        .then(function(r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
-        .then(function(routers) {
-          nsRoutersCache = Array.isArray(routers) ? routers : [];
-          const sel = document.getElementById('nsRouter');
-          sel.innerHTML = '<option value="">-- Seleccionar --</option>';
-          nsRoutersCache.forEach(function(r) {
-            const auth = r.auth_type || 'dhcp';
-            sel.innerHTML += '<option value="' + r.id + '" data-auth="' + auth.toLowerCase() + '">' + r.name + '</option>';
-          });
-          if (nsRoutersCache.length > 0) {
-            sel.value = nsRoutersCache[0].id;
-            nsOnRouterChange();
-          }
+    function guardarNuevoServicio() {
+        var planId = document.getElementById('nsPlan').value;
+        if (!planId) { sysAlert('Seleccione un plan', 'warning'); return; }
+        
+        var fd = new FormData();
+        fd.append('cliente_id', '<%= cliente.id %>');
+        fd.append('plan_id', planId);
+        fd.append('ajax', 'crear_servicio');
+        
+        fetch('/modulo?pagina=VerCliente&id=<%= cliente.id %>&ajax=crear_servicio', {
+            method: 'POST',
+            body: new URLSearchParams({cliente_id: '<%= cliente.id %>', plan_id: planId})
         })
-        .catch(function(e) { nsRoutersCache = []; });
-    }
-
-    function loadNsPlans() {
-      fetch('/api/planes')
-        .then(function(r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
-        .then(function(planes) {
-          nsPlansCache = Array.isArray(planes) ? planes : (planes.data || []);
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+            if (d.status === 'success') {
+                sysAlert('Servicio creado correctamente', 'success');
+                cerrarModalNuevoServicio();
+                setTimeout(function() { window.location.reload(); }, 1000);
+            } else {
+                sysAlert('Error: ' + (d.msg || 'Desconocido'), 'error');
+            }
         })
-        .catch(function(e) { nsPlansCache = []; });
-    }
-
-    function nsUpdateZonaRouter() {}
-
-    function nsUpdatePlans() {
-      const zonaId = document.getElementById('nsZona').value;
-      const sel = document.getElementById('nsPlan');
-      if (!zonaId) { sel.innerHTML = '<option value="">-- Seleccionar zona --</option>'; return; }
-      sel.innerHTML = '<option value="">-- Seleccionar plan --</option>';
-      nsPlansCache.forEach(function(p) {
-        sel.innerHTML += '<option value="' + p.id + '">' + (p.nombre || p.name) + (p.velocidad ? ' - ' + p.velocidad : '') + '</option>';
-      });
-    }
-
-    function nsOnRouterChange() {
-      const sel = document.getElementById('nsRouter');
-      const opt = sel.options[sel.selectedIndex];
-      const authType = opt ? (opt.dataset.auth || 'dhcp') : 'dhcp';
-      const metodo = document.getElementById('nsMetodo');
-      if (authType === 'pppoe') metodo.value = 'pppoe';
-      else metodo.value = 'dhcp';
-      nsOnMetodoChange();
-      nsLoadPools();
-    }
-
-    function nsOnMetodoChange() {
-      var metodo = document.getElementById('nsMetodo').value;
-      var pppoeFields = document.getElementById('nsPppoeFields');
-      var staticFields = document.getElementById('nsStaticFields');
-      pppoeFields.style.display = 'none';
-      staticFields.style.display = 'none';
-      if (metodo === 'pppoe') { pppoeFields.style.display = 'grid'; }
-      if (metodo === 'static') { staticFields.style.display = 'grid'; }
-    }
-
-    function nsLoadPools() {
-      const routerId = document.getElementById('nsRouter').value;
-      const poolSel = document.getElementById('nsPool');
-      const ipSel = document.getElementById('nsIpSelect');
-      if (!routerId) {
-        poolSel.innerHTML = '<option value="">-- Seleccionar router --</option>';
-        ipSel.innerHTML = '<option value="">-- Seleccionar pool --</option>';
-        return;
-      }
-      poolSel.innerHTML = '<option value="">Cargando rangos...</option>';
-      fetch('/api/ip-pools/' + routerId)
-        .then(function(r) { return r.json(); })
-        .then(function(pools) {
-          if (pools && pools.length > 0) {
-            poolSel.innerHTML = '<option value="">-- Seleccionar rango --</option>';
-            pools.forEach(function(p) {
-              poolSel.innerHTML += '<option value="' + p.id + '">' + p.red + ' (' + (p.disponibles||0) + ' disp)</option>';
-            });
-            var first = pools.find(function(p) { return (p.disponibles || 0) > 0; });
-            if (first) { poolSel.value = first.id; nsOnPoolChange(); }
-          } else {
-            poolSel.innerHTML = '<option value="">-- Sin rangos --</option>';
-          }
-        });
-    }
-
-    function nsOnPoolChange() {
-      const poolId = document.getElementById('nsPool').value;
-      const ipSel = document.getElementById('nsIpSelect');
-      if (!poolId) { ipSel.innerHTML = '<option value="">-- Seleccionar --</option>'; return; }
-      ipSel.innerHTML = '<option value="">Cargando IPs...</option>';
-      fetch('/api/ip-pools/' + poolId + '/disponibles')
-        .then(function(r) { return r.json(); })
-        .then(function(data) {
-          if (data.success && data.disponibles && data.disponibles.length > 0) {
-            ipSel.innerHTML = '<option value="">-- Seleccionar IP --</option>';
-            data.disponibles.forEach(function(ip) {
-              ipSel.innerHTML += '<option value="' + ip + '">' + ip + '</option>';
-            });
-            ipSel.value = data.disponibles[0];
-          } else {
-            ipSel.innerHTML = '<option value="">No hay IPs disponibles</option>';
-          }
-        });
-    }
-
-    function nsOnCicloChange() {
-      var sel = document.getElementById('nsCiclo');
-      var val = sel.value;
-      var info = document.getElementById('nsCicloInfo');
-      var custom = document.getElementById('nsCicloCustom');
-      if (val === 'custom') { info.style.display = 'none'; custom.style.display = 'block'; }
-      else if (val) { custom.style.display = 'none'; info.style.display = 'block'; }
-      else { info.style.display = 'none'; custom.style.display = 'none'; }
-    }
-
-    function nsGenerateCredentials() {
-      var nombre = '<%= (cliente.nombre || "").replace(/'/g, "\\'") %>';
-      if (nombre) {
-        var parts = nombre.trim().split(/\s+/);
-        var user = parts.map(function(p) { return p.charAt(0).toUpperCase() + p.slice(1).toLowerCase(); }).join('').replace(/[^a-zA-Z0-9]/g, '');
-        document.getElementById('nsPppoeUser').value = user;
-      }
-      document.getElementById('nsPppoePass').value = '1320';
-    }
-
-    function nsGuardar() {
-      const routerId = document.getElementById('nsRouter').value;
-      const metodo = document.getElementById('nsMetodo').value;
-      var data = {
-        cliente_id: <%= cliente.id %>,
-        plan_id: parseInt(document.getElementById('nsPlan').value) || 0,
-        zona_id: parseInt(document.getElementById('nsZona').value) || 0,
-        router_id: routerId,
-        auth_type: metodo,
-        direccion: document.getElementById('nsAddress').value,
-        observaciones: document.getElementById('nsObs').value
-      };
-      if (metodo === 'dhcp' || metodo === 'pppoe' || metodo === 'static') {
-        data.ip = document.getElementById('nsIpSelect').value;
-        data.pool = document.getElementById('nsPool').value;
-      }
-      if (metodo === 'pppoe') {
-        data.pppoe_user = document.getElementById('nsPppoeUser').value;
-        data.pppoe_pass = document.getElementById('nsPppoePass').value;
-      }
-      data.wifi_ssid = document.getElementById('nsWifiSsid') ? document.getElementById('nsWifiSsid').value : '';
-      data.wifi_pass = document.getElementById('nsWifiPass') ? document.getElementById('nsWifiPass').value : '';
-      
-      var nsCicloVal = document.getElementById('nsCiclo') ? document.getElementById('nsCiclo').value : '';
-      data.ciclo_id = nsCicloVal && nsCicloVal !== '' && nsCicloVal !== 'custom' ? parseInt(nsCicloVal) : null;
-      
-      fetch('/api/servicios/crear', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      })
-      .then(function(r) { return r.json(); })
-      .then(function(res) {
-        if (res.success) {
-          showToast('Servicio creado');
-          closeModal('modalNuevoSrv');
-          setTimeout(function() { location.reload(); }, 1000);
-        } else {
-          showToast('Error: ' + (res.error || res.message || 'desconocido'), 'error');
-        }
-      })
-      .catch(function(e) {
-        showToast('Error de conexión: ' + e.message, 'error');
-      });
+        .catch(function(e) { sysAlert('Error de conexión', 'error'); });
     }
 
     // ==================================================================

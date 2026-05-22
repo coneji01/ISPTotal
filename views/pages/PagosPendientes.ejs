@@ -1,3 +1,35 @@
+<style>
+.pp-overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.4); z-index:4000; display:none; align-items:center; justify-content:center; }
+.pp-overlay.open { display:flex !important; }
+.pp-modal { background:#fff; border-radius:12px; width:100%; max-width:700px; max-height:90vh; min-height:55vh; overflow-y:auto; box-shadow:0 10px 40px rgba(0,0,0,0.15); }
+.pp-modal-header { padding:14px 18px; border-bottom:1px solid #e2e8f0; display:flex; align-items:center; justify-content:space-between; }
+.pp-modal-header h3 { margin:0; font-size:1.05rem; }
+.pp-modal-close { width:30px; height:30px; border:none; background:#f1f5f9; border-radius:6px; font-size:1.2rem; cursor:pointer; display:flex; align-items:center; justify-content:center; color:#64748b; }
+.pp-modal-close:hover { background:#e2e8f0; }
+.pp-modal-body { padding:16px 18px; min-height:600px; }
+.pp-modal-footer { padding:12px 18px; border-top:1px solid #e2e8f0; display:flex; gap:8px; justify-content:flex-end; }
+.pp-form-group { margin-bottom:14px; }
+.pp-form-label { display:block; font-size:0.82rem; font-weight:600; color:#475569; margin-bottom:6px; }
+.pp-input { width:100%; padding:9px 12px; border:1px solid #d1d5db; border-radius:6px; font-size:0.9rem; box-sizing:border-box; }
+.pp-input:focus { outline:none; border-color:#6366f1; background:#fff; }
+.pp-btn { padding:9px 18px; border:none; border-radius:8px; font-size:0.85rem; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:6px; }
+.pp-btn-primary { background:#6366f1; color:#fff; }
+.pp-btn-primary:hover { background:#4f46e5; }
+.pp-btn-sm { padding:5px 10px; font-size:0.78rem; }
+.pp-btn-danger { background:#dc2626; color:#fff; }
+.pp-btn-danger:hover { background:#b91c1c; }
+.pp-search-results { position:absolute; left:0; right:0; top:100%; z-index:10; background:#fff; border:1px solid #e2e8f0; border-radius:0 0 8px 8px; max-height:220px; overflow-y:auto; display:none; box-shadow:0 4px 12px rgba(0,0,0,0.08); }
+.pp-search-item { padding:10px 12px; cursor:pointer; border-bottom:1px solid #f1f5f9; font-size:0.85rem; }
+.pp-search-item:hover { background:#f8fafc; }
+.pp-client-selected { display:none; align-items:center; justify-content:space-between; padding:10px 14px; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:8px; margin-bottom:12px; }
+.pp-svc-list { max-height:500px; overflow-y:auto; border:1px solid #e2e8f0; border-radius:6px; }
+.pp-svc-item { padding:8px 12px; border-bottom:1px solid #f1f5f9; display:flex; justify-content:space-between; align-items:center; }
+.pp-svc-item:last-child { border-bottom:none; }
+.pp-svc-item label { display:flex; align-items:center; gap:8px; cursor:pointer; font-size:0.85rem; }
+.pp-svc-warn { font-size:0.75rem; color:#dc2626; }
+.pp-svc-ok { font-size:0.75rem; color:#16a34a; }
+</style>
+
 <!-- PAGE HEADER -->
 <div class="page-header">
   <h2><i class="fas fa-hourglass-half" style="color:#d97706;"></i> Pagos Pendientes</h2>
@@ -138,71 +170,6 @@
 </div>
 
 
-/* Promesa modal styles */
-.pp-overlay {
-  position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.4);
-  z-index:4000; display:none; align-items:center; justify-content:center;
-}
-.pp-overlay.open { display:flex !important; }
-.pp-modal {
-  background:#fff; border-radius:12px; width:100%; max-width:700px; max-height:90vh;
-  overflow-y:auto; box-shadow:0 10px 40px rgba(0,0,0,0.15);
-}
-.pp-modal-header {
-  padding:14px 18px; border-bottom:1px solid #e2e8f0; display:flex;
-  align-items:center; justify-content:space-between;
-}
-.pp-modal-header h3 { margin:0; font-size:1.05rem; }
-.pp-modal-close {
-  width:30px; height:30px; border:none; background:#f1f5f9; border-radius:6px;
-  font-size:1.2rem; cursor:pointer; display:flex; align-items:center; justify-content:center;
-  color:#64748b;
-}
-.pp-modal-close:hover { background:#e2e8f0; }
-.pp-modal-body { padding:16px 18px; min-height:600px; }
-.pp-modal-footer {
-  padding:12px 18px; border-top:1px solid #e2e8f0; display:flex; gap:8px; justify-content:flex-end;
-}
-.pp-form-group { margin-bottom:14px; }
-.pp-form-label { display:block; font-size:0.82rem; font-weight:600; color:#475569; margin-bottom:6px; }
-.pp-input {
-  width:100%; padding:9px 12px; border:1px solid #d1d5db; border-radius:6px;
-  font-size:0.9rem; box-sizing:border-box;
-}
-.pp-input:focus { outline:none; border-color:#6366f1; background:#fff; }
-.pp-btn {
-  padding:9px 18px; border:none; border-radius:8px; font-size:0.85rem; font-weight:600;
-  cursor:pointer; display:inline-flex; align-items:center; gap:6px;
-}
-.pp-btn-primary { background:#6366f1; color:#fff; }
-.pp-btn-primary:hover { background:#4f46e5; }
-.pp-btn-sm { padding:5px 10px; font-size:0.78rem; }
-.pp-btn-danger { background:#dc2626; color:#fff; }
-.pp-btn-danger:hover { background:#b91c1c; }
-.pp-search-results {
-  position:absolute; left:0; right:0; top:100%; z-index:10;
-  background:#fff; border:1px solid #e2e8f0; border-radius:0 0 8px 8px;
-  max-height:220px; overflow-y:auto; display:none; box-shadow:0 4px 12px rgba(0,0,0,0.08);
-}
-.pp-search-item {
-  padding:10px 12px; cursor:pointer; border-bottom:1px solid #f1f5f9;
-  font-size:0.85rem;
-}
-.pp-search-item:hover { background:#f8fafc; }
-.pp-client-selected {
-  display:none; align-items:center; justify-content:space-between;
-  padding:10px 14px; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:8px;
-  margin-bottom:12px;
-}
-.pp-svc-list { max-height:500px; overflow-y:auto; border:1px solid #e2e8f0; border-radius:6px; }
-.pp-svc-item {
-  padding:8px 12px; border-bottom:1px solid #f1f5f9; display:flex;
-  justify-content:space-between; align-items:center;
-}
-.pp-svc-item:last-child { border-bottom:none; }
-.pp-svc-item label { display:flex; align-items:center; gap:8px; cursor:pointer; font-size:0.85rem; }
-.pp-svc-warn { font-size:0.75rem; color:#dc2626; }
-.pp-svc-ok { font-size:0.75rem; color:#16a34a; }
 <style>
   tr.vencida { background:#fef2f2; }
   tr.vencida:hover td { background:#fee2e2 !important; }

@@ -514,11 +514,13 @@ function stLoad() {
             hc += '<div class="st-chart">';
             for (var i = 0; i < c.por_mes.length; i++) {
                 var pct2 = Math.max((parseInt(c.por_mes[i].total) / maxM * 100), 2);
-                hc += '<div class="st-chart-bar" style="height:' + pct2 + '%;background:#0ea5e9;" data-tip="' + mesesNombres[parseInt(c.por_mes[i].mes)] + ': ' + c.por_mes[i].total + '"></div>';
+                var mesNum = parseInt((c.por_mes[i].mes || '').split('-')[1]) || parseInt(c.por_mes[i].mes) || 1;
+                hc += '<div class="st-chart-bar" style="height:' + pct2 + '%;background:#0ea5e9;" data-tip="' + (mesesNombres[mesNum] || c.por_mes[i].mes) + ': ' + c.por_mes[i].total + '"></div>';
             }
             hc += '</div><div class="st-chart-labels">';
             for (var i = 0; i < c.por_mes.length; i++) {
-                hc += '<span>' + mesesNombres[parseInt(c.por_mes[i].mes)].substring(0,3) + '</span>';
+                var mesNum = parseInt((c.por_mes[i].mes || '').split('-')[1]) || parseInt(c.por_mes[i].mes) || 1;
+                hc += '<span>' + (mesesNombres[mesNum] || c.por_mes[i].mes).substring(0,3) + '</span>';
             }
             hc += '</div></div>';
         }

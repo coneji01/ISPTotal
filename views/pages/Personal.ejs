@@ -1,0 +1,364 @@
+<div class="page-header" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
+  <h1 class="page-title" style="margin:0;font-size:1.3rem;font-weight:700;color:var(--text-dark,#1e293b);display:flex;align-items:center;gap:10px;">
+    <i class="fas fa-users-cog" style="color:var(--accent,#6366f1);"></i> Personal del Sistema
+  </h1>
+  <div style="display:flex;gap:8px;align-items:center;">
+    <a href="/modulo?pagina=Configuracion" class="btn-personal-volver" style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;border:1px solid var(--border-color,#e2e8f0);background:var(--bg-card,#fff);color:var(--text-gray,#475569);text-decoration:none;font-weight:600;font-size:0.85rem;transition:all 0.15s;">
+      <i class="fas fa-arrow-left"></i> Volver
+    </a>
+    <button class="btn-nuevo-usuario" onclick="abrirModalNuevo()" style="display:inline-flex;align-items:center;gap:6px;padding:9px 20px;border:none;border-radius:8px;background:linear-gradient(135deg,var(--accent,#6366f1) 0%,#4f46e5 100%);color:#fff;font-weight:600;font-size:0.85rem;cursor:pointer;transition:all 0.2s;">
+      <i class="fas fa-plus"></i> Nuevo Usuario
+    </button>
+  </div>
+</div>
+
+<div class="card" style="background:var(--bg-card,#fff);border:1px solid var(--border-color,#e2e8f0);border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.06);overflow:hidden;">
+  <div style="padding:14px 20px 10px;border-bottom:1px solid var(--border-color,#f1f5f9);">
+    <div style="display:flex;align-items:center;gap:0;max-width:400px;border:1px solid var(--border-color,#e2e8f0);border-radius:8px;background:var(--bg-card,#fff);transition:border-color 0.15s,box-shadow 0.15s;" id="buscarPersonalWrap">
+      <i class="fas fa-search" style="flex-shrink:0;padding-left:12px;color:var(--text-muted,#94a3b8);font-size:0.85rem;pointer-events:none;"></i>
+      <div id="buscarPersonal" contenteditable="true" data-placeholder="Buscar por nombre o usuario..." oninput="filtrarPersonal()" onfocus="this.closest('#buscarPersonalWrap').style.borderColor='var(--accent,#6366f1)'; this.closest('#buscarPersonalWrap').style.boxShadow='0 0 0 3px rgba(99,102,241,0.1)';" onblur="this.closest('#buscarPersonalWrap').style.borderColor='var(--border-color,#e2e8f0)'; this.closest('#buscarPersonalWrap').style.boxShadow='none';" spellcheck="false" style="flex:1;padding:9px 12px;font-size:0.88rem;outline:none;min-width:0;white-space:nowrap;overflow:hidden;cursor:text;color:var(--text-dark,#334155);"></div>
+    </div>
+    <style>#buscarPersonal:empty:before{content:attr(data-placeholder);color:var(--text-muted,#94a3b8);pointer-events:none;}</style>
+  </div>
+  <div class="table-container" style="overflow-x:auto;">
+    <table style="width:100%;border-collapse:collapse;">
+      <thead>
+        <tr>
+          <th style="background:var(--bg-body,#f8fafc);padding:12px 16px;text-align:left;font-weight:600;color:var(--text-gray,#475569);font-size:0.82rem;text-transform:uppercase;letter-spacing:0.5px;border-bottom:2px solid var(--border-color,#e2e8f0);">Usuario</th>
+          <th style="background:var(--bg-body,#f8fafc);padding:12px 16px;text-align:left;font-weight:600;color:var(--text-gray,#475569);font-size:0.82rem;text-transform:uppercase;letter-spacing:0.5px;border-bottom:2px solid var(--border-color,#e2e8f0);">Rol</th>
+          <th style="background:var(--bg-body,#f8fafc);padding:12px 16px;text-align:left;font-weight:600;color:var(--text-gray,#475569);font-size:0.82rem;text-transform:uppercase;letter-spacing:0.5px;border-bottom:2px solid var(--border-color,#e2e8f0);">Teléfono</th>
+          <th style="background:var(--bg-body,#f8fafc);padding:12px 16px;text-align:left;font-weight:600;color:var(--text-gray,#475569);font-size:0.82rem;text-transform:uppercase;letter-spacing:0.5px;border-bottom:2px solid var(--border-color,#e2e8f0);">Correo</th>
+          <th style="background:var(--bg-body,#f8fafc);padding:12px 16px;text-align:left;font-weight:600;color:var(--text-gray,#475569);font-size:0.82rem;text-transform:uppercase;letter-spacing:0.5px;border-bottom:2px solid var(--border-color,#e2e8f0);">Estado</th>
+          <th style="background:var(--bg-body,#f8fafc);padding:12px 16px;text-align:right;font-weight:600;color:var(--text-gray,#475569);font-size:0.82rem;text-transform:uppercase;letter-spacing:0.5px;border-bottom:2px solid var(--border-color,#e2e8f0);">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% (usuariosPersonal || []).forEach(function(u) { %>
+          <tr style="transition:background 0.1s;" onmouseover="this.style.background='var(--hover-bg,#f8fafc)'" onmouseout="this.style.background=''">
+            <td style="padding:14px 16px;border-bottom:1px solid var(--border-color,#f1f5f9);">
+              <div style="display:flex;align-items:center;gap:12px;">
+                <div style="width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,#4e54c8 0%,#8f94fb 100%);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.9rem;flex-shrink:0;">
+                  <%= (u.nombre || u.username || '?').charAt(0).toUpperCase() + (u.nombre || u.username || '?').charAt(1).toUpperCase() %>
+                </div>
+                <div>
+                  <div style="font-weight:600;color:var(--text-dark,#1e293b);font-size:0.92rem;"><%= escapeHtml(u.nombre || u.username || 'Sin nombre') %></div>
+                  <div style="font-size:0.78rem;color:var(--text-muted,#64748b);">@<%= escapeHtml(u.username) %></div>
+                </div>
+              </div>
+            </td>
+            <td style="padding:14px 16px;border-bottom:1px solid var(--border-color,#f1f5f9);">
+              <span class="badge-rol badge-rol-<%= (u.rol || 'otro').toLowerCase().replace(/[^a-z0-9]/g,'') %>"><%= escapeHtml(u.rol || 'Otro') %></span>
+            </td>
+            <td style="padding:14px 16px;border-bottom:1px solid var(--border-color,#f1f5f9);color:var(--text-dark,#334155);font-size:0.9rem;"><%= escapeHtml(u.telefono || '—') %></td>
+            <td style="padding:14px 16px;border-bottom:1px solid var(--border-color,#f1f5f9);color:var(--text-dark,#334155);font-size:0.9rem;"><%= escapeHtml(u.correo || '—') %></td>
+            <td style="padding:14px 16px;border-bottom:1px solid var(--border-color,#f1f5f9);">
+              <% if (u.activo == 1) { %>
+                <span class="badge-estado badge-activo"><i class="fas fa-check-circle"></i> Activo</span>
+              <% } else { %>
+                <span class="badge-estado badge-inactivo"><i class="fas fa-times-circle"></i> Inactivo</span>
+              <% } %>
+            </td>
+            <td style="padding:14px 16px;border-bottom:1px solid var(--border-color,#f1f5f9);text-align:right;">
+              <div style="display:flex;gap:6px;justify-content:flex-end;">
+                <button class="btn-action btn-action-edit" title="Editar" onclick='abrirModalEditar(<%= JSON.stringify(u) %>)'><i class="fas fa-pen"></i></button>
+                <button class="btn-action btn-action-toggle" title="<%= u.activo == 1 ? 'Desactivar' : 'Activar' %>" onclick="toggleStatus(<%= u.id %>, <%= u.activo == 1 ? "'inactive'" : "'active'" %>)">
+                  <i class="fas <%= u.activo == 1 ? 'fa-user-slash' : 'fa-user-check' %>"></i>
+                </button>
+                <button class="btn-action btn-action-delete" title="Eliminar" onclick="confirmarEliminar(<%= u.id %>, '<%= escapeHtml(u.nombre || u.username).replace(/'/g, "\\'") %>')"><i class="fas fa-trash-alt"></i></button>
+              </div>
+            </td>
+          </tr>
+        <% }) %>
+        <% if (!usuariosPersonal || usuariosPersonal.length === 0) { %>
+          <tr>
+            <td colspan="6" style="padding:50px 20px;text-align:center;color:var(--text-muted,#94a3b8);">
+              <i class="fas fa-users" style="font-size:3rem;display:block;margin-bottom:12px;color:var(--border-color,#cbd5e1);"></i>
+              <div style="font-size:0.95rem;font-weight:600;margin-bottom:5px;">No hay usuarios registrados</div>
+              <div style="font-size:0.85rem;">Cree el primer usuario para comenzar</div>
+            </td>
+          </tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal Nuevo/Editar Usuario -->
+<div class="modal-overlay" id="modalUsuario" style="display:none;">
+  <div class="modal-content" style="max-width:520px;background:var(--bg-card,#fff);border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,0.15);overflow:hidden;">
+    <div class="modal-header" style="padding:18px 22px;border-bottom:1px solid var(--border-color,#e2e8f0);display:flex;justify-content:space-between;align-items:center;">
+      <h3 class="modal-title" style="margin:0;font-size:1.05rem;font-weight:700;color:var(--text-dark,#1e293b);display:flex;align-items:center;gap:8px;">
+        <i class="fas fa-user-plus" id="modalIcon" style="color:var(--accent,#6366f1);"></i>
+        <span id="modalTitulo">Nuevo Usuario</span>
+      </h3>
+      <button class="modal-close" onclick="cerrarModal()" style="width:30px;height:30px;border:none;background:var(--bg-body,#f1f5f9);border-radius:7px;cursor:pointer;color:var(--text-muted,#64748b);font-size:1.2rem;transition:all 0.2s;">&times;</button>
+    </div>
+    <form method="POST" id="formUsuario">
+      <input type="hidden" name="accion" id="formAccion" value="crear_usuario">
+      <input type="hidden" name="id" id="formId">
+      <input type="hidden" name="ajax" value="save">
+
+      <div class="modal-body" style="padding:22px;">
+        <div class="form-group">
+          <label class="form-label">Rol <span class="required">*</span></label>
+          <select name="rol" id="inpRole" class="form-control" required onchange="onRoleChange(this.value)">
+            <option value="">-- Seleccionar --</option>
+            <option value="Administrador">Administrador</option>
+            <option value="Tecnico">Técnico</option>
+            <option value="Secretaria">Secretaria</option>
+            <option value="Cobrador">Cobrador</option>
+            <option value="Otro">Otro</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Nombre Completo <span class="required">*</span></label>
+          <input type="text" name="nombre" id="inpName" class="form-control" required placeholder="Ej: Juan Pérez">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Usuario <span class="required">*</span></label>
+            <input type="text" name="username" id="inpUsername" class="form-control" required placeholder="Ej: jperez" autocomplete="off">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Contraseña <span class="required" id="passRequired">*</span></label>
+            <input type="password" name="password" id="inpPassword" class="form-control" placeholder="********" autocomplete="new-password">
+            <p class="form-hint" id="passHint" style="display:none;font-size:0.78rem;color:var(--text-muted,#64748b);margin-top:4px;">Dejar vacío para mantener la actual</p>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Teléfono <span class="required">*</span></label>
+            <input type="tel" name="telefono" id="inpPhone" class="form-control" required placeholder="Ej: 8095551234" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Correo <span style="color:var(--text-muted,#94a3b8);font-weight:400;">(opcional)</span></label>
+            <input type="email" name="correo" id="inpEmail" class="form-control" placeholder="correo@ejemplo.com">
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer" style="padding:14px 22px;border-top:1px solid var(--border-color,#e2e8f0);display:flex;gap:10px;justify-content:flex-end;">
+        <button type="button" class="btn-cancel-modal" onclick="cerrarModal()" style="padding:9px 20px;border-radius:8px;border:1px solid var(--border-color,#e2e8f0);background:var(--bg-body,#f1f5f9);color:var(--text-gray,#475569);font-weight:600;font-size:0.85rem;cursor:pointer;">Cancelar</button>
+        <button type="submit" class="btn-submit-modal" style="padding:9px 24px;border:none;border-radius:8px;background:linear-gradient(135deg,var(--accent,#6366f1) 0%,#4f46e5 100%);color:#fff;font-weight:600;font-size:0.85rem;cursor:pointer;display:flex;align-items:center;gap:6px;">
+          <i class="fas fa-save"></i> Guardar
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal Confirmar Eliminar -->
+<div class="modal-overlay" id="modalEliminar" style="display:none;">
+  <div class="modal-content" style="max-width:380px;background:var(--bg-card,#fff);border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,0.15);overflow:hidden;">
+    <div class="modal-header" style="padding:18px 22px;border-bottom:1px solid var(--border-color,#e2e8f0);display:flex;justify-content:space-between;align-items:center;">
+      <h3 class="modal-title" style="margin:0;font-size:1rem;font-weight:700;color:#dc2626;display:flex;align-items:center;gap:8px;">
+        <i class="fas fa-exclamation-triangle"></i> Eliminar Usuario
+      </h3>
+      <button class="modal-close" onclick="cerrarModalEliminar()" style="width:30px;height:30px;border:none;background:var(--bg-body,#f1f5f9);border-radius:7px;cursor:pointer;color:var(--text-muted,#64748b);font-size:1.2rem;">&times;</button>
+    </div>
+    <form method="POST" id="formEliminarUsuario">
+      <input type="hidden" name="accion" value="eliminar_usuario">
+      <input type="hidden" name="id" id="eliminarId">
+      <input type="hidden" name="ajax" value="delete">
+      <div class="modal-body" style="padding:22px;text-align:center;">
+        <p style="color:var(--text-gray,#64748b);margin-bottom:10px;">¿Estás seguro de eliminar a</p>
+        <p style="font-weight:700;color:var(--text-dark,#1e293b);font-size:1.05rem;" id="eliminarNombre"></p>
+        <p style="color:#ef4444;font-size:0.82rem;margin-top:12px;">
+          <i class="fas fa-info-circle"></i> Esta acción no se puede deshacer
+        </p>
+      </div>
+      <div class="modal-footer" style="padding:14px 22px;border-top:1px solid var(--border-color,#e2e8f0);display:flex;gap:10px;justify-content:center;">
+        <button type="button" class="btn-cancel-modal" onclick="cerrarModalEliminar()" style="padding:9px 20px;border-radius:8px;border:1px solid var(--border-color,#e2e8f0);background:var(--bg-body,#f1f5f9);color:var(--text-gray,#475569);font-weight:600;font-size:0.85rem;cursor:pointer;">Cancelar</button>
+        <button type="submit" style="padding:9px 24px;border:none;border-radius:8px;background:#dc2626;color:#fff;font-weight:600;font-size:0.85rem;cursor:pointer;display:flex;align-items:center;gap:6px;">
+          <i class="fas fa-trash-alt"></i> Eliminar
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Form oculto para toggle status -->
+<form id="formToggle" method="POST" style="display:none;">
+  <input type="hidden" name="ajax" value="toggle_status">
+  <input type="hidden" name="accion" id="toggleAccion" value="toggle_status">
+  <input type="hidden" name="id" id="toggleId">
+  <input type="hidden" name="nuevo_status" id="toggleStatus">
+</form>
+
+<style>
+  .btn-personal-volver:hover { background:var(--bg-body,#f8fafc); border-color:var(--accent,#6366f1); color:var(--accent,#6366f1); }
+  .btn-nuevo-usuario:hover { transform:translateY(-1px); box-shadow:0 4px 12px rgba(99,102,241,0.3); }
+
+  .badge-rol { display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:0.75rem;font-weight:600; }
+  .badge-rol-admin, .badge-rol-administrador { background:#dbeafe; color:#1e40af; }
+  .badge-rol-tecnico { background:#dcfce7; color:#166534; }
+  .badge-rol-secretaria { background:#fce7f3; color:#9d174d; }
+  .badge-rol-cobrador { background:#fef3c7; color:#92400e; }
+  .badge-rol-otro { background:var(--bg-body,#f1f5f9); color:var(--text-gray,#475569); }
+
+  .badge-estado { display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:0.75rem;font-weight:600; }
+  .badge-activo { background:#dcfce7; color:#166534; }
+  .badge-inactivo { background:#fee2e2; color:#991b1b; }
+
+  .btn-action { width:32px;height:32px;border:none;border-radius:7px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:all 0.15s;font-size:0.82rem; }
+  .btn-action-edit { background:#dbeafe; color:var(--accent,#6366f1); } .btn-action-edit:hover { background:var(--accent,#6366f1); color:#fff; }
+  .btn-action-toggle { background:#fef3c7; color:#d97706; } .btn-action-toggle:hover { background:#d97706; color:#fff; }
+  .btn-action-delete { background:#fee2e2; color:#dc2626; } .btn-action-delete:hover { background:#dc2626; color:#fff; }
+
+  .modal-overlay { position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(15,23,42,0.5);backdrop-filter:blur(3px);z-index:2000;align-items:center;justify-content:center;padding:20px; }
+  .form-group { margin-bottom:16px; }
+  .form-label { display:block;font-weight:600;color:var(--text-dark,#334155);margin-bottom:5px;font-size:0.85rem; }
+  .form-label .required { color:#ef4444; }
+  .form-control { width:100%;padding:9px 13px;border:1px solid var(--border-color,#e2e8f0);border-radius:8px;font-size:0.88rem;transition:all 0.2s;font-family:inherit;box-sizing:border-box;background:var(--bg-input,#fff);color:var(--text-dark,#1e293b); }
+  .form-control:focus { outline:none;border-color:var(--accent,#6366f1);box-shadow:0 0 0 3px rgba(99,102,241,0.1); }
+  select.form-control { cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;background-size:16px;padding-right:36px; }
+  .form-row { display:grid;grid-template-columns:1fr 1fr;gap:12px; }
+  th { background:var(--bg-body,#f8fafc); }
+  @media(max-width:600px) { .form-row { grid-template-columns:1fr; } .btn-nuevo-usuario { padding:9px 14px;font-size:0.8rem; } }
+</style>
+
+<script>
+function abrirModalNuevo() {
+  document.getElementById('modalTitulo').innerText = 'Nuevo Usuario';
+  document.getElementById('modalIcon').className = 'fas fa-user-plus';
+  document.getElementById('formAccion').value = 'crear_usuario';
+  document.getElementById('formId').value = '';
+  document.getElementById('formUsuario').reset();
+  document.getElementById('inpPassword').required = true;
+  document.getElementById('passRequired').style.display = 'inline';
+  document.getElementById('passHint').style.display = 'none';
+  document.getElementById('modalUsuario').style.display = 'flex';
+}
+
+function abrirModalEditar(u) {
+  document.getElementById('modalTitulo').innerText = 'Editar Usuario';
+  document.getElementById('modalIcon').className = 'fas fa-user-edit';
+  document.getElementById('formAccion').value = 'editar_usuario';
+  document.getElementById('formId').value = u.id;
+  document.getElementById('inpRole').value = u.rol || '';
+  document.getElementById('inpName').value = u.nombre || '';
+  document.getElementById('inpUsername').value = u.username || '';
+  document.getElementById('inpPassword').value = '';
+  document.getElementById('inpPassword').required = false;
+  document.getElementById('passRequired').style.display = 'none';
+  document.getElementById('passHint').style.display = 'block';
+  document.getElementById('inpPhone').value = u.telefono || '';
+  document.getElementById('inpEmail').value = u.correo || '';
+  document.getElementById('modalUsuario').style.display = 'flex';
+}
+
+function cerrarModal() {
+  document.getElementById('modalUsuario').style.display = 'none';
+}
+
+function toggleStatus(id, nuevoStatus) {
+  document.getElementById('toggleId').value = id;
+  document.getElementById('toggleStatus').value = nuevoStatus;
+  document.getElementById('formToggle').submit();
+}
+
+function confirmarEliminar(id, nombre) {
+  document.getElementById('eliminarId').value = id;
+  document.getElementById('eliminarNombre').innerText = nombre;
+  document.getElementById('modalEliminar').style.display = 'flex';
+}
+
+function cerrarModalEliminar() {
+  document.getElementById('modalEliminar').style.display = 'none';
+}
+
+function onRoleChange(role) {
+  // Placeholder for template auto-load when permissions modal is implemented
+}
+
+function filtrarPersonal() {
+  var q = (document.getElementById('buscarPersonal').textContent || '').toLowerCase().trim();
+  var rows = document.querySelectorAll('.table-container table tbody tr');
+  rows.forEach(function(row) {
+    var nombre = (row.querySelector('.user-name') || row.querySelector('td:first-child div div:first-child') || {}).textContent || '';
+    var usuario = (row.querySelector('.user-username') || row.querySelector('td:first-child div div:last-child') || {}).textContent || '';
+    var match = nombre.toLowerCase().includes(q) || usuario.toLowerCase().includes(q);
+    row.style.display = match ? '' : 'none';
+  });
+}
+
+// Form submit - AJAX
+document.getElementById('formUsuario')?.addEventListener('submit', function(e) {
+  e.preventDefault();
+  var btn = this.querySelector('button[type="submit"]');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+
+  var fd = new FormData(this);
+  fetch('/modulo?pagina=Personal&ajax=save', {
+    method: 'POST',
+    body: new URLSearchParams(fd)
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-save"></i> Guardar';
+    if (d.status === 'success') {
+      showToast(d.msg || 'Usuario guardado correctamente');
+      cerrarModal();
+      setTimeout(function() { location.reload(); }, 800);
+    } else {
+      showToast('Error: ' + (d.msg || 'No se pudo guardar'), 'error');
+    }
+  })
+  .catch(function(e) {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-save"></i> Guardar';
+    showToast('Error de conexión', 'error');
+  });
+});
+
+// Toggle confirm and delete confirm as AJAX
+document.getElementById('formToggle')?.addEventListener('submit', function(e) {
+  e.preventDefault();
+  var fd = new FormData(this);
+  fetch('/modulo?pagina=Personal&ajax=toggle_status', {
+    method: 'POST',
+    body: new URLSearchParams(fd)
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    if (d.status === 'success') {
+      showToast(d.msg || 'Estado actualizado');
+      setTimeout(function() { location.reload(); }, 500);
+    } else {
+      showToast('Error: ' + (d.msg || 'No se pudo actualizar'), 'error');
+    }
+  });
+});
+
+document.getElementById('formEliminarUsuario')?.addEventListener('submit', function(e) {
+  e.preventDefault();
+  var btn = this.querySelector('button[type="submit"]');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Eliminando...';
+
+  var fd = new FormData(this);
+  fetch('/modulo?pagina=Personal&ajax=delete', {
+    method: 'POST',
+    body: new URLSearchParams(fd)
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-trash-alt"></i> Eliminar';
+    if (d.status === 'success') {
+      showToast(d.msg || 'Usuario eliminado');
+      cerrarModalEliminar();
+      setTimeout(function() { location.reload(); }, 500);
+    } else {
+      showToast('Error: ' + (d.msg || 'No se pudo eliminar'), 'error');
+    }
+  })
+  .catch(function() {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-trash-alt"></i> Eliminar';
+    showToast('Error de conexión', 'error');
+  });
+});
+</script>

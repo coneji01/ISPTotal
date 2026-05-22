@@ -1,1003 +1,466 @@
 <div class="page-header">
-  <h2><i class="fas fa-cog"></i> Configuración</h2>
+    <h2 class="page-title"><i class="fas fa-cog"></i> Configuración</h2>
 </div>
 
 <div class="config-menu-grid">
-  <!-- Empresa -->
-  <div class="config-card" onclick="openConfig('empresa')">
-    <div class="config-icon-box"><i class="fas fa-building"></i></div>
-    <div class="config-title">Empresa</div>
-  </div>
-  <!-- Gestión de Personal -->
-  <div class="config-card" onclick="openConfig('personal')">
-    <div class="config-icon-box"><i class="fas fa-users-cog"></i></div>
-    <div class="config-title">Gestión de<br>Personal</div>
-  </div>
-  <!-- Routers -->
-  <div class="config-card" onclick="window.location.href='/modulo?pagina=Routers'">
-    <div class="config-icon-box"><i class="fas fa-server"></i></div>
-    <div class="config-title">Routers</div>
-  </div>
-  <!-- VPN -->
-  <div class="config-card" onclick="openConfig('vpn')">
-    <div class="config-icon-box"><i class="fas fa-shield-alt"></i></div>
-    <div class="config-title">VPN</div>
-  </div>
-  <!-- OLT -->
-  <div class="config-card" onclick="window.location.href='/modulo?pagina=Smartolt'">
-    <div class="config-icon-box"><i class="fas fa-network-wired"></i></div>
-    <div class="config-title">OLT</div>
-  </div>
-  <!-- TR069 -->
-  <div class="config-card" onclick="window.location.href='/modulo?pagina=TR069'">
-    <div class="config-icon-box"><i class="fas fa-project-diagram"></i></div>
-    <div class="config-title">TR069</div>
-  </div>
-  <!-- Zonas -->
-  <div class="config-card" onclick="openConfig('zonas')">
-    <div class="config-icon-box"><i class="fas fa-map-marker-alt"></i></div>
-    <div class="config-title">Zonas</div>
-  </div>
-  <!-- Planes -->
-  <div class="config-card" onclick="window.location.href='/modulo?pagina=Planes'">
-    <div class="config-icon-box"><i class="fas fa-tachometer-alt"></i></div>
-    <div class="config-title">Planes</div>
-  </div>
-  <!-- Facturación -->
-  <div class="config-card" onclick="window.location.href='/modulo?pagina=Facturacion'">
-    <div class="config-icon-box"><i class="fas fa-file-invoice-dollar"></i></div>
-    <div class="config-title">Facturación</div>
-  </div>
-  <!-- Facturación Electrónica -->
-  <div class="config-card" onclick="openConfig('factura-electronica')">
-    <div class="config-icon-box"><i class="fas fa-qrcode"></i></div>
-    <div class="config-title">Facturación<br>Electrónica</div>
-  </div>
-  <!-- Pagos en Línea -->
-  <div class="config-card" onclick="openConfig('pagos-linea')">
-    <div class="config-icon-box"><i class="fas fa-credit-card"></i></div>
-    <div class="config-title">Pagos en<br>Línea</div>
-  </div>
-  <!-- Presets -->
-  <div class="config-card" onclick="openConfig('presets')">
-    <div class="config-icon-box"><i class="fas fa-sliders-h"></i></div>
-    <div class="config-title">Presets</div>
-  </div>
-  <!-- Editor de Plantillas -->
-  <div class="config-card" onclick="window.location.href='/modulo?pagina=Plantillas'">
-    <div class="config-icon-box"><i class="fas fa-edit"></i></div>
-    <div class="config-title">Editor de<br>Plantillas</div>
-  </div>
-  <!-- Mensajería -->
-  <div class="config-card" onclick="openConfig('mensajeria')">
-    <div class="config-icon-box"><i class="fas fa-comments"></i></div>
-    <div class="config-title">Mensajería</div>
-  </div>
-  <!-- App del Cliente -->
-  <div class="config-card" onclick="openConfig('app-cliente')">
-    <div class="config-icon-box"><i class="fas fa-id-card-alt"></i></div>
-    <div class="config-title">App del<br>Cliente</div>
-  </div>
-  <!-- Tareas Programadas -->
-  <div class="config-card" onclick="window.location.href='/modulo?pagina=Cron'">
-    <div class="config-icon-box"><i class="fas fa-calendar-check"></i></div>
-    <div class="config-title">Tareas<br>Programadas</div>
-  </div>
-  <!-- API -->
-  <div class="config-card" onclick="openConfig('api')">
-    <div class="config-icon-box"><i class="fas fa-plug"></i></div>
-    <div class="config-title">API</div>
-  </div>
-  <!-- Backup -->
-  <div class="config-card" onclick="openConfig('backup')">
-    <div class="config-icon-box"><i class="fas fa-database"></i></div>
-    <div class="config-title">Backup</div>
-  </div>
-  <!-- Log de Actividad -->
-  <div class="config-card" onclick="openConfig('log')">
-    <div class="config-icon-box"><i class="fas fa-history"></i></div>
-    <div class="config-title">Log de<br>Actividad</div>
-  </div>
-  <!-- Actualizaciones -->
-  <div class="config-card" onclick="openConfig('actualizaciones')">
-    <div class="config-icon-box"><i class="fas fa-cloud-download-alt"></i></div>
-    <div class="config-title">Actualizaciones</div>
-  </div>
+
+    <a href="/modulo?pagina=Empresa" class="config-card">
+        <div class="config-icon-box"><i class="fas fa-building"></i></div>
+        <div class="config-title">Empresa</div>
+    </a>
+
+    <a href="/modulo?pagina=Personal" class="config-card">
+        <div class="config-icon-box"><i class="fas fa-users-cog"></i></div>
+        <div class="config-title">Gestión de<br>Personal</div>
+    </a>
+
+    <a href="/modulo?pagina=Routers" class="config-card">
+        <div class="config-icon-box"><i class="fas fa-server"></i></div>
+        <div class="config-title">Routers</div>
+    </a>
+
+    <a href="/modulo?pagina=VPN" class="config-card">
+        <div class="config-icon-box"><i class="fas fa-shield-alt"></i></div>
+        <div class="config-title">VPN</div>
+    </a>
+
+    <a href="/modulo?pagina=Smartolt" class="config-card">
+        <div class="config-icon-box"><i class="fas fa-network-wired"></i></div>
+        <div class="config-title">OLT</div>
+    </a>
+
+    <a href="/modulo?pagina=TR069" class="config-card">
+        <div class="config-icon-box"><i class="fas fa-project-diagram"></i></div>
+        <div class="config-title">TR069</div>
+    </a>
+
+    <a href="/modulo?pagina=Zonas" class="config-card">
+        <div class="config-icon-box"><i class="fas fa-map-marker-alt"></i></div>
+        <div class="config-title">Zonas</div>
+    </a>
+
+    <a href="/modulo?pagina=Planes" class="config-card">
+        <div class="config-icon-box"><i class="fas fa-tachometer-alt"></i></div>
+        <div class="config-title">Planes</div>
+    </a>
+
+    <a href="/modulo?pagina=Facturacion" class="config-card">
+        <div class="config-icon-box"><i class="fas fa-file-invoice-dollar"></i></div>
+        <div class="config-title">Facturación</div>
+    </a>
+
+    <a href="javascript:void(0)" class="config-card" onclick="openConfig('facturacion')">
+        <div class="config-icon-box"><i class="fas fa-qrcode"></i></div>
+        <div class="config-title">Facturación<br>Electrónica</div>
+    </a>
+
+    <a href="javascript:void(0)" class="config-card" onclick="openConfig('pagos_online')">
+        <div class="config-icon-box"><i class="fas fa-credit-card"></i></div>
+        <div class="config-title">Pagos en<br>Línea</div>
+    </a>
+
+    <a href="/modulo?pagina=Presets" class="config-card">
+        <div class="config-icon-box"><i class="fas fa-sliders-h"></i></div>
+        <div class="config-title">Presets</div>
+    </a>
+
+    <a href="/modulo?pagina=Plantillas" class="config-card">
+        <div class="config-icon-box"><i class="fas fa-edit"></i></div>
+        <div class="config-title">Editor de<br>Plantillas</div>
+    </a>
+
+    <a href="/modulo?pagina=Mensajeria" class="config-card">
+        <div class="config-icon-box"><i class="fas fa-comments"></i></div>
+        <div class="config-title">Mensajería</div>
+    </a>
+
+    <a href="javascript:void(0)" class="config-card" onclick="openConfig('portal_cliente')">
+        <div class="config-icon-box"><i class="fas fa-id-card-alt"></i></div>
+        <div class="config-title">App del<br>Cliente</div>
+    </a>
+
+    <a href="/modulo?pagina=Cron" class="config-card">
+        <div class="config-icon-box"><i class="fas fa-calendar-check"></i></div>
+        <div class="config-title">Tareas<br>Programadas</div>
+    </a>
+
+    <a href="/modulo?pagina=Api" class="config-card">
+        <div class="config-icon-box"><i class="fas fa-plug"></i></div>
+        <div class="config-title">API</div>
+    </a>
+
+    <a href="javascript:void(0)" class="config-card" onclick="openConfig('backup')">
+        <div class="config-icon-box"><i class="fas fa-database"></i></div>
+        <div class="config-title">Backup</div>
+    </a>
+
+    <a href="/modulo?pagina=Log" class="config-card">
+        <div class="config-icon-box" style="background:rgba(139,92,246,0.1);color:#8b5cf6;"><i class="fas fa-history"></i></div>
+        <div class="config-title">Log de<br>Actividad</div>
+    </a>
+
+    <a href="/modulo?pagina=Actualizaciones" class="config-card">
+        <div class="config-icon-box" style="background:rgba(16,185,129,0.1);color:#10b981;"><i class="fas fa-cloud-download-alt"></i></div>
+        <div class="config-title">Actualizaciones</div>
+    </a>
+
+    <a href="javascript:void(0)" class="config-card" onclick="openTenantProfile()">
+        <div class="config-icon-box" style="background:rgba(99,102,241,0.1);color:#6366f1;"><i class="fas fa-user-cog"></i></div>
+        <div class="config-title">Mi Cuenta</div>
+    </a>
+
+    <% if (user && user.username === 'admin') { %>
+    <a href="javascript:void(0)" class="config-card" onclick="openServerDate()" id="cardFechaHora">
+        <div class="config-icon-box" style="background:rgba(239,68,68,0.1);color:#ef4444;"><i class="fas fa-calendar-alt"></i></div>
+        <div class="config-title">Fecha/Hora<br>Servidor</div>
+    </a>
+    <% } %>
+
 </div>
-
-<!-- Config Section Container -->
-<div id="configSectionContainer" style="display:none; margin-top:20px;">
-  <div class="card">
-    <div class="card-header" id="configSectionHeader">
-      <button class="btn btn-secondary btn-sm" onclick="closeConfigSection()"><i class="fas fa-arrow-left"></i> Volver</button>
-      <span id="configSectionTitle" style="margin-left:12px;"></span>
-    </div>
-    <div class="card-body" id="configSectionBody">
-      <div class="loading"><i class="fas fa-spinner fa-spin"></i><br>Cargando...</div>
-    </div>
-  </div>
-</div>
-
-<script>
-// Config sections data
-const configSections = {
-  empresa: {
-    title: 'Empresa',
-    icon: 'fa-building',
-    fields: [
-      { label: 'Nombre de la empresa', name: 'empresa_nombre', type: 'text' },
-      { label: 'RNC / Cédula', name: 'empresa_rnc', type: 'text' },
-      { label: 'Teléfono', name: 'empresa_telefono', type: 'text' },
-      { label: 'Correo', name: 'empresa_correo', type: 'email' },
-      { label: 'Dirección', name: 'empresa_direccion', type: 'text' },
-      { label: 'Moneda', name: 'moneda', type: 'select', options: ['RD$', 'US$', '€'] },
-      { label: 'Logo URL', name: 'empresa_logo', type: 'text' },
-      // Separador: Datos Bancarios
-      { label: '━━━ DATOS BANCARIOS ━━━', name: '_sep_bancos', type: 'separator' },
-      { label: 'Cuentas bancarias', name: 'bancos_data', type: 'bancos-dinamico' },
-      // Separador: Oficina y Mensajería
-      { label: '━━━ OFICINA Y MENSAJERÍA ━━━', name: '_sep_oficina', type: 'separator' },
-      { label: 'Dirección de la oficina', name: 'oficina_direccion', type: 'text', placeholder: 'Calle Principal #10, Puerto Plata' },
-      { label: 'Horario de oficina', name: 'oficina_horario', type: 'text', placeholder: '8:00 AM - 5:00 PM' },
-      { label: 'Mensaje días sin cobro', name: 'no_cobro_msg', type: 'text', value: 'No realizamos cobros los días domingos.' }
-    ]
-  },
-  personal: {
-    title: 'Gestión de Personal',
-    icon: 'fa-users-cog',
-    fields: [
-      { label: 'Salario mensual por defecto', name: 'salario_default', type: 'number' },
-      { label: 'Día de pago', name: 'dia_pago', type: 'select', options: ['1', '5', '10', '15', '20', '25', '30'] },
-      { label: 'Permitir préstamos a empleados', name: 'prestamos_empleados', type: 'select', options: ['Si', 'No'] }
-    ]
-  },
-  routers: {
-    title: 'Routers',
-    icon: 'fa-server',
-    routerPanel: true,
-    fields: [
-      { label: 'IP del Router', name: 'router_ip', type: 'text', placeholder: '192.168.88.1' },
-      { label: 'Puerto API', name: 'router_port', type: 'number', value: '8728' },
-      { label: 'Usuario API', name: 'router_user', type: 'text', value: 'admin' },
-      { label: 'Contraseña API', name: 'router_pass', type: 'password' },
-      { label: 'Usar SSL', name: 'router_ssl', type: 'select', options: ['No', 'Si'] }
-    ]
-  },
-  vpn: {
-    title: 'VPN',
-    icon: 'fa-shield-alt',
-    fields: [
-      { label: 'Servidor VPN', name: 'vpn_server', type: 'text' },
-      { label: 'Puerto', name: 'vpn_port', type: 'number', value: '1194' },
-      { label: 'Protocolo', name: 'vpn_protocol', type: 'select', options: ['UDP', 'TCP'] },
-      { label: 'Rango IP VPN', name: 'vpn_range', type: 'text' }
-    ]
-  },
-  olt: {
-    title: 'OLT - SmartOLT',
-    icon: 'fa-network-wired',
-    fields: [
-      { label: 'Subdominio SmartOLT', name: 'smartolt_subdomain', type: 'text' },
-      { label: 'API Key', name: 'smartolt_api_key', type: 'password' },
-      { label: 'ID de la OLT', name: 'smartolt_olt_id', type: 'number' },
-      { label: 'Sincronización automática', name: 'smartolt_autosync', type: 'select', options: ['Cada 5 min', 'Cada 15 min', 'Cada 30 min', 'Cada 1 hora', 'Manual'] }
-    ]
-  },
-  tr069: {
-    title: 'TR069 - ACS',
-    icon: 'fa-project-diagram',
-    fields: [
-      { label: 'Servidor ACS', name: 'acs_server', type: 'text' },
-      { label: 'Puerto', name: 'acs_port', type: 'number', value: '7547' },
-      { label: 'Usuario', name: 'acs_user', type: 'text' },
-      { label: 'Contraseña', name: 'acs_pass', type: 'password' }
-    ]
-  },
-  zonas: {
-    title: 'Zonas / Sectores',
-    icon: 'fa-map-marker-alt',
-    table: true,
-    columns: ['ID', 'Nombre', 'Creado', 'Acciones'],
-    endpoint: '/api/zonas'
-  },
-  planes: {
-    title: 'Planes de Internet',
-    icon: 'fa-tachometer-alt',
-    table: true,
-    columns: ['ID', 'Nombre', 'Velocidad', 'Precio', 'Acciones'],
-    endpoint: '/api/planes'
-  },
-  facturacion: {
-    title: 'Facturación',
-    icon: 'fa-file-invoice-dollar',
-    fields: [
-      { label: 'Plantilla de factura por defecto', name: 'factura_plantilla', type: 'select', options: ['POSTPAGO | Gen: Día 25 | Corte: Día 11', 'PREPAGO | Gen: Día 10 | Corte: Día 20', 'POSTPAGO | Gen: Día 30 | Corte: Día 31'] },
-      { label: 'Día de generación', name: 'factura_dia_gen', type: 'number', value: '25' },
-      { label: 'Día de corte', name: 'factura_dia_corte', type: 'number', value: '11' },
-      { label: 'Interés por mora (%)', name: 'factura_interes', type: 'number', value: '5' },
-      { label: 'Generar facturas automáticamente', name: 'factura_auto', type: 'select', options: ['Si', 'No'] }
-    ]
-  },
-  'factura-electronica': {
-    title: 'Facturación Electrónica',
-    icon: 'fa-qrcode',
-    fields: [
-      { label: 'Ambiente', name: 'dgii_ambiente', type: 'select', options: ['Pruebas', 'Producción'] },
-      { label: 'RNC Emisor', name: 'dgii_rnc', type: 'text' },
-      { label: 'API Key DGII', name: 'dgii_apikey', type: 'password' },
-      { label: 'Certificado Digital (.p12)', name: 'dgii_cert', type: 'file' }
-    ]
-  },
-  'pagos-linea': {
-    title: 'Pagos en Línea',
-    icon: 'fa-credit-card',
-    fields: [
-      { label: 'Procesador de pagos', name: 'pagos_procesador', type: 'select', options: ['Ninguno', 'PayPal', 'Stripe', 'MercadoPago', 'Paymentez'] },
-      { label: 'API Key Pública', name: 'pagos_public_key', type: 'text' },
-      { label: 'API Key Secreta', name: 'pagos_secret_key', type: 'password' },
-      { label: 'Moneda', name: 'pagos_moneda', type: 'select', options: ['DOP', 'USD', 'EUR'] }
-    ]
-  },
-  presets: {
-    title: 'Presets de Configuración',
-    icon: 'fa-sliders-h',
-    description: 'Configuraciones predefinidas para instalaciones rápidas.',
-    fields: [
-      { label: 'PPPoe Username por defecto', name: 'preset_pppoe_user', type: 'text' },
-      { label: 'PPPoe Password por defecto', name: 'preset_pppoe_pass', type: 'password' },
-      { label: 'DHCP Range', name: 'preset_dhcp_range', type: 'text', value: '192.168.1.2-254' },
-      { label: 'DNS Primario', name: 'preset_dns1', type: 'text', value: '8.8.8.8' },
-      { label: 'DNS Secundario', name: 'preset_dns2', type: 'text', value: '8.8.4.4' },
-      { label: 'SSID por defecto', name: 'preset_ssid', type: 'text' }
-    ]
-  },
-  plantillas: {
-    title: 'Editor de Plantillas',
-    icon: 'fa-edit',
-    textarea: true,
-    fields: [
-      { label: 'Plantilla de Recibo', name: 'plantilla_recibo', type: 'textarea', rows: 10, value: '<html>...' },
-      { label: 'Plantilla de Contrato', name: 'plantilla_contrato', type: 'textarea', rows: 10, value: '<html>...' },
-      { label: 'Plantilla de Factura', name: 'plantilla_factura', type: 'textarea', rows: 10, value: '<html>...' }
-    ]
-  },
-  mensajeria: {
-    title: 'Mensajería',
-    icon: 'fa-comments',
-    fields: [
-      { label: 'Canal principal', name: 'sms_canal', type: 'select', options: ['WhatsApp', 'SMS', 'Email', 'WhatsApp + SMS', 'OpenWa', 'OpenWa + SMS'] },
-      { label: 'Token WhatsApp Business', name: 'sms_waba_token', type: 'password' },
-      { label: 'Número de teléfono', name: 'sms_telefono', type: 'text' },
-      { label: 'API Key SMS', name: 'sms_apikey', type: 'password' },
-      { label: 'SMTP Servidor', name: 'smtp_server', type: 'text' },
-      { label: 'SMTP Puerto', name: 'smtp_port', type: 'number', value: '587' },
-      { label: 'SMTP Usuario', name: 'smtp_user', type: 'text' },
-      { label: 'SMTP Contraseña', name: 'smtp_pass', type: 'password' },
-      { label: 'Correo remitente', name: 'smtp_from', type: 'email' }
-    ]
-  },
-  'app-cliente': {
-    title: 'App del Cliente',
-    icon: 'fa-id-card-alt',
-    fields: [
-      { label: 'Nombre de la App', name: 'app_nombre', type: 'text', value: 'Mi ISP Total' },
-      { label: 'Color primario', name: 'app_color', type: 'color', value: '#0f172a' },
-      { label: 'Logo URL', name: 'app_logo', type: 'text' },
-      { label: 'Versión actual', name: 'app_version', type: 'text', value: '1.0.0' },
-      { label: 'URL de descarga Android', name: 'app_android_url', type: 'text' },
-      { label: 'URL de descarga iOS', name: 'app_ios_url', type: 'text' }
-    ]
-  },
-  tareas: {
-    title: 'Tareas Programadas',
-    icon: 'fa-calendar-check',
-    fields: [
-      { label: 'Generar facturas', name: 'cron_generar_facturas', type: 'select', options: ['Desactivado', 'Diario', 'Semanal', 'Mensual'] },
-      { label: 'Sincronizar ONUs', name: 'cron_sync_onus', type: 'select', options: ['Desactivado', 'Cada 5 min', 'Cada 15 min', 'Cada 30 min', 'Cada 1 hora'] },
-      { label: 'Respaldar BD', name: 'cron_backup', type: 'select', options: ['Desactivado', 'Diario', 'Semanal'] },
-      { label: 'Enviar recordatorios', name: 'cron_recordatorios', type: 'select', options: ['Desactivado', 'Diario', 'Semanal'] }
-    ]
-  },
-  api: {
-    title: 'API',
-    icon: 'fa-plug',
-    fields: [],
-    openwa: {
-      title: 'OpenWa - WhatsApp API',
-      icon: 'fa-whatsapp',
-      description: 'Gateway WhatsApp auto-gestionado. Convierte una cuenta de WhatsApp en una API.',
-      fields: [
-        { label: 'Habilitar OpenWa', name: 'openwa_enabled', type: 'select', options: ['No', 'Si'] },
-        { label: 'Puerto', name: 'openwa_port', type: 'number', value: '8080' },
-        { label: 'API Key', name: 'openwa_api_key', type: 'password' },
-        { label: 'ID de Sesión', name: 'openwa_session_id', type: 'text', value: 'isptotal' },
-        { label: 'Webhook URL', name: 'openwa_webhook', type: 'text', placeholder: 'https://tu-servicio.com/webhook' }
-      ]
-    }
-  },
-  backup: {
-    title: 'Backup',
-    icon: 'fa-database',
-    description: 'Gestión de respaldos de la base de datos.',
-    buttons: [
-      { label: 'Descargar Backup', action: 'downloadBackup()', class: 'btn-primary' },
-      { label: 'Restaurar Backup', action: 'restoreBackup()', class: 'btn-warning' }
-    ],
-    fields: [
-      { label: 'Último backup', name: 'backup_last', type: 'text', readonly: true, value: 'Nunca' },
-      { label: 'Respaldos automáticos', name: 'backup_auto', type: 'select', options: ['Desactivado', 'Diario', 'Semanal'] },
-      { label: 'Máximo de respaldos', name: 'backup_max', type: 'number', value: '10' }
-    ]
-  },
-  log: {
-    title: 'Log de Actividad',
-    icon: 'fa-history',
-    description: 'Registro de todas las acciones realizadas en el sistema.',
-    table: true,
-    columns: ['ID', 'Usuario', 'Acción', 'Detalle', 'Fecha'],
-    endpoint: '/api/logs'
-  },
-  actualizaciones: {
-    title: 'Actualizaciones',
-    icon: 'fa-cloud-download-alt',
-    description: 'Versión actual: 1.0.0',
-    buttons: [
-      { label: 'Buscar Actualizaciones', action: 'checkUpdates()', class: 'btn-primary' },
-      { label: 'Instalar Actualización', action: 'installUpdate()', class: 'btn-success' }
-    ],
-    fields: [
-      { label: 'Versión instalada', name: 'version', type: 'text', readonly: true, value: '1.0.0' },
-      { label: 'Última comprobación', name: 'ultima_comp', type: 'text', readonly: true, value: 'Nunca' },
-      { label: 'Canal de actualizaciones', name: 'update_channel', type: 'select', options: ['Estable', 'Beta', 'Nightly'] }
-    ]
-  }
-};
-
-function openConfig(sectionId) {
-  const section = configSections[sectionId];
-  if (!section) return;
-  
-  document.getElementById('configSectionTitle').innerHTML = '<i class="fas ' + section.icon + '"></i> ' + section.title;
-  document.getElementById('configSectionContainer').style.display = 'block';
-  
-  let html = '';
-  
-  if (section.description) {
-    html += '<p style="color:var(--text-gray);margin-bottom:16px;">' + section.description + '</p>';
-  }
-  
-  if (section.buttons) {
-    html += '<div class="btn-group" style="margin-bottom:16px;">';
-    section.buttons.forEach(b => {
-      html += '<button class="btn ' + (b.class || 'btn-primary') + '" onclick="' + b.action + '">' + b.label + '</button>';
-    });
-    html += '</div>';
-  }
-  
-  if (section.routerPanel) {
-    html += '<form id="configForm" onsubmit="saveConfig(event, \'' + sectionId + '\')">';
-    section.fields.forEach(f => {
-      html += '<div class="form-group">';
-      html += '<label>' + f.label + '</label>';
-      if (f.type === 'select') {
-        html += '<select name="' + f.name + '" class="form-control">';
-        (f.options || []).forEach(o => { html += '<option value="' + o + '">' + o + '</option>'; });
-        html += '</select>';
-      } else if (f.type === 'password') {
-        html += '<input type="password" name="' + f.name + '" class="form-control" placeholder="' + (f.placeholder || '') + '">';
-      } else {
-        html += '<input type="' + f.type + '" name="' + f.name + '" class="form-control" placeholder="' + (f.placeholder || '') + '" value="' + (f.value || '') + '">';
-      }
-      html += '</div>';
-    });
-    html += '<div class="btn-group" style="margin-top:16px;">';
-    html += '<button type="button" class="btn btn-primary" onclick="testRouterConnection()"><i class="fas fa-plug"></i> Probar Conexión</button>';
-    html += '<button type="submit" class="btn btn-success"><i class="fas fa-save"></i> Guardar</button>';
-    html += '</div>';
-    html += '<div id="routerStatus" style="margin-top:16px;"></div>';
-    html += '</form>';
-    html += '<div class="card mt-20"><div class="card-header"><i class="fas fa-network-wired"></i> Interfaces del Router</div><div class="card-body" id="routerInterfaces"><p class="loading"><i class="fas fa-spinner fa-spin"></i> Conecta y prueba para ver interfaces</p></div></div>';
-    html += '<div class="card mt-20"><div class="card-header"><i class="fas fa-tasks"></i> DHCP Leases</div><div class="card-body" id="routerLeases"><p class="loading"><i class="fas fa-spinner fa-spin"></i> Conecta y prueba para ver leases</p></div></div>';
-  } else if (section.textarea) {
-    html += '<form id="configForm" onsubmit="saveConfig(event, \'' + sectionId + '\')">';
-    section.fields.forEach(f => {
-      html += '<div class="form-group">';
-      html += '<label>' + f.label + '</label>';
-      html += '<textarea name="' + f.name + '" class="form-control" rows="' + (f.rows || 5) + '">' + (f.value || '') + '</textarea>';
-      html += '</div>';
-    });
-    html += '<button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Guardar</button>';
-    html += '</form>';
-  } else if (section.table) {
-    html += '<div class="table-container"><table><thead><tr>';
-    section.columns.forEach(c => { html += '<th>' + c + '</th>'; });
-    html += '</tr></thead><tbody>';
-    html += '<tr><td colspan="' + section.columns.length + '" class="loading"><i class="fas fa-spinner fa-spin"></i> Cargando...</td></tr>';
-    html += '</tbody></table></div>';
-  } else if (section.fields) {
-    html += '<form id="configForm" onsubmit="saveConfig(event, \'' + sectionId + '\')">';
-    section.fields.forEach(f => {
-      html += '<div class="form-group">';
-      html += '<label>' + f.label + '</label>';
-      if (f.type === 'separator') {
-        html = html.substring(0, html.length - '</div>'.length); // remove the </div> we just added
-        html += '<hr style="margin:16px 0;border:none;border-top:2px solid #e2e8f0;">';
-        if (f.label) {
-          html += '<h4 style="font-size:.85rem;color:#6366f1;margin-bottom:12px;">' + f.label + '</h4>';
-        }
-        html += '</div>';
-      } else if (f.type === 'select') {
-        html += '<select name="' + f.name + '" class="form-control">';
-        (f.options || []).forEach(o => {
-          html += '<option value="' + o + '" ' + (f.value === o ? 'selected' : '') + '>' + o + '</option>';
-        });
-        html += '</select>';
-      } else if (f.type === 'color') {
-        html += '<input type="color" name="' + f.name + '" value="' + (f.value || '#000000') + '" style="width:60px;height:40px;padding:2px;">';
-      } else if (f.type === 'button') {
-        html += '<button type="button" class="btn btn-warning btn-sm" onclick="generateToken()">' + f.label + '</button>';
-      } else if (f.type === 'file') {
-        html += '<input type="file" name="' + f.name + '" class="form-control" style="padding:8px;">';
-      } else if (f.type === 'textarea') {
-        html += '<textarea name="' + f.name + '" class="form-control" rows="' + (f.rows || 3) + '" placeholder="' + (f.placeholder || '') + '">' + (f.value || '') + '</textarea>';
-      } else if (f.type === 'password') {
-        html += '<input type="password" name="' + f.name + '" class="form-control" placeholder="' + (f.placeholder || '') + '" value="' + (f.value || '') + '" ' + (f.readonly ? 'readonly' : '') + '>';
-      } else if (f.type === 'bancos-dinamico') {
-        // Bancos dinámicos
-        html += '<div id="bancosContainer"></div>';
-        html += '<button type="button" class="btn-add-banco" onclick="agregarBanco()"><i class="fas fa-plus"></i> Agregar banco</button>';
-        html += '<input type="hidden" name="bancos_data" id="bancosDataInput" value="">';
-      } else {
-        html += '<input type="' + f.type + '" name="' + f.name + '" class="form-control" placeholder="' + (f.placeholder || '') + '" value="' + (f.value || '') + '" ' + (f.readonly ? 'readonly' : '') + '>';
-      }
-      html += '</div>';
-    });
-    html += '<button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Guardar Cambios</button>';
-    html += '</form>';
-  }
-  
-  // Si es la sección API, agregar panel OpenWa después
-  if (sectionId === 'api' && section.openwa) {
-    var owa = section.openwa;
-    html += '<div style="margin-top:30px;padding-top:24px;border-top:2px solid #e2e8f0;">';
-    html += '<h3 style="display:flex;align-items:center;gap:10px;font-size:1rem;margin-bottom:6px;">';
-    html += '<i class="fab fa-whatsapp" style="color:#25D366;font-size:1.3rem;"></i> ' + owa.title + '</h3>';
-    html += '<p style="font-size:0.82rem;color:#64748b;margin-bottom:14px;">' + (owa.description || '') + '</p>';
-    html += '<div class="form-group" style="display:flex;align-items:center;gap:14px;margin-bottom:10px;">';
-    html += '  <label style="font-weight:600;font-size:0.9rem;cursor:pointer;">' + owa.title + '</label>';
-    html += '  <div class="owa-toggle-wrap" onclick="toggleOpenWa(this)" id="owaToggle" style="display:inline-flex;align-items:center;gap:8px;">';
-    html += '    <button class="owa-toggle" id="owaToggleBtn"><div class="owa-toggle-knob"></div></button>';
-    html += '    <span id="owaToggleLabel" style="font-size:0.8rem;color:#94a3b8;">Desactivado</span>';
-    html += '  </div>';
-    html += '</div>';
-    html += '<p style="font-size:0.82rem;color:#64748b;margin-bottom:14px;">' + (owa.description || '') + '</p>';
-    html += '<div id="openwaStatusBox" style="padding:12px 16px;border-radius:10px;font-size:0.85rem;display:none;"></div>';
-    html += '<div id="openwaQrBox" style="margin-top:14px;display:none;text-align:center;">';
-    html += '  <p style="font-size:0.82rem;color:#64748b;margin-bottom:8px;">Escanea este código QR con WhatsApp para conectar:</p>';
-    html += '  <div id="openwaQrImage" style="background:#fff;display:inline-block;padding:12px;border-radius:12px;border:2px solid #e2e8f0;"></div>';
-    html += '</div>';
-    html += '</div>';
-  }
-  
-  document.getElementById('configSectionBody').innerHTML = html;
-  
-  // Cargar valores guardados para todas las secciones con fields (excepto routerPanel y table)
-  if (section.fields && !section.routerPanel && !section.table && !section.textarea) {
-    loadConfigValues(sectionId);
-  }
-  // Cargar valores de OpenWa si es la sección API
-  if (sectionId === 'api') { loadOpenWaConfig(); }
-}
-
-var openwaMonitorTimer = null;
-
-function closeConfigSection() {
-  document.getElementById('configSectionContainer').style.display = 'none';
-  // Detener el monitor de OpenWa al cerrar la sección
-  if (openwaMonitorTimer) {
-    clearTimeout(openwaMonitorTimer);
-    openwaMonitorTimer = null;
-  }
-}
-
-async function saveConfig(e, sectionId) {
-  e.preventDefault();
-  const form = document.getElementById('configForm');
-  const data = new FormData(form);
-  const obj = Object.fromEntries(data);
-
-  // Para OLT, también guardar en el endpoint específico de SmartOLT
-  // (usa SMARTOLT_API_KEY con guiones entre palabras, correcto)
-  if (sectionId === 'olt') {
-    fetch('/api/smartolt/config/save', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        subdomain: obj.smartolt_subdomain || '',
-        api_key: obj.smartolt_api_key || '',
-        olt_id: obj.smartolt_olt_id || ''
-      })
-    }).catch(() => {});
-  }
-
-  fetch('/api/config/save', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ section: sectionId, data: obj })
-  }).then(r => r.json()).then(res => {
-    if (res.success) {
-      showToast('Configuración guardada');
-      // Recargar los valores guardados para que el formulario los muestre
-      if (sectionId !== 'routers' && sectionId !== 'zonas' && sectionId !== 'planes' && sectionId !== 'log') {
-        setTimeout(function() { loadConfigValues(sectionId); }, 100);
-      }
-    }
-    else showToast('Error al guardar', 'error');
-  }).catch(() => showToast('Error de conexión', 'error'));
-}
-
-function loadConfigValues(sectionId) {
-  fetch('/api/config/get')
-    .then(r => r.json())
-    .then(config => {
-      const section = configSections[sectionId];
-      if (!section || !section.fields) return;
-
-      section.fields.forEach(f => {
-        if (f.type === 'separator' || f.type === 'bancos-dinamico') return;
-        const el = document.querySelector('[name="' + f.name + '"]');
-        if (!el) return;
-        const savedVal = config[f.name];
-        if (savedVal !== undefined && savedVal !== null && savedVal !== '') {
-          if (el.tagName === 'SELECT') {
-            for (let opt of el.options) {
-              const optVal = opt.value;
-              if (optVal === savedVal || optVal === savedVal.toString()) {
-                el.value = optVal;
-                break;
-              }
-            }
-          } else if (el.type === 'color') {
-            el.value = savedVal || '#000000';
-          } else if (el.type !== 'password' && el.type !== 'file' && !el.readOnly) {
-            el.value = savedVal;
-          }
-        }
-      });
-      
-      // Cargar bancos dinámicos si aplica
-      if (sectionId === 'empresa' && config.bancos_data) {
-        loadBancosData(config.bancos_data);
-      }
-    })
-    .catch(() => {});
-}
-
-function generateToken() {
-  const token = Array.from({length: 40}, () => Math.random().toString(36)[2]).join('');
-  showToast('Nuevo token generado: ' + token.substring(0, 10) + '...');
-}
-
-function downloadBackup() { showToast('Descargando backup...'); }
-function restoreBackup() { showToast('Función de restauración'); }
-function checkUpdates() { showToast('Buscando actualizaciones...'); }
-function installUpdate() { showToast('Instalando actualización...'); }
-
-// ============ OpenWa ============
-function loadOpenWaConfig() {
-  fetch('/api/openwa/status').then(function(r) { return r.json(); }).then(function(d) {
-    var cfg = d.config || {};
-    var fields = ['openwa_enabled','openwa_port','openwa_api_key','openwa_session_id','openwa_webhook'];
-    fields.forEach(function(k) {
-      var el = document.querySelector('[name="' + k + '"]');
-      if (!el) return;
-      if (cfg[k] !== undefined) el.value = cfg[k];
-    });
-    // Mostrar estado actual inmediatamente
-    if (d.running) {
-      updateOpenWaUI(d);
-    }
-  }).catch(function() {});
-}
-
-// Actualizar UI de OpenWa según estado
-function updateOpenWaUI(d) {
-  var box = document.getElementById('openwaStatusBox');
-  var btn = document.getElementById('owaToggleBtn');
-  var label = document.getElementById('owaToggleLabel');
-  if (!box) return;
-  
-  if (d.running && d.state === 'qr' && d.qr) {
-    box.style.display = 'block';
-    box.style.background = '#fef3c7';
-    box.style.border = '1px solid #fde68a';
-    box.style.color = '#92400e';
-    box.innerHTML = '<i class="fas fa-qrcode"></i> <strong>Escanea el QR con WhatsApp</strong>';
-    document.getElementById('openwaQrBox').style.display = 'block';
-    document.getElementById('openwaQrImage').innerHTML = '<img src="' + d.qr + '?t=' + Date.now() + '" style="width:260px;height:auto;max-width:100%;border-radius:8px;">';
-    if (label) { label.textContent = 'Esperando QR...'; label.style.color = '#d97706'; }
-    if (btn && !btn.classList.contains('on')) btn.classList.add('on');
-  } else if (d.running && d.state === 'connected') {
-    box.style.display = 'block';
-    box.style.background = '#f0fdf4';
-    box.style.border = '1px solid #bbf7d0';
-    box.style.color = '#166534';
-    box.innerHTML = '<i class="fas fa-check-circle"></i> <strong>OpenWa conectado</strong>';
-    document.getElementById('openwaQrBox').style.display = 'none';
-    if (label) { label.textContent = 'Conectado'; label.style.color = '#16a34a'; }
-    if (btn && !btn.classList.contains('on')) btn.classList.add('on');
-  } else if (d.running) {
-    box.style.display = 'block';
-    box.style.background = '#eff6ff';
-    box.style.border = '1px solid #bfdbfe';
-    box.style.color = '#1e40af';
-    box.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <strong>Iniciando...</strong>';
-  } else {
-    box.style.display = 'block';
-    box.style.background = '#fef2f2';
-    box.style.border = '1px solid #fecaca';
-    box.style.color = '#991b1b';
-    box.innerHTML = '<i class="fas fa-times-circle"></i> <strong>OpenWa detenido</strong>';
-    document.getElementById('openwaQrBox').style.display = 'none';
-    if (btn) btn.classList.remove('on');
-    if (label) { label.textContent = 'Desconectado'; label.style.color = '#dc2626'; }
-  }
-}
-
-function toggleOpenWa(el) {
-  var btn = document.getElementById('owaToggleBtn');
-  var label = document.getElementById('owaToggleLabel');
-  var isOn = btn.classList.contains('on');
-  
-  if (isOn) {
-    // Apagar
-    btn.classList.remove('on');
-    label.textContent = 'Desactivado';
-    label.style.color = '#94a3b8';
-    // Parar el monitoreo
-    if (openwaMonitorTimer) {
-      clearTimeout(openwaMonitorTimer);
-      openwaMonitorTimer = null;
-    }
-    fetch('/api/openwa/config', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ openwa_enabled: '0' })
-    }).then(function() {
-      return fetch('/api/openwa/stop', {method:'POST'});
-    }).then(function() {
-      showToast('OpenWa desactivado');
-      var box = document.getElementById('openwaStatusBox');
-      if (box) {
-        box.style.display = 'block';
-        box.style.background = '#fef2f2';
-        box.style.border = '1px solid #fecaca';
-        box.style.color = '#991b1b';
-        box.innerHTML = '<i class="fas fa-times-circle"></i> <strong>OpenWa detenido</strong>';
-      }
-      document.getElementById('openwaQrBox').style.display = 'none';
-    });
-  } else {
-    // Encender
-    btn.classList.add('on');
-    label.textContent = 'Iniciando...';
-    label.style.color = '#16a34a';
-    
-    // Primero verificar estado actual
-    fetch('/api/openwa/status').then(function(r) { return r.json(); }).then(function(s) {
-      if (s.running && s.state === 'connected') {
-        // Ya está conectado, solo actualizar UI
-        label.textContent = 'Conectado';
-        showToast('OpenWa ya estaba conectado');
-        monitorOpenWa();
-        return;
-      }
-      
-      // Guardar config
-      fetch('/api/openwa/config', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ openwa_enabled: '1' })
-      }).then(function() {
-        // Preguntar estado actual antes de intentar arrancar
-        return fetch('/api/openwa/status');
-      }).then(function(r) { return r.json(); }).then(function(s) {
-        if (s.running && (s.state === 'qr' || s.state === 'connected' || s.state === 'starting')) {
-          // Ya está corriendo, mostrar estado inmediatamente
-          updateOpenWaUI(s);
-          showToast('OpenWa ya está en ejecución');
-          monitorOpenWa();
-          return;
-        }
-        // Si no está corriendo, arrancar
-        return fetch('/api/openwa/start', {method:'POST'}).then(function(r) { return r.json(); });
-      }).then(function(d) {
-        if (!d) return;
-        if (d.success) {
-          showToast(d.msg);
-          // Mostrar QR de inmediato
-          fetch('/api/openwa/status').then(function(r) { return r.json(); }).then(function(s) {
-            updateOpenWaUI(s);
-            monitorOpenWa();
-          });
-        } else {
-          showToast('Error: ' + d.msg, 'error');
-          btn.classList.remove('on');
-          label.textContent = 'Error';
-          label.style.color = '#dc2626';
-        }
-      }).catch(function(e) {
-        showToast('Error: ' + e.message, 'error');
-        btn.classList.remove('on');
-        label.textContent = 'Error';
-        label.style.color = '#dc2626';
-      });
-    }).catch(function() {
-      // Si falla el status, intentar arrancar directamente
-      fetch('/api/openwa/start', {method:'POST'});
-    });
-  }
-}
-
-function monitorOpenWa() {
-  var container = document.getElementById('configSectionContainer');
-  if (!container || container.style.display === 'none') {
-    openwaMonitorTimer = null;
-    return;
-  }
-  
-  fetch('/api/openwa/status').then(function(r) { return r.json(); }).then(function(d) {
-    updateOpenWaUI(d);
-    
-    // Seguir monitoreando SOLO si está en estado 'starting' o 'qr' (transitorios)
-    // Si está connected o detenido, dejar de molestar
-    var btn = document.getElementById('owaToggleBtn');
-    var seguir = false;
-    if (d.running && (d.state === 'starting' || d.state === 'qr')) {
-      seguir = true;
-    } else if (!d.running && btn && btn.classList.contains('on')) {
-      // Si el toggle está ON pero no corre, reintentar
-      seguir = true;
-    }
-    
-    if (seguir) {
-      openwaMonitorTimer = setTimeout(monitorOpenWa, 3000);
-    } else {
-      openwaMonitorTimer = null;
-    }
-  }).catch(function() {
-    openwaMonitorTimer = setTimeout(monitorOpenWa, 5000);
-  });
-}
-
-// ====== BANCOS DINÁMICOS ======
-let bancosList = [];
-
-function agregarBanco() {
-  bancosList.push({ nombre: '', titular: '', numero: '', tipo: 'Corriente', cedula: '' });
-  renderBancos();
-}
-
-function eliminarBanco(idx) {
-  bancosList.splice(idx, 1);
-  renderBancos();
-}
-
-function renderBancos() {
-  const container = document.getElementById('bancosContainer');
-  if (!container) return;
-  
-  if (bancosList.length === 0) {
-    container.innerHTML = '<div class="banco-empty"><i class="fas fa-university"></i>No hay cuentas bancarias registradas.<br>Haz clic en "+ Agregar banco" para añadir una.</div>';
-    const input = document.getElementById('bancosDataInput');
-    if (input) input.value = '[]';
-    return;
-  }
-  
-  let html = '';
-  bancosList.forEach(function(b, i) {
-    html += '<div class="banco-card" data-idx="' + i + '">';
-    html += '  <div class="banco-card-header">';
-    html += '    <div class="banco-card-title"><i class="fas fa-university" style="color:#6366f1;margin-right:6px;"></i>Banco ' + (i + 1) + '</div>';
-    html += '    <button type="button" class="banco-card-remove" onclick="eliminarBanco(' + i + ')" title="Eliminar"><i class="fas fa-times"></i></button>';
-    html += '  </div>';
-    html += '  <div class="banco-card-grid">';
-    html += '    <div class="field-group"><label>Nombre del banco</label>';
-    html += '      <input type="text" class="banco-input" data-idx="' + i + '" data-field="nombre" value="' + escHtml(b.nombre) + '" placeholder="Ej: Banco Popular">';
-    html += '    </div>';
-    html += '    <div class="field-group"><label>Titular de la cuenta</label>';
-    html += '      <input type="text" class="banco-input" data-idx="' + i + '" data-field="titular" value="' + escHtml(b.titular) + '" placeholder="Nombre del titular">';
-    html += '    </div>';
-    html += '    <div class="field-group"><label>Número de cuenta</label>';
-    html += '      <input type="text" class="banco-input" data-idx="' + i + '" data-field="numero" value="' + escHtml(b.numero) + '" placeholder="Cuenta">';
-    html += '    </div>';
-    html += '    <div class="field-group"><label>Tipo de cuenta</label>';
-    html += '      <select class="banco-input" data-idx="' + i + '" data-field="tipo">';
-    html += '        <option value="Corriente" ' + (b.tipo === 'Corriente' ? 'selected' : '') + '>Corriente</option>';
-    html += '        <option value="Ahorros" ' + (b.tipo === 'Ahorros' ? 'selected' : '') + '>Ahorros</option>';
-    html += '      </select>';
-    html += '    </div>';
-    html += '    <div class="field-group"><label>Cédula / RNC</label>';
-    html += '      <input type="text" class="banco-input" data-idx="' + i + '" data-field="cedula" value="' + escHtml(b.cedula) + '" placeholder="Cédula del titular">';
-    html += '    </div>';
-    html += '  </div>';
-    html += '</div>';
-  });
-  
-  container.innerHTML = html;
-  
-  // Attach change listeners
-  document.querySelectorAll('.banco-input').forEach(function(el) {
-    el.addEventListener('change', function() {
-      var idx = parseInt(this.getAttribute('data-idx'));
-      var field = this.getAttribute('data-field');
-      if (bancosList[idx]) bancosList[idx][field] = this.value;
-      saveBancosData();
-    });
-    el.addEventListener('input', function() {
-      var idx = parseInt(this.getAttribute('data-idx'));
-      var field = this.getAttribute('data-field');
-      if (bancosList[idx]) bancosList[idx][field] = this.value;
-      saveBancosData();
-    });
-  });
-  
-  saveBancosData();
-}
-
-function saveBancosData() {
-  const input = document.getElementById('bancosDataInput');
-  if (input) input.value = JSON.stringify(bancosList);
-}
-
-function loadBancosData(raw) {
-  try {
-    bancosList = JSON.parse(raw) || [];
-  } catch(e) {
-    bancosList = [];
-  }
-  renderBancos();
-}
-
-function escHtml(str) {
-  if (!str) return '';
-  return String(str).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
-</script>
 
 <style>
-.config-menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 15px; }
-.config-card { 
-  background: #fff; border: 1px solid #e0e0e0; border-radius: 10px;
-  padding: 15px 5px; text-align: center; cursor: pointer;
-  transition: all 0.2s ease; display: flex; flex-direction: column; align-items: center; gap: 8px;
-  text-decoration: none; color: #333;
+.config-menu-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 15px;
 }
-.config-card:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.05); border-color: #6366f1; }
+.config-card {
+    background: var(--bg-card, #fff);
+    border: 1px solid var(--border-color, #e0e0e0);
+    border-radius: 10px;
+    padding: 15px 5px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    color: var(--text-main, #333);
+}
+.config-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    border-color: var(--accent-primary);
+}
 .config-icon-box {
-  width: 40px; height: 40px; border-radius: 50%;
-  background: rgba(99, 102, 241, 0.1); color: #6366f1;
-  display: flex; align-items: center; justify-content: center; font-size: 1.2rem;
+    width: 40px; height: 40px; border-radius: 50%;
+    background: rgba(99, 102, 241, 0.1);
+    color: #6366f1;
+    display: flex; align-items: center; justify-content: center; font-size: 1.2rem;
 }
-.config-title { font-size: 0.75rem; color: #475569; line-height: 1.3; }
-/* Toggle switch (like Cron tasks) */
-.owa-toggle-wrap{display:inline-flex;align-items:center;gap:8px;cursor:pointer;}
-.owa-toggle{position:relative;width:46px;height:26px;background:#cbd5e1;border-radius:13px;cursor:pointer;transition:background .25s;border:none;padding:0;flex-shrink:0;}
-.owa-toggle.on{background:#16a34a}
-.owa-toggle-knob{position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform .25s;box-shadow:0 1px 3px rgba(0,0,0,.15);}
-.owa-toggle.on .owa-toggle-knob{transform:translateX(20px)}
+.config-title { font-weight: 600; font-size: 0.85rem; line-height: 1.1; }
 
-/* Bancos dinámicos */
-.banco-card{background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:16px;margin-bottom:12px;position:relative;}
-.banco-card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
-.banco-card-title{font-size:.82rem;font-weight:700;color:#1e293b;}
-.banco-card-remove{width:28px;height:28px;border:none;border-radius:6px;background:#fef2f2;color:#dc2626;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.85rem;transition:all .15s;}
-.banco-card-remove:hover{background:#dc2626;color:#fff;}
-.banco-card-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px;}
-.banco-card-grid .field-group{display:flex;flex-direction:column;}
-.banco-card-grid .field-group label{font-size:.72rem;font-weight:600;color:#64748b;margin-bottom:3px;}
-.banco-card-grid .field-group input,.banco-card-grid .field-group select{font-size:.82rem;padding:7px 10px;border:1px solid #e2e8f0;border-radius:6px;outline:none;transition:border-color .15s;background:#fff;}
-.banco-card-grid .field-group input:focus,.banco-card-grid .field-group select:focus{border-color:#6366f1;}
-.btn-add-banco{display:inline-flex;align-items:center;gap:6px;padding:10px 18px;border-radius:8px;font-size:.85rem;font-weight:600;border:2px dashed #c7d2fe;background:transparent;color:#6366f1;cursor:pointer;transition:all .15s;margin-top:4px;}
-.btn-add-banco:hover{background:#eef2ff;border-color:#6366f1;}
-.banco-empty{text-align:center;padding:24px;color:#94a3b8;font-size:.85rem;}
-.banco-empty i{font-size:1.5rem;display:block;margin-bottom:8px;color:#cbd5e1;}
+/* Modal de configuracion inline */
+.config-modal { display: none; }
+.config-modal.active {
+    display: flex;
+    position: fixed !important;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 2000;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+}
+.config-modal-content {
+    background: var(--bg-card, #fff);
+    padding: 25px;
+    border-radius: 12px;
+    width: 600px;
+    max-width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+.config-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+.config-modal-header h3 { margin: 0; font-size: 1.1rem; }
+.config-modal-close {
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--text-muted, #94a3b8);
+}
 </style>
 
+<!-- Config Modals (inline) -->
+<div id="configModal" class="config-modal">
+    <div class="config-modal-content">
+        <div class="config-modal-header">
+            <h3 id="configModalTitle">Configuración</h3>
+            <span class="config-modal-close" onclick="closeConfig()">&times;</span>
+        </div>
+        <div id="configModalBody">
+            <p>Cargando...</p>
+        </div>
+    </div>
+</div>
+
 <script>
-async function testRouterConnection() {
-  const form = document.getElementById('configForm');
-  const data = {
-    host: form.router_ip?.value,
-    port: parseInt(form.router_port?.value) || 8728,
-    username: form.router_user?.value || 'admin',
-    password: form.router_pass?.value || ''
-  };
-  
-  if (!data.host) { showToast('Ingrese la IP del router', 'error'); return; }
-  
-  const statusDiv = document.getElementById('routerStatus');
-  statusDiv.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Conectando a ' + data.host + ':' + data.port + '...</div>';
-  
-  try {
-    const r = await fetch('/api/routers/test', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
-    });
-    const result = await r.json();
+var configCache = {};
+
+function openConfig(seccion) {
+    var titles = {
+        empresa: 'Empresa',
+        personal: 'Gestión de Personal',
+        vpn: 'VPN',
+        facturacion: 'Facturación Electrónica',
+        pagos_online: 'Pagos en Línea',
+        presets: 'Presets',
+        mensajeria: 'Mensajería',
+        portal_cliente: 'App del Cliente',
+        api: 'API',
+        backup: 'Backup'
+    };
     
-    if (result.success) {
-      const info = result.info;
-      statusDiv.innerHTML = '<div style="background:#dcfce7;color:#166534;padding:12px 16px;border-radius:8px;">' +
-        '<i class="fas fa-check-circle"></i> <strong>Conexión exitosa</strong><br>' +
-        '<span style="font-size:0.85rem;">Router: ' + (info['board-name'] || info['identity-name'] || 'MikroTik') + 
-        ' | Versión: ' + (info.version || info['routeros-version'] || '?') +
-        ' | Uptime: ' + (info.uptime || '?') + '</span></div>';
-      
-      // Load interfaces
-      loadRouterInterfaces(data);
-      loadRouterLeases(data);
-    } else {
-      statusDiv.innerHTML = '<div style="background:#fef2f2;color:#991b1b;padding:12px 16px;border-radius:8px;">' +
-        '<i class="fas fa-times-circle"></i> <strong>Error de conexión</strong><br>' +
-        '<span style="font-size:0.85rem;">' + (result.error || 'No se pudo conectar') + '</span></div>';
+    document.getElementById('configModalTitle').textContent = titles[seccion] || seccion;
+    document.getElementById('configModalBody').innerHTML = '<p><i class="fas fa-spinner fa-spin"></i> Cargando...</p>';
+    document.getElementById('configModal').classList.add('active');
+    
+    // Try to load from cache or server
+    if (configCache[seccion]) {
+        document.getElementById('configModalBody').innerHTML = configCache[seccion];
+        return false;
     }
-  } catch(e) {
-    statusDiv.innerHTML = '<div style="background:#fef2f2;color:#991b1b;padding:12px 16px;border-radius:8px;">' +
-      '<i class="fas fa-times-circle"></i> Error: ' + e.message + '</div>';
-  }
+    
+    fetch('/modulo?pagina=Configuracion&ajax=config_section&section=' + seccion)
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+            if (d.status === 'success') {
+                configCache[seccion] = d.html;
+                document.getElementById('configModalBody').innerHTML = d.html;
+            } else {
+                document.getElementById('configModalBody').innerHTML = '<p style="color:#dc2626;">Error: ' + (d.msg || 'No disponible') + '</p>';
+            }
+        })
+        .catch(function(e) {
+            document.getElementById('configModalBody').innerHTML = '<p style="color:#dc2626;">Error de conexión</p>';
+        });
+    
+    return false;
 }
 
-async function loadRouterInterfaces(data) {
-  const div = document.getElementById('routerInterfaces');
-  try {
-    const r = await fetch('/api/routers/interfaces', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
-    });
-    const result = await r.json();
-    
-    if (result.success && result.interfaces) {
-      let html = '<div class="table-container"><table><thead><tr><th>Nombre</th><th>Tipo</th><th>MAC</th><th>Estado</th><th>Velocidad</th></tr></thead><tbody>';
-      result.interfaces.forEach(iface => {
-        const status = iface.running === 'yes' ? '<span class="badge badge-success">UP</span>' : '<span class="badge badge-danger">DOWN</span>';
-        html += '<tr><td>' + (iface.name || '') + '</td><td>' + (iface.type || '') + '</td><td>' + (iface['mac-address'] || '') + '</td><td>' + status + '</td><td>' + (iface.speed || 'N/A') + '</td></tr>';
-      });
-      html += '</tbody></table></div>';
-      div.innerHTML = html;
-    } else {
-      div.innerHTML = '<p style="color:var(--text-gray);text-align:center;padding:20px;">No se pudieron cargar las interfaces</p>';
-    }
-  } catch(e) {
-    div.innerHTML = '<p style="color:#ef4444;text-align:center;padding:20px;">Error: ' + e.message + '</p>';
-  }
+function closeConfig() {
+    document.getElementById('configModal').classList.remove('active');
 }
 
-async function loadRouterLeases(data) {
-  const div = document.getElementById('routerLeases');
-  try {
-    const r = await fetch('/api/routers/dhcp', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
-    });
-    const result = await r.json();
+// Close modal on overlay click
+document.getElementById('configModal')?.addEventListener('click', function(e) {
+    if (e.target === this) closeConfig();
+});
+
+function openTenantProfile() {
+    document.getElementById('configModalTitle').textContent = 'Mi Cuenta';
+    var body = document.getElementById('configModalBody');
     
-    if (result.success && result.leases) {
-      let html = '<div class="table-container"><table><thead><tr><th>Dirección</th><th>MAC</th><th>Hostname</th><th>Estado</th><th>Servidor</th></tr></thead><tbody>';
-      result.leases.forEach(lease => {
-        const status = lease.status === 'bound' ? '<span class="badge badge-success">' + lease.status + '</span>' : '<span class="badge badge-warning">' + lease.status + '</span>';
-        html += '<tr><td>' + (lease.address || '') + '</td><td>' + (lease['mac-address'] || '') + '</td><td>' + (lease['host-name'] || '') + '</td><td>' + status + '</td><td>' + (lease.server || '') + '</td></tr>';
-      });
-      html += '</tbody></table></div>';
-      div.innerHTML = html;
-    } else {
-      div.innerHTML = '<p style="color:var(--text-gray);text-align:center;padding:20px;">No se pudieron cargar los leases DHCP</p>';
+    fetch('/api/tenant/profile')
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+        if (d.status === 'success') {
+            body.innerHTML = '<div style="padding:10px 0;">'
+                + '<p style="color:#64748b;font-size:0.85rem;margin-bottom:16px;">Configura tu cuenta y revisa el estado de tu licencia.</p>'
+                + '<div id="tenantProfileMsg" style="display:none;padding:10px;border-radius:8px;margin-bottom:12px;font-size:0.82rem;"></div>'
+                + '<div class="form-group">'
+                + '<label class="form-label">Usuario</label>'
+                + '<input type="text" class="form-control" value="' + d.username + '" disabled>'
+                + '</div>'
+                + '<div class="form-group">'
+                + '<label class="form-label">Empresa</label>'
+                + '<input type="text" class="form-control" value="' + d.company_name + '" disabled>'
+                + '</div>'
+                + '<div class="form-group">'
+                + '<label class="form-label">Correo</label>'
+                + '<input type="email" id="tpEmail" class="form-control" value="' + d.email + '">'
+                + '</div>'
+                + '<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:12px;margin:16px 0;">'
+                + '<h4 style="margin:0 0 8px;font-size:0.9rem;color:#166534;"><i class="fas fa-id-card"></i> Licencia</h4>'
+                + '<div style="font-size:0.82rem;color:#334155;">'
+                + '<b>Estado:</b> <span style="color:' + (d.license_active ? '#16a34a' : '#dc2626') + ';">' + (d.license_active ? '\u2705 Activa' : '\u274c Inactiva') + '</span><br>'
+                + '<b>Clientes actuales:</b> ' + d.client_count + '<br>'
+                + '<b>L' + '\u00ed' + 'mite:</b> ' + d.max_clients + ' clientes<br>'
+                + '<b>Registrado:</b> ' + d.created_at + '<br>'
+                + '</div>'
+                + '</div>'
+                + '<hr style="border-color:#e2e8f0;margin:16px 0;">'
+                + '<h4 style="font-size:0.85rem;color:#1e293b;margin:0 0 12px;">Cambiar Contrase' + '\u00f1' + 'a</h4>'
+                + '<div class="form-group">'
+                + '<label class="form-label">Contrase' + '\u00f1' + 'a actual</label>'
+                + '<input type="password" id="tpCurrentPw" class="form-control" placeholder="Obligatorio">'
+                + '</div>'
+                + '<div class="form-group">'
+                + '<label class="form-label">Nueva contrase' + '\u00f1' + 'a</label>'
+                + '<input type="password" id="tpNewPw" class="form-control" placeholder="M' + '\u00ed' + 'n. 6 caracteres">'
+                + '</div>'
+                + '<div class="form-group">'
+                + '<label class="form-label">Confirmar contrase' + '\u00f1' + 'a</label>'
+                + '<input type="password" id="tpNewPw2" class="form-control" placeholder="Repite la contrase' + '\u00f1' + 'a">'
+                + '</div>'
+                + '<div class="form-group">'
+                + '<button class="btn btn-primary" onclick="saveTenantProfile()" style="width:100%;"><i class="fas fa-save"></i> Guardar Cambios</button>'
+                + '</div>'
+                + '</div>';
+        } else {
+            body.innerHTML = '<p style="color:#dc2626;">Error: ' + (d.msg || 'No disponible') + '</p>';
+        }
+    })
+    .catch(function() {
+        body.innerHTML = '<p style="color:#dc2626;">Error de conexi' + '\u00f3' + 'n</p>';
+    });
+    
+    document.getElementById('configModal').classList.add('active');
+}
+
+function saveTenantProfile() {
+    var email = document.getElementById('tpEmail').value.trim();
+    var currentPw = document.getElementById('tpCurrentPw').value;
+    var newPw = document.getElementById('tpNewPw').value;
+    
+    if (!currentPw) { showToast('Ingresa tu contrase' + '\u00f1' + 'a actual', 'error'); return; }
+    if (!email) { showToast('El correo es obligatorio', 'error'); return; }
+    
+    var data = { email: email, current_password: currentPw };
+    if (newPw) {
+        var newPw2 = document.getElementById('tpNewPw2').value;
+        if (newPw !== newPw2) { showToast('Las contrase' + '\u00f1' + 'as no coinciden', 'error'); return; }
+        if (newPw.length < 6) { showToast('La nueva contrase' + '\u00f1' + 'a debe tener al menos 6 caracteres', 'error'); return; }
+        data.new_password = newPw;
     }
-  } catch(e) {
-    div.innerHTML = '<p style="color:#ef4444;text-align:center;padding:20px;">Error: ' + e.message + '</p>';
-  }
+    
+    fetch('/api/tenant/profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+        var msg = document.getElementById('tenantProfileMsg');
+        if (d.status === 'success') {
+            msg.style.background = '#f0fdf4'; msg.style.color = '#166534'; msg.style.border = '1px solid #bbf7d0';
+            msg.innerHTML = '<i class="fas fa-check-circle"></i> ' + d.msg;
+            msg.style.display = 'block';
+        } else {
+            msg.style.background = '#fef2f2'; msg.style.color = '#dc2626'; msg.style.border = '1px solid #fecaca';
+            msg.innerHTML = '<i class="fas fa-exclamation-circle"></i> ' + d.msg;
+            msg.style.display = 'block';
+        }
+    })
+    .catch(function() {
+        showToast('Error de conexi' + '\u00f3' + 'n', 'error');
+    });
+}
+
+function openServerDate() {
+    document.getElementById('configModalTitle').textContent = 'Fecha/Hora del Servidor';
+    var body = document.getElementById('configModalBody');
+    
+    fetch('/api/server/date')
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+        if (d.status === 'success') {
+            body.innerHTML = '<div style="padding:10px 0;">'
+                + '<p style="color:#64748b;font-size:0.85rem;margin-bottom:16px;">Configura la fecha/hora del servidor para realizar pruebas. Esto solo afecta a las tareas programadas (cron) y generaci' + '\u00f3' + 'n de facturas. <strong>Solo visible para admin.</strong></p>'
+                + '<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:14px;margin-bottom:16px;">'
+                + '<div style="font-size:0.8rem;color:#64748b;margin-bottom:4px;">Fecha/Hora real del servidor:</div>'
+                + '<div style="font-size:1rem;font-weight:600;color:var(--text-main);">' + d.real + '</div>'
+                + '</div>'
+                + '<div style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:14px;margin-bottom:16px;">'
+                + '<div style="font-size:0.8rem;color:#64748b;margin-bottom:4px;">Fecha/Hora usada por el sistema:</div>'
+                + '<div id="serverDateDisplay" style="font-size:1rem;font-weight:600;color:' + (d.overridden ? '#d97706' : '#16a34a') + ';">' + d.current + '</div>'
+                + '<div style="margin-top:4px;font-size:0.78rem;color:' + (d.overridden ? '#d97706' : '#16a34a') + ';">' + (d.overridden ? '\u26a0\ufe0f SOBREESCRITA - Modo pruebas' : '\u2705 Fecha real del servidor') + '</div>'
+                + '</div>'
+                + '<div class="form-group">'
+                + '<label class="form-label">Nueva Fecha (YYYY-MM-DD)</label>'
+                + '<input type="date" class="form-control" id="srvDateInput" value="' + (d.current_date_only || d.real_date_only) + '">'
+                + '</div>'
+                + '<div class="form-group">'
+                + '<label class="form-label">Hora (HH:MM)</label>'
+                + '<input type="time" class="form-control" id="srvTimeInput" value="12:00">'
+                + '</div>'
+                + '<div style="display:flex;gap:8px;">'
+                + '<button class="btn btn-primary" onclick="applyServerDate()" style="flex:1;"><i class="fas fa-save"></i> Aplicar Fecha</button>'
+                + '<button class="btn btn-secondary" onclick="resetServerDate()" style="flex:1;"><i class="fas fa-undo"></i> Restaurar Real</button>'
+                + '</div>'
+                + '</div>';
+        } else {
+            body.innerHTML = '<p style="color:#dc2626;">Error al obtener fecha del servidor</p>';
+        }
+    })
+    .catch(function() {
+        body.innerHTML = '<p style="color:#dc2626;">Error de conexi' + '\u00f3' + 'n</p>';
+    });
+    
+    document.getElementById('configModal').classList.add('active');
+}
+
+function applyServerDate() {
+    var dateVal = document.getElementById('srvDateInput').value;
+    if (!dateVal) { showToast('Selecciona una fecha', 'error'); return; }
+    fetch('/api/server/date', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ date: dateVal })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+        if (d.status === 'success') {
+            showToast('Fecha cambiada a ' + dateVal);
+            document.getElementById('serverDateDisplay').textContent = d.current;
+            document.getElementById('serverDateDisplay').style.color = '#d97706';
+            closeConfig();
+        } else {
+            showToast('Error: ' + (d.msg || ''), 'error');
+        }
+    })
+    .catch(function() { showToast('Error de conexi' + '\u00f3' + 'n', 'error'); });
+}
+
+function resetServerDate() {
+    fetch('/api/server/date/reset', { method: 'POST' })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+        if (d.status === 'success') {
+            showToast('Fecha restaurada a la real');
+            document.getElementById('serverDateDisplay').textContent = d.current;
+            document.getElementById('serverDateDisplay').style.color = '#16a34a';
+            closeConfig();
+        }
+    })
+    .catch(function() { showToast('Error de conexi' + '\u00f3' + 'n', 'error'); });
+}
+
+function saveConfig(section) {
+    var form = document.getElementById('cfg' + section.charAt(0).toUpperCase() + section.slice(1) + 'Form');
+    if (!form) {
+        showToast('Formulario no encontrado', 'error');
+        return false;
+    }
+    
+    var formData = new FormData(form);
+    formData.append('section', section);
+    formData.append('ajax', 'save_config');
+    
+    fetch('/modulo?pagina=Configuracion&ajax=save_config', {
+        method: 'POST',
+        body: new URLSearchParams(formData)
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+        if (d.status === 'success') {
+            showToast(d.msg || 'Guardado correctamente');
+            // Clear cache for this section
+            delete configCache[section];
+        } else {
+            showToast('Error: ' + (d.msg || 'Desconocido'), 'error');
+        }
+    })
+    .catch(function(e) {
+        showToast('Error de conexión: ' + e.message, 'error');
+    });
+    
+    return false;
 }
 </script>

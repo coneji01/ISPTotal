@@ -4,6 +4,15 @@ const path = require('path');
 const bcrypt = require('bcrypt');
 const fileUpload = require('express-fileupload');
 const db = require('./database');
+const mt = require('./multi-tenant');
+
+var _tenantDbGlobal = null;
+var _mainDb = db;
+var _origPrepare = db.prepare;
+db.prepare = function(sql) {
+  var activeDb = _tenantDbGlobal || _mainDb;
+  return _origPrepare.call(activeDb, sql);
+};
 
 // Global error handlers to prevent crashes
 process.on('unhandledRejection', function(err) {
@@ -91,12 +100,21 @@ function requireAuth(req, res, next) {
     }
     return res.redirect('/');
   }
+  if (req.session.isTenant && req.session.db_path) {
+    var tdb = mt.getTenantDb(req.session.db_path);
+    if (tdb) _tenantDbGlobal = tdb;
+    else _tenantDbGlobal = null;
+  } else {
+    _tenantDbGlobal = null;
+  }
+  global.__tenantDbForLogs = _tenantDbGlobal;
   next();
 }
 
 function renderPage(req, res, page, data = {}) {
   const menuEstructura = [
     { type: 'link', id: 'Dashboard', icon: 'fa-chart-pie', nombre: 'Resumen' },
+    { type: 'link', id: 'MiCuenta', icon: 'fa-user-cog', nombre: 'Mi Cuenta' },
     { type: 'link', id: 'Clientes', icon: 'fa-users', nombre: 'Clientes' },
     { type: 'link', id: 'NuevoCliente', icon: 'fa-user-plus', nombre: 'Nuevo cliente' },
     { type: 'link', id: 'PagosPendientes', icon: 'fa-hourglass-half', nombre: 'Pagos Pendientes' },
@@ -150,17 +168,73 @@ app.get('/', (req, res) => {
 
 app.post('/login', (req, res) => {
   const { username, password } = req.body;
-  const user = db.prepare('SELECT * FROM usuarios WHERE username=? AND activo=1').get(username);
+  _tenantDbGlobal = null;
+  global.__tenantDbForLogs = null;
+  // Always use main DB for login
+  console.log('[Login] user=' + username + ' mtResult=' + JSON.stringify(mt.authenticate(username, password)));
+  var mtResult = mt.authenticate(username, password);
+  if (mtResult.success) {
+    req.session.user = { id: mtResult.company.id, username: mtResult.company.username, nombre: mtResult.company.owner_name, tenant: true };
+    req.session.isTenant = true;
+    req.session.db_path = mtResult.company.db_path;
+    return res.redirect('/modulo?pagina=Dashboard');
+  }
+  var user;
+  try { user = db.prepare('SELECT * FROM usuarios WHERE username=? AND activo=1').get(username); console.log('[Login] db user=' + (user ? user.username : 'null')); } catch(e) { console.log('[Login] DB ERROR:', e.message); }
   if (!user || !bcrypt.compareSync(password, user.password)) {
+    console.log('[Login] FAIL: ' + (!user ? 'no user' : 'password mismatch'));
     return res.render('login', { error: 'Usuario o contraseña incorrectos' });
   }
+  console.log('[Login] SUCCESS, setting session...');
   req.session.user = { id: user.id, username: user.username, nombre: user.nombre };
+  req.session.isTenant = false;
+  console.log('[Login] Redirecting...');
   res.redirect('/modulo?pagina=Dashboard');
 });
 
 app.get('/logout', (req, res) => {
   req.session.destroy();
   res.redirect('/');
+});
+
+// ======== REGISTRATION ========
+app.get('/registro', (req, res) => {
+  res.render('registro');
+});
+
+app.post('/api/register', async (req, res) => {
+  var body = req.body;
+  if (!body.company_name || !body.owner_name || !body.email || !body.username || !body.password) {
+    return res.json({ success: false, msg: 'Todos los campos son obligatorios' });
+  }
+  if (body.password.length < 6) {
+    return res.json({ success: false, msg: 'La contraseña debe tener al menos 6 caracteres' });
+  }
+  var crypto = require('crypto');
+  const emailToken = crypto.randomBytes(32).toString('hex');
+  const result = mt.createCompany({ company_name: body.company_name, owner_name: body.owner_name, email: body.email, username: body.username, password: body.password, email_token: emailToken });
+  if (!result.success) return res.json({ success: false, msg: result.msg });
+  try {
+    var baseUrl = req.get('host');
+    if (baseUrl === 'localhost:3020' || baseUrl === '127.0.0.1:3020') baseUrl = '38.159.230.88:3020';
+    const confirmUrl = req.protocol + '://' + baseUrl + '/confirmar-email?token=' + emailToken;
+    var smtpE = (db.prepare("SELECT value FROM configuracion WHERE key='smtp_email'").get() || {}).value || '';
+    var smtpP = (db.prepare("SELECT value FROM configuracion WHERE key='smtp_password'").get() || {}).value || '';
+    if (smtpE && smtpP) {
+      var nm = require('nodemailer');
+      var tr = nm.createTransport({ host: 'smtp.gmail.com', port: 587, secure: false, auth: { user: smtpE, pass: smtpP } });
+      await tr.sendMail({ from: '"ISP Total" <' + smtpE + '>', to: body.email, subject: 'Confirma tu cuenta', html: '<a href="' + confirmUrl + '">Confirmar</a>' });
+    }
+  } catch(e) { console.log('[Reg] Email error:', e.message); }
+  res.json({ success: true, msg: 'Registro exitoso. Revise su correo.' });
+});
+
+app.get('/confirmar-email', (req, res) => {
+  const token = req.query.token || '';
+  if (!token) return res.send('<h2>Token inválido</h2>');
+  var r = mt.verifyEmail(token);
+  if (r.success) res.send('<h2>Email confirmado</h2><p>' + r.company_name + ' activada. <a href="/">Iniciar sesión</a></p>');
+  else res.send('<h2>Error</h2><p>' + r.msg + '</p>');
 });
 
 // ======== MODULES ========
@@ -3360,9 +3434,275 @@ var mesesEsp = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto
       data.tasks = db.prepare('SELECT * FROM cron_tasks ORDER BY id').all();
       break;
     }
+    case 'Log': {
+      console.log('[Log] isTenant=' + req.session.isTenant + ' db_path=' + req.session.db_path + ' _tenant=' + (typeof _tenantDbGlobal !== 'undefined' && _tenantDbGlobal !== null ? 'YES' : 'NO'));
+      const logAjax = req.query.ajax;
+      if (logAjax === 'list') {
+        const search = (req.query.search || '').trim();
+        const logUser = req.query.user || '';
+        const logModule = req.query.module || '';
+        const desde = req.query.desde || '';
+        const hasta = req.query.hasta || '';
+        const page = Math.max(1, parseInt(req.query.page) || 1);
+        const perPage = 25;
+        const offset = (page - 1) * perPage;
+        let where = 'WHERE 1=1'; let params = [];
+        if (search) { var like = '%' + search + '%'; where += ' AND (usuario_nombre LIKE ? OR accion LIKE ? OR cliente_nombre LIKE ? OR detalle LIKE ? OR ip_address LIKE ?)'; params.push(like, like, like, like, like); }
+        if (logUser) { where += ' AND usuario_nombre = ?'; params.push(logUser); }
+        if (logModule) { where += ' AND modulo = ?'; params.push(logModule); }
+        if (desde) { where += ' AND date(created_at) >= ?'; params.push(desde); }
+        if (hasta) { where += ' AND date(created_at) <= ?'; params.push(hasta); }
+        var totalRow = db.prepare('SELECT COUNT(*) as total FROM logs ' + where).get(...params);
+        var total = totalRow ? totalRow.total : 0;
+        var rows = db.prepare('SELECT * FROM logs ' + where + ' ORDER BY created_at DESC LIMIT ? OFFSET ?').all(...params, perPage, offset);
+        var users = db.prepare("SELECT DISTINCT usuario_nombre FROM logs WHERE usuario_nombre != '' ORDER BY usuario_nombre").all().map(function(r) { return r.usuario_nombre; });
+        var modulos = db.prepare('SELECT DISTINCT modulo FROM logs ORDER BY modulo').all().map(function(r) { return r.modulo; });
+        return res.json({ status: 'success', data: rows, total: total, pages: Math.ceil(total / perPage), page: page, users: users, modules: modulos });
+      }
+      if (logAjax === 'clean') {
+        if (req.method !== 'POST') return res.json({ status: 'error', msg: 'Método no permitido' });
+        const days = parseInt(req.body.days) || 30;
+        const cutoff = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString().slice(0, 19).replace('T', ' ');
+        var delInfo = db.prepare('DELETE FROM logs WHERE created_at < ?').run(cutoff);
+        return res.json({ status: 'success', deleted: delInfo.changes });
+      }
+      data.logUsers = db.prepare("SELECT DISTINCT usuario_nombre FROM logs WHERE usuario_nombre != '' ORDER BY usuario_nombre").all().map(function(r) { return r.usuario_nombre; });
+      data.logModules = db.prepare('SELECT DISTINCT modulo FROM logs ORDER BY modulo').all().map(function(r) { return r.modulo; });
+      break;
+    }
+    case 'Mensajeria': {
+      const ajax = req.query.ajax;
+      const isTenant = req.session && req.session.isTenant;
+      
+      // WhatsApp status
+      if (ajax === 'wa_status') {
+        if (isTenant) {
+          var openwaM = require('./openwa-multi');
+          var st = openwaM.getStatus(req.session);
+          if (st.state === 'connected') {
+            return res.json({ status: 'success', data: { status: 'connected', phone: 'Conectado', name: 'WhatsApp', messages_sent: 0, uptime: 3600 } });
+          } else if (st.state === 'qr') {
+            var tenantKey = (req.session.db_path || '').replace(/\.db$/, '').replace(/^tenant_/, '');
+            var qrFile = '/data/wa-sessions/' + tenantKey.replace(/[^a-zA-Z0-9_]/g, '_') + '_qr.png';
+            return res.json({ status: 'success', data: { status: 'qr', qr: qrFile } });
+          } else if (st.state === 'starting') {
+            return res.json({ status: 'success', data: { status: 'connecting' } });
+          } else {
+            return res.json({ status: 'success', data: { status: 'disconnected' } });
+          }
+        } else {
+          try {
+            var openwaS = require('./openwa-service');
+            if (openwaS.getStatus) {
+              var s = openwaS.getStatus();
+              var isConnected = s.state === 'connected';
+              if (s.qr && s.state === 'qr') {
+                return res.json({ status: 'success', data: { status: 'qr', qr: '/openwa-qr.png' } });
+              }
+              return res.json({ status: 'success', data: { status: isConnected ? 'connected' : 'disconnected', phone: s.phone || (isConnected ? 'Conectado' : ''), name: s.name || '', messages_sent: s.messagesSent || 0, uptime: s.uptime || 0 } });
+            }
+          } catch(e) {}
+          return res.json({ status: 'success', data: { status: 'disconnected' } });
+        }
+      }
+      
+      // WhatsApp disconnect
+      if (ajax === 'wa_disconnect') {
+        if (isTenant) {
+          var openwaM = require('./openwa-multi');
+          openwaM.stop(req.session).then(function(r) {
+            return res.json({ status: 'success', msg: r.msg });
+          }).catch(function(e) {
+            return res.json({ status: 'error', msg: e.message });
+          });
+        } else {
+          try {
+            var openwaS = require('./openwa-service');
+            openwaS.stop();
+            return res.json({ status: 'success' });
+          } catch(e) { return res.json({ status: 'error', msg: e.message }); }
+        }
+        return;
+      }
+      
+      // WhatsApp restart (generate QR)
+      if (ajax === 'wa_restart') {
+        if (isTenant) {
+          var openwaM = require('./openwa-multi');
+          openwaM.stop(req.session).then(function() {
+            return openwaM.start(req.session);
+          }).then(function(r) {
+            return res.json({ status: 'success', msg: r.msg });
+          }).catch(function(e) {
+            return res.json({ status: 'error', msg: e.message });
+          });
+        } else {
+          try {
+            var openwaS = require('./openwa-service');
+            openwaS.stop();
+            setTimeout(function() { openwaS.start(); }, 1000);
+            return res.json({ status: 'success' });
+          } catch(e) { return res.json({ status: 'error', msg: e.message }); }
+        }
+        return;
+      }
+      
+      // WhatsApp send message
+      if (ajax === 'wa_send') {
+        if (req.method !== 'POST') return res.json({ status: 'error', msg: 'POST required' });
+        var phone = req.body.phone || '';
+        var message = req.body.message || '';
+        if (!phone || !message) return res.json({ status: 'error', msg: 'Teléfono y mensaje requeridos' });
+        
+        if (isTenant) {
+          var openwaM = require('./openwa-multi');
+          openwaM.sendMessage(req.session, phone, message).then(function(r) {
+            return res.json({ status: r.success ? 'success' : 'error', msg: r.msg });
+          }).catch(function(e) {
+            return res.json({ status: 'error', msg: e.message });
+          });
+        } else {
+          try {
+            var openwaS = require('./openwa-service');
+            openwaS.sendMessage(phone, message).then(function(r) {
+              return res.json({ status: r.success ? 'success' : 'error', msg: r.msg });
+            }).catch(function(e) {
+              return res.json({ status: 'error', msg: e.message });
+            });
+          } catch(e) { return res.json({ status: 'error', msg: e.message }); }
+        }
+        return;
+      }
+      
+      // Gateway API - list
+      if (ajax === 'list_gateways') {
+        try {
+          db.exec("CREATE TABLE IF NOT EXISTS api_whatsapp_gateways (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, provider TEXT, url TEXT, params TEXT, encrypted INTEGER DEFAULT 0, activo INTEGER DEFAULT 1, created_at DATETIME DEFAULT CURRENT_TIMESTAMP)");
+          var gateways = db.prepare('SELECT * FROM api_whatsapp_gateways ORDER BY created_at DESC').all();
+          return res.json({ status: 'success', data: gateways });
+        } catch(e) { return res.json({ status: 'error', msg: e.message }); }
+      }
+      
+      // Gateway API - save
+      if (ajax === 'save_gateway') {
+        if (req.method !== 'POST') return res.json({ status: 'error', msg: 'POST required' });
+        var gId = req.body.id;
+        var gName = (req.body.name || '').trim();
+        var gProvider = (req.body.provider || '').trim();
+        var gUrl = (req.body.url || '').trim();
+        var gParams = (req.body.params || '').trim();
+        var gEncrypted = req.body.encrypted === '1' ? 1 : 0;
+        
+        if (!gName || !gProvider || !gUrl) return res.json({ status: 'error', msg: 'Nombre, proveedor y URL son obligatorios' });
+        
+        db.exec("CREATE TABLE IF NOT EXISTS api_whatsapp_gateways (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, provider TEXT, url TEXT, params TEXT, encrypted INTEGER DEFAULT 0, activo INTEGER DEFAULT 1, created_at DATETIME DEFAULT CURRENT_TIMESTAMP)");
+        
+        if (gId) {
+          db.prepare('UPDATE api_whatsapp_gateways SET name=?, provider=?, url=?, params=?, encrypted=? WHERE id=?').run(gName, gProvider, gUrl, gParams, gEncrypted, gId);
+        } else {
+          db.prepare('INSERT INTO api_whatsapp_gateways (name, provider, url, params, encrypted) VALUES (?,?,?,?,?)').run(gName, gProvider, gUrl, gParams, gEncrypted);
+        }
+        return res.json({ status: 'success', msg: gId ? 'Gateway actualizado' : 'Gateway creado' });
+      }
+      
+      // Gateway API - delete
+      if (ajax === 'delete_gateway') {
+        if (req.method !== 'POST') return res.json({ status: 'error', msg: 'POST required' });
+        var delId = req.body.id;
+        if (delId) { db.prepare('DELETE FROM api_whatsapp_gateways WHERE id=?').run(delId); }
+        return res.json({ status: 'success' });
+      }
+      
+      // Gateway API - test
+      if (ajax === 'test_gateway') {
+        if (req.method !== 'POST') return res.json({ status: 'error', msg: 'POST required' });
+        return res.json({ status: 'success', msg: 'Prueba enviada (simulado)' });
+      }
+      
+      // Message logs
+      if (ajax === 'get_log') {
+        try {
+          var logPage = Math.max(1, parseInt(req.query.page) || 1);
+          var logPerPage = 25;
+          var logOffset = (logPage - 1) * logPerPage;
+          var totalLogs = (db.prepare('SELECT COUNT(*) as c FROM message_logs').get() || {}).c || 0;
+          var logs = db.prepare('SELECT * FROM message_logs ORDER BY created_at DESC LIMIT ? OFFSET ?').all(logPerPage, logOffset);
+          return res.json({ status: 'success', rows: logs, total: totalLogs, pages: Math.ceil(totalLogs / logPerPage), page: logPage });
+        } catch(e) { return res.json({ status: 'error', msg: e.message, rows: [], total: 0, pages: 0, page: 1 }); }
+      }
+      
+      // Bulk messaging filters
+      if (ajax === 'masivos_filters') {
+        try {
+          var zonasList = db.prepare('SELECT id, nombre FROM zonas ORDER BY nombre').all();
+          var planesList = db.prepare('SELECT id, nombre FROM planes ORDER BY nombre').all();
+          return res.json({ status: 'success', zonas: zonasList, planes: planesList });
+        } catch(e) { return res.json({ status: 'error', msg: e.message }); }
+      }
+      
+      // Bulk messaging preview
+      if (ajax === 'masivos_preview') {
+        if (req.method !== 'POST') return res.json({ status: 'error', msg: 'POST required' });
+        try {
+          var zonaFilter = req.body.zona || '';
+          var planFilter = req.body.plan || '';
+          var clientFilter = req.body.cliente || '';
+          var statusFilter = req.body.estado || '';
+          var where = 'WHERE 1=1';
+          var params = [];
+          if (zonaFilter) { where += ' AND zona_id=?'; params.push(zonaFilter); }
+          if (planFilter) { where += ' AND id IN (SELECT cliente_id FROM servicios WHERE plan_id=? AND activo=1)'; params.push(planFilter); }
+          if (clientFilter) { where += ' AND (nombre LIKE ? OR telefono LIKE ?)'; var like = '%' + clientFilter + '%'; params.push(like, like); }
+          if (statusFilter) { 
+            if (statusFilter === 'activos') where += ' AND activo=1';
+            else if (statusFilter === 'suspendidos') where += ' AND activo=0';
+          }
+          var clientes = db.prepare('SELECT id, nombre, telefono FROM clientes ' + where + ' ORDER BY nombre').all(params);
+          return res.json({ status: 'success', total: clientes.length, data: clientes });
+        } catch(e) { return res.json({ status: 'error', msg: e.message }); }
+      }
+      
+      // Bulk messaging search client
+      if (ajax === 'masivos_search_client') {
+        var q = (req.query.q || '').trim();
+        if (!q) return res.json({ status: 'success', data: [] });
+        var like = '%' + q + '%';
+        var resultados = db.prepare("SELECT id, nombre, telefono FROM clientes WHERE nombre LIKE ? OR telefono LIKE ? LIMIT 20").all(like, like);
+        return res.json({ status: 'success', data: resultados });
+      }
+      
+      // Bulk messaging send
+      if (ajax === 'masivos_send') {
+        if (req.method !== 'POST') return res.json({ status: 'error', msg: 'POST required' });
+        try {
+          var clientIds = req.body.clientes;
+          var msgText = req.body.mensaje || '';
+          if (!clientIds || !msgText) return res.json({ status: 'error', msg: 'Seleccione clientes y escriba un mensaje' });
+          var ids = Array.isArray(clientIds) ? clientIds : [clientIds];
+          var sent = 0;
+          for (var i = 0; i < ids.length; i++) {
+            var cl = db.prepare('SELECT id, nombre, telefono FROM clientes WHERE id=?').get(ids[i]);
+            if (cl && cl.telefono) {
+              // Add to message queue
+              try { db.prepare("INSERT INTO message_queue (cliente_id, telefono, mensaje, tipo) VALUES (?,?,?,'masivo')").run(cl.id, cl.telefono, msgText); sent++; } catch(e) {}
+            }
+          }
+          return res.json({ status: 'success', msg: sent + ' mensajes encolados' });
+        } catch(e) { return res.json({ status: 'error', msg: e.message }); }
+      }
+      
+      // Default: render the page
+      data.messageLogs = [];
+      try { data.messageLogs = db.prepare('SELECT * FROM message_logs ORDER BY created_at DESC LIMIT 25').all(); } catch(e) {}
+      break;
+    }
+
   }
   
   renderPage(req, res, pagina, data);
+  // Cleanup tenant DB pointer after request completes
+  _tenantDbGlobal = null;
+  global.__tenantDbForLogs = null;
 });
 
 // ===== CRON TASKS =====
@@ -7220,6 +7560,47 @@ app.post('/api/servicios/:id/suspender', requireAuth, (req, res) => {
   }
 });
 
+
+
+// ======== TENANT PROFILE API ========
+app.get('/api/tenant/profile', requireAuth, (req, res) => {
+  if (!req.session.isTenant) {
+    return res.json({ status: 'success', username: req.session.user.username, company_name: 'Administrador', email: (db.prepare("SELECT value FROM configuracion WHERE key='empresa_correo'").get() || {}).value || '', license_active: true, max_clients: 'Ilimitado', client_count: (db.prepare('SELECT COUNT(*) as c FROM clientes').get() || {}).c || 0, created_at: 'Administrador' });
+  }
+  try {
+    var Database = require('better-sqlite3');
+    var path = require('path');
+    var mdb = new Database(path.join(__dirname, '..', 'data', 'master.db'));
+    var company = mdb.prepare('SELECT * FROM companies WHERE id=?').get(req.session.user.id);
+    mdb.close();
+    if (!company) return res.json({ status: 'error', msg: 'No encontrada' });
+    var cc = 0; try { var tdb2 = mt.getTenantDb(company.db_path); if (tdb2) { var r2 = tdb2.prepare('SELECT COUNT(*) as c FROM clientes').get(); cc = r2 ? r2.c : 0; tdb2.close(); } } catch(e) {}
+    res.json({ status: 'success', username: company.username, company_name: company.company_name, email: company.email, license_active: !!company.license_active, max_clients: company.max_clients || 25, client_count: cc, created_at: company.created_at });
+  } catch(e) { res.json({ status: 'error', msg: e.message }); }
+});
+
+app.post('/api/tenant/profile', requireAuth, (req, res) => {
+  if (!req.session.isTenant) return res.json({ status: 'error', msg: 'Solo para usuarios registrados' });
+  try {
+    var { email, current_password, new_password } = req.body;
+    if (!email || !current_password) return res.json({ status: 'error', msg: 'Campos requeridos' });
+    var bcrypt2 = require('bcrypt');
+    var Database2 = require('better-sqlite3');
+    var path2 = require('path');
+    var mdb2 = new Database2(path2.join(__dirname, '..', 'data', 'master.db'));
+    var company2 = mdb2.prepare('SELECT * FROM companies WHERE id=?').get(req.session.user.id);
+    if (!company2 || !bcrypt2.compareSync(current_password, company2.password)) { mdb2.close(); return res.json({ status: 'error', msg: 'Contraseña incorrecta' }); }
+    if (email !== company2.email) { mdb2.prepare('UPDATE companies SET email=? WHERE id=?').run(email, company2.id); }
+    if (new_password) {
+      if (new_password.length < 6) { mdb2.close(); return res.json({ status: 'error', msg: 'Mínimo 6 caracteres' }); }
+      var nh = bcrypt2.hashSync(new_password, 10);
+      mdb2.prepare('UPDATE companies SET password=? WHERE id=?').run(nh, company2.id);
+      try { var tdb3 = mt.getTenantDb(company2.db_path); if (tdb3) { tdb3.prepare('UPDATE usuarios SET password=? WHERE username=?').run(nh, company2.username); tdb3.close(); } } catch(e) {}
+    }
+    mdb2.close();
+    res.json({ status: 'success', msg: 'Perfil actualizado' });
+  } catch(e) { res.json({ status: 'error', msg: e.message }); }
+});
 app.listen(PORT, () => {
   console.log(`ISP Total corriendo en http://localhost:${PORT}`);
   

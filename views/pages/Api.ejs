@@ -1,0 +1,682 @@
+<style>
+/* API Module - ISP Total */
+.api-module, .api-module * { box-sizing: border-box; }
+.api-module {
+  --api-mono: 'Courier New', monospace;
+  font-family: inherit;
+  color: var(--text-primary, #1e293b);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.api-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
+.api-header-left { flex: 1; }
+.api-header-left h2 { font-size: 1.4rem; font-weight: 700; color: var(--text-primary, #1e293b); margin: 0 0 5px; display: flex; align-items: center; gap: 10px; }
+.api-header-left h2 i { color: var(--accent-color, #3b82f6); }
+.api-header-left p { color: #64748b; font-size: 13px; margin: 0; }
+
+/* Selector */
+.api-integration-selector { display: grid; grid-template-columns: repeat(2, 180px); gap: 20px; margin-bottom: 24px; }
+@media (max-width: 500px) { .api-integration-selector { grid-template-columns: 1fr 1fr; } }
+
+.api-integration-card {
+  background: #fff; border: 2px solid #e2e8f0; border-radius: 16px;
+  padding: 24px 16px; display: flex; flex-direction: column; align-items: center;
+  justify-content: center; text-align: center; gap: 10px; cursor: pointer;
+  transition: all 0.25s; aspect-ratio: 1/1;
+}
+.api-integration-card:hover { border-color: var(--accent-color, #3b82f6); box-shadow: 0 8px 30px rgba(59,130,246,0.1); transform: translateY(-3px); }
+.api-integration-card strong { font-size: 14px; font-weight: 700; color: var(--text-primary, #1e293b); }
+.api-card-desc { font-size: 11px; color: #64748b; line-height: 1.3; }
+
+.api-integration-icon {
+  width: 52px; height: 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center;
+  font-size: 24px; flex-shrink: 0; background: linear-gradient(135deg, var(--accent-color, #3b82f6), #2563eb); color: #fff;
+}
+
+.api-tav-key-inline {
+  display: flex; align-items: center; gap: 6px; width: 100%;
+  background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;
+  padding: 8px 10px; margin-top: 2px;
+}
+.api-tav-key-inline .api-tav-key-val {
+  font-family: var(--api-mono); font-size: 11px; color: #334155;
+  word-break: break-all; flex: 1; cursor: pointer; user-select: text;
+}
+.api-tav-key-inline .api-tav-key-val.masked { color: #94a3b8; letter-spacing: 1.5px; }
+.api-tav-key-copy {
+  background: var(--accent-color, #3b82f6); color: #fff; border: none; padding: 5px 10px; border-radius: 6px;
+  cursor: pointer; font-weight: 700; font-size: 11px; white-space: nowrap;
+  transition: background 0.15s; display: inline-flex; align-items: center; gap: 3px;
+}
+.api-tav-key-copy:hover { background: #2563eb; }
+.api-tav-key-copy.copied { background: #16a34a; }
+.api-tav-key-revoke {
+  background: none; border: 1px solid #fecaca; color: #dc2626; padding: 5px 8px; border-radius: 6px;
+  cursor: pointer; font-size: 11px; transition: all 0.15s; display: inline-flex; align-items: center;
+}
+.api-tav-key-revoke:hover { background: #fef2f2; border-color: #f87171; }
+
+/* Toolbar */
+.api-generic-toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px; }
+.api-btn-back {
+  display: inline-flex; align-items: center; gap: 7px; padding: 8px 16px;
+  background: #fff; border: 1px solid #e2e8f0; border-radius: 8px;
+  color: #475569; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.15s; font-family: inherit;
+}
+.api-btn-back:hover { background: #f8fafc; border-color: #cbd5e1; color: var(--text-primary, #1e293b); }
+.api-btn-new {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--accent-color, #3b82f6); color: #fff; border: none; padding: 10px 20px;
+  border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer;
+  transition: all 0.15s; box-shadow: 0 4px 14px rgba(59,130,246,0.25); white-space: nowrap;
+}
+.api-btn-new:hover { background: #2563eb; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(59,130,246,0.35); }
+
+/* Info bar */
+.api-info-bar {
+  background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px;
+  padding: 12px 18px; margin-bottom: 18px; display: flex; align-items: center; gap: 10px;
+  font-size: 12px; color: #64748b; flex-wrap: wrap;
+}
+.api-info-bar b { color: var(--text-primary, #1e293b); font-weight: 600; }
+.api-info-bar code {
+  font-family: var(--api-mono); background: #eff6ff; color: var(--accent-color, #2563eb);
+  padding: 2px 7px; border-radius: 4px; font-size: 11px; border: 1px solid #bfdbfe;
+}
+.api-info-dot { width: 4px; height: 4px; border-radius: 50%; background: #cbd5e1; flex-shrink: 0; }
+
+/* Stats */
+.api-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin-bottom: 18px; }
+.api-stat { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px 18px; }
+.api-stat-val { font-size: 30px; font-weight: 700; font-family: var(--api-mono); color: var(--text-primary, #1e293b); line-height: 1; margin-bottom: 5px; }
+.api-stat-val.green { color: #16a34a; }
+.api-stat-val.red { color: #ef4444; }
+.api-stat-val.blue { color: var(--accent-color, #2563eb); }
+.api-stat-label { font-size: 11px; color: #64748b; text-transform: uppercase; letter-spacing: 0.8px; font-weight: 600; }
+
+/* Table */
+.api-table-wrap { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; overflow: hidden; }
+.api-table-wrap table { width: 100%; border-collapse: collapse; }
+.api-table-wrap thead th {
+  background: #f8fafc; color: #64748b; font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.8px; padding: 11px 16px; border-bottom: 1px solid #e2e8f0; white-space: nowrap;
+}
+.api-table-wrap tbody tr { border-bottom: 1px solid #f1f5f9; transition: background 0.1s; }
+.api-table-wrap tbody tr:last-child { border-bottom: none; }
+.api-table-wrap tbody tr:hover { background: #f8fafc; }
+.api-table-wrap td { padding: 13px 16px; font-size: 13px; color: var(--text-primary, #1e293b); vertical-align: middle; }
+.api-td-name { font-weight: 600; font-size: 13px; }
+.api-td-meta { color: #64748b; font-size: 12px; }
+
+/* Pill */
+.api-pill { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; }
+.api-pill-active { background: #dcfce7; color: #16a34a; border: 1px solid #bbf7d0; }
+.api-pill-inactive { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+.api-pill-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+/* Key display */
+.api-key-cell { display: flex; align-items: center; gap: 6px; }
+.api-key-masked {
+  font-family: var(--api-mono); font-size: 12px; color: #94a3b8; background: #f8fafc;
+  border: 1px solid #e2e8f0; padding: 4px 10px; border-radius: 6px; letter-spacing: 2px;
+  cursor: pointer; transition: all 0.15s; white-space: nowrap; max-width: 210px;
+  overflow: hidden; text-overflow: ellipsis; user-select: none;
+}
+.api-key-masked.revealed { letter-spacing: 0; color: var(--accent-color, #2563eb); border-color: #bfdbfe; background: #eff6ff; max-width: 280px; user-select: text; }
+.api-key-masked:hover { border-color: #cbd5e1; color: #475569; }
+.api-key-copy {
+  background: none; border: 1px solid transparent; color: #94a3b8; cursor: pointer;
+  padding: 5px 7px; border-radius: 5px; font-size: 12px; transition: all 0.15s; line-height: 1;
+}
+.api-key-copy:hover { color: var(--accent-color, #2563eb); background: #eff6ff; border-color: #bfdbfe; }
+.api-key-copy.copied { color: #16a34a; }
+
+/* Action buttons */
+.api-actions { display: flex; gap: 5px; align-items: center; justify-content: flex-end; flex-wrap: wrap; }
+.api-action-btn {
+  background: #fff; border: 1px solid #e2e8f0; color: #475569; padding: 6px 11px; border-radius: 6px;
+  cursor: pointer; font-size: 12px; font-weight: 600; transition: all 0.15s;
+  display: inline-flex; align-items: center; gap: 5px; white-space: nowrap;
+}
+.api-action-btn:hover { background: #f8fafc; color: var(--text-primary, #1e293b); border-color: #cbd5e1; }
+.api-action-btn.toggle-btn.active { border-color: #fecaca; color: #dc2626; }
+.api-action-btn.del-btn:hover { border-color: #fecaca; color: #dc2626; background: #fef2f2; }
+
+.api-empty { text-align: center; padding: 56px 20px; color: #94a3b8; }
+.api-empty-icon { font-size: 2.2rem; margin-bottom: 12px; opacity: 0.3; }
+.api-empty p { font-size: 13px; color: #64748b; margin: 0; }
+
+/* Modal */
+.api-overlay {
+  display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4);
+  z-index: 99999; align-items: center; justify-content: center;
+  backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); padding: 16px;
+}
+.api-overlay.open { display: flex; }
+
+.api-modal {
+  background: #fff; border: 1px solid #e2e8f0; border-radius: 14px;
+  padding: 28px 30px; width: 100%; max-width: 420px;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.15); animation: apiSlideUp 0.2s ease-out;
+}
+@keyframes apiSlideUp { from { opacity: 0; transform: translateY(14px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+.api-modal h3 { font-size: 16px; font-weight: 700; color: var(--text-primary, #1e293b); margin: 0 0 6px; display: flex; align-items: center; gap: 8px; }
+.api-modal p { color: #64748b; font-size: 13px; margin: 0 0 20px; line-height: 1.5; }
+.api-modal label { display: block; font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.9px; margin-bottom: 7px; }
+.api-modal input[type="text"] {
+  width: 100%; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 7px;
+  color: var(--text-primary, #1e293b); padding: 10px 13px; font-size: 14px; transition: border-color 0.15s, box-shadow 0.15s; outline: none;
+}
+.api-modal input[type="text"]:focus { border-color: var(--accent-color, #3b82f6); box-shadow: 0 0 0 3px rgba(59,130,246,0.12); }
+
+.api-modal-footer { display: flex; gap: 10px; margin-top: 22px; }
+.api-modal-footer button { flex: 1; padding: 11px; border-radius: 7px; border: none; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.15s; display: inline-flex; align-items: center; justify-content: center; gap: 7px; }
+.api-modal-btn-cancel { background: #f8fafc; color: #475569; border: 1px solid #e2e8f0; }
+.api-modal-btn-cancel:hover { background: #f1f5f9; color: var(--text-primary, #1e293b); }
+.api-modal-btn-create { background: var(--accent-color, #3b82f6); color: #fff; box-shadow: 0 4px 14px rgba(59,130,246,0.2); }
+.api-modal-btn-create:hover { background: #2563eb; }
+.api-modal-btn-create:disabled { opacity: 0.45; cursor: not-allowed; }
+.api-modal-btn-danger { background: #dc2626; color: #fff; box-shadow: 0 4px 14px rgba(220,38,38,0.2); }
+.api-modal-btn-danger:hover { background: #b91c1c; }
+
+.api-new-key-box { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 12px 14px; margin-top: 12px; display: flex; align-items: flex-start; gap: 10px; }
+.api-new-key-val { font-family: var(--api-mono); font-size: 12px; color: #16a34a; word-break: break-all; flex: 1; line-height: 1.7; user-select: text; }
+.api-new-key-copy {
+  background: #16a34a; color: #fff; border: none; padding: 7px 12px; border-radius: 6px;
+  cursor: pointer; font-weight: 700; font-size: 12px; white-space: nowrap; transition: background 0.15s;
+  flex-shrink: 0; display: inline-flex; align-items: center; gap: 5px;
+}
+.api-new-key-copy:hover { background: #15803d; }
+.api-warn-once {
+  display: flex; align-items: flex-start; gap: 7px; margin-top: 10px; padding: 10px 12px;
+  background: #fefce8; border: 1px solid #fde68a; border-radius: 7px; font-size: 12px; color: #92400e; line-height: 1.5;
+}
+
+.api-toast {
+  position: fixed; bottom: 28px; right: 28px; background: #fff; border: 1px solid #e2e8f0;
+  color: var(--text-primary, #1e293b); padding: 11px 16px; border-radius: 8px; font-size: 13px; font-weight: 600;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.12); z-index: 999999; display: flex; align-items: center; gap: 8px;
+  animation: apiToastIn 0.22s ease-out; pointer-events: none; font-family: inherit;
+}
+.api-toast.green { border-color: #bbf7d0; color: #16a34a; }
+.api-toast.red { border-color: #fecaca; color: #dc2626; }
+@keyframes apiToastIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+
+<div class="api-module">
+  <!-- Header -->
+  <div class="api-header" id="apiHeader">
+    <div class="api-header-left">
+      <h2><i class="fas fa-key"></i> Integraciones &amp; API</h2>
+      <p>Selecciona una integración para generar tu API Key.</p>
+    </div>
+  </div>
+
+  <!-- Selector de integraciones -->
+  <div class="api-integration-selector" id="apiIntegrationSelector">
+    <!-- API Genérica -->
+    <div class="api-integration-card" onclick="apiSelectIntegration('generic')">
+      <div class="api-integration-icon"><i class="fas fa-code"></i></div>
+      <strong>API Genérica</strong>
+      <span class="api-card-desc">Conecta cualquier sistema externo</span>
+    </div>
+    <!-- Docs -->
+    <div class="api-integration-card" onclick="window.open('/modulo?pagina=Api&docs=1','_self')" style="cursor:pointer;">
+      <div class="api-integration-icon" style="background:linear-gradient(135deg,#10b981,#059669);"><i class="fas fa-book"></i></div>
+      <strong>Documentación</strong>
+      <span class="api-card-desc">Endpoints, ejemplos y guías</span>
+    </div>
+  </div>
+
+  <!-- Sección API Genérica -->
+  <div id="apiGenericSection" style="display:none;">
+    <div class="api-generic-toolbar">
+      <button class="api-btn-back" onclick="apiBackToSelector()">
+        <i class="fas fa-arrow-left"></i> Volver
+      </button>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+        <button class="api-btn-new" onclick="apiOpenCreate()">
+          <i class="fas fa-plus"></i> Nueva API Key
+        </button>
+      </div>
+    </div>
+
+    <!-- Info bar -->
+    <div class="api-info-bar">
+      <b>Autenticación:</b>
+      <code>X-API-Key: &lt;tu_token&gt;</code>
+      <span class="api-info-dot"></span>
+      <b>Base URL:</b>
+      <code>http://localhost:3020/api/v1</code>
+    </div>
+
+    <!-- Stats -->
+    <div class="api-stats" id="apiStats">
+      <div class="api-stat">
+        <div class="api-stat-val blue">0</div>
+        <div class="api-stat-label">Total Keys</div>
+      </div>
+      <div class="api-stat">
+        <div class="api-stat-val green">0</div>
+        <div class="api-stat-label">Activas</div>
+      </div>
+      <div class="api-stat">
+        <div class="api-stat-val red">0</div>
+        <div class="api-stat-label">Revocadas</div>
+      </div>
+      <div class="api-stat">
+        <div class="api-stat-val">0</div>
+        <div class="api-stat-label">Usadas hoy</div>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="api-table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Nombre / Sistema</th>
+            <th>API Key</th>
+            <th>Estado</th>
+            <th>Último uso</th>
+            <th>Creada</th>
+            <th style="text-align:right">Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="apiTableBody">
+          <% if (typeof apiKeys !== 'undefined' && apiKeys && apiKeys.length > 0) { %>
+            <% apiKeys.forEach(function(key) { %>
+              <tr id="api-row-<%= key.id %>">
+                <td class="api-td-name"><strong><%= key.name %></strong></td>
+                <td>
+                  <div class="api-key-cell">
+                    <span class="api-key-masked" id="keymask-<%= key.id %>" data-val="<%= key.api_key %>" onclick="apiToggleReveal(<%= key.id %>)">••••••••••••<%= key.api_key.slice(-6) %></span>
+                    <button class="api-key-copy" id="copybtn-<%= key.id %>" onclick="apiCopyKey('<%= key.api_key %>', <%= key.id %>)" title="Copiar"><i class="fas fa-copy"></i></button>
+                  </div>
+                </td>
+                <td>
+                  <span class="api-pill <%= key.is_active ? 'api-pill-active' : 'api-pill-inactive' %>" id="pill-<%= key.id %>">
+                    <span class="api-pill-dot"></span>
+                    <%= key.is_active ? 'Activa' : 'Revocada' %>
+                  </span>
+                </td>
+                <td class="api-td-meta"><%= key.last_used_at ? new Date(key.last_used_at).toLocaleString('es-DO') : '<span class="api-td-never">Nunca</span>' %></td>
+                <td class="api-td-meta"><%= key.created_at ? new Date(key.created_at).toLocaleDateString('es-DO') : '-' %></td>
+                <td>
+                  <div class="api-actions">
+                    <button class="api-action-btn toggle-btn <%= key.is_active ? 'active' : '' %>" id="togbtn-<%= key.id %>" onclick="apiToggle(<%= key.id %>)" title="<%= key.is_active ? 'Revocar' : 'Activar' %>">
+                      <i class="fas fa-<%= key.is_active ? 'ban' : 'check' %>"></i> <%= key.is_active ? 'Revocar' : 'Activar' %>
+                    </button>
+                    <button class="api-action-btn" onclick="apiRegenerate(<%= key.id %>, '<%= key.name.replace(/'/g, "\\'") %>')" title="Regenerar key">
+                      <i class="fas fa-sync-alt"></i>
+                    </button>
+                    <button class="api-action-btn del-btn" onclick="apiDelete(<%= key.id %>, '<%= key.name.replace(/'/g, "\\'") %>')" title="Eliminar">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            <% }); %>
+          <% } else { %>
+            <tr id="api-empty-row">
+              <td colspan="6">
+                <div class="api-empty">
+                  <div class="api-empty-icon"><i class="fas fa-key"></i></div>
+                  <p>No hay API Keys configuradas. Crea una nueva.</p>
+                </div>
+              </td>
+            </tr>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Crear Key -->
+<div class="api-overlay" id="apiCreateModal">
+  <div class="api-modal">
+    <h3><i class="fas fa-key" style="color:var(--accent-color, #3b82f6);margin-right:8px"></i>Nueva API Key</h3>
+    <p>Asigna un nombre al sistema externo que usará esta key.</p>
+
+    <div id="apiCreateForm">
+      <label>Nombre del sistema o integración</label>
+      <input type="text" id="apiNewName" placeholder="Ej: App Móvil, CRM Externo, WhatsApp Bot..." maxlength="100" autocomplete="off" onkeydown="if(event.key==='Enter')apiDoCreate()">
+      <div class="api-modal-footer">
+        <button class="api-modal-btn-cancel" onclick="apiCloseCreate()">Cancelar</button>
+        <button class="api-modal-btn-create" id="apiBtnCreate" onclick="apiDoCreate()">
+          <i class="fas fa-plus"></i> Generar Key
+        </button>
+      </div>
+    </div>
+
+    <div id="apiCreatedResult" style="display:none">
+      <p style="color:#16a34a;font-size:0.88rem;margin-bottom:4px">
+        <i class="fas fa-check-circle"></i> <strong>Key generada correctamente.</strong>
+      </p>
+      <div class="api-new-key-box">
+        <span class="api-new-key-val" id="apiNewKeyVal"></span>
+        <button class="api-new-key-copy" id="apiNewKeyCopyBtn" onclick="apiCopyNewKey()">
+          <i class="fas fa-copy"></i> Copiar
+        </button>
+      </div>
+      <div class="api-modal-footer">
+        <button class="api-modal-btn-create" onclick="apiCloseCreate(true)" style="flex:none;width:100%">
+          <i class="fas fa-check"></i> Listo
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Regenerar -->
+<div class="api-overlay" id="apiRegenModal">
+  <div class="api-modal">
+    <h3><i class="fas fa-sync-alt" style="color:#f59e0b;margin-right:8px"></i>Regenerar API Key</h3>
+    <p id="apiRegenDesc">&nbsp;</p>
+
+    <div id="apiRegenForm">
+      <div style="background:#fefce8;border:1px solid #fde68a;border-radius:8px;padding:12px 14px;font-size:12px;color:#92400e;margin-bottom:16px;display:flex;gap:8px;">
+        <i class="fas fa-exclamation-triangle" style="flex-shrink:0;margin-top:1px;"></i>
+        <span><strong>Atención:</strong> La key anterior quedará inválida inmediatamente. Actualiza el sistema externo con la nueva key.</span>
+      </div>
+      <div class="api-modal-footer">
+        <button class="api-modal-btn-cancel" onclick="apiCloseRegen()">Cancelar</button>
+        <button class="api-modal-btn-create" style="background:#f59e0b;box-shadow:0 4px 14px rgba(245,158,11,0.3)" id="apiBtnRegen" onclick="apiDoRegen()">
+          <i class="fas fa-sync-alt"></i> Regenerar
+        </button>
+      </div>
+    </div>
+
+    <div id="apiRegenResult" style="display:none">
+      <p style="color:#16a34a;font-size:0.88rem;margin-bottom:4px">
+        <i class="fas fa-check-circle"></i> <strong>Key regenerada.</strong>
+      </p>
+      <div class="api-new-key-box">
+        <span class="api-new-key-val" id="apiRegenKeyVal"></span>
+        <button class="api-new-key-copy" id="apiRegenKeyCopyBtn" onclick="apiCopyRegenKey()">
+          <i class="fas fa-copy"></i> Copiar
+        </button>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:7px;margin-top:10px;padding:10px 12px;background:#fefce8;border:1px solid #fde68a;border-radius:7px;font-size:12px;color:#92400e;line-height:1.5;">
+        <i class="fas fa-exclamation-triangle" style="flex-shrink:0;margin-top:1px;"></i>
+        <span>Copia esta key ahora antes de cerrar.</span>
+      </div>
+      <div class="api-modal-footer">
+        <button class="api-modal-btn-create" onclick="apiCloseRegen()" style="flex:none;width:100%">
+          <i class="fas fa-check"></i> Listo
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Confirmar -->
+<div class="api-overlay" id="apiConfirmModal">
+  <div class="api-modal">
+    <h3 id="apiConfirmTitle"><i class="fas fa-exclamation-triangle" style="color:#dc2626;margin-right:8px"></i>Confirmar</h3>
+    <p id="apiConfirmMsg"></p>
+    <div class="api-modal-footer">
+      <button class="api-modal-btn-cancel" onclick="apiCloseConfirm()">Cancelar</button>
+      <button class="api-modal-btn-create api-modal-btn-danger" id="apiConfirmBtn" onclick="apiDoConfirm()">
+        <i class="fas fa-check"></i> Confirmar
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  var AJAX_URL = '/modulo?pagina=Api';
+
+  function toast(msg, type) {
+    var t = document.createElement('div');
+    t.className = 'api-toast ' + (type||'green');
+    t.innerHTML = '<i class="fas fa-' + (type==='red'?'times-circle':'check-circle') + '"></i> ' + msg;
+    document.body.appendChild(t);
+    setTimeout(function(){ t.remove(); }, 3000);
+  }
+
+  var _confirmCallback = null;
+  function apiShowConfirm(title, msg, btnText, cb) {
+    document.getElementById('apiConfirmTitle').innerHTML = '<i class="fas fa-exclamation-triangle" style="color:#dc2626;margin-right:8px"></i>' + title;
+    document.getElementById('apiConfirmMsg').textContent = msg || '';
+    var btn = document.getElementById('apiConfirmBtn');
+    btn.innerHTML = '<i class="fas fa-check"></i> ' + (btnText || 'Confirmar');
+    _confirmCallback = cb;
+    document.getElementById('apiConfirmModal').classList.add('open');
+  }
+  window.apiCloseConfirm = function() {
+    document.getElementById('apiConfirmModal').classList.remove('open');
+    _confirmCallback = null;
+  };
+  window.apiDoConfirm = function() {
+    var cb = _confirmCallback;
+    apiCloseConfirm();
+    if (cb) cb();
+  };
+  document.getElementById('apiConfirmModal').addEventListener('click', function(e) {
+    if (e.target === this) apiCloseConfirm();
+  });
+
+  function copyText(text, btnEl, label) {
+    navigator.clipboard.writeText(text).then(function() {
+      var orig = btnEl.innerHTML;
+      btnEl.innerHTML = '<i class="fas fa-check"></i> ' + (label||'Copiado');
+      btnEl.classList.add('copied');
+      setTimeout(function() { btnEl.innerHTML = orig; btnEl.classList.remove('copied'); }, 2000);
+    });
+  }
+
+  window.apiCopyKey = function(key, id) {
+    navigator.clipboard.writeText(key).then(function() {
+      var btn = document.getElementById('copybtn-'+id);
+      if (btn) { btn.innerHTML = '<i class="fas fa-check"></i>'; btn.classList.add('copied'); setTimeout(function(){ btn.innerHTML='<i class="fas fa-copy"></i>'; btn.classList.remove('copied'); },2000); }
+      toast('API Key copiada al portapapeles');
+    });
+  };
+
+  window.apiToggleReveal = function(id) {
+    var el = document.getElementById('keymask-'+id);
+    if (!el) return;
+    var val = el.dataset.val;
+    if (el.classList.contains('revealed')) {
+      el.textContent = '\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022' + val.slice(-6);
+      el.classList.remove('revealed');
+    } else {
+      el.textContent = val;
+      el.classList.add('revealed');
+    }
+  };
+
+  function apiPost(action, data, cb) {
+    fetch(AJAX_URL + '&ajax=' + action, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    }).then(function(r) { return r.json(); }).then(cb).catch(function(e) { toast(e.message, 'red'); });
+  }
+
+  function refreshStats() {
+    var rows = document.querySelectorAll('#apiTableBody tr[id^="api-row-"]');
+    var total = rows.length, active = 0, revoked = 0;
+    rows.forEach(function(r) {
+      var pill = r.querySelector('.api-pill');
+      if (pill && pill.classList.contains('api-pill-active')) active++;
+      else revoked++;
+    });
+    var stats = document.querySelectorAll('.api-stat-val');
+    if (stats[0]) stats[0].textContent = total;
+    if (stats[1]) stats[1].textContent = active;
+    if (stats[2]) stats[2].textContent = revoked;
+  }
+
+  window.apiSelectIntegration = function(type) {
+    if (type === 'generic') {
+      document.getElementById('apiIntegrationSelector').style.display = 'none';
+      document.getElementById('apiHeader').style.display = 'none';
+      document.getElementById('apiGenericSection').style.display = 'block';
+    }
+  };
+
+  window.apiBackToSelector = function() {
+    document.getElementById('apiGenericSection').style.display = 'none';
+    document.getElementById('apiIntegrationSelector').style.display = 'grid';
+    document.getElementById('apiHeader').style.display = 'flex';
+  };
+
+  window.apiOpenCreate = function() {
+    document.getElementById('apiNewName').value = '';
+    document.getElementById('apiNewName').readOnly = false;
+    document.getElementById('apiNewName').style.opacity = '1';
+    document.getElementById('apiCreateForm').style.display = 'block';
+    document.getElementById('apiCreatedResult').style.display = 'none';
+    document.getElementById('apiBtnCreate').disabled = false;
+    document.getElementById('apiCreateModal').classList.add('open');
+    setTimeout(function() { document.getElementById('apiNewName').focus(); }, 120);
+  };
+
+  window.apiCloseCreate = function(reload) {
+    document.getElementById('apiCreateModal').classList.remove('open');
+    if (reload) window.location.reload();
+  };
+
+  window.apiDoCreate = function() {
+    var name = document.getElementById('apiNewName').value.trim();
+    if (!name) { document.getElementById('apiNewName').focus(); toast('Ingresa un nombre.', 'red'); return; }
+    var btn = document.getElementById('apiBtnCreate');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generando...';
+    apiPost('create', { name: name }, function(d) {
+      if (!d.ok) { toast(d.msg, 'red'); btn.disabled = false; btn.innerHTML = '<i class="fas fa-plus"></i> Generar Key'; return; }
+      document.getElementById('apiCreateForm').style.display = 'none';
+      document.getElementById('apiNewKeyVal').textContent = d.api_key;
+      document.getElementById('apiCreatedResult').style.display = 'block';
+      addTableRow(d.id, d.name, d.api_key);
+      refreshStats();
+    });
+  };
+
+  window.apiCopyNewKey = function() {
+    var val = document.getElementById('apiNewKeyVal').textContent;
+    var btn = document.getElementById('apiNewKeyCopyBtn');
+    copyText(val, btn, 'Copiada');
+    toast('Key copiada.');
+  };
+
+  function addTableRow(id, name, key) {
+    var tbody = document.getElementById('apiTableBody');
+    var empty = tbody.querySelector('td[colspan]');
+    if (empty) empty.closest('tr').remove();
+
+    var tr = document.createElement('tr');
+    tr.id = 'api-row-'+id;
+    tr.innerHTML =
+      '<td class="api-td-name"><strong>' + escHtml(name) + '</strong></td>' +
+      '<td><div class="api-key-cell">' +
+        '<span class="api-key-masked revealed" id="keymask-'+id+'" data-val="' + escAttr(key) + '" onclick="apiToggleReveal('+id+')">' + escHtml(key) + '</span>' +
+        '<button class="api-key-copy" id="copybtn-'+id+'" onclick="apiCopyKey(\'' + escAttr(key) + '\',' + id + ')" title="Copiar"><i class="fas fa-copy"></i></button>' +
+      '</div></td>' +
+      '<td><span class="api-pill api-pill-active" id="pill-'+id+'"><span class="api-pill-dot"></span>Activa</span></td>' +
+      '<td class="api-td-meta"><span class="api-td-never">Nunca</span></td>' +
+      '<td class="api-td-meta">Hoy</td>' +
+      '<td><div class="api-actions">' +
+        '<button class="api-action-btn toggle-btn active" id="togbtn-'+id+'" onclick="apiToggle('+id+')" title="Revocar"><i class="fas fa-ban"></i> Revocar</button>' +
+        '<button class="api-action-btn" onclick="apiRegenerate('+id+',\'' + escAttr(name) + '\')" title="Regenerar"><i class="fas fa-sync-alt"></i></button>' +
+        '<button class="api-action-btn del-btn" onclick="apiDelete('+id+',\'' + escAttr(name) + '\')" title="Eliminar"><i class="fas fa-trash"></i></button>' +
+      '</div></td>';
+    tbody.insertBefore(tr, tbody.firstChild);
+  }
+
+  window.apiToggle = function(id) {
+    apiPost('toggle', { id: id }, function(d) {
+      if (!d.ok) { toast(d.msg, 'red'); return; }
+      var pill = document.getElementById('pill-'+id);
+      var btn = document.getElementById('togbtn-'+id);
+      var active = d.active === 1;
+      pill.className = 'api-pill ' + (active ? 'api-pill-active' : 'api-pill-inactive');
+      pill.innerHTML = '<span class="api-pill-dot"></span>' + (active ? 'Activa' : 'Revocada');
+      btn.className = 'api-action-btn toggle-btn ' + (active ? 'active' : '');
+      btn.innerHTML = '<i class="fas fa-'+(active?'ban':'check')+'"></i> '+(active?'Revocar':'Activar');
+      btn.title = active ? 'Revocar' : 'Activar';
+      refreshStats();
+      toast(active ? 'Key activada.' : 'Key revocada.');
+    });
+  };
+
+  var _regenId = null;
+  window.apiRegenerate = function(id, name) {
+    _regenId = id;
+    document.getElementById('apiRegenDesc').textContent = 'Se generará una nueva key para "' + name + '". La key actual quedará inválida.';
+    document.getElementById('apiRegenForm').style.display = 'block';
+    document.getElementById('apiRegenResult').style.display = 'none';
+    document.getElementById('apiBtnRegen').disabled = false;
+    document.getElementById('apiBtnRegen').innerHTML = '<i class="fas fa-sync-alt"></i> Regenerar';
+    document.getElementById('apiRegenModal').classList.add('open');
+  };
+
+  window.apiCloseRegen = function() {
+    document.getElementById('apiRegenModal').classList.remove('open');
+    _regenId = null;
+  };
+
+  window.apiDoRegen = function() {
+    if (!_regenId) return;
+    var btn = document.getElementById('apiBtnRegen');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Regenerando...';
+    apiPost('regenerate', { id: _regenId }, function(d) {
+      if (!d.ok) { toast(d.msg, 'red'); btn.disabled = false; return; }
+      var newKey = d.api_key;
+      var mask = document.getElementById('keymask-'+_regenId);
+      if (mask) {
+        mask.dataset.val = newKey;
+        mask.textContent = '\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022' + newKey.slice(-6);
+        mask.classList.remove('revealed');
+      }
+      var copyBtn = document.getElementById('copybtn-'+_regenId);
+      if (copyBtn) copyBtn.setAttribute('onclick', "apiCopyKey('" + newKey + "'," + _regenId + ")");
+      document.getElementById('apiRegenKeyVal').textContent = newKey;
+      document.getElementById('apiRegenResult').style.display = 'block';
+      document.getElementById('apiRegenForm').style.display = 'none';
+      toast('Key regenerada correctamente.');
+    });
+  };
+
+  window.apiCopyRegenKey = function() {
+    var val = document.getElementById('apiRegenKeyVal').textContent;
+    var btn = document.getElementById('apiRegenKeyCopyBtn');
+    copyText(val, btn, 'Copiada');
+    toast('Key copiada.');
+  };
+
+  window.apiDelete = function(id, name) {
+    apiShowConfirm('Eliminar API Key', 'Se eliminará la key "' + name + '". Esta acción no se puede deshacer.', 'Eliminar', function() {
+      apiPost('delete', { id: id }, function(d) {
+        if (!d.ok) { toast(d.msg, 'red'); return; }
+        var row = document.getElementById('api-row-'+id);
+        if (row) { row.style.transition = 'opacity 0.25s'; row.style.opacity = '0'; setTimeout(function() { row.remove(); refreshStats(); }, 250); }
+        toast('API Key eliminada.');
+      });
+    });
+  };
+
+  function escHtml(s) { var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+  function escAttr(s) { return String(s).replace(/'/g, "\\'").replace(/"/g, '&quot;'); }
+
+  ['apiCreateModal','apiRegenModal'].forEach(function(mid) {
+    document.getElementById(mid).addEventListener('click', function(e) {
+      if (e.target === this) {
+        if (mid === 'apiCreateModal') apiCloseCreate();
+        else apiCloseRegen();
+      }
+    });
+  });
+
+  // Init
+  document.addEventListener('DOMContentLoaded', function() {
+    refreshStats();
+  });
+})();
+</script>

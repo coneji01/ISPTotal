@@ -17,6 +17,9 @@
   .sidebar.active { transform: translateX(0); }
   .sidebar.collapsed { width: 260px !important; }
   .sidebar.collapsed .nav-item span { display: inline !important; }
+  .sidebar.active .nav-item span,
+  .sidebar.active .sidebar-header span { display: inline !important; }
+  .sidebar.active { width: 260px !important; }
 
   /* Overlay oscuro detrás del sidebar */
   #sidebar-overlay {

@@ -1,0 +1,375 @@
+<style>
+:root { --cc-green: #10b981; --cc-green-dark: #059669; }
+.cc-header { margin-bottom:20px; }
+.cc-title { font-size:1.4rem; font-weight:700; display:flex; align-items:center; gap:10px; color:var(--text); }
+.cc-tabs { display:flex; gap:4px; background:var(--bg-card); border-radius:10px; padding:4px; margin-bottom:24px; width:fit-content; }
+.cc-tab { padding:10px 22px; border-radius:8px; border:none; background:transparent; color:var(--text-gray); font-weight:600; font-size:0.9rem; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; gap:7px; }
+.cc-tab:hover { color:var(--text); }
+.cc-tab.active { background:var(--bg-primary); color:var(--text); box-shadow:0 1px 3px rgba(0,0,0,0.1); }
+.cc-card { background:var(--bg-primary); border-radius:12px; border:1px solid var(--border); overflow:hidden; margin-bottom:20px; }
+.cc-card-header { padding:16px 20px; border-bottom:1px solid var(--border); font-size:1rem; font-weight:700; display:flex; justify-content:space-between; align-items:center; }
+.cc-card-body { padding:20px; }
+.cc-card-title { display:flex; align-items:center; gap:8px; }
+.cc-form-row { display:flex; gap:12px; flex-wrap:wrap; }
+.cc-form-group { flex:1; min-width:250px; }
+.cc-form-label { display:block; font-weight:600; color:var(--text-gray); margin-bottom:6px; font-size:0.85rem; }
+.cc-form-select { width:100%; padding:10px 12px; border:1px solid var(--border); border-radius:8px; font-size:0.9rem; background:var(--bg-input); cursor:pointer; }
+.cc-form-select:focus { border-color:#6366f1; outline:none; }
+.cc-pend-box { display:flex; align-items:center; justify-content:space-between; background:#f0fdf4; border:2px solid #bbf7d0; border-radius:12px; padding:20px; margin-top:15px; flex-wrap:wrap; gap:15px; }
+.cc-pend-left { flex:1; }
+.cc-pend-amount { font-size:2rem; font-weight:800; color:var(--cc-green-dark); }
+.cc-pend-count { font-size:0.85rem; color:#64748b; margin-top:2px; }
+.cc-pend-empty { text-align:center; padding:30px; color:#94a3b8; font-size:0.9rem; }
+.cc-pend-empty i { font-size:2.5rem; display:block; margin-bottom:10px; color:#22c55e; }
+.btn-cuadrar { padding:12px 24px; border:none; border-radius:10px; font-size:1rem; font-weight:700; background:linear-gradient(135deg,#10b981,#059669); color:#fff; cursor:pointer; transition:all 0.2s; display:inline-flex; align-items:center; gap:8px; }
+.btn-cuadrar:hover:not(:disabled) { transform:translateY(-1px); box-shadow:0 4px 12px rgba(16,185,129,0.3); }
+.btn-cuadrar:disabled { opacity:0.5; cursor:not-allowed; }
+.btn-print { padding:10px 20px; border:1px solid #e2e8f0; border-radius:8px; font-size:0.9rem; font-weight:600; background:#fff; color:#475569; cursor:pointer; display:inline-flex; align-items:center; gap:6px; }
+.btn-print:hover { background:#f8fafc; }
+.cc-result { margin-top:20px; border:2px solid var(--cc-green); border-radius:12px; overflow:hidden; }
+.cc-result-header { background:linear-gradient(135deg,#ecfdf5,#d1fae5); padding:16px 20px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; }
+.cc-result-title { font-weight:700; color:#065f46; font-size:1rem; display:flex; align-items:center; gap:8px; }
+.cc-result-amount { font-size:1.4rem; font-weight:800; color:var(--cc-green-dark); }
+.cc-result-body { padding:16px 20px; max-height:400px; overflow-y:auto; }
+.cc-result-actions { padding:14px 20px; border-top:1px solid #e2e8f0; background:#f8fafc; display:flex; gap:10px; justify-content:flex-end; }
+.cc-result-table { width:100%; border-collapse:collapse; font-size:0.88rem; }
+.cc-result-table th { background:#f1f5f9; padding:8px 10px; text-align:left; font-weight:600; color:#475569; font-size:0.8rem; text-transform:uppercase; }
+.cc-result-table td { padding:8px 10px; border-bottom:1px solid #f1f5f9; }
+.cc-result-table td.monto-col { text-align:right; font-weight:700; color:var(--cc-green-dark); font-family:'Courier New',monospace; }
+.cc-ultimo { margin-top:24px; }
+.cc-ultimo-badge { background:#dbeafe; color:#1e40af; padding:3px 10px; border-radius:12px; font-size:0.78rem; font-weight:600; }
+.cc-ultimo-row { display:flex; justify-content:space-between; align-items:center; padding:14px 0; border-bottom:1px solid #f1f5f9; }
+.cc-ultimo-row:last-child { border:none; }
+.cc-ultimo-label { color:#64748b; font-size:0.88rem; }
+.cc-ultimo-val { font-weight:700; color:#334155; }
+.cc-ultimo-total { font-size:1.3rem; color:var(--cc-green-dark); }
+.cc-table { width:100%; border-collapse:collapse; }
+.cc-table th { background:#f8fafc; padding:12px 16px; text-align:left; font-weight:600; color:#64748b; font-size:0.8rem; text-transform:uppercase; border-bottom:2px solid #e2e8f0; }
+.cc-table td { padding:12px 16px; border-bottom:1px solid #f1f5f9; font-size:0.88rem; }
+.cc-table tr:hover { background:#fafbfc; }
+.cc-empty { text-align:center; padding:40px; color:#94a3b8; }
+.metodo-badge { display:inline-flex; padding:3px 8px; border-radius:10px; font-size:0.72rem; font-weight:600; }
+.metodo-badge.EFECTIVO { background:#d1fae5; color:#065f46; }
+.metodo-badge.TARJETA { background:#dbeafe; color:#1e40af; }
+.metodo-badge.TRANSFERENCIA { background:#fef3c7; color:#92400e; }
+.metodo-badge.VERIFONE { background:#ede9fe; color:#5b21b6; }
+
+/* Dropdown */
+.cc-dropdown { position:fixed; background:#fff; border:1px solid #e2e8f0; border-radius:8px; max-height:250px; overflow-y:auto; z-index:9999; display:none; box-shadow:0 4px 16px rgba(0,0,0,0.1); min-width:250px; }
+.cc-dropdown-item { padding:10px 14px; cursor:pointer; border-bottom:1px solid #f1f5f9; font-size:0.88rem; color:#1e293b; }
+.cc-dropdown-item:hover { background:#f1f5f9; }
+.cc-dropdown-item:last-child { border-bottom:none; }
+.cc-dropdown-empty { padding:12px 16px; color:#94a3b8; font-size:0.85rem; }
+</style>
+
+<div class="cc-header">
+  <h1 class="cc-title"><i class="fas fa-cash-register" style="color:var(--cc-green);"></i> Cuadre de Caja</h1>
+</div>
+
+<!-- TABS -->
+<div class="cc-tabs" id="ccTabs">
+  <a class="cc-tab active" data-tab="caja" onclick="switchTabCC('caja')"><i class="fas fa-cash-register"></i> Caja</a>
+  <a class="cc-tab" data-tab="historial" onclick="switchTabCC('historial')"><i class="fas fa-list"></i> Historial</a>
+</div>
+
+<div id="tabCaja">
+  <!-- Seleccionar usuario -->
+  <div class="cc-card">
+    <div class="cc-card-header">
+      <div class="cc-card-title"><i class="fas fa-user" style="color:var(--cc-green);"></i> Nuevo Cuadre</div>
+    </div>
+    <div class="cc-card-body">
+      <div class="cc-form-row">
+        <div class="cc-form-group" style="position:relative;">
+          <label class="cc-form-label">Cuadrar a</label>
+          <input type="text" id="ccBuscarUsuario" class="cc-form-select" placeholder="Buscar usuario..." oninput="ccFiltrarUsuarios()" autocomplete="off">
+          <input type="hidden" id="ccSelectUsuario" value="">
+          <div class="cc-dropdown" id="ccDropUsuarios"></div>
+        </div>
+      </div>
+
+      <!-- Info último cuadre -->
+      <div id="ccUltimoCuadreInfo" style="display:none; background:#f1f5f9; padding:10px 15px; border-radius:8px; margin-top:15px;">
+        <span style="color:#64748b; font-size:0.85rem;">
+          <i class="fas fa-history"></i> <strong>Último cuadre:</strong> <span id="ccUltimoCuadreFecha">-</span>
+        </span>
+      </div>
+
+      <!-- Pendiente -->
+      <div id="ccPendienteArea" style="display:none;">
+        <div id="ccPendienteInfo" class="cc-pend-box">
+          <div class="cc-pend-left">
+            <div class="cc-pend-amount" id="ccTotalPendiente">$0.00</div>
+            <div class="cc-pend-count" id="ccCantidadPagos">0 pagos</div>
+            <div id="ccDesglose" style="margin-top:8px; display:flex; gap:6px; flex-wrap:wrap;"></div>
+          </div>
+          <button class="btn-cuadrar" id="ccBtnCuadrar" onclick="ccRealizarCuadre()" disabled>
+            <i class="fas fa-check-circle"></i> Realizar Cuadre
+          </button>
+        </div>
+      </div>
+
+      <!-- Sin pendientes -->
+      <div id="ccSinPendiente" style="display:none;">
+        <div class="cc-pend-empty">
+          <i class="fas fa-check-circle"></i>
+          No hay pagos pendientes de cuadrar
+          <div id="ccSinPendienteUltimo" style="font-size:0.8rem; margin-top:5px;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Resultado cuadre -->
+  <div id="ccResultadoArea" style="display:none;">
+    <div class="cc-result">
+      <div class="cc-result-header">
+        <div class="cc-result-title"><i class="fas fa-check-circle"></i> Cuadre Generado</div>
+        <div class="cc-result-amount" id="ccResTotal"></div>
+      </div>
+      <div class="cc-result-body">
+        <div style="display:flex; gap:20px; flex-wrap:wrap; margin-bottom:12px; font-size:0.88rem; color:#475569;">
+          <div><strong>Usuario:</strong> <span id="ccResUsuario"></span></div>
+          <div><strong>Fecha:</strong> <span id="ccResFecha"></span></div>
+          <div><strong>Pagos:</strong> <span id="ccResCantidad"></span></div>
+          <div><strong>Desde:</strong> <span id="ccResDesde"></span></div>
+        </div>
+        <div id="ccResDesglose" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px;"></div>
+        <table class="cc-result-table">
+          <thead><tr><th>Cliente</th><th>Monto</th><th>Método</th><th>Fecha</th></tr></thead>
+          <tbody id="ccResDetalles"></tbody>
+        </table>
+      </div>
+      <div class="cc-result-actions">
+        <button class="btn-print" onclick="ccImprimir(ccUltimoCuadreId)"><i class="fas fa-print"></i> Imprimir</button>
+        <button class="btn-cuadrar" onclick="ccNuevoCuadre()" style="font-size:0.9rem; padding:10px 18px;"><i class="fas fa-plus"></i> Nuevo Cuadre</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="tabHistorial" style="display:none;">
+  <div class="cc-card">
+    <div class="cc-card-header">
+      <div class="cc-card-title"><i class="fas fa-history" style="color:var(--cc-green);"></i> Historial de Cuadres</div>
+    </div>
+    <div class="cc-card-body">
+      <table class="cc-table">
+        <thead><tr><th>#</th><th>Usuario</th><th>Desde</th><th>Hasta</th><th>Pagos</th><th>Total</th><th style="text-align:right;">Acción</th></tr></thead>
+        <tbody id="ccHistorialBody">
+          <tr><td colspan="7" class="cc-empty"><i class="fas fa-spinner fa-spin"></i> Cargando...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+var ccUsuariosList = [];
+var ccPendienteData = null;
+var ccUltimoCuadreId = null;
+
+function switchTabCC(tab) {
+  document.querySelectorAll('.cc-tab').forEach(function(t){t.classList.remove('active')});
+  document.querySelector('.cc-tab[data-tab="'+tab+'"]').classList.add('active');
+  document.getElementById('tabCaja').style.display = tab === 'caja' ? 'block' : 'none';
+  document.getElementById('tabHistorial').style.display = tab === 'historial' ? 'block' : 'none';
+  if (tab === 'historial') ccCargarHistorial();
+}
+
+// ====== USUARIOS ======
+function ccFiltrarUsuarios() {
+  var inp = document.getElementById('ccBuscarUsuario');
+  var drop = document.getElementById('ccDropUsuarios');
+  var q = inp.value.toLowerCase().trim();
+  var rect = inp.getBoundingClientRect();
+  drop.style.top = (rect.bottom + 4) + 'px';
+  drop.style.left = rect.left + 'px';
+  drop.style.width = Math.max(rect.width, 250) + 'px';
+  
+  var filtered = ccUsuariosList.filter(function(u) {
+    return !q || u.label.toLowerCase().indexOf(q) !== -1;
+  });
+  
+  if (!filtered.length) {
+    drop.innerHTML = '<div class="cc-dropdown-empty">Sin resultados</div>';
+  } else {
+    drop.innerHTML = filtered.map(function(u) {
+      return '<div class="cc-dropdown-item" onmousedown="ccSeleccionarUsuario(\\'' + u.value.replace(/'/g, "\\'") + '\\',\\'' + u.label.replace(/'/g, "\\'") + '\\')">' + u.label + '</div>';
+    }).join('');
+  }
+  drop.style.display = 'block';
+}
+
+function ccSeleccionarUsuario(value, label) {
+  document.getElementById('ccBuscarUsuario').value = label;
+  document.getElementById('ccSelectUsuario').value = value;
+  document.getElementById('ccDropUsuarios').style.display = 'none';
+  ccCargarPendiente(value);
+}
+
+// ====== PENDIENTES ======
+function ccCargarPendiente(usuario) {
+  fetch('/modulo?pagina=CuadreCaja&ajax=get_pendientes_cuadre&usuario=' + encodeURIComponent(usuario))
+  .then(function(r){return r.json()})
+  .then(function(d){
+    if (d.status !== 'success') return;
+    ccPendienteData = d.data;
+    if (d.data.ultimo_cuadre) {
+      document.getElementById('ccUltimoCuadreInfo').style.display = 'block';
+      document.getElementById('ccUltimoCuadreFecha').textContent = new Date(d.data.ultimo_cuadre).toLocaleString('es-DO');
+    } else {
+      document.getElementById('ccUltimoCuadreInfo').style.display = 'none';
+    }
+    
+    if (d.data.pagos.length === 0) {
+      document.getElementById('ccPendienteArea').style.display = 'none';
+      document.getElementById('ccSinPendiente').style.display = 'block';
+      document.getElementById('ccSinPendienteUltimo').textContent = d.data.ultimo_cuadre ? '(Último cuadre: ' + new Date(d.data.ultimo_cuadre).toLocaleString('es-DO') + ')' : '(Sin cuadres previos)';
+      document.getElementById('ccBtnCuadrar').disabled = true;
+    } else {
+      document.getElementById('ccPendienteArea').style.display = 'block';
+      document.getElementById('ccSinPendiente').style.display = 'none';
+      document.getElementById('ccTotalPendiente').textContent = '$' + d.data.total.toFixed(2);
+      document.getElementById('ccCantidadPagos').textContent = d.data.cantidad + ' pago(s)';
+      document.getElementById('ccBtnCuadrar').disabled = false;
+      
+      // Desglose
+      var desgHtml = '';
+      Object.keys(d.data.desglose).forEach(function(met) {
+        var m = d.data.desglose[met];
+        desgHtml += '<span class="metodo-badge ' + met + '">' + met + ': $' + m.total.toFixed(2) + ' (' + m.cantidad + ')</span>';
+      });
+      document.getElementById('ccDesglose').innerHTML = desgHtml;
+    }
+  });
+}
+
+// ====== REALIZAR CUADRE ======
+function ccRealizarCuadre() {
+  var usuario = document.getElementById('ccSelectUsuario').value;
+  if (!usuario) { alert('Seleccione un usuario'); return; }
+  if (!confirm('¿Estás seguro de realizar el cuadre para ' + usuario + '?')) return;
+  
+  var btn = document.getElementById('ccBtnCuadrar');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
+  
+  var fd = new FormData();
+  fd.append('usuario', usuario);
+  
+  fetch('/modulo?pagina=CuadreCaja&ajax=crear_cuadre_usuario', { method: 'POST', body: fd })
+  .then(function(r){return r.json()})
+  .then(function(d){
+    if (d.status === 'success') {
+      ccUltimoCuadreId = d.cuadre_id;
+      ccMostrarResultado(d);
+    } else {
+      alert('Error: ' + (d.msg || 'desconocido'));
+    }
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-check-circle"></i> Realizar Cuadre';
+  })
+  .catch(function(){
+    alert('Error de conexión');
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-check-circle"></i> Realizar Cuadre';
+  });
+}
+
+function ccMostrarResultado(d) {
+  document.getElementById('cardNuevoCuadre').style.display = 'none';
+  document.getElementById('ccResultadoArea').style.display = 'block';
+  document.getElementById('ccResUsuario').textContent = document.getElementById('ccSelectUsuario').value;
+  document.getElementById('ccResFecha').textContent = new Date().toLocaleString('es-DO');
+  document.getElementById('ccResCantidad').textContent = d.cantidad + ' pago(s)';
+  document.getElementById('ccResTotal').textContent = '$' + d.total.toFixed(2);
+  document.getElementById('ccResDesde').textContent = d.desde ? new Date(d.desde).toLocaleString('es-DO') : 'Inicio';
+  
+  // Desglose métodos
+  var desgHtml = '';
+  if (d.metodos) {
+    Object.keys(d.metodos).forEach(function(met) {
+      var m = d.metodos[met];
+      desgHtml += '<span class="metodo-badge ' + met + '">' + met + ': $' + m.total.toFixed(2) + '</span>';
+    });
+  }
+  document.getElementById('ccResDesglose').innerHTML = desgHtml;
+  
+  // Detalles
+  var detHtml = '';
+  (d.detalles || []).forEach(function(p) {
+    var f = p.fecha ? new Date(p.fecha).toLocaleDateString('es-DO') : '-';
+    detHtml += '<tr><td>' + (p.cliente || 'N/A') + '</td><td class="monto-col">$' + p.monto.toFixed(2) + '</td><td>' + (p.metodo || '-') + '</td><td>' + f + '</td></tr>';
+  });
+  document.getElementById('ccResDetalles').innerHTML = detHtml;
+  
+  setTimeout(function(){ ccImprimir(d.cuadre_id); }, 800);
+}
+
+function ccNuevoCuadre() {
+  document.getElementById('ccResultadoArea').style.display = 'none';
+  document.getElementById('cardNuevoCuadre').style.display = 'block';
+  document.getElementById('ccBtnCuadrar').disabled = true;
+  document.getElementById('ccBtnCuadrar').innerHTML = '<i class="fas fa-check-circle"></i> Realizar Cuadre';
+  ccPendienteData = null;
+  ccUltimoCuadreId = null;
+  var usuario = document.getElementById('ccSelectUsuario').value;
+  if (usuario) ccCargarPendiente(usuario);
+}
+
+function ccImprimir(cuadreId) {
+  if (!cuadreId) return;
+  var w = window.open('/modulo?pagina=CuadreCaja&ajax=get_cuadre_detalle&cuadre_id=' + cuadreId, '_blank', 'width=800,height=600');
+  // The imprimir page handles the print dialog
+}
+
+// ====== HISTORIAL ======
+function ccCargarHistorial() {
+  fetch('/modulo?pagina=CuadreCaja&ajax=history&limit=100')
+  .then(function(r){return r.json()})
+  .then(function(d){
+    if (d.status !== 'success') return;
+    var tb = document.getElementById('ccHistorialBody');
+    if (!d.data || d.data.length === 0) {
+      tb.innerHTML = '<tr><td colspan="7" class="cc-empty"><i class="fas fa-cash-register"></i> No hay cuadres realizados</td></tr>';
+      return;
+    }
+    var h = '';
+    d.data.forEach(function(c) {
+      var desde = c.fecha_desde ? new Date(c.fecha_desde).toLocaleString('es-DO') : '-';
+      var hasta = c.fecha_hasta ? new Date(c.fecha_hasta).toLocaleString('es-DO') : c.fecha || '-';
+      h += '<tr>';
+      h += '<td style="font-weight:700;">#' + c.id + '</td>';
+      h += '<td>' + (c.usuario_nombre || '-') + '</td>';
+      h += '<td style="font-size:0.82rem;color:#64748b;">' + desde + '</td>';
+      h += '<td style="font-size:0.82rem;color:#64748b;">' + hasta + '</td>';
+      h += '<td>' + (c.pagos_count || 0) + '</td>';
+      h += '<td style="font-weight:700;color:var(--cc-green-dark);">$' + (c.total_pagos || 0).toFixed(2) + '</td>';
+      h += '<td style="text-align:right;"><button class="btn-print" onclick="ccImprimir(' + c.id + ')" style="padding:4px 10px;font-size:0.78rem;"><i class="fas fa-print"></i> Imprimir</button></td>';
+      h += '</tr>';
+    });
+    tb.innerHTML = h;
+  });
+}
+
+// ====== INIT ======
+function ccInit() {
+  // Cargar usuarios
+  fetch('/modulo?pagina=CuadreCaja&ajax=list_usuarios_cuadre')
+  .then(function(r){return r.json()})
+  .then(function(d){
+    if (d.status === 'success') ccUsuariosList = d.data || [];
+  });
+  
+  // Close dropdown on outside click
+  document.addEventListener('click', function(e) {
+    var drop = document.getElementById('ccDropUsuarios');
+    var inp = document.getElementById('ccBuscarUsuario');
+    if (drop && inp && !drop.contains(e.target) && e.target !== inp) {
+      drop.style.display = 'none';
+    }
+  });
+}
+ccInit();
+</script>

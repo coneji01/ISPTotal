@@ -1,29 +1,19 @@
 <style>
-/* ===== CSS Variables for theme support ===== */
-.pv-section {
-    --pv-text-main: var(--text-main, var(--text-dark, #1e293b));
-    --pv-text-muted: var(--text-muted, var(--text-gray, #64748b));
-    --pv-accent: var(--accent-primary, var(--accent, var(--primary, #2563eb)));
-    --pv-bg-card: var(--bg-card, #ffffff);
-    --pv-bg-input: var(--bg-input, #e2e8f0);
-    --pv-border: var(--border-color, #e2e8f0);
-}
-
 .pv-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:12px; }
-.pv-header h2 { margin:0; font-size:1.4rem; font-weight:700; color:var(--pv-text-main); display:flex; align-items:center; gap:10px; }
-.pv-header h2 i { color:var(--pv-accent); }
+.pv-header h2 { margin:0; font-size:1.4rem; font-weight:700; color:#1e293b; display:flex; align-items:center; gap:10px; }
+.pv-header h2 i { color:#2563eb; }
 
 .pv-toolbar { display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:18px; }
-.pv-search { flex:1; min-width:200px; padding:10px 14px; border:1.5px solid var(--pv-border); border-radius:8px; font-size:0.92rem; background:var(--pv-bg-input); color:var(--pv-text-main); }
-.pv-search:focus { border-color:var(--pv-accent); outline:none; box-shadow:0 0 0 3px color-mix(in srgb, var(--pv-accent) 15%, transparent); }
+.pv-search { flex:1; min-width:200px; padding:10px 14px; border:1.5px solid #e2e8f0; border-radius:8px; font-size:0.92rem; }
+.pv-search:focus { border-color:#2563eb; outline:none; box-shadow:0 0 0 3px rgba(37,99,235,0.1); }
 
 .pv-btn { padding:9px 18px; border-radius:8px; font-size:0.85rem; font-weight:600; border:none; cursor:pointer; transition:all 0.2s; display:inline-flex; align-items:center; gap:6px; }
-.pv-btn-primary { background:var(--pv-accent); color:#fff; }
-.pv-btn-primary:hover { filter:brightness(0.85); }
+.pv-btn-primary { background:#2563eb; color:#fff; }
+.pv-btn-primary:hover { background:#1d4ed8; }
 .pv-btn-success { background:#16a34a; color:#fff; }
 .pv-btn-success:hover { background:#15803d; }
-.pv-btn-outline { background:var(--pv-bg-card); color:var(--pv-text-main); border:1px solid var(--pv-border); }
-.pv-btn-outline:hover { filter:brightness(0.97); border-color:var(--pv-accent); }
+.pv-btn-outline { background:#fff; color:#475569; border:1px solid #e2e8f0; }
+.pv-btn-outline:hover { background:#f8fafc; border-color:#cbd5e1; }
 .pv-btn-danger { background:#ef4444; color:#fff; }
 .pv-btn-danger:hover { background:#dc2626; }
 .pv-btn-warning { background:#d97706; color:#fff; }
@@ -34,44 +24,44 @@
 /* Cards de proveedores */
 .pv-list { display:flex; flex-direction:column; gap:8px; }
 .pv-card {
-    display:flex; align-items:center; padding:16px 20px; background:var(--pv-bg-card); border:1.5px solid var(--pv-border);
+    display:flex; align-items:center; padding:16px 20px; background:#fff; border:1.5px solid #e2e8f0;
     border-radius:12px; cursor:pointer; transition:all 0.2s; gap:16px;
 }
-.pv-card:hover { border-color:color-mix(in srgb, var(--pv-accent) 50%, transparent); background:color-mix(in srgb, var(--pv-bg-card) 97%, var(--pv-accent)); transform:translateY(-1px); box-shadow:0 4px 12px rgba(0,0,0,0.04); }
-.pv-card-icon { width:44px; height:44px; border-radius:10px; background:linear-gradient(135deg,color-mix(in srgb, var(--pv-accent) 15%, transparent),color-mix(in srgb, #7c3aed 15%, transparent)); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-.pv-card-icon i { font-size:1.1rem; color:var(--pv-accent); }
+.pv-card:hover { border-color:#93c5fd; background:#f8fafc; transform:translateY(-1px); box-shadow:0 4px 12px rgba(0,0,0,0.04); }
+.pv-card-icon { width:44px; height:44px; border-radius:10px; background:linear-gradient(135deg,#dbeafe,#ede9fe); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.pv-card-icon i { font-size:1.1rem; color:#2563eb; }
 .pv-card-info { flex:1; min-width:0; }
-.pv-card-name { font-weight:700; font-size:0.95rem; color:var(--pv-text-main); }
-.pv-card-detail { font-size:0.82rem; color:var(--pv-text-muted); margin-top:2px; display:flex; gap:14px; flex-wrap:wrap; }
+.pv-card-name { font-weight:700; font-size:0.95rem; color:#1e293b; }
+.pv-card-detail { font-size:0.82rem; color:#64748b; margin-top:2px; display:flex; gap:14px; flex-wrap:wrap; }
 .pv-card-right { text-align:right; flex-shrink:0; }
 .pv-card-debt { font-weight:700; font-size:1rem; }
 .pv-card-debt.overdue { color:#ef4444; }
 .pv-card-debt.pending { color:#854d0e; }
 .pv-card-debt.zero { color:#10b981; }
 
-.pv-empty { text-align:center; padding:60px 20px; color:var(--pv-text-muted); }
+.pv-empty { text-align:center; padding:60px 20px; color:#94a3b8; }
 .pv-empty i { font-size:3rem; margin-bottom:12px; display:block; opacity:0.3; }
 
 /* Modal Overlay */
 .pv-modal { display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.4); z-index:3000; justify-content:center; align-items:flex-start; padding:30px 15px; overflow-y:auto; }
 .pv-modal.active { display:flex; }
-.pv-modal-box { background:var(--pv-bg-card); border-radius:16px; width:100%; max-width:600px; box-shadow:0 20px 60px rgba(0,0,0,0.15); animation:pvSlideIn 0.3s; margin:auto; }
+.pv-modal-box { background:#fff; border-radius:16px; width:100%; max-width:600px; box-shadow:0 20px 60px rgba(0,0,0,0.15); animation:pvSlideIn 0.3s; margin:auto; }
 @keyframes pvSlideIn { from { opacity:0; transform:translateY(-20px); } to { opacity:1; transform:translateY(0); } }
-.pv-modal-header { display:flex; justify-content:space-between; align-items:center; padding:20px 24px; border-bottom:1px solid color-mix(in srgb, var(--pv-border) 70%, transparent); }
-.pv-modal-header h3 { margin:0; font-size:1.1rem; font-weight:700; color:var(--pv-text-main); display:flex; align-items:center; gap:8px; }
-.pv-modal-close { background:none; border:none; font-size:1.3rem; color:var(--pv-text-muted); cursor:pointer; padding:4px 8px; border-radius:6px; }
-.pv-modal-close:hover { background:color-mix(in srgb, var(--pv-border) 50%, transparent); color:var(--pv-text-main); }
+.pv-modal-header { display:flex; justify-content:space-between; align-items:center; padding:20px 24px; border-bottom:1px solid #f1f5f9; }
+.pv-modal-header h3 { margin:0; font-size:1.1rem; font-weight:700; color:#1e293b; display:flex; align-items:center; gap:8px; }
+.pv-modal-close { background:none; border:none; font-size:1.3rem; color:#94a3b8; cursor:pointer; padding:4px 8px; border-radius:6px; }
+.pv-modal-close:hover { background:#f1f5f9; color:#475569; }
 .pv-modal-body { padding:24px; }
-.pv-modal-footer { padding:16px 24px; border-top:1px solid color-mix(in srgb, var(--pv-border) 70%, transparent); display:flex; justify-content:flex-end; gap:10px; }
+.pv-modal-footer { padding:16px 24px; border-top:1px solid #f1f5f9; display:flex; justify-content:flex-end; gap:10px; }
 
 /* Form */
 .pv-form-group { margin-bottom:16px; }
-.pv-form-group label { display:block; font-size:0.85rem; font-weight:600; color:var(--pv-text-main); margin-bottom:5px; }
+.pv-form-group label { display:block; font-size:0.85rem; font-weight:600; color:#374151; margin-bottom:5px; }
 .pv-form-group input, .pv-form-group textarea, .pv-form-group select {
-    width:100%; padding:10px 14px; border:1.5px solid var(--pv-border); border-radius:8px; font-size:0.92rem;
-    color:var(--pv-text-main); background:var(--pv-bg-card); transition:border-color 0.2s; font-family:inherit; box-sizing:border-box;
+    width:100%; padding:10px 14px; border:1.5px solid #e2e8f0; border-radius:8px; font-size:0.92rem;
+    color:#1e293b; background:#fff; transition:border-color 0.2s; font-family:inherit; box-sizing:border-box;
 }
-.pv-form-group input:focus, .pv-form-group textarea:focus, .pv-form-group select:focus { border-color:var(--pv-accent); outline:none; box-shadow:0 0 0 3px color-mix(in srgb, var(--pv-accent) 15%, transparent); }
+.pv-form-group input:focus, .pv-form-group textarea:focus, .pv-form-group select:focus { border-color:#2563eb; outline:none; }
 .pv-form-row { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
 @media(max-width:600px) { .pv-form-row { grid-template-columns:1fr; } }
 
@@ -82,42 +72,42 @@
 .pv-svc-remove { width:34px; height:34px; border:none; background:#fef2f2; color:#ef4444; border-radius:8px; cursor:pointer; font-size:0.9rem; flex-shrink:0; display:flex; align-items:center; justify-content:center; }
 .pv-svc-remove:hover { background:#ef4444; color:#fff; }
 
-.pv-contact-item { background:color-mix(in srgb, var(--pv-bg-card) 97%, var(--pv-accent)); border:1px solid var(--pv-border); border-radius:10px; padding:12px; display:flex; gap:8px; align-items:flex-start; flex-wrap:wrap; }
-.pv-contact-item input { flex:1; min-width:120px; padding:8px 10px; border:1.5px solid var(--pv-border); border-radius:6px; font-size:0.85rem; font-family:inherit; color:var(--pv-text-main); background:var(--pv-bg-card); }
-.pv-contact-item input:focus { border-color:var(--pv-accent); outline:none; }
+.pv-contact-item { background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:12px; display:flex; gap:8px; align-items:flex-start; flex-wrap:wrap; }
+.pv-contact-item input { flex:1; min-width:120px; padding:8px 10px; border:1.5px solid #e2e8f0; border-radius:6px; font-size:0.85rem; font-family:inherit; color:#1e293b; }
+.pv-contact-item input:focus { border-color:#2563eb; outline:none; }
 .pv-contact-fields { display:flex; gap:8px; flex:1; flex-wrap:wrap; min-width:0; }
 
 /* Contactos en vista detalle */
 .pv-contacts-grid { display:flex; flex-wrap:wrap; gap:10px; }
-.pv-contact-card { background:var(--pv-bg-card); border:1px solid var(--pv-border); border-radius:10px; padding:12px 16px; min-width:200px; flex:1; max-width:320px; }
-.pv-contact-card-name { font-weight:700; font-size:0.9rem; color:var(--pv-text-main); margin-bottom:4px; display:flex; align-items:center; gap:6px; }
+.pv-contact-card { background:#fff; border:1px solid #e2e8f0; border-radius:10px; padding:12px 16px; min-width:200px; flex:1; max-width:320px; }
+.pv-contact-card-name { font-weight:700; font-size:0.9rem; color:#1e293b; margin-bottom:4px; display:flex; align-items:center; gap:6px; }
 .pv-contact-card-name i { color:#7c3aed; font-size:0.8rem; }
-.pv-contact-card-role { font-size:0.75rem; color:var(--pv-text-muted); margin-bottom:6px; }
-.pv-contact-card-info { font-size:0.82rem; color:var(--pv-text-main); display:flex; flex-direction:column; gap:3px; }
-.pv-contact-card-info a { color:var(--pv-accent); text-decoration:none; }
+.pv-contact-card-role { font-size:0.75rem; color:#94a3b8; margin-bottom:6px; }
+.pv-contact-card-info { font-size:0.82rem; color:#475569; display:flex; flex-direction:column; gap:3px; }
+.pv-contact-card-info a { color:#2563eb; text-decoration:none; }
 .pv-contact-card-info a:hover { text-decoration:underline; }
 
 /* Vista detalle proveedor */
-.pv-detail-back { display:inline-flex; align-items:center; gap:6px; padding:8px 16px; background:color-mix(in srgb, var(--pv-border) 40%, transparent); color:var(--pv-text-main); border:1px solid var(--pv-border); border-radius:8px; cursor:pointer; font-size:0.85rem; font-weight:600; margin-bottom:18px; transition:all 0.2s; }
-.pv-detail-back:hover { background:color-mix(in srgb, var(--pv-border) 60%, transparent); }
+.pv-detail-back { display:inline-flex; align-items:center; gap:6px; padding:8px 16px; background:#f1f5f9; color:#475569; border:1px solid #e2e8f0; border-radius:8px; cursor:pointer; font-size:0.85rem; font-weight:600; margin-bottom:18px; transition:all 0.2s; }
+.pv-detail-back:hover { background:#e2e8f0; }
 
 .pv-detail-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:24px; flex-wrap:wrap; gap:16px; }
-.pv-detail-title { font-size:1.3rem; font-weight:700; color:var(--pv-text-main); display:flex; align-items:center; gap:10px; }
-.pv-detail-meta { font-size:0.85rem; color:var(--pv-text-muted); margin-top:6px; display:flex; gap:18px; flex-wrap:wrap; }
+.pv-detail-title { font-size:1.3rem; font-weight:700; color:#1e293b; display:flex; align-items:center; gap:10px; }
+.pv-detail-meta { font-size:0.85rem; color:#64748b; margin-top:6px; display:flex; gap:18px; flex-wrap:wrap; }
 .pv-detail-meta span { display:flex; align-items:center; gap:5px; }
 
 .pv-svc-tags { display:flex; flex-wrap:wrap; gap:8px; margin:16px 0 24px; }
-.pv-svc-tag { padding:6px 14px; background:color-mix(in srgb, var(--pv-accent) 10%, transparent); color:var(--pv-accent); border-radius:20px; font-size:0.82rem; font-weight:600; display:flex; align-items:center; gap:5px; }
+.pv-svc-tag { padding:6px 14px; background:#eff6ff; color:#2563eb; border-radius:20px; font-size:0.82rem; font-weight:600; display:flex; align-items:center; gap:5px; }
 
 /* Facturas tabla */
 .pv-inv-list { display:flex; flex-direction:column; gap:6px; }
-.pv-inv-row { display:flex; align-items:center; padding:12px 16px; background:var(--pv-bg-card); border:1.5px solid var(--pv-border); border-radius:10px; gap:12px; transition:all 0.15s; }
-.pv-inv-row:hover { border-color:color-mix(in srgb, var(--pv-accent) 50%, transparent); background:color-mix(in srgb, var(--pv-bg-card) 97%, var(--pv-accent)); }
+.pv-inv-row { display:flex; align-items:center; padding:12px 16px; background:#fff; border:1.5px solid #e2e8f0; border-radius:10px; gap:12px; transition:all 0.15s; }
+.pv-inv-row:hover { border-color:#93c5fd; background:#f8fafc; }
 .pv-inv-info { flex:1; min-width:0; }
-.pv-inv-concept { font-weight:600; color:var(--pv-text-main); font-size:0.9rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.pv-inv-dates { font-size:0.78rem; color:var(--pv-text-muted); margin-top:3px; display:flex; gap:14px; }
+.pv-inv-concept { font-weight:600; color:#1e293b; font-size:0.9rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.pv-inv-dates { font-size:0.78rem; color:#94a3b8; margin-top:3px; display:flex; gap:14px; }
 .pv-inv-amounts { text-align:right; flex-shrink:0; min-width:100px; }
-.pv-inv-total { font-weight:700; color:var(--pv-text-main); font-size:0.95rem; }
+.pv-inv-total { font-weight:700; color:#1e293b; font-size:0.95rem; }
 .pv-inv-remaining { font-size:0.78rem; color:#ef4444; margin-top:2px; }
 
 .pv-badge { padding:3px 10px; border-radius:12px; font-size:0.72rem; font-weight:700; text-transform:uppercase; }
@@ -127,8 +117,6 @@
 
 @keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
 </style>
-
-<div class="pv-section">
 
 <!-- ===== LISTA DE PROVEEDORES ===== -->
 <div id="pvListView">
@@ -161,7 +149,7 @@
     
     <div class="pv-detail-header">
         <div>
-            <div class="pv-detail-title"><i class="fas fa-building" style="color:var(--pv-accent);"></i> <span id="pvDetName">--</span></div>
+            <div class="pv-detail-title"><i class="fas fa-building" style="color:#2563eb;"></i> <span id="pvDetName">--</span></div>
             <div class="pv-detail-meta">
                 <span id="pvDetRnc"><i class="fas fa-id-card"></i> --</span>
                 <span id="pvDetAddress"><i class="fas fa-map-marker-alt"></i> --</span>
@@ -180,8 +168,8 @@
 
     <!-- Facturas -->
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
-        <h3 style="margin:0; font-size:1.05rem; font-weight:700; color:var(--pv-text-main); display:flex; align-items:center; gap:8px;">
-            <i class="fas fa-file-invoice-dollar" style="color:var(--pv-accent);"></i> Facturas de Compra
+        <h3 style="margin:0; font-size:1.05rem; font-weight:700; color:#1e293b; display:flex; align-items:center; gap:8px;">
+            <i class="fas fa-file-invoice-dollar" style="color:#d97706;"></i> Facturas de Compra
         </h3>
         <button class="pv-btn pv-btn-warning pv-btn-sm" onclick="pvOpenInvoiceModal()">
             <i class="fas fa-plus"></i> Nueva Factura
@@ -194,7 +182,7 @@
 <div class="pv-modal" id="pvFormModal">
     <div class="pv-modal-box">
         <div class="pv-modal-header">
-            <h3><i class="fas fa-truck" style="color:var(--pv-accent);"></i> <span id="pvFormTitle">Nuevo Proveedor</span></h3>
+            <h3><i class="fas fa-truck" style="color:#2563eb;"></i> <span id="pvFormTitle">Nuevo Proveedor</span></h3>
             <button class="pv-modal-close" onclick="pvCloseModal('pvFormModal')">&times;</button>
         </div>
         <div class="pv-modal-body">
@@ -209,7 +197,7 @@
             <!-- Contactos -->
             <div class="pv-form-group">
                 <label style="display:flex; justify-content:space-between; align-items:center;">
-                    <span><i class="fas fa-address-book" style="color:var(--pv-accent);"></i> Contactos</span>
+                    <span><i class="fas fa-address-book" style="color:#7c3aed;"></i> Contactos</span>
                     <button class="pv-btn pv-btn-outline pv-btn-sm" type="button" onclick="pvAddContactField()"><i class="fas fa-user-plus"></i> Añadir</button>
                 </label>
                 <div id="pvFormContacts" class="pv-svc-list"></div>
@@ -218,7 +206,7 @@
             <!-- Servicios -->
             <div class="pv-form-group">
                 <label style="display:flex; justify-content:space-between; align-items:center;">
-                    <span><i class="fas fa-concierge-bell" style="color:var(--pv-accent);"></i> Servicios que Ofrece</span>
+                    <span><i class="fas fa-concierge-bell" style="color:#2563eb;"></i> Servicios que Ofrece</span>
                     <button class="pv-btn pv-btn-outline pv-btn-sm" type="button" onclick="pvAddServiceField()"><i class="fas fa-plus"></i> Añadir</button>
                 </label>
                 <div id="pvFormServices" class="pv-svc-list"></div>
@@ -235,7 +223,7 @@
 <div class="pv-modal" id="pvInvoiceModal">
     <div class="pv-modal-box">
         <div class="pv-modal-header">
-            <h3><i class="fas fa-file-invoice-dollar" style="color:var(--pv-accent);"></i> Nueva Factura de Compra</h3>
+            <h3><i class="fas fa-file-invoice-dollar" style="color:#d97706;"></i> Nueva Factura de Compra</h3>
             <button class="pv-modal-close" onclick="pvCloseModal('pvInvoiceModal')">&times;</button>
         </div>
         <div class="pv-modal-body">
@@ -261,21 +249,21 @@
 <div class="pv-modal" id="pvPayModal">
     <div class="pv-modal-box" style="max-width:480px;">
         <div class="pv-modal-header">
-            <h3><i class="fas fa-hand-holding-usd" style="color:var(--accent-success, #16a34a);"></i> Registrar Pago</h3>
+            <h3><i class="fas fa-hand-holding-usd" style="color:#16a34a;"></i> Registrar Pago</h3>
             <button class="pv-modal-close" onclick="pvCloseModal('pvPayModal')">&times;</button>
         </div>
         <div class="pv-modal-body">
-            <div style="background:color-mix(in srgb, var(--pv-bg-card) 97%, var(--pv-accent)); border:1px solid var(--pv-border); border-radius:10px; padding:14px; margin-bottom:18px;">
+            <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:14px; margin-bottom:18px;">
                 <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
-                    <span style="color:var(--pv-text-muted); font-size:0.85rem;">Total factura:</span>
-                    <span style="font-weight:700; color:var(--pv-text-main);" id="pvPayTotal">$0.00</span>
+                    <span style="color:#64748b; font-size:0.85rem;">Total factura:</span>
+                    <span style="font-weight:700; color:#1e293b;" id="pvPayTotal">$0.00</span>
                 </div>
                 <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
-                    <span style="color:var(--pv-text-muted); font-size:0.85rem;">Pagado:</span>
+                    <span style="color:#64748b; font-size:0.85rem;">Pagado:</span>
                     <span style="font-weight:600; color:#16a34a;" id="pvPayPaid">$0.00</span>
                 </div>
-                <div style="display:flex; justify-content:space-between; padding-top:8px; border-top:1.5px solid var(--pv-border);">
-                    <span style="font-weight:700; color:var(--pv-text-main);">Pendiente:</span>
+                <div style="display:flex; justify-content:space-between; padding-top:8px; border-top:1.5px solid #e2e8f0;">
+                    <span style="font-weight:700; color:#1e293b;">Pendiente:</span>
                     <span style="font-weight:700; color:#ef4444; font-size:1.1rem;" id="pvPayRemaining">$0.00</span>
                 </div>
             </div>
@@ -297,16 +285,16 @@
                     </select>
                 </div>
                 <div class="pv-form-group">
-                    <label>Núm. Transacción <small style="color:var(--pv-text-muted);">(opcional)</small></label>
+                    <label>Núm. Transacción <small style="color:#94a3b8;">(opcional)</small></label>
                     <input type="text" id="pvPayRef" placeholder="# transferencia, cheque...">
                 </div>
             </div>
             <div class="pv-form-group"><label>Notas</label><textarea id="pvPayNotes" rows="2" placeholder="Notas del pago..."></textarea></div>
 
             <!-- Historial de pagos -->
-            <div id="pvPayHistory" style="display:none; margin-top:16px; padding-top:14px; border-top:1px solid color-mix(in srgb, var(--pv-border) 70%, transparent);">
-                <label style="font-size:0.82rem; font-weight:600; color:var(--pv-text-main); margin-bottom:8px; display:block;">
-                    <i class="fas fa-history" style="color:var(--pv-accent);"></i> Historial de Pagos
+            <div id="pvPayHistory" style="display:none; margin-top:16px; padding-top:14px; border-top:1px solid #f1f5f9;">
+                <label style="font-size:0.82rem; font-weight:600; color:#475569; margin-bottom:8px; display:block;">
+                    <i class="fas fa-history" style="color:#7c3aed;"></i> Historial de Pagos
                 </label>
                 <div id="pvPayHistoryList" style="max-height:160px; overflow-y:auto;"></div>
             </div>
@@ -390,16 +378,16 @@ function pvOpenDetail(id) {
                 '<div class="pv-contact-card-name"><i class="fas fa-user-circle"></i> '+esc(c.contact_name)+'</div>' +
                 (c.role ? '<div class="pv-contact-card-role">'+esc(c.role)+'</div>' : '') +
                 '<div class="pv-contact-card-info">' +
-                    (c.phone ? '<span><i class="fas fa-phone" style="width:14px;color:var(--pv-text-muted);"></i> <a href="tel:'+esc(c.phone)+'">'+esc(c.phone)+'</a></span>' : '') +
-                    (c.email ? '<span><i class="fas fa-envelope" style="width:14px;color:var(--pv-text-muted);"></i> <a href="mailto:'+esc(c.email)+'">'+esc(c.email)+'</a></span>' : '') +
+                    (c.phone ? '<span><i class="fas fa-phone" style="width:14px;color:#94a3b8;"></i> <a href="tel:'+esc(c.phone)+'">'+esc(c.phone)+'</a></span>' : '') +
+                    (c.email ? '<span><i class="fas fa-envelope" style="width:14px;color:#94a3b8;"></i> <a href="mailto:'+esc(c.email)+'">'+esc(c.email)+'</a></span>' : '') +
                 '</div>' +
             '</div>'; }).join('') + '</div>'
-            : '<span style="color:var(--pv-text-muted); font-size:0.85rem;">Sin contactos registrados</span>';
+            : '<span style="color:#94a3b8; font-size:0.85rem;">Sin contactos registrados</span>';
         document.getElementById('pvDetContacts').innerHTML = ctcHtml;
 
         const svcsHtml = data.services.length
             ? data.services.map(function(s) { return '<span class="pv-svc-tag"><i class="fas fa-concierge-bell"></i> '+esc(s.service_name)+'</span>'; }).join('')
-            : '<span style="color:var(--pv-text-muted); font-size:0.85rem;">Sin servicios registrados</span>';
+            : '<span style="color:#94a3b8; font-size:0.85rem;">Sin servicios registrados</span>';
         document.getElementById('pvDetServices').innerHTML = svcsHtml;
 
         document.getElementById('pvListView').style.display = 'none';
@@ -542,7 +530,7 @@ function pvDeleteSupplier() {
 function pvLoadInvoices() {
     if (!pvCurrentSupplier) return;
     const container = document.getElementById('pvInvoicesList');
-    container.innerHTML = '<div style="text-align:center; padding:20px; color:var(--pv-text-muted);"><i class="fas fa-spinner fa-spin"></i></div>';
+    container.innerHTML = '<div style="text-align:center; padding:20px; color:#94a3b8;"><i class="fas fa-spinner fa-spin"></i></div>';
 
     fetch('/modulo?pagina=Proveedores&ajax=list_invoices&supplier_id=' + pvCurrentSupplier.id)
     .then(function(r) { return r.json(); })
@@ -561,7 +549,7 @@ function pvLoadInvoices() {
                     '<div class="pv-inv-concept">'+(inv.invoice_number ? '#'+esc(inv.invoice_number)+' - ' : '')+esc(inv.concept)+'</div>' +
                     '<div class="pv-inv-dates">' +
                         '<span><i class="fas fa-calendar"></i> '+inv.issue_date+'</span>' +
-                        (inv.paid_date ? '<span><i class="fas fa-check-circle" style="color:var(--accent-success, #16a34a);"></i> Pagada: '+inv.paid_date+'</span>' : '') +
+                        (inv.paid_date ? '<span><i class="fas fa-check-circle" style="color:#16a34a;"></i> Pagada: '+inv.paid_date+'</span>' : '') +
                         (inv.due_date ? '<span><i class="fas fa-clock"></i> Vence: '+inv.due_date+'</span>' : '') +
                     '</div>' +
                 '</div>' +
@@ -695,7 +683,7 @@ function pvLoadPayHistory(invId) {
                 return '<div style="display:flex; justify-content:space-between; align-items:center; padding:8px 10px; border-bottom:1px solid #f1f5f9; font-size:0.82rem;">' +
                     '<div>' +
                         '<span style="font-weight:600; color:#1e293b;">RD$ '+fmtNum(p.amount)+'</span>' +
-                        '<span style="color:var(--pv-text-muted); margin-left:8px;">'+p.payment_method+(p.reference ? ' &mdash; N\u00fam: <b>'+esc(p.reference)+'</b>' : '')+'</span>' +
+                        '<span style="color:#94a3b8; margin-left:8px;">'+p.payment_method+(p.reference ? ' &mdash; N\u00fam: <b>'+esc(p.reference)+'</b>' : '')+'</span>' +
                     '</div>' +
                     '<span style="color:#64748b;">'+(p.payment_date || p.created_at || '').substring(0,10)+'</span>' +
                 '</div>';
@@ -735,4 +723,3 @@ function pvCloseModal(id) { document.getElementById(id).classList.remove('active
 function esc(s) { const d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; }
 function fmtNum(n) { return parseFloat(n||0).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}); }
 </script>
-</div>

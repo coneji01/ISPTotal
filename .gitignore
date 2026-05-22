@@ -32,3 +32,10 @@ backups/
 # Stale dev files
 wa-*.png
 wa-*.html
+
+# Multi-tenant data
+data/
+.wwebjs_cache/
+backend/isp.db
+backend/openwa-service.js.bak
+graphify-out/

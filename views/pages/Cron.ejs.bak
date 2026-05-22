@@ -1,0 +1,437 @@
+<style>
+.cron-wrap{max-width:780px;margin:0 auto;padding:10px 0}
+.cron-header{display:flex;align-items:center;gap:14px;margin-bottom:20px;flex-wrap:wrap}
+.cron-header h2{margin:0;font-size:1.35rem;font-weight:700;display:flex;align-items:center;gap:10px}
+.cron-header h2 i{color:#2563eb}
+.cron-sub{font-size:.85rem;color:#64748b;margin:2px 0 0}
+.cron-badge{display:inline-flex;align-items:center;gap:6px;background:#f0fdf4;color:#16a34a;padding:5px 14px;border-radius:20px;font-size:.78rem;font-weight:700;border:1px solid #bbf7d0}
+.cron-dot{width:8px;height:8px;border-radius:50%;background:#16a34a;animation:cronPulse 2s infinite}
+@keyframes cronPulse{0%{opacity:1}50%{opacity:.3}100%{opacity:1}}
+.cron-back{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:10px;font-size:.82rem;font-weight:600;color:#475569;background:#f1f5f9;border:1px solid #e2e8f0;cursor:pointer;text-decoration:none;transition:all .2s;margin-left:auto}
+.cron-back:hover{background:#e2e8f0;border-color:#cbd5e1;color:#1e293b}
+
+.cron-list{display:flex;flex-direction:column;gap:12px}
+.cron-card{background:#fff;border:1px solid #e2e8f0;border-radius:14px;overflow:hidden;transition:all .2s;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.cron-card:hover{border-color:#cbd5e1;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.cron-card-header{display:flex;align-items:center;gap:14px;padding:16px 20px;cursor:pointer;user-select:none;transition:background .15s}
+.cron-card-header:hover{background:#f8fafc}
+.cron-icon{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0}
+.cron-icon-green{background:#dcfce7;color:#16a34a}
+.cron-icon-red{background:#fee2e2;color:#dc2626}
+.cron-icon-amber{background:#fef3c7;color:#d97706}
+.cron-icon-indigo{background:#eef2ff;color:#6366f1}
+.cron-icon-blue{background:#eff6ff;color:#2563eb}
+.cron-info{flex:1;min-width:0}
+.cron-name{font-weight:700;font-size:.92rem;color:#1e293b;margin-bottom:2px}
+.cron-desc{font-size:.8rem;color:#64748b;line-height:1.4}
+.cron-status{font-size:.72rem;padding:3px 10px;border-radius:12px;font-weight:600;white-space:nowrap}
+.cron-status-ok{background:#f0fdf4;color:#16a34a}
+.cron-status-error{background:#fef2f2;color:#dc2626}
+.cron-status-never{background:#f1f5f9;color:#94a3b8}
+
+.cron-toggle-wrap{flex-shrink:0;display:flex;align-items:center;margin-left:6px}
+.cron-toggle{position:relative;width:46px;height:26px;background:#cbd5e1;border-radius:13px;cursor:pointer;transition:background .25s;border:none;padding:0;flex-shrink:0}
+.cron-toggle.on{background:#16a34a}
+.cron-toggle-knob{position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform .25s;box-shadow:0 1px 3px rgba(0,0,0,.15)}
+.cron-toggle.on .cron-toggle-knob{transform:translateX(20px)}
+.cron-chevron{color:#94a3b8;font-size:.7rem;transition:transform .25s;margin-left:6px;flex-shrink:0}
+.cron-chevron.open{transform:rotate(180deg)}
+
+.cron-card-body{display:none;padding:0 20px 20px;border-top:1px solid #e2e8f0;animation:cronSlide .2s ease}
+.cron-card-body.open{display:block}
+@keyframes cronSlide{from{max-height:0;opacity:0}to{max-height:400px;opacity:1}}
+.cron-controls{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding-top:16px}
+.cron-ctrl-group{display:flex;align-items:center;gap:6px}
+.cron-ctrl-label{font-size:.78rem;font-weight:600;color:#64748b}
+.cron-select{padding:6px 10px;border:1px solid #e2e8f0;border-radius:8px;font-size:.82rem;background:#fff;color:#1e293b;cursor:pointer;outline:none;transition:border-color .2s}
+.cron-select:focus{border-color:#2563eb}
+.cron-btn{padding:8px 16px;border:none;border-radius:9px;font-size:.8rem;font-weight:600;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:6px}
+.cron-btn-primary{background:#2563eb;color:#fff}
+.cron-btn-primary:hover{background:#1d4ed8}
+.cron-btn-green{background:#16a34a;color:#fff}
+.cron-btn-green:hover{background:#15803d}
+.cron-btn-outline{background:#f1f5f9;color:#475569;border:1px solid #e2e8f0}
+.cron-btn-outline:hover{background:#e2e8f0}
+.cron-btn-sm{padding:6px 12px;font-size:.75rem}
+.cron-btn-danger{background:#dc2626;color:#fff}
+.cron-btn-danger:hover{background:#b91c1c}
+.cron-btn:disabled{opacity:.5;cursor:not-allowed}
+.cron-actions{display:flex;gap:8px;margin-left:auto}
+.cron-server-time{display:flex;align-items:center;gap:12px;padding:10px 14px;margin-top:8px;background:linear-gradient(135deg,#f0f9ff,#e0f2fe);border:1px solid #bae6fd;border-radius:10px;animation:fadeIn 0.3s}
+.cron-time-icon{width:38px;height:38px;border-radius:10px;background:#0ea5e9;display:flex;align-items:center;justify-content:center;font-size:1rem;color:#fff;flex-shrink:0;box-shadow:0 2px 6px rgba(14,165,233,0.3)}
+.cron-time-info{flex:1}
+.cron-time-label{font-size:.7rem;font-weight:700;color:#0284c7;text-transform:uppercase;letter-spacing:.4px}
+.cron-time-value{font-size:1.1rem;font-weight:700;color:#0c4a6e;font-family:'Inter','Segoe UI',monospace;margin-top:1px}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+
+/* Overlay / Modal base */
+.cron-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(15,23,42,.6);backdrop-filter:blur(4px);z-index:10000;justify-content:center;align-items:center}
+.cron-overlay.on{display:flex}
+.cron-modal{background:#fff;border-radius:18px;padding:32px;max-width:420px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.25);text-align:center;animation:cronFade .2s ease}
+@keyframes cronFade{from{transform:scale(.92);opacity:0}to{transform:scale(1);opacity:1}}
+.cron-modal-icon{width:56px;height:56px;border-radius:50%;margin:0 auto 16px;display:flex;align-items:center;justify-content:center;font-size:1.4rem}
+.cron-modal-icon-warn{background:#fef3c7;color:#d97706}
+.cron-modal-icon-info{background:#dbeafe;color:#2563eb}
+.cron-modal h3{font-size:1.05rem;margin-bottom:8px;color:#1e293b}
+.cron-modal p{font-size:.85rem;color:#64748b;line-height:1.6;margin-bottom:22px}
+.cron-modal-btns{display:flex;gap:10px;justify-content:center}
+.cron-modal-btns .cron-btn{min-width:110px}
+
+/* Log Modal (larger) */
+.cron-log-modal{background:#1e293b;border-radius:16px;max-width:660px;width:92%;overflow:hidden;animation:cronFade .2s ease;box-shadow:0 24px 64px rgba(0,0,0,.4)}
+.cron-log-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;background:#0f172a;border-bottom:1px solid #334155}
+.cron-log-header h3{color:#f1f5f9;font-size:.95rem;margin:0;display:flex;align-items:center;gap:8px}
+.cron-log-header h3 i{color:#38bdf8}
+.cron-log-close{background:transparent;border:none;color:#94a3b8;font-size:1.3rem;cursor:pointer;padding:4px;line-height:1;border-radius:6px;transition:all .15s}
+.cron-log-close:hover{color:#f1f5f9;background:#334155}
+.cron-log-body{padding:16px 20px;max-height:400px;overflow:auto}
+.cron-log-info{display:flex;gap:16px;margin-bottom:12px;flex-wrap:wrap}
+.cron-log-info-item{font-size:.75rem;color:#64748b}
+.cron-log-info-item b{color:#94a3b8}
+.cron-log-output{background:#0f172a;border-radius:10px;padding:14px 16px;font-family:'Cascadia Code','Fira Code','Consolas',monospace;font-size:.8rem;color:#a5f3fc;line-height:1.6;white-space:pre-wrap;word-break:break-word;border:1px solid #1e293b;min-height:60px}
+
+/* Toast */
+.cron-toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);padding:12px 24px;border-radius:12px;font-size:.85rem;font-weight:600;z-index:99999;box-shadow:0 8px 24px rgba(0,0,0,.18);animation:cronToastIn .3s ease;max-width:420px;text-align:center}
+.cron-toast-success{background:#f0fdf4;color:#166534;border:1px solid #bbf7d0}
+.cron-toast-error{background:#fef2f2;color:#991b1b;border:1px solid #fecaca}
+@keyframes cronToastIn{from{transform:translateX(-50%) translateY(20px);opacity:0}to{transform:translateX(-50%) translateY(0);opacity:1}}
+
+.save-indicator{display:none;font-size:.72rem;color:#16a34a;font-weight:600;align-items:center;gap:4px}
+.save-indicator.show{display:inline-flex}
+
+.spin{animation:cronSpin .8s linear infinite}
+@keyframes cronSpin{to{transform:rotate(360deg)}}
+</style>
+
+<div class="cron-wrap">
+  <div class="cron-header">
+    <h2><i class="fas fa-clock"></i> Tareas Programadas</h2>
+    <div class="cron-sub">
+      <span class="cron-badge"><span class="cron-dot"></span> Cron Activo</span>
+    </div>
+    <a href="/modulo?pagina=Configuracion" class="cron-back"><i class="fas fa-arrow-left"></i> Volver</a>
+  </div>
+  <p class="cron-sub" style="margin:-12px 0 18px;font-size:.82rem;color:#94a3b8">Gestión de tareas automatizadas del sistema</p>
+
+  <div class="cron-list" id="cronList">
+    <% if (typeof tasks !== 'undefined' && tasks && tasks.length) { %>
+      <% tasks.forEach(function(t) { %>
+        <%
+          var iconClass = 'cron-icon-green';
+          var icon = 'fa-file-invoice-dollar';
+          switch(t.task_name) {
+            case 'generar_facturas': iconClass = 'cron-icon-green'; icon = 'fa-file-invoice-dollar'; break;
+            case 'suspension': iconClass = 'cron-icon-red'; icon = 'fa-user-slash'; break;
+            case 'recordatorios': iconClass = 'cron-icon-amber'; icon = 'fa-bell'; break;
+            case 'backup': iconClass = 'cron-icon-indigo'; icon = 'fa-database'; break;
+            case 'monitoreo': iconClass = 'cron-icon-blue'; icon = 'fa-desktop'; break;
+          }
+          var nameMap = { 'generar_facturas':'Generar Facturas', 'suspension':'Suspensión', 'recordatorios':'Recordatorios', 'backup':'Backup','monitoreo':'Monitoreo' };
+          var descMap = { 'generar_facturas':'Crea facturas automáticas y marca vencidas según el ciclo de facturación', 'suspension':'Suspende servicios morosos en MikroTik, OLT y base de datos', 'recordatorios':'Envía recordatorios a clientes con facturas pendientes', 'backup':'Realiza backup de la base de datos', 'monitoreo':'Monitorea el estado de los routers y servicios' };
+          var statusClass = t.last_status === 'ok' ? 'cron-status-ok' : (t.last_status === 'error' ? 'cron-status-error' : 'cron-status-never');
+          var statusLabel = t.last_status === 'ok' ? 'Éxito' : (t.last_status === 'error' ? 'Error' : 'Nunca');
+          var lastRunLabel = t.last_run ? t.last_run : 'Nunca';
+        %>
+        <div class="cron-card" data-task="<%= t.task_name %>">
+          <div class="cron-card-header" onclick="toggleCron(this, event)">
+            <div class="cron-icon <%= iconClass %>"><i class="fas <%= icon %>"></i></div>
+            <div class="cron-info">
+              <div class="cron-name"><%= nameMap[t.task_name] || t.task_name %></div>
+              <div class="cron-desc"><%= descMap[t.task_name] || '' %></div>
+            </div>
+            <div class="cron-toggle-wrap">
+              <button class="cron-toggle <%= t.enabled ? 'on' : '' %>" data-task="<%= t.task_name %>" onclick="event.stopPropagation();toggleCronBtn(this, event)"><div class="cron-toggle-knob"></div></button>
+            </div>
+            <i class="fas fa-chevron-down cron-chevron"></i>
+          </div>
+          <div class="cron-card-body">
+            <div class="cron-controls">
+              <div class="cron-ctrl-group">
+                <span class="cron-ctrl-label">Hora:</span>
+                <select class="cron-select cron-hour" data-task="<%= t.task_name %>">
+                  <% for(var h = 0; h < 24; h++) { %>
+                    <option value="<%= h %>" <%= t.hour === h ? 'selected' : '' %>><%= ('0' + h).slice(-2) %></option>
+                  <% } %>
+                </select>
+              </div>
+              <div class="cron-ctrl-group">
+                <span class="cron-ctrl-label">Minuto:</span>
+                <select class="cron-select cron-minute" data-task="<%= t.task_name %>">
+                  <% for(var m = 0; m < 60; m += 5) { %>
+                    <option value="<%= m %>" <%= t.minute === m ? 'selected' : '' %>><%= ('0' + m).slice(-2) %></option>
+                  <% } %>
+                </select>
+              </div>
+              <button class="cron-btn cron-btn-primary cron-btn-sm" onclick="saveCronTime('<%= t.task_name %>')" data-task="<%= t.task_name %>">
+                <i class="fas fa-save"></i> Guardar
+              </button>
+              <span class="save-indicator" data-task="<%= t.task_name %>"><i class="fas fa-check-circle"></i> Guardado</span>
+              <div class="cron-actions">
+                <button class="cron-btn cron-btn-green cron-btn-sm" onclick="runCron('<%= t.task_name %>')" data-task="<%= t.task_name %>">
+                  <i class="fas fa-play"></i> Ejecutar
+                </button>
+                <button class="cron-btn cron-btn-outline cron-btn-sm" onclick="viewLog('<%= t.task_name %>')" data-task="<%= t.task_name %>">
+                  <i class="fas fa-terminal"></i> Log
+                </button>
+              </div>
+            </div>
+            <div class="cron-server-time">
+              <div class="cron-time-icon"><i class="fas fa-server"></i></div>
+              <div class="cron-time-info">
+                <div class="cron-time-label">Hora del servidor</div>
+                <div class="cron-time-value" id="serverTimeDisplay_<%= t.task_name %>"><%= new Date().toLocaleString('es-DO', { hour12: true, hour: '2-digit', minute: '2-digit', second: '2-digit', day: '2-digit', month: 'short', year: 'numeric' }) %></div>
+              </div>
+            </div>
+            <div style="margin-top:10px;display:flex;gap:12px;font-size:.75rem;color:#94a3b8">
+              <span><b style="color:#64748b">Último:</b> <%= lastRunLabel %></span>
+              <span class="cron-status <%= statusClass %>"><%= statusLabel %></span>
+            </div>
+          </div>
+        </div>
+      <% }); %>
+    <% } else { %>
+      <div style="text-align:center;padding:40px;color:#94a3b8"><i class="fas fa-clock" style="font-size:2rem;display:block;margin-bottom:12px"></i>No hay tareas configuradas</div>
+    <% } %>
+  </div>
+</div>
+
+<!-- Confirmación: Ejecutar tarea -->
+<div class="cron-overlay" id="confirmRunModal">
+  <div class="cron-modal">
+    <div class="cron-modal-icon cron-modal-icon-warn"><i class="fas fa-play-circle"></i></div>
+    <h3>Ejecutar Tarea</h3>
+    <p id="confirmRunMsg">¿Está seguro de ejecutar esta tarea?</p>
+    <div class="cron-modal-btns">
+      <button class="cron-btn cron-btn-outline" onclick="closeConfirmRun()">Cancelar</button>
+      <button class="cron-btn cron-btn-primary" id="confirmRunBtn" onclick="confirmRunExec()">
+        <i class="fas fa-play"></i> Ejecutar
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Log -->
+<div class="cron-overlay" id="logModal">
+  <div class="cron-log-modal">
+    <div class="cron-log-header">
+      <h3><i class="fas fa-terminal"></i> <span id="logTitle">Log de Tarea</span></h3>
+      <button class="cron-log-close" onclick="closeLogModal()">&times;</button>
+    </div>
+    <div class="cron-log-body">
+      <div class="cron-log-info">
+        <span class="cron-log-info-item"><b>Estado:</b> <span id="logStatus">—</span></span>
+        <span class="cron-log-info-item"><b>Última ejecución:</b> <span id="logLastRun">—</span></span>
+      </div>
+      <div class="cron-log-output" id="logOutput">Sin datos de ejecución</div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ---------- Toggle card expand/collapse ----------
+window.toggleCron = function(header, e) {
+  if (e && (e.target.closest('.cron-toggle') || e.target.closest('.cron-toggle-wrap'))) return;
+  var body = header.nextElementSibling;
+  var ch = header.querySelector('.cron-chevron');
+  if (!body) return;
+  body.classList.toggle('open');
+  if (ch) ch.classList.toggle('open');
+};
+
+// ---------- Toggle enabled state ----------
+window.toggleCronBtn = function(btn, e) {
+  var isOn = btn.classList.contains('on');
+  var task = btn.getAttribute('data-task');
+  if (!task) return;
+  
+  // Optimistic toggle
+  btn.classList.toggle('on');
+  
+  var hour = document.querySelector('.cron-hour[data-task="' + task + '"]');
+  var minute = document.querySelector('.cron-minute[data-task="' + task + '"]');
+  var h = hour ? parseInt(hour.value) : 6;
+  var m = minute ? parseInt(minute.value) : 0;
+  
+  fetch('/modulo?pagina=Cron&ajax=save_task', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ task: task, enabled: !isOn ? 1 : 0, hour: h, minute: m })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    if (d.status !== 'success') {
+      btn.classList.toggle('on'); // revert
+      showCronToast('Error al guardar: ' + (d.message || ''), 'error');
+    } else {
+      var label = !isOn ? 'activada' : 'desactivada';
+      showCronToast('Tarea ' + label + ' correctamente');
+    }
+  })
+  .catch(function() {
+    btn.classList.toggle('on'); // revert
+    showCronToast('Error de conexión', 'error');
+  });
+};
+
+// ---------- Save cron time (hour + minute) ----------
+window.saveCronTime = function(task) {
+  if (!task) return;
+  var hourEl = document.querySelector('.cron-hour[data-task="' + task + '"]');
+  var minEl = document.querySelector('.cron-minute[data-task="' + task + '"]');
+  var hour = hourEl ? parseInt(hourEl.value) : 6;
+  var minute = minEl ? parseInt(minEl.value) : 0;
+  var toggle = document.querySelector('.cron-toggle[data-task="' + task + '"]');
+  var enabled = toggle && toggle.classList.contains('on') ? 1 : 0;
+  var indicator = document.querySelector('.save-indicator[data-task="' + task + '"]');
+  
+  fetch('/modulo?pagina=Cron&ajax=save_task', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ task: task, enabled: enabled, hour: hour, minute: minute })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    if (d.status === 'success') {
+      if (indicator) {
+        indicator.classList.add('show');
+        setTimeout(function() { indicator.classList.remove('show'); }, 2000);
+      }
+      showCronToast('Horario guardado correctamente');
+    } else {
+      showCronToast('Error: ' + (d.message || ''), 'error');
+    }
+  })
+  .catch(function() {
+    showCronToast('Error de conexión', 'error');
+  });
+};
+
+// ---------- Run cron (open confirmation) ----------
+var _pendingTask = null;
+window.runCron = function(task) {
+  _pendingTask = task;
+  var nameMap = { 'generar_facturas':'Generar Facturas', 'suspension':'Suspensión', 'recordatorios':'Recordatorios', 'backup':'Backup', 'monitoreo':'Monitoreo' };
+  var name = nameMap[task] || task;
+  document.getElementById('confirmRunMsg').innerHTML = '¿Está seguro de ejecutar <b>' + name + '</b> ahora?';
+  document.getElementById('confirmRunBtn').innerHTML = '<i class="fas fa-play"></i> Ejecutar';
+  document.getElementById('confirmRunBtn').disabled = false;
+  document.getElementById('confirmRunModal').classList.add('on');
+};
+
+window.closeConfirmRun = function() {
+  document.getElementById('confirmRunModal').classList.remove('on');
+  _pendingTask = null;
+};
+
+window.confirmRunExec = function() {
+  var task = _pendingTask;
+  if (!task) return;
+  
+  var btn = document.getElementById('confirmRunBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Ejecutando...';
+  
+  var runBtn = document.querySelector('.cron-btn-green[data-task="' + task + '"]');
+  if (runBtn) {
+    runBtn.disabled = true;
+    runBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+  }
+  
+  fetch('/modulo?pagina=Cron&ajax=run_task', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ task: task })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    closeConfirmRun();
+    if (d.status === 'success' && d.data) {
+      showCronToast('Tarea ejecutada correctamente');
+      // Refresh page to update status badges
+      setTimeout(function() { location.reload(); }, 1500);
+    } else {
+      showCronToast('Error: ' + (d.message || ''), 'error');
+      if (runBtn) {
+        runBtn.disabled = false;
+        runBtn.innerHTML = '<i class="fas fa-play"></i> Ejecutar';
+      }
+    }
+  })
+  .catch(function() {
+    closeConfirmRun();
+    showCronToast('Error de conexión', 'error');
+    if (runBtn) {
+      runBtn.disabled = false;
+      runBtn.innerHTML = '<i class="fas fa-play"></i> Ejecutar';
+    }
+  });
+};
+
+// ---------- View log ----------
+window.viewLog = function(task) {
+  var nameMap = { 'generar_facturas':'Generar Facturas', 'suspension':'Suspensión', 'recordatorios':'Recordatorios', 'backup':'Backup', 'monitoreo':'Monitoreo' };
+  var name = nameMap[task] || task;
+  document.getElementById('logTitle').textContent = 'Log: ' + name;
+  document.getElementById('logStatus').textContent = 'Cargando...';
+  document.getElementById('logLastRun').textContent = '—';
+  document.getElementById('logOutput').textContent = 'Cargando...';
+  document.getElementById('logModal').classList.add('on');
+  
+  fetch('/modulo?pagina=Cron&ajax=get_log&task=' + encodeURIComponent(task))
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    if (d.status === 'success' && d.data) {
+      var statusLabels = { 'ok': '✅ Éxito', 'error': '❌ Error', 'never': '⏳ Nunca ejecutada' };
+      document.getElementById('logStatus').textContent = statusLabels[d.data.status] || d.data.status;
+      document.getElementById('logLastRun').textContent = d.data.lastRun || 'Nunca';
+      document.getElementById('logOutput').textContent = d.data.output || 'Sin salida';
+    } else {
+      document.getElementById('logOutput').textContent = 'Error al obtener log';
+    }
+  })
+  .catch(function() {
+    document.getElementById('logOutput').textContent = 'Error de conexión';
+  });
+};
+
+window.closeLogModal = function() {
+  document.getElementById('logModal').classList.remove('on');
+};
+
+// Close modals on overlay click
+document.addEventListener('click', function(e) {
+  if (e.target.classList.contains('cron-overlay')) {
+    e.target.classList.remove('on');
+    if (e.target.id === 'confirmRunModal') _pendingTask = null;
+  }
+});
+
+// Close log modal on Escape
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    closeConfirmRun();
+    closeLogModal();
+  }
+});
+
+// ---------- Toast ----------
+function showCronToast(msg, type) {
+  type = type || 'success';
+  var t = document.createElement('div');
+  t.className = 'cron-toast cron-toast-' + type;
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(function() { t.remove(); }, 3000);
+}
+// Actualizar hora del servidor en tiempo real (todas las tarjetas)
+function updateServerTime() {
+  var now = new Date();
+  var opts = { hour12: true, hour: '2-digit', minute: '2-digit', second: '2-digit', day: '2-digit', month: 'short', year: 'numeric' };
+  var val = now.toLocaleString('es-DO', opts);
+  document.querySelectorAll('[id^="serverTimeDisplay_"]').forEach(function(el) {
+    el.textContent = val;
+  });
+}
+setInterval(updateServerTime, 1000);
+updateServerTime();
+</script>

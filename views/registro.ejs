@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registro | ISP Total</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; font-family:'Inter',sans-serif; }
+    body { background:linear-gradient(135deg,#0f172a 0%,#1e293b 100%); min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px; }
+    .reg-card { background:#fff; border-radius:16px; width:100%; max-width:480px; padding:40px 35px; box-shadow:0 25px 60px rgba(0,0,0,0.3); }
+    .reg-logo { text-align:center; margin-bottom:25px; }
+    .reg-logo i { font-size:2.5rem; color:#6366f1; }
+    .reg-logo h1 { font-size:1.5rem; color:#1e293b; margin-top:8px; }
+    .reg-logo p { color:#64748b; font-size:0.85rem; margin-top:4px; }
+    .reg-field { margin-bottom:16px; }
+    .reg-field label { display:block; font-size:0.82rem; font-weight:600; color:#475569; margin-bottom:5px; }
+    .reg-field input { width:100%; padding:11px 14px; border:1.5px solid #e2e8f0; border-radius:10px; font-size:0.9rem; transition:border 0.2s; }
+    .reg-field input:focus { outline:none; border-color:#6366f1; box-shadow:0 0 0 3px rgba(99,102,241,0.1); }
+    .reg-btn { width:100%; padding:12px; background:#6366f1; color:#fff; border:none; border-radius:10px; font-size:0.95rem; font-weight:600; cursor:pointer; transition:all 0.2s; margin-top:5px; }
+    .reg-btn:hover { background:#4f46e5; transform:translateY(-1px); }
+    .reg-btn:disabled { opacity:0.6; cursor:not-allowed; }
+    .reg-error { background:#fef2f2; color:#dc2626; padding:10px 14px; border-radius:8px; font-size:0.82rem; margin-bottom:14px; display:none; }
+    .reg-success { background:#f0fdf4; color:#166534; padding:14px; border-radius:8px; font-size:0.85rem; display:none; text-align:center; }
+    .reg-success i { font-size:2rem; display:block; margin-bottom:8px; color:#16a34a; }
+    .reg-footer { text-align:center; margin-top:18px; font-size:0.82rem; color:#94a3b8; }
+    .reg-footer a { color:#6366f1; text-decoration:none; font-weight:600; }
+    .reg-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    @media(max-width:500px) { .reg-card { padding:25px 20px; } .reg-grid { grid-template-columns:1fr; } }
+  </style>
+</head>
+<body>
+  <div class="reg-card">
+    <div class="reg-logo">
+      <i class="fas fa-globe"></i>
+      <h1>ISP Total</h1>
+      <p>Crea tu cuenta y gestiona tu ISP</p>
+    </div>
+
+    <div class="reg-error" id="regError"></div>
+    <div class="reg-success" id="regSuccess">
+      <i class="fas fa-envelope-open-text"></i>
+      <strong>¡Registro exitoso!</strong><br>
+      Te hemos enviado un correo de confirmación.<br>
+      Revisa tu bandeja de entrada y haz clic en el enlace para activar tu cuenta.
+    </div>
+
+    <form id="regForm" onsubmit="return registrar(event)">
+      <div class="reg-grid">
+        <div class="reg-field">
+          <label>Nombre de la Empresa</label>
+          <input type="text" name="company_name" required placeholder="Ej: Mi ISP">
+        </div>
+        <div class="reg-field">
+          <label>Tu Nombre</label>
+          <input type="text" name="owner_name" required placeholder="Ej: Juan Pérez">
+        </div>
+      </div>
+      <div class="reg-field">
+        <label>Correo Electrónico</label>
+        <input type="email" name="email" required placeholder="ejemplo@correo.com">
+      </div>
+      <div class="reg-grid">
+        <div class="reg-field">
+          <label>Usuario</label>
+          <input type="text" name="username" required placeholder="Ej: admin">
+        </div>
+        <div class="reg-field">
+          <label>Contraseña</label>
+          <input type="password" name="password" required minlength="6" placeholder="Mín. 6 caracteres">
+        </div>
+        <div class="reg-field">
+          <label>Confirmar Contraseña</label>
+          <input type="password" name="password_confirm" required minlength="6" placeholder="Repite la contraseña">
+        </div>
+      </div>
+      <button type="submit" class="reg-btn" id="regBtn"><i class="fas fa-user-plus"></i> Crear Cuenta</button>
+    </form>
+
+    <div class="reg-footer">
+      ¿Ya tienes cuenta? <a href="/">Iniciar Sesión</a>
+    </div>
+  </div>
+
+  <script>
+  function registrar(e) {
+    e.preventDefault();
+    var btn = document.getElementById('regBtn');
+    var errDiv = document.getElementById('regError');
+    var okDiv = document.getElementById('regSuccess');
+    var form = document.getElementById('regForm');
+    
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Registrando...';
+    errDiv.style.display = 'none';
+    
+    var fd = new FormData(form);
+    var data = {};
+    fd.forEach(function(v, k) { data[k] = v; });
+    
+    // Validate password match
+    if (data.password !== data.password_confirm) {
+      errDiv.textContent = 'Las contraseñas no coinciden';
+      errDiv.style.display = 'block';
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-user-plus"></i> Crear Cuenta';
+      return false;
+    }
+    
+    fetch('/api/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (d.success) {
+        form.style.display = 'none';
+        okDiv.style.display = 'block';
+      } else {
+        errDiv.textContent = d.msg || 'Error al registrar';
+        errDiv.style.display = 'block';
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-user-plus"></i> Crear Cuenta';
+      }
+    })
+    .catch(function() {
+      errDiv.textContent = 'Error de conexión';
+      errDiv.style.display = 'block';
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-user-plus"></i> Crear Cuenta';
+    });
+    
+    return false;
+  }
+  </script>
+</body>
+</html>

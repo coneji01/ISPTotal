@@ -1,207 +1,258 @@
 <style>
-:root{--tr-primary:#7c3aed;--tr-border:#e2e8f0;--tr-text:#1e293b;--tr-muted:#64748b;--tr-bg:#f8fafc;}
+:root{--tr-primary:#7c3aed;--tr-border:var(--border-color);--tr-text:var(--text-main);--tr-muted:var(--text-gray);--tr-bg:var(--bg-card);}
 .tr-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px;}
 .tr-title{font-size:1.4rem;font-weight:700;margin:0;display:flex;align-items:center;gap:10px;}
 .tr-title i{color:var(--tr-primary);}
 .tr-card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;}
-.tr-olt-card{background:white;border:1px solid var(--tr-border);border-radius:12px;overflow:hidden;transition:box-shadow 0.15s;}
+@media(max-width:500px){.tr-card-grid{grid-template-columns:1fr;}}
+.tr-olt-card{background:var(--bg-primary);border:1px solid var(--tr-border);border-radius:12px;overflow:hidden;transition:box-shadow 0.15s;}
 .tr-olt-card:hover{box-shadow:0 4px 16px rgba(0,0,0,0.06);}
 .tr-olt-top{padding:18px 20px;display:flex;align-items:center;gap:14px;}
 .tr-olt-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;}
 .tr-olt-icon.ok{background:#f3e8ff;color:#7c3aed;}
+.tr-olt-icon.err{background:#fee2e2;color:#dc2626;}
+.tr-olt-icon.load{background:var(--bg-card);color:var(--text-gray);}
 .tr-olt-info{flex:1;min-width:0;}
-.tr-olt-name{font-weight:700;font-size:1.05rem;color:var(--tr-text);}
+.tr-olt-name{font-weight:700;font-size:1.05rem;color:var(--tr-text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .tr-olt-sub{font-size:0.82rem;color:var(--tr-muted);font-family:monospace;margin-top:2px;}
 .tr-olt-tags{display:flex;gap:6px;flex-wrap:wrap;padding:0 20px 14px;margin-top:-4px;}
 .tr-tag{font-size:0.75rem;padding:3px 10px;border-radius:12px;font-weight:600;display:inline-flex;align-items:center;gap:4px;}
 .tr-tag-vlan{background:#dbeafe;color:#1d4ed8;}
 .tr-tag-profile{background:#f3e8ff;color:#7c3aed;}
-.tr-tag-none{background:#f1f5f9;color:#94a3b8;}
+.tr-tag-none{background:var(--bg-card);color:var(--text-gray);}
+.tr-tag-status{background:#dcfce7;color:#166534;}
+.tr-tag-err{background:#fee2e2;color:#991b1b;}
 .tr-olt-footer{border-top:1px solid var(--tr-border);padding:10px 20px;display:flex;justify-content:flex-end;}
-.tr-btn-config{background:#f3e8ff;color:#7c3aed;border:none;padding:7px 16px;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.82rem;display:inline-flex;align-items:center;gap:6px;}
+.tr-btn-config{background:#f3e8ff;color:#7c3aed;border:none;padding:7px 16px;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.82rem;display:inline-flex;align-items:center;gap:6px;transition:all 0.15s;}
 .tr-btn-config:hover{background:#ede9fe;color:#6d28d9;}
 .tr-loading{text-align:center;padding:60px 20px;color:var(--tr-muted);}
 .tr-loading i{font-size:1.5rem;margin-bottom:10px;display:block;}
 .tr-empty{text-align:center;padding:60px 20px;color:var(--tr-muted);}
 .tr-empty i{font-size:2.5rem;opacity:0.3;margin-bottom:12px;display:block;}
-.tr-modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(15,23,42,0.5);z-index:9999;display:none;justify-content:center;align-items:center;padding:10px;}
+/* Modal */
+.tr-modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(15,23,42,0.5);z-index:9999;display:none;justify-content:center;align-items:center;backdrop-filter:blur(3px);padding:10px;box-sizing:border-box;}
 .tr-modal-overlay.active{display:flex;}
-.tr-modal{background:white;border-radius:14px;width:640px;max-width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.2);}
-.tr-modal-header{display:flex;justify-content:space-between;align-items:center;padding:18px 24px;border-bottom:1px solid var(--tr-border);position:sticky;top:0;background:white;}
+.tr-modal{background:var(--bg-primary);border-radius:14px;width:640px;max-width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.2);animation:trModalIn 0.2s ease;}
+@keyframes trModalIn{from{transform:scale(0.92);opacity:0;}to{transform:scale(1);opacity:1;}}
+.tr-modal-header{display:flex;justify-content:space-between;align-items:center;padding:18px 24px;border-bottom:1px solid var(--tr-border);position:sticky;top:0;background:var(--bg-primary);z-index:1;border-radius:14px 14px 0 0;}
 .tr-modal-header h3{margin:0;font-size:1.1rem;font-weight:700;display:flex;align-items:center;gap:8px;}
-.tr-modal-close{background:none;border:none;font-size:1.5rem;cursor:pointer;color:#94a3b8;}
+.tr-modal-header h3 i{color:var(--tr-primary);}
+.tr-modal-close{background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--text-gray);line-height:1;}
+.tr-modal-close:hover{color:var(--tr-text);}
 .tr-modal-body{padding:20px 24px;}
-.tr-section{font-weight:700;font-size:0.78rem;color:var(--tr-muted);text-transform:uppercase;letter-spacing:0.5px;margin:18px 0 10px;padding-bottom:6px;border-bottom:1px solid #f1f5f9;}
+.tr-section{font-weight:700;font-size:0.78rem;color:var(--tr-muted);text-transform:uppercase;letter-spacing:0.5px;margin:18px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--border-color);display:flex;align-items:center;gap:6px;}
+.tr-section:first-child{margin-top:0;}
+.tr-param-grid{display:grid;grid-template-columns:1fr 1fr;gap:0;}
+.tr-param{padding:9px 0;border-bottom:1px solid var(--border-color);display:flex;justify-content:space-between;align-items:center;gap:8px;}
+.tr-param:nth-child(odd){padding-right:14px;border-right:1px solid var(--border-color);}
+.tr-param:nth-child(even){padding-left:14px;}
+.tr-param-label{font-size:0.82rem;color:var(--tr-muted);white-space:nowrap;}
+.tr-param-value{font-weight:600;font-size:0.88rem;color:var(--tr-text);text-align:right;word-break:break-all;font-family:monospace;}
 .tr-field{margin-bottom:14px;}
-.tr-field label{display:block;font-size:0.82rem;font-weight:600;color:#374151;margin-bottom:4px;}
-.tr-field input{width:100%;padding:9px 12px;border:1px solid var(--tr-border);border-radius:7px;font-size:0.9rem;outline:none;box-sizing:border-box;}
-.tr-field input:focus{border-color:var(--tr-primary);}
+.tr-field label{display:block;font-size:0.82rem;font-weight:600;color:var(--text-gray);margin-bottom:4px;}
+.tr-field input{width:100%;padding:9px 12px;border:1px solid var(--tr-border);border-radius:7px;font-size:0.9rem;outline:none;transition:border 0.15s;box-sizing:border-box;background:var(--bg-input);}
+.tr-field input:focus{border-color:var(--tr-primary);box-shadow:0 0 0 3px rgba(124,58,237,0.1);}
 .tr-field input.mono{font-family:monospace;font-weight:600;}
 .tr-field small{font-size:0.75rem;color:var(--tr-muted);margin-top:3px;display:block;}
-.tr-modal-footer{border-top:1px solid var(--tr-border);padding:14px 24px;display:flex;justify-content:flex-end;gap:8px;position:sticky;bottom:0;background:white;}
-.tr-btn-save{background:var(--tr-primary);color:white;border:none;padding:9px 22px;border-radius:7px;cursor:pointer;font-weight:600;font-size:0.88rem;}
+.tr-modal-footer{border-top:1px solid var(--tr-border);padding:14px 24px;display:flex;justify-content:flex-end;gap:8px;position:sticky;bottom:0;background:var(--bg-primary);border-radius:0 0 14px 14px;flex-wrap:wrap;}
+.tr-btn-save{background:var(--tr-primary);color:white;border:none;padding:9px 22px;border-radius:7px;cursor:pointer;font-weight:600;font-size:0.88rem;display:inline-flex;align-items:center;gap:6px;transition:all 0.15s;}
 .tr-btn-save:hover{background:#6d28d9;}
-.tr-btn-save:disabled{background:#94a3b8;cursor:not-allowed;}
+.tr-btn-save:disabled{background:var(--text-gray);cursor:not-allowed;}
 .tr-result{padding:8px 12px;border-radius:6px;font-size:0.85rem;margin-top:10px;}
 .tr-result.success{background:#f0fdf4;border:1px solid #bbf7d0;color:#166534;}
 .tr-result.error{background:#fef2f2;border:1px solid #fecaca;color:#991b1b;}
-.tr-onu-table{background:white;border-radius:10px;border:1px solid var(--tr-border);overflow:hidden;}
-.tr-onu-table-scroll{overflow-x:auto;}
+/* ONU Section */
+.tr-onu-table{background:var(--bg-primary);border-radius:10px;border:1px solid var(--tr-border);overflow:hidden;}
+.tr-onu-table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;}
 .tr-onu-table table{width:100%;border-collapse:collapse;min-width:480px;}
-.tr-onu-table th{background:#f8fafc;padding:11px 16px;text-align:left;font-size:0.8rem;color:var(--tr-muted);text-transform:uppercase;border-bottom:2px solid var(--tr-border);}
-.tr-onu-table td{padding:12px 16px;border-bottom:1px solid #f1f5f9;vertical-align:middle;}
+.tr-onu-table th{background:var(--bg-card);padding:11px 16px;text-align:left;font-size:0.8rem;color:var(--tr-muted);text-transform:uppercase;letter-spacing:0.3px;border-bottom:2px solid var(--tr-border);}
+.tr-onu-table td{padding:12px 16px;border-bottom:1px solid var(--border-color);vertical-align:middle;}
+.tr-onu-table tr:last-child td{border-bottom:none;}
 .tr-onu-table tr:hover{background:#faf5ff;}
 .tr-onu-name{font-weight:700;font-size:0.95rem;color:var(--tr-text);}
 .tr-onu-detail{font-size:0.78rem;color:var(--tr-muted);margin-top:2px;}
 .tr-badge{font-size:0.73rem;padding:3px 10px;border-radius:12px;font-weight:700;display:inline-flex;align-items:center;gap:4px;}
 .tr-badge-on{background:#dcfce7;color:#166534;}
-.tr-badge-off{background:#f1f5f9;color:#94a3b8;}
+.tr-badge-off{background:var(--bg-card);color:var(--text-gray);}
 .tr-badge-wan{background:#dbeafe;color:#1d4ed8;}
-.tr-badge-olt{background:#f3e8ff;color:#7c3aed;}
 .tr-badge-wifi{background:#fef3c7;color:#92400e;}
-.tr-search-box{display:flex;align-items:center;border:1px solid var(--tr-border);border-radius:8px;background:white;max-width:300px;}
-.tr-search-box:focus-within{border-color:var(--tr-primary);}
-.tr-search-box i{padding-left:12px;color:var(--tr-muted);}
-.tr-search-box input{flex:1;padding:8px 12px;border:none;border-radius:8px;font-size:0.88rem;outline:none;}
-.tr-toggle-row{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:#f8fafc;border-radius:10px;border:1px solid var(--tr-border);margin-bottom:14px;cursor:pointer;gap:12px;}
+.tr-badge-olt{background:#f3e8ff;color:#7c3aed;}
+/* ONU Config Modal */
+.tr-toggle-row{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:var(--bg-card);border-radius:10px;border:1px solid var(--tr-border);margin-bottom:14px;cursor:pointer;transition:all 0.15s;gap:12px;}
+.tr-toggle-row:hover{border-color:#c4b5fd;}
 .tr-toggle-row.active{background:#f5f3ff;border-color:var(--tr-primary);}
 .tr-toggle-label{font-weight:700;font-size:0.92rem;color:var(--tr-text);display:flex;align-items:center;gap:8px;}
-.tr-toggle-label i{color:var(--tr-primary);}
-.tr-toggle-sub{font-size:0.78rem;color:var(--tr-muted);margin-top:2px;}
+.tr-toggle-label i{color:var(--tr-primary);font-size:1rem;}
+.tr-toggle-sub{font-size:0.78rem;color:var(--tr-muted);font-weight:400;margin-top:2px;}
 .tr-switch{position:relative;width:44px;height:24px;flex-shrink:0;}
 .tr-switch input{opacity:0;width:0;height:0;}
 .tr-switch-slider{position:absolute;top:0;left:0;right:0;bottom:0;background:#cbd5e1;border-radius:24px;transition:0.2s;cursor:pointer;}
-.tr-switch-slider:before{content:'';position:absolute;width:18px;height:18px;left:3px;top:3px;background:white;border-radius:50%;transition:0.2s;}
+.tr-switch-slider:before{content:'';position:absolute;width:18px;height:18px;left:3px;top:3px;background:white;border-radius:50%;transition:0.2s;box-shadow:0 1px 3px rgba(0,0,0,0.15);}
 .tr-switch input:checked+.tr-switch-slider{background:var(--tr-primary);}
 .tr-switch input:checked+.tr-switch-slider:before{transform:translateX(20px);}
-.tr-options-panel{border:1px solid var(--tr-border);border-radius:10px;overflow:hidden;margin-bottom:14px;}
+.tr-options-panel{border:1px solid var(--tr-border);border-radius:10px;overflow:hidden;margin-bottom:14px;transition:all 0.2s;}
 .tr-options-panel.disabled{opacity:0.4;pointer-events:none;}
-.tr-opt-row{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid #f1f5f9;flex-wrap:wrap;gap:8px;}
+.tr-opt-row{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--border-color);flex-wrap:wrap;gap:8px;}
 .tr-opt-row:last-child{border-bottom:none;}
 .tr-opt-label{font-size:0.88rem;font-weight:600;color:var(--tr-text);display:flex;align-items:center;gap:8px;}
 .tr-opt-label i{color:var(--tr-muted);width:18px;text-align:center;}
+.tr-opt-label small{font-weight:400;color:var(--tr-muted);font-size:0.78rem;}
 .tr-opt-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
-.tr-select{padding:7px 12px;border:1px solid var(--tr-border);border-radius:6px;font-size:0.85rem;outline:none;background:white;min-width:120px;}
+.tr-select{padding:7px 12px;border:1px solid var(--tr-border);border-radius:6px;font-size:0.85rem;outline:none;cursor:pointer;background:var(--bg-input);min-width:120px;}
 .tr-select:focus{border-color:var(--tr-primary);}
-.tr-radio-group{display:flex;border:1px solid var(--tr-border);border-radius:6px;overflow:hidden;}
-.tr-radio-opt{padding:7px 14px;font-size:0.82rem;font-weight:600;cursor:pointer;background:white;color:var(--tr-muted);border-right:1px solid var(--tr-border);display:flex;align-items:center;gap:4px;}
+.tr-radio-group{display:flex;gap:0;border:1px solid var(--tr-border);border-radius:6px;overflow:hidden;flex-wrap:wrap;}
+.tr-radio-opt{padding:7px 14px;font-size:0.82rem;font-weight:600;cursor:pointer;background:var(--bg-input);color:var(--tr-muted);transition:all 0.15s;border-right:1px solid var(--tr-border);display:flex;align-items:center;gap:4px;}
 .tr-radio-opt:last-child{border-right:none;}
+.tr-radio-opt:hover{background:var(--bg-card);}
 .tr-radio-opt.active{background:var(--tr-primary);color:white;}
 .tr-radio-opt input{display:none;}
 .tr-sub-options{padding:0 16px 12px 42px;display:none;}
 .tr-sub-options.visible{display:block;}
+/* Search box */
+.tr-search-box{display:flex;align-items:center;gap:0;border:1px solid var(--tr-border);border-radius:8px;background:var(--bg-primary);transition:border 0.15s;}
+.tr-search-box:focus-within{border-color:var(--tr-primary);box-shadow:0 0 0 3px rgba(124,58,237,0.1);}
+.tr-search-box i{flex-shrink:0;padding-left:12px;color:var(--tr-muted);font-size:0.82rem;pointer-events:none;}
+.tr-search-box input{flex:1;padding:8px 12px;border:none;border-radius:8px;font-size:0.88rem;outline:none;background:transparent;min-width:0;width:auto;}
+/* Responsive */
+@media(max-width:600px){
+    .tr-title{font-size:1.1rem;}
+    .tr-modal-body{padding:14px 16px;}
+    .tr-modal-header{padding:14px 16px;}
+    .tr-modal-footer{padding:12px 16px;}
+    .tr-param-grid{grid-template-columns:1fr;}
+    .tr-param:nth-child(odd){padding-right:0;border-right:none;}
+    .tr-param:nth-child(even){padding-left:0;}
+    .tr-search-box{width:100%;}
+    .tr-onu-table th,.tr-onu-table td{padding:10px 12px;font-size:0.82rem;}
+    .tr-opt-row{flex-direction:column;align-items:flex-start;}
+    .tr-toggle-row{flex-direction:row;}
+}
 </style>
 
+<!-- Header -->
 <div class="tr-header">
-  <h2 class="tr-title"><i class="fas fa-server"></i> TR-069</h2>
+    <h2 class="tr-title"><i class="fas fa-server"></i> TR-069</h2>
 </div>
 
-<div id="trOltContent">
-  <div class="tr-loading"><i class="fas fa-spinner fa-spin"></i><br>Cargando OLTs...</div>
-</div>
+<!-- OLT Cards -->
+<div id="trContent"><div class="tr-loading"><i class="fas fa-spinner fa-spin"></i><br>Cargando OLTs...</div></div>
 
 <!-- Config Modal -->
 <div class="tr-modal-overlay" id="trModal">
-  <div class="tr-modal">
-    <div class="tr-modal-header">
-      <h3><i class="fas fa-cog"></i> <span id="trModalTitle">Configurar OLT</span></h3>
-      <button class="tr-modal-close" onclick="trCloseModal()">&times;</button>
+    <div class="tr-modal">
+        <div class="tr-modal-header">
+            <h3><i class="fas fa-cog"></i> <span id="trModalTitle">Configurar OLT</span></h3>
+            <button class="tr-modal-close" onclick="trCloseModal()">&times;</button>
+        </div>
+        <div class="tr-modal-body">
+
+            <div class="tr-section"><i class="fas fa-sliders-h"></i> Configuracion TR-069</div>
+            <input type="hidden" id="trConfigOltId">
+            <div class="tr-field">
+                <label>VLAN de Gestion TR-069</label>
+                <input type="number" id="trVlan" class="mono" min="1" max="4094" placeholder="Ej: 500">
+                <small>VLAN usada para el trafico de gestion TR-069 de las ONUs</small>
+            </div>
+            <div class="tr-field">
+                <label>TR-069 Profile</label>
+                <input type="text" id="trProfile" value="SmartOLT" placeholder="SmartOLT">
+                <small>Nombre del perfil TR-069 en SmartOLT (por defecto: SmartOLT)</small>
+            </div>
+            <div id="trSaveResult"></div>
+        </div>
+        <div class="tr-modal-footer">
+            <button class="tr-btn-save" id="trBtnSave" onclick="trSaveConfig()"><i class="fas fa-save"></i> Guardar</button>
+        </div>
     </div>
-    <div class="tr-modal-body">
-      <div class="tr-section"><i class="fas fa-sliders-h"></i> Configuracion TR-069</div>
-      <input type="hidden" id="trConfigOltId">
-      <div class="tr-field">
-        <label>VLAN de Gestion TR-069</label>
-        <input type="number" id="trVlan" class="mono" placeholder="Ej: 500">
-        <small>VLAN usada para el trafico de gestion TR-069 de las ONUs</small>
-      </div>
-      <div class="tr-field">
-        <label>TR-069 Profile</label>
-        <input type="text" id="trProfile" value="SmartOLT" placeholder="SmartOLT">
-        <small>Nombre del perfil TR-069 en SmartOLT</small>
-      </div>
-      <div id="trSaveResult"></div>
-    </div>
-    <div class="tr-modal-footer">
-      <button class="tr-btn-save" id="trBtnSave" onclick="trSaveConfig()"><i class="fas fa-save"></i> Guardar</button>
-    </div>
-  </div>
 </div>
 
-<!-- ONU Section -->
+<!-- --- ONU SECTION --- -->
 <div class="tr-header" style="margin-top:32px;">
-  <h2 class="tr-title"><i class="fas fa-microchip"></i> ONU's</h2>
-  <div class="tr-search-box">
-    <i class="fas fa-search"></i>
-    <input type="text" id="trOnuSearch" placeholder="Buscar por modelo..." oninput="trFilterOnus()">
-  </div>
+    <h2 class="tr-title"><i class="fas fa-microchip"></i> ONU's</h2>
+    <div class="tr-search-box">
+        <i class="fas fa-search"></i>
+        <input type="text" id="trOnuSearch" placeholder="Buscar por modelo..." oninput="trFilterOnus()">
+    </div>
 </div>
 
-<div id="trOnuContent">
-  <div class="tr-loading"><i class="fas fa-spinner fa-spin"></i><br>Cargando modelos de ONU...</div>
-</div>
+<div id="trOnuContent"><div class="tr-loading"><i class="fas fa-spinner fa-spin"></i><br>Cargando modelos de ONU...</div></div>
 
-<!-- ONU Config Modal -->
+<!-- ONU TR069 Config Modal -->
 <div class="tr-modal-overlay" id="trOnuModal">
-  <div class="tr-modal" style="width:560px;">
-    <div class="tr-modal-header">
-      <h3><i class="fas fa-cog"></i> <span id="trOnuModalTitle">Configurar ONU</span></h3>
-      <button class="tr-modal-close" onclick="trCloseOnuModal()">&times;</button>
-    </div>
-    <div class="tr-modal-body">
-      <input type="hidden" id="trOnuConfigId">
-      <div class="tr-toggle-row" id="trToggleRow" onclick="trToggleTr069()">
-        <div>
-          <div class="tr-toggle-label"><i class="fas fa-satellite-dish"></i> Utilizar TR-069</div>
-          <div class="tr-toggle-sub">Habilitar gestion remota via TR-069 para este modelo</div>
+    <div class="tr-modal" style="width:560px;">
+        <div class="tr-modal-header">
+            <h3><i class="fas fa-cog"></i> <span id="trOnuModalTitle">Configurar ONU</span></h3>
+            <button class="tr-modal-close" onclick="trCloseOnuModal()">&times;</button>
         </div>
-        <label class="tr-switch" onclick="event.stopPropagation()">
-          <input type="checkbox" id="trOnuEnabled" onchange="trToggleTr069()">
-          <span class="tr-switch-slider"></span>
-        </label>
-      </div>
-      <div class="tr-options-panel disabled" id="trOnuOptionsPanel">
-        <div class="tr-opt-row">
-          <div class="tr-opt-label"><i class="fas fa-server"></i> OLT</div>
-          <div class="tr-opt-right"><select class="tr-select" id="trOnuOltId"><option value="0">-- Todas --</option></select></div>
-        </div>
-        <div class="tr-opt-row">
-          <div class="tr-opt-label"><i class="fas fa-globe"></i> WAN por TR-069</div>
-          <div class="tr-opt-right">
-            <div class="tr-radio-group" id="trWanToggle">
-              <label class="tr-radio-opt active" onclick="trPickWanToggle(this,'off')"><input type="radio" name="trWanOn" value="off" checked>No</label>
-              <label class="tr-radio-opt" onclick="trPickWanToggle(this,'on')"><input type="radio" name="trWanOn" value="on">Si</label>
+        <div class="tr-modal-body">
+            <input type="hidden" id="trOnuConfigId">
+
+            <!-- TR069 Master Toggle -->
+            <div class="tr-toggle-row" id="trToggleRow" onclick="trToggleTr069()">
+                <div>
+                    <div class="tr-toggle-label"><i class="fas fa-satellite-dish"></i> Utilizar TR-069</div>
+                    <div class="tr-toggle-sub">Habilitar gestion remota via TR-069 para este modelo</div>
+                </div>
+                <label class="tr-switch" onclick="event.stopPropagation()">
+                    <input type="checkbox" id="trOnuEnabled" onchange="trToggleTr069()">
+                    <span class="tr-switch-slider"></span>
+                </label>
             </div>
-          </div>
-        </div>
-        <div class="tr-sub-options" id="trWanSubOptions">
-          <div style="display:flex;gap:6px;margin-top:4px;">
-            <div class="tr-radio-group" id="trWanModeGroup">
-              <label class="tr-radio-opt active" onclick="trPickWanMode(this,'ipv4')"><input type="radio" name="trWanMode" value="ipv4" checked><i class="fas fa-network-wired"></i> IPv4 Only</label>
-              <label class="tr-radio-opt" onclick="trPickWanMode(this,'dualstack')"><input type="radio" name="trWanMode" value="dualstack"><i class="fas fa-layer-group"></i> Dualstack IPv4+IPv6</label>
+
+            <!-- Options Panel -->
+            <div class="tr-options-panel disabled" id="trOnuOptionsPanel">
+                <!-- OLT Selection -->
+                <div class="tr-opt-row">
+                    <div class="tr-opt-label"><i class="fas fa-server"></i> OLT</div>
+                    <div class="tr-opt-right">
+                        <select class="tr-select" id="trOnuOltId">
+                            <option value="0">-- Todas las OLTs --</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- WAN por TR069 -->
+                <div class="tr-opt-row" style="flex-wrap:wrap;gap:8px;">
+                    <div class="tr-opt-label" style="flex:1;"><i class="fas fa-globe"></i> Enviar WAN por TR-069</div>
+                    <div class="tr-opt-right">
+                        <div class="tr-radio-group" id="trWanToggle">
+                            <label class="tr-radio-opt active" onclick="trPickWanToggle(this,'off')"><input type="radio" name="trWanOn" value="off" checked>No</label>
+                            <label class="tr-radio-opt" onclick="trPickWanToggle(this,'on')"><input type="radio" name="trWanOn" value="on">Si</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="tr-sub-options" id="trWanSubOptions">
+                    <div style="display:flex;gap:6px;margin-top:4px;">
+                        <div class="tr-radio-group" id="trWanModeGroup">
+                            <label class="tr-radio-opt active" onclick="trPickWanMode(this,'ipv4')"><input type="radio" name="trWanMode" value="ipv4" checked><i class="fas fa-network-wired"></i> IPv4 Only</label>
+                            <label class="tr-radio-opt" onclick="trPickWanMode(this,'dualstack')"><input type="radio" name="trWanMode" value="dualstack"><i class="fas fa-layer-group"></i> Dualstack IPv4 + IPv6</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- WiFi al autorizar -->
+                <div class="tr-opt-row">
+                    <div class="tr-opt-label"><i class="fas fa-wifi"></i> Enviar WiFi al autorizar ONU</div>
+                    <div class="tr-opt-right">
+                        <div class="tr-radio-group" id="trWifiToggle">
+                            <label class="tr-radio-opt active" onclick="trPickRadio(this,'trWifiToggle','0')"><input type="radio" name="trWifi" value="0" checked>No</label>
+                            <label class="tr-radio-opt" onclick="trPickRadio(this,'trWifiToggle','1')"><input type="radio" name="trWifi" value="1">Si</label>
+                        </div>
+                    </div>
+                </div>
             </div>
-          </div>
+
+            <div id="trOnuSaveResult"></div>
         </div>
-        <div class="tr-opt-row">
-          <div class="tr-opt-label"><i class="fas fa-wifi"></i> WiFi al autorizar</div>
-          <div class="tr-opt-right">
-            <div class="tr-radio-group" id="trWifiToggle">
-              <label class="tr-radio-opt active" onclick="trPickRadio(this,'trWifiToggle','0')"><input type="radio" name="trWifi" value="0" checked>No</label>
-              <label class="tr-radio-opt" onclick="trPickRadio(this,'trWifiToggle','1')"><input type="radio" name="trWifi" value="1">Si</label>
-            </div>
-          </div>
+        <div class="tr-modal-footer">
+            <button class="tr-btn-save" id="trOnuBtnSave" onclick="trSaveOnuConfig()"><i class="fas fa-save"></i> Guardar</button>
         </div>
-      </div>
-      <div id="trOnuSaveResult"></div>
     </div>
-    <div class="tr-modal-footer">
-      <button class="tr-btn-save" id="trOnuBtnSave" onclick="trSaveOnuConfig()"><i class="fas fa-save"></i> Guardar</button>
-    </div>
-  </div>
 </div>
 
 <script>
-var _onuOlts = [];
+(function(){
+var _onuOlts = []; // OLT list cache for ONU modal
 var _onuWanOn = false;
 var _onuWanMode = 'ipv4';
 var _onuWifiVal = '0';
@@ -209,186 +260,327 @@ var _trOltsCache = [];
 
 function escHtml(s) { var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
 
+function formatKey(k) {
+    return k.replace(/_/g, ' ').replace(/\b\w/g, function(l){ return l.toUpperCase(); });
+}
+
+// ===== LOAD OLTs =====
 function trLoadOlts() {
-  document.getElementById('trOltContent').innerHTML = '<div class="tr-loading"><i class="fas fa-spinner fa-spin"></i><br>Cargando OLTs...</div>';
-  fetch('/api/tr069/olts')
+    document.getElementById('trContent').innerHTML = '<div class="tr-loading"><i class="fas fa-spinner fa-spin"></i><br>Cargando OLTs...</div>';
+    
+    fetch('/api/tr069/olts')
     .then(function(r) { return r.json(); })
     .then(function(d) {
-      var el = document.getElementById('trOltContent');
-      if (d.status !== 'success' || !d.data || d.data.length === 0) {
-        el.innerHTML = '<div class="tr-empty"><i class="fas fa-server"></i>No hay OLTs registradas.</div>';
-        return;
-      }
-      _trOltsCache = d.data;
-      var h = '<div class="tr-card-grid">';
-      d.data.forEach(function(olt) {
-        var tags = '';
-        if (olt.tr069_vlan) tags += '<span class="tr-tag tr-tag-vlan"><i class="fas fa-network-wired"></i> VLAN ' + escHtml(olt.tr069_vlan) + '</span>';
-        else tags += '<span class="tr-tag tr-tag-none"><i class="fas fa-network-wired"></i> Sin VLAN</span>';
-        tags += '<span class="tr-tag tr-tag-profile"><i class="fas fa-id-badge"></i> ' + escHtml(olt.tr069_profile || 'SmartOLT') + '</span>';
-        h += '<div class="tr-olt-card"><div class="tr-olt-top">';
-        h += '<div class="tr-olt-icon ok"><i class="fas fa-broadcast-tower"></i></div>';
-        h += '<div class="tr-olt-info"><div class="tr-olt-name">' + escHtml(olt.name) + '</div>';
-        h += '<div class="tr-olt-sub">' + escHtml(olt.subdomain || '') + '.smartolt.com</div></div></div>';
-        h += '<div class="tr-olt-tags">' + tags + '</div>';
-        h += '<div class="tr-olt-footer"><button class="tr-btn-config" onclick="trOpenConfig(' + olt.id + ')"><i class="fas fa-cog"></i> Configurar</button></div></div>';
-      });
-      h += '</div>';
-      el.innerHTML = h;
-    });
-}
-
-function trOpenConfig(oltId) {
-  var olt = null;
-  for (var i = 0; i < _trOltsCache.length; i++) { if (_trOltsCache[i].id == oltId) { olt = _trOltsCache[i]; break; } }
-  if (!olt) return;
-  document.getElementById('trModalTitle').textContent = olt.name;
-  document.getElementById('trConfigOltId').value = olt.id;
-  document.getElementById('trVlan').value = olt.tr069_vlan || '';
-  document.getElementById('trProfile').value = olt.tr069_profile || 'SmartOLT';
-  document.getElementById('trSaveResult').innerHTML = '';
-  document.getElementById('trBtnSave').disabled = false;
-  document.getElementById('trBtnSave').innerHTML = '<i class="fas fa-save"></i> Guardar';
-  document.getElementById('trModal').classList.add('active');
-}
-
-function trCloseModal() { document.getElementById('trModal').classList.remove('active'); }
-document.getElementById('trModal').addEventListener('click', function(e) { if (e.target === this) trCloseModal(); });
-
-function trSaveConfig() {
-  var oltId = document.getElementById('trConfigOltId').value;
-  var vlan = document.getElementById('trVlan').value.trim();
-  var profile = document.getElementById('trProfile').value.trim() || 'SmartOLT';
-  var btn = document.getElementById('trBtnSave');
-  btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
-  fetch('/api/tr069/save-config', {
-    method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ olt_id: oltId, tr069_vlan: vlan, tr069_profile: profile })
-  }).then(function(r) { return r.json(); }).then(function(d) {
-    btn.disabled = false; btn.innerHTML = '<i class="fas fa-save"></i> Guardar';
-    var res = document.getElementById('trSaveResult');
-    if (d.status === 'success') {
-      res.className = 'tr-result success';
-      res.innerHTML = '<i class="fas fa-check-circle"></i> ' + escHtml(d.msg);
-      setTimeout(function() { trCloseModal(); trLoadOlts(); }, 1000);
-    } else {
-      res.className = 'tr-result error';
-      res.innerHTML = '<i class="fas fa-times-circle"></i> ' + escHtml(d.msg);
-    }
-  });
-}
-
-// ===== ONU Types =====
-function trLoadOnuTypes() {
-  fetch('/api/tr069/onu-types')
-    .then(function(r) { return r.json(); })
-    .then(function(d) {
-      var el = document.getElementById('trOnuContent');
-      if (d.status !== 'success') { el.innerHTML = '<div class="tr-empty"><i class="fas fa-exclamation-triangle"></i>' + escHtml(d.msg) + '</div>'; return; }
-      _onuOlts = d.olts || [];
-      var types = d.data || [];
-      if (types.length === 0) { el.innerHTML = '<div class="tr-empty"><i class="fas fa-microchip"></i>No hay modelos de ONU registrados.</div>'; return; }
-      var h = '<div class="tr-onu-table"><div class="tr-onu-table-scroll"><table><thead><tr><th>Modelo</th><th>Tipo</th><th>TR-069</th><th>Config</th><th style="text-align:right;">Acciones</th></tr></thead><tbody>';
-      types.forEach(function(t) {
-        var name = t.name || '-';
-        var pon = (t.pon_type || 'gpon').toUpperCase();
-        var en = parseInt(t.tr069_enabled || '0');
-        var wm = t.tr069_wan_mode || 'off';
-        var sw = parseInt(t.tr069_send_wifi || '0');
-        var statusBadge = en ? '<span class="tr-badge tr-badge-on"><i class="fas fa-check"></i> Activado</span>' : '<span class="tr-badge tr-badge-off"><i class="fas fa-times"></i> Desactivado</span>';
-        var cfgTags = '';
-        if (en) {
-          cfgTags += '<span class="tr-badge tr-badge-olt"><i class="fas fa-server"></i> ' + (t.tr069_olt_id && t.tr069_olt_id != '0' ? 'OLT #' + t.tr069_olt_id : 'Todas') + '</span> ';
-          if (wm === 'dualstack') cfgTags += '<span class="tr-badge tr-badge-wan"><i class="fas fa-layer-group"></i> Dualstack</span> ';
-          else if (wm !== 'off') cfgTags += '<span class="tr-badge tr-badge-wan"><i class="fas fa-globe"></i> WAN</span> ';
-          if (sw) cfgTags += '<span class="tr-badge tr-badge-wifi"><i class="fas fa-wifi"></i> WiFi</span>';
+        var el = document.getElementById('trContent');
+        if (d.status !== 'success' || !d.data) {
+            el.innerHTML = '<div class="tr-empty"><i class="fas fa-exclamation-triangle"></i>Error: ' + escHtml(d.msg || 'Desconocido') + '</div>';
+            return;
         }
-        h += '<tr><td><div class="tr-onu-name">' + escHtml(name) + '</div><div class="tr-onu-detail">' + pon + ' - ' + (t.ethernet_ports || '4') + ' puertos</div></td>';
-        h += '<td><span class="tr-badge tr-badge-olt">' + pon + '</span></td>';
-        h += '<td>' + statusBadge + '</td>';
-        h += '<td><div style="display:flex;flex-wrap:wrap;gap:4px;">' + cfgTags + '</div></td>';
-        h += '<td style="text-align:right;"><button class="tr-btn-config" onclick="trOpenOnuConfig(' + t.id + ')"><i class="fas fa-cog"></i> Configurar</button></td></tr>';
-      });
-      h += '</tbody></table></div></div>';
-      el.innerHTML = h;
-      window._trOnuTypes = types;
+        if (d.data.length === 0) {
+            el.innerHTML = '<div class="tr-empty"><i class="fas fa-server"></i>No hay OLTs registradas.<br><small>Agregue OLTs desde el modulo <a href="/modulo?pagina=Smartolt" style="color:var(--tr-primary);">SmartOLT</a></small></div>';
+            return;
+        }
+        
+        _trOltsCache = d.data;
+        var h = '<div class="tr-card-grid">';
+        d.data.forEach(function(olt) {
+            var iconCls = olt.api_status === 'ok' ? 'ok' : (olt.api_status === 'error' ? 'err' : 'load');
+            var iconHtml = olt.api_status === 'ok' ? '<i class="fas fa-broadcast-tower"></i>' : (olt.api_status === 'error' ? '<i class="fas fa-exclamation-triangle"></i>' : '<i class="fas fa-spinner fa-spin"></i>');
+            
+            var tags = '';
+            if (olt.api_status === 'ok') tags += '<span class="tr-tag tr-tag-status"><i class="fas fa-check"></i> Conectada</span>';
+            else tags += '<span class="tr-tag tr-tag-err"><i class="fas fa-times"></i> ' + escHtml(olt.api_error || 'Error') + '</span>';
+            if (olt.tr069_vlan) tags += '<span class="tr-tag tr-tag-vlan"><i class="fas fa-network-wired"></i> VLAN ' + escHtml(olt.tr069_vlan) + '</span>';
+            else tags += '<span class="tr-tag tr-tag-none"><i class="fas fa-network-wired"></i> Sin VLAN</span>';
+            tags += '<span class="tr-tag tr-tag-profile"><i class="fas fa-id-badge"></i> ' + escHtml(olt.tr069_profile || 'SmartOLT') + '</span>';
+            
+            h += '<div class="tr-olt-card">';
+            h += '<div class="tr-olt-top">';
+            h += '<div class="tr-olt-icon ' + iconCls + '">' + iconHtml + '</div>';
+            h += '<div class="tr-olt-info">';
+            h += '<div class="tr-olt-name">' + escHtml(olt.name) + '</div>';
+            h += '<div class="tr-olt-sub">' + escHtml(olt.subdomain || '') + '.smartolt.com</div>';
+            h += '</div></div>';
+            h += '<div class="tr-olt-tags">' + tags + '</div>';
+            h += '<div class="tr-olt-footer"><button class="tr-btn-config" onclick="trOpenConfig(' + olt.id + ')"><i class="fas fa-cog"></i> Configurar</button></div>';
+            h += '</div>';
+        });
+        h += '</div>';
+        el.innerHTML = h;
     });
 }
 
-function trToggleTr069() {
-  var cb = document.getElementById('trOnuEnabled');
-  var panel = document.getElementById('trOnuOptionsPanel');
-  var row = document.getElementById('trToggleRow');
-  if (cb.checked) { panel.classList.remove('disabled'); row.classList.add('active'); }
-  else { panel.classList.add('disabled'); row.classList.remove('active'); }
+// ===== OPEN CONFIG MODAL =====
+window.trOpenConfig = function(oltId) {
+    var olt = null;
+    for (var i = 0; i < _trOltsCache.length; i++) { if (_trOltsCache[i].id == oltId) { olt = _trOltsCache[i]; break; } }
+    if (!olt) return;
+    
+    document.getElementById('trModalTitle').textContent = olt.name;
+    document.getElementById('trConfigOltId').value = olt.id;
+    document.getElementById('trVlan').value = olt.tr069_vlan || '';
+    document.getElementById('trProfile').value = olt.tr069_profile || 'SmartOLT';
+    document.getElementById('trSaveResult').innerHTML = '';
+    document.getElementById('trBtnSave').disabled = false;
+    document.getElementById('trBtnSave').innerHTML = '<i class="fas fa-save"></i> Guardar';
+    document.getElementById('trModal').classList.add('active');
+};
+
+window.trCloseModal = function() {
+    document.getElementById('trModal').classList.remove('active');
+};
+
+document.getElementById('trModal').addEventListener('click', function(e) {
+    if (e.target === this) trCloseModal();
+});
+
+// ===== SAVE CONFIG =====
+window.trSaveConfig = function() {
+    var oltId = document.getElementById('trConfigOltId').value;
+    var vlan = document.getElementById('trVlan').value.trim();
+    var profile = document.getElementById('trProfile').value.trim() || 'SmartOLT';
+    var btn = document.getElementById('trBtnSave');
+    btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+    document.getElementById('trSaveResult').innerHTML = '';
+    
+    fetch('/api/tr069/save-config', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ olt_id: oltId, tr069_vlan: vlan, tr069_profile: profile })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+        btn.disabled = false; btn.innerHTML = '<i class="fas fa-save"></i> Guardar';
+        var res = document.getElementById('trSaveResult');
+        if (d.status === 'success') {
+            res.className = 'tr-result success';
+            res.innerHTML = '<i class="fas fa-check-circle"></i> ' + escHtml(d.msg);
+            // Update local cache
+            for (var i = 0; i < _trOltsCache.length; i++) {
+                if (_trOltsCache[i].id == oltId) { _trOltsCache[i].tr069_vlan = vlan; _trOltsCache[i].tr069_profile = profile; }
+            }
+            setTimeout(function(){ trCloseModal(); trLoadOlts(); }, 1000);
+        } else {
+            res.className = 'tr-result error';
+            res.innerHTML = '<i class="fas fa-times-circle"></i> ' + escHtml(d.msg);
+        }
+    })
+    .catch(function() {
+        btn.disabled = false; btn.innerHTML = '<i class="fas fa-save"></i> Guardar';
+        var res = document.getElementById('trSaveResult');
+        res.className = 'tr-result error';
+        res.innerHTML = '<i class="fas fa-times-circle"></i> Error de conexion';
+    });
+};
+
+// ===== LOAD ONU TYPES =====
+function trLoadOnuTypes() {
+    document.getElementById('trOnuContent').innerHTML = '<div class="tr-loading"><i class="fas fa-spinner fa-spin"></i><br>Cargando modelos de ONU...</div>';
+    
+    fetch('/api/tr069/onu-types')
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+        var el = document.getElementById('trOnuContent');
+        if (d.status !== 'success') {
+            el.innerHTML = '<div class="tr-empty"><i class="fas fa-exclamation-triangle"></i>' + escHtml(d.msg) + '</div>';
+            return;
+        }
+        _onuOlts = d.olts || [];
+        var types = d.data || [];
+        if (types.length === 0) {
+            el.innerHTML = '<div class="tr-empty"><i class="fas fa-microchip"></i>No hay modelos de ONU registrados.<br><small>Agregue modelos desde el modulo <a href="/modulo?pagina=Smartolt" style="color:var(--tr-primary);">SmartOLT</a></small></div>';
+            return;
+        }
+        
+        var h = '<div class="tr-onu-table"><div class="tr-onu-table-scroll"><table><thead><tr><th>Modelo</th><th>Tipo</th><th>TR-069</th><th>Configuracion</th><th style="text-align:right;">Acciones</th></tr></thead><tbody>';
+        types.forEach(function(t) {
+            var name = t.name || '-';
+            var pon = (t.pon_type || 'gpon').toUpperCase();
+            var en = parseInt(t.tr069_enabled || '0');
+            var wm = t.tr069_wan_mode || 'off';
+            var sw = parseInt(t.tr069_send_wifi || '0');
+            var oltName = t.olt_name || '';
+            
+            var statusBadge = en
+                ? '<span class="tr-badge tr-badge-on"><i class="fas fa-check"></i> Activado</span>'
+                : '<span class="tr-badge tr-badge-off"><i class="fas fa-times"></i> Desactivado</span>';
+            
+            var cfgTags = '';
+            if (en) {
+                if (oltName) cfgTags += '<span class="tr-badge tr-badge-olt"><i class="fas fa-server"></i> ' + escHtml(oltName) + '</span> ';
+                else cfgTags += '<span class="tr-badge tr-badge-olt"><i class="fas fa-server"></i> Todas</span> ';
+                if (wm === 'ipv4') cfgTags += '<span class="tr-badge tr-badge-wan"><i class="fas fa-globe"></i> WAN IPv4</span> ';
+                else if (wm === 'dualstack') cfgTags += '<span class="tr-badge tr-badge-wan"><i class="fas fa-layer-group"></i> Dualstack</span> ';
+                else cfgTags += '<span class="tr-badge tr-badge-off"><i class="fas fa-globe"></i> Sin WAN</span> ';
+                if (sw) cfgTags += '<span class="tr-badge tr-badge-wifi"><i class="fas fa-wifi"></i> WiFi</span>';
+                else cfgTags += '<span class="tr-badge tr-badge-off"><i class="fas fa-wifi"></i> Sin WiFi</span>';
+            } else {
+                cfgTags = '<span style="font-size:0.82rem;color:var(--tr-muted);font-style:italic;"> </span>';
+            }
+            
+            h += '<tr>';
+            h += '<td><div class="tr-onu-name">' + escHtml(name) + '</div><div class="tr-onu-detail">' + pon + ' - ' + (t.ethernet_ports || '4') + ' puertos</div></td>';
+            h += '<td><span class="tr-badge ' + (pon==='EPON'?'tr-badge-off':'tr-badge-olt') + '">' + pon + '</span></td>';
+            h += '<td>' + statusBadge + '</td>';
+            h += '<td><div style="display:flex;flex-wrap:wrap;gap:4px;">' + cfgTags + '</div></td>';
+            h += '<td style="text-align:right;"><button class="tr-btn-config" onclick="trOpenOnuConfig(' + t.id + ')"><i class="fas fa-cog"></i> Configurar</button></td>';
+            h += '</tr>';
+        });
+        h += '</tbody></table></div></div>';
+        el.innerHTML = h;
+        window._trOnuTypes = types;
+    });
 }
 
-function trPickWanToggle(el, val) { _onuWanOn = (val === 'on'); document.querySelectorAll('#trWanToggle .tr-radio-opt').forEach(function(o){ o.classList.remove('active'); }); el.classList.add('active'); document.getElementById('trWanSubOptions').className = _onuWanOn ? 'tr-sub-options visible' : 'tr-sub-options'; }
-function trPickWanMode(el, val) { _onuWanMode = val; document.querySelectorAll('#trWanModeGroup .tr-radio-opt').forEach(function(o){ o.classList.remove('active'); }); el.classList.add('active'); }
-function trPickRadio(el, g, v) { _onuWifiVal = v; document.querySelectorAll('#' + g + ' .tr-radio-opt').forEach(function(o){ o.classList.remove('active'); }); el.classList.add('active'); }
+// ===== TOGGLE HELPERS =====
+window.trToggleTr069 = function() {
+    var cb = document.getElementById('trOnuEnabled');
+    if (event && event.currentTarget && event.currentTarget.id === 'trToggleRow') cb.checked = !cb.checked;
+    var panel = document.getElementById('trOnuOptionsPanel');
+    var row = document.getElementById('trToggleRow');
+    if (cb.checked) { panel.classList.remove('disabled'); row.classList.add('active'); }
+    else { panel.classList.add('disabled'); row.classList.remove('active'); }
+};
 
-function trOpenOnuConfig(onuId) {
-  var onu = null;
-  (window._trOnuTypes || []).forEach(function(t) { if (t.id == onuId) onu = t; });
-  if (!onu) return;
-  document.getElementById('trOnuModalTitle').textContent = onu.name;
-  document.getElementById('trOnuConfigId').value = onu.id;
-  document.getElementById('trOnuSaveResult').innerHTML = '';
-  var sel = document.getElementById('trOnuOltId');
-  sel.innerHTML = '<option value="0">-- Todas las OLTs --</option>';
-  _onuOlts.forEach(function(o) { sel.innerHTML += '<option value="' + o.id + '">' + o.name + '</option>'; });
+window.trPickWanToggle = function(el, val) {
+    _onuWanOn = (val === 'on');
+    document.querySelectorAll('#trWanToggle .tr-radio-opt').forEach(function(o){ o.classList.remove('active'); });
+    el.classList.add('active');
+    document.getElementById('trWanSubOptions').className = _onuWanOn ? 'tr-sub-options visible' : 'tr-sub-options';
+};
 
-  var en = parseInt(onu.tr069_enabled || '0');
-  var oltId = onu.tr069_olt_id || '0';
-  var wm = onu.tr069_wan_mode || 'off';
-  var sw = parseInt(onu.tr069_send_wifi || '0');
-  document.getElementById('trOnuEnabled').checked = !!en;
-  trToggleTr069();
-  sel.value = oltId;
-  _onuWanOn = (wm !== 'off'); _onuWanMode = (wm === 'off') ? 'ipv4' : wm;
-  document.querySelectorAll('#trWanToggle .tr-radio-opt').forEach(function(o){ o.classList.remove('active'); var inp = o.querySelector('input'); if (inp && ((_onuWanOn && inp.value==='on') || (!_onuWanOn && inp.value==='off'))) o.classList.add('active'); });
-  document.getElementById('trWanSubOptions').className = _onuWanOn ? 'tr-sub-options visible' : 'tr-sub-options';
-  document.querySelectorAll('#trWanModeGroup .tr-radio-opt').forEach(function(o){ o.classList.remove('active'); var inp = o.querySelector('input'); if (inp && inp.value === _onuWanMode) o.classList.add('active'); });
-  _onuWifiVal = sw ? '1' : '0';
-  document.querySelectorAll('#trWifiToggle .tr-radio-opt').forEach(function(o){ o.classList.remove('active'); var inp = o.querySelector('input'); if (inp && inp.value === _onuWifiVal) o.classList.add('active'); });
-  document.getElementById('trOnuModal').classList.add('active');
-}
+window.trPickWanMode = function(el, val) {
+    _onuWanMode = val;
+    document.querySelectorAll('#trWanModeGroup .tr-radio-opt').forEach(function(o){ o.classList.remove('active'); });
+    el.classList.add('active');
+};
 
-function trCloseOnuModal() { document.getElementById('trOnuModal').classList.remove('active'); }
-document.getElementById('trOnuModal').addEventListener('click', function(e) { if (e.target === this) trCloseOnuModal(); });
+window.trPickRadio = function(el, groupId, val) {
+    _onuWifiVal = val;
+    document.querySelectorAll('#' + groupId + ' .tr-radio-opt').forEach(function(o){ o.classList.remove('active'); });
+    el.classList.add('active');
+};
 
-function trFilterOnus() {
-  var q = (document.getElementById('trOnuSearch').value || '').toLowerCase().trim();
-  document.querySelectorAll('.tr-onu-table tbody tr').forEach(function(row) {
-    var name = (row.querySelector('.tr-onu-name') || {}).textContent || '';
-    row.style.display = (!q || name.toLowerCase().indexOf(q) !== -1) ? '' : 'none';
-  });
-}
+// ===== OPEN ONU CONFIG =====
+window.trOpenOnuConfig = function(onuId) {
+    var onu = null;
+    (window._trOnuTypes || []).forEach(function(t){ if (t.id == onuId) onu = t; });
+    if (!onu) return;
+    
+    document.getElementById('trOnuModalTitle').textContent = onu.name;
+    document.getElementById('trOnuConfigId').value = onu.id;
+    document.getElementById('trOnuSaveResult').innerHTML = '';
+    document.getElementById('trOnuBtnSave').disabled = false;
+    document.getElementById('trOnuBtnSave').innerHTML = '<i class="fas fa-save"></i> Guardar';
+    
+    // Populate OLT select
+    var sel = document.getElementById('trOnuOltId');
+    sel.innerHTML = '<option value="0">-- Todas las OLTs --</option>';
+    _onuOlts.forEach(function(o){
+        var opt = document.createElement('option');
+        opt.value = o.id; opt.textContent = o.name;
+        sel.appendChild(opt);
+    });
+    
+    // Load saved values
+    var en = parseInt(onu.tr069_enabled || '0');
+    var oltId = onu.tr069_olt_id || '0';
+    var wm = onu.tr069_wan_mode || 'off';
+    var sw = parseInt(onu.tr069_send_wifi || '0');
+    
+    document.getElementById('trOnuEnabled').checked = !!en;
+    trToggleTr069();
+    sel.value = oltId;
+    
+    _onuWanOn = (wm !== 'off');
+    _onuWanMode = (wm === 'off') ? 'ipv4' : wm;
+    document.querySelectorAll('#trWanToggle .tr-radio-opt').forEach(function(o){
+        o.classList.remove('active');
+        var inp = o.querySelector('input');
+        if (inp && ((_onuWanOn && inp.value==='on') || (!_onuWanOn && inp.value==='off'))) o.classList.add('active');
+    });
+    document.getElementById('trWanSubOptions').className = _onuWanOn ? 'tr-sub-options visible' : 'tr-sub-options';
+    document.querySelectorAll('#trWanModeGroup .tr-radio-opt').forEach(function(o){
+        o.classList.remove('active');
+        var inp = o.querySelector('input');
+        if (inp && inp.value === _onuWanMode) o.classList.add('active');
+    });
+    
+    _onuWifiVal = sw ? '1' : '0';
+    document.querySelectorAll('#trWifiToggle .tr-radio-opt').forEach(function(o){
+        o.classList.remove('active');
+        var inp = o.querySelector('input');
+        if (inp && inp.value === _onuWifiVal) o.classList.add('active');
+    });
+    
+    document.getElementById('trOnuModal').classList.add('active');
+};
 
-function trSaveOnuConfig() {
-  var id = document.getElementById('trOnuConfigId').value;
-  var en = document.getElementById('trOnuEnabled').checked ? 1 : 0;
-  var oltId = document.getElementById('trOnuOltId').value;
-  var wanMode = _onuWanOn ? _onuWanMode : 'off';
-  var sendWifi = _onuWifiVal;
-  var btn = document.getElementById('trOnuBtnSave');
-  btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
-  fetch('/api/tr069/save-onu-config', {
-    method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ onu_type_id: id, tr069_enabled: en, tr069_olt_id: oltId, tr069_wan_mode: wanMode, tr069_send_wifi: sendWifi })
-  }).then(function(r) { return r.json(); }).then(function(d) {
-    btn.disabled = false; btn.innerHTML = '<i class="fas fa-save"></i> Guardar';
-    var res = document.getElementById('trOnuSaveResult');
-    if (d.status === 'success') {
-      res.className = 'tr-result success';
-      res.innerHTML = '<i class="fas fa-check-circle"></i> ' + escHtml(d.msg);
-      setTimeout(function() { trCloseOnuModal(); trLoadOnuTypes(); }, 1000);
-    } else {
-      res.className = 'tr-result error'; res.innerHTML = '<i class="fas fa-times-circle"></i> ' + escHtml(d.msg);
-    }
-  });
-}
+window.trCloseOnuModal = function() {
+    document.getElementById('trOnuModal').classList.remove('active');
+};
+document.getElementById('trOnuModal').addEventListener('click', function(e) {
+    if (e.target === this) trCloseOnuModal();
+});
 
+// ===== FILTER ONUS =====
+window.trFilterOnus = function() {
+    var q = (document.getElementById('trOnuSearch').value || '').toLowerCase().trim();
+    var rows = document.querySelectorAll('.tr-onu-table tbody tr');
+    rows.forEach(function(row){
+        var name = (row.querySelector('.tr-onu-name') || {}).textContent || '';
+        row.style.display = (!q || name.toLowerCase().indexOf(q) !== -1) ? '' : 'none';
+    });
+};
+
+// ===== SAVE ONU CONFIG =====
+window.trSaveOnuConfig = function() {
+    var id = document.getElementById('trOnuConfigId').value;
+    var en = document.getElementById('trOnuEnabled').checked ? 1 : 0;
+    var oltId = document.getElementById('trOnuOltId').value;
+    var wanMode = _onuWanOn ? _onuWanMode : 'off';
+    var sendWifi = _onuWifiVal;
+    
+    var btn = document.getElementById('trOnuBtnSave');
+    btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+    document.getElementById('trOnuSaveResult').innerHTML = '';
+    
+    fetch('/api/tr069/save-onu-config', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ onu_type_id: id, tr069_enabled: en, tr069_olt_id: oltId, tr069_wan_mode: wanMode, tr069_send_wifi: sendWifi })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+        btn.disabled = false; btn.innerHTML = '<i class="fas fa-save"></i> Guardar';
+        var res = document.getElementById('trOnuSaveResult');
+        if (d.status === 'success') {
+            res.className = 'tr-result success';
+            res.innerHTML = '<i class="fas fa-check-circle"></i> ' + escHtml(d.msg);
+            // Update local cache
+            (window._trOnuTypes || []).forEach(function(t){
+                if (t.id == id) {
+                    t.tr069_enabled = en; t.tr069_olt_id = oltId;
+                    t.tr069_wan_mode = wanMode; t.tr069_send_wifi = sendWifi;
+                    t.olt_name = '';
+                    _onuOlts.forEach(function(o){ if (o.id == oltId) t.olt_name = o.name; });
+                }
+            });
+            setTimeout(function(){ trCloseOnuModal(); trLoadOnuTypes(); }, 1000);
+        } else {
+            res.className = 'tr-result error';
+            res.innerHTML = '<i class="fas fa-times-circle"></i> ' + escHtml(d.msg);
+        }
+    })
+    .catch(function() {
+        btn.disabled = false; btn.innerHTML = '<i class="fas fa-save"></i> Guardar';
+        var res = document.getElementById('trOnuSaveResult');
+        res.className = 'tr-result error';
+        res.innerHTML = '<i class="fas fa-times-circle"></i> Error de conexion';
+    });
+};
+
+// Init
 trLoadOlts();
 trLoadOnuTypes();
+
+})();
 </script>

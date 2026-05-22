@@ -22,12 +22,17 @@ try { db.exec("ALTER TABLE promesas_pago ADD COLUMN servicio_ids TEXT"); } catch
 try { db.exec("ALTER TABLE servicios ADD COLUMN es_gratis INTEGER DEFAULT 0"); } catch(e) {}
 try { db.exec("ALTER TABLE servicios ADD COLUMN no_suspender INTEGER DEFAULT 0"); } catch(e) {}
 try { db.exec("ALTER TABLE servicios ADD COLUMN descuento_monto REAL DEFAULT 0"); } catch(e) {}
+try { db.exec("ALTER TABLE servicios ADD COLUMN fecha_retiro DATETIME"); } catch(e) {}
+try { db.exec("ALTER TABLE servicios ADD COLUMN motivo_retiro TEXT"); } catch(e) {}
 try { db.exec("ALTER TABLE clientes ADD COLUMN notificar_facturas INTEGER DEFAULT 1"); } catch(e) {}
 try { db.exec("ALTER TABLE clientes ADD COLUMN facturar_consolidado INTEGER DEFAULT 0"); } catch(e) {}
 try { db.exec("ALTER TABLE clientes ADD COLUMN comprobante_fiscal TEXT DEFAULT 'ninguno'"); } catch(e) {}
 try { db.exec("ALTER TABLE onu ADD COLUMN caja_nap_id INTEGER REFERENCES cajas_nap(id)"); } catch(e) {}
 try { db.exec("ALTER TABLE onu ADD COLUMN puerto_caja INTEGER"); } catch(e) {}
 try { db.exec("ALTER TABLE promesas_pago ADD COLUMN created_by_name TEXT"); } catch(e) {}
+
+// Proveedores migration
+try { db.exec("ALTER TABLE proveedores ADD COLUMN telefono TEXT"); } catch(e) {}
 
 // Inventory module migrations
 try { db.exec("ALTER TABLE inventario ADD COLUMN oficina TEXT"); } catch(e) {}
@@ -81,6 +86,57 @@ CREATE TABLE IF NOT EXISTS cron_tasks (
 );
 `);
 
+// ============================================================
+// LOGS TABLE
+// ============================================================
+db.exec(`
+CREATE TABLE IF NOT EXISTS logs (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  usuario_nombre TEXT DEFAULT '',
+  usuario_id INTEGER,
+  accion TEXT NOT NULL,
+  modulo TEXT NOT NULL,
+  cliente_id INTEGER,
+  cliente_nombre TEXT DEFAULT '',
+  servicio_id INTEGER,
+  detalle TEXT DEFAULT '',
+  ip_address TEXT DEFAULT '',
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
+);
+`);
+
+// Index for faster log queries
+try { db.exec('CREATE INDEX IF NOT EXISTS idx_logs_created_at ON logs(created_at)'); } catch(e) {}
+try { db.exec('CREATE INDEX IF NOT EXISTS idx_logs_modulo ON logs(modulo)'); } catch(e) {}
+try { db.exec('CREATE INDEX IF NOT EXISTS idx_logs_usuario ON logs(usuario_nombre)'); } catch(e) {}
+
+// Helper function to log activity
+function logActivity(usuario, accion, modulo, opts = {}) {
+  try {
+    const ip = opts.ip || '';
+    const detalle = opts.detalle || '';
+    const clienteId = opts.cliente_id || null;
+    const clienteNombre = opts.cliente_nombre || '';
+    const servicioId = opts.servicio_id || null;
+    const usuarioId = opts.usuario_id || null;
+    const usuarioNombre = opts.usuario_nombre || (typeof usuario === 'object' ? usuario.nombre || usuario.username : String(usuario));
+    
+    // Write to main DB (for admin view)
+    db.prepare(`INSERT INTO logs (usuario_nombre, usuario_id, accion, modulo, cliente_id, cliente_nombre, servicio_id, detalle, ip_address) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(usuarioNombre, usuarioId, accion, modulo, clienteId, clienteNombre, servicioId, detalle, ip);
+    
+    // Also write to tenant DB if active
+    try {
+      if (typeof global !== 'undefined' && global.__tenantDbForLogs) {
+        global.__tenantDbForLogs.prepare(`INSERT INTO logs (usuario_nombre, usuario_id, accion, modulo, cliente_id, cliente_nombre, servicio_id, detalle, ip_address) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(usuarioNombre, usuarioId, accion, modulo, clienteId, clienteNombre, servicioId, detalle, ip);
+      }
+    } catch(e2) {}
+  } catch(e) {
+    console.error('[Log] Error writing log:', e.message);
+  }
+}
+
+
 // Insertar tareas por defecto
 const cronTasks = [
   { task_name: 'generar_facturas', enabled: 1, hour: 6, minute: 0 },
@@ -96,4 +152,103 @@ for (const t of cronTasks) {
   } catch(e) {}
 }
 
+// ============================================================
+// MONITORING MODULE TABLES
+// ============================================================
+db.exec(`
+CREATE TABLE IF NOT EXISTS mon_ping_targets (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  nombre TEXT NOT NULL,
+  ip TEXT NOT NULL,
+  es_default INTEGER DEFAULT 0,
+  notify_phones TEXT DEFAULT '',
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+`);
+
+db.exec(`
+CREATE TABLE IF NOT EXISTS mon_ping_data (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  target_id INTEGER NOT NULL,
+  rtt_ms REAL,
+  success INTEGER DEFAULT 0,
+  created_at DATETIME DEFAULT (datetime('now','localtime')),
+  FOREIGN KEY (target_id) REFERENCES mon_ping_targets(id) ON DELETE CASCADE
+);
+`);
+
+db.exec(`
+CREATE TABLE IF NOT EXISTS mon_alerta_wa (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  telefono TEXT DEFAULT '',
+  activo INTEGER DEFAULT 0,
+  canal TEXT DEFAULT 'whatsapp',
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+`);
+
+db.exec(`
+CREATE TABLE IF NOT EXISTS mon_alerta_log (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  target_id INTEGER,
+  target_nombre TEXT,
+  tipo TEXT DEFAULT 'corte',
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+`);
+
+db.exec(`
+CREATE TABLE IF NOT EXISTS mon_device_status (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  router_id INTEGER NOT NULL,
+  status TEXT DEFAULT 'unknown',
+  latency_ms REAL,
+  uptime TEXT DEFAULT '',
+  last_check DATETIME,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (router_id) REFERENCES routers(id) ON DELETE CASCADE
+);
+`);
+
+try { db.exec('CREATE INDEX IF NOT EXISTS idx_mon_ping_targets_created ON mon_ping_data(created_at)'); } catch(e) {}
+try { db.exec('CREATE INDEX IF NOT EXISTS idx_mon_ping_data_target ON mon_ping_data(target_id, created_at)'); } catch(e) {}
+try { db.exec('CREATE INDEX IF NOT EXISTS idx_mon_alerta_log_created ON mon_alerta_log(created_at)'); } catch(e) {}
+
+// Create vpn_servers table if not exists
+db.exec(`
+CREATE TABLE IF NOT EXISTS vpn_servers (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT UNIQUE NOT NULL,
+  local_ip TEXT,
+  remote_ip TEXT,
+  listen_port INTEGER DEFAULT 4443,
+  username TEXT,
+  password TEXT,
+  status TEXT DEFAULT 'stopped',
+  live_status TEXT DEFAULT '',
+  config_data TEXT,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+`);
+
+try { db.exec('CREATE INDEX IF NOT EXISTS idx_vpn_servers_name ON vpn_servers(name)'); } catch(e) {}
+
+// Ensure at least default Google DNS ping target exists
+var _defaultPing = db.prepare('SELECT id FROM mon_ping_targets WHERE es_default=1').get();
+if (!_defaultPing) {
+  try {
+    db.prepare('INSERT INTO mon_ping_targets (nombre, ip, es_default) VALUES (?, ?, 1)').run('Google DNS', '8.8.8.8');
+  } catch(e) {}
+}
+
+// Ensure alert config row exists
+var _alertCfg = db.prepare('SELECT id FROM mon_alerta_wa WHERE id=1').get();
+if (!_alertCfg) {
+  try {
+    db.prepare('INSERT INTO mon_alerta_wa (id, telefono, activo) VALUES (1, \'\', 0)').run();
+  } catch(e) {}
+}
+
 module.exports = db;
+module.exports.logActivity = logActivity;

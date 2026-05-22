@@ -1,161 +1,177 @@
 <style>
-.pp-header {
-  display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;
-  margin-bottom:20px;
-}
-.pp-title {
-  font-size:1.3rem; font-weight:700; color:var(--text-dark); display:flex; align-items:center; gap:10px;
-}
-.pp-btn {
-  padding:9px 18px; border:none; border-radius:8px; font-size:0.85rem; font-weight:600;
-  cursor:pointer; display:inline-flex; align-items:center; gap:6px; transition:all 0.15s;
-}
-.pp-btn-primary { background:var(--primary); color:#fff; }
-.pp-btn-primary:hover { background:var(--primary-hover); }
-.pp-btn-danger { background:#dc2626; color:#fff; }
-.pp-btn-danger:hover { background:#b91c1c; }
-.pp-btn-sm { padding:5px 10px; font-size:0.78rem; }
-.pp-filters { display:flex; gap:6px; flex-wrap:wrap; }
-.pp-filter-btn {
-  padding:6px 14px; border:1px solid #e2e8f0; background:#fff; border-radius:6px; cursor:pointer;
-  font-size:0.82rem; font-weight:500; color:#64748b; transition:all 0.15s;
-}
-.pp-filter-btn.active { background:var(--primary); color:#fff; border-color:var(--primary); }
-.pp-filter-btn:hover:not(.active) { background:#f1f5f9; }
-.pp-card {
-  background:#fff; border:1px solid #e2e8f0; border-radius:10px; overflow:hidden;
-  box-shadow:0 1px 3px rgba(0,0,0,0.04);
-}
-.pp-table { width:100%; border-collapse:collapse; }
-.pp-table th {
-  padding:10px 14px; text-align:left; font-size:0.78rem; font-weight:700; color:#64748b;
-  text-transform:uppercase; background:#f8fafc; border-bottom:2px solid #e2e8f0; white-space:nowrap;
-}
-.pp-table td { padding:10px 14px; font-size:0.85rem; color:#334155; border-bottom:1px solid #f1f5f9; }
-.pp-table tbody tr:hover { background:#fafbfc; }
-.pp-empty {
-  text-align:center; padding:40px 20px; color:#94a3b8; font-size:0.9rem;
-}
-.pp-empty i { font-size:2.5rem; display:block; margin-bottom:12px; opacity:0.4; }
+.pp-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:12px; }
+.pp-title { font-size:1.4rem; font-weight:700; color:var(--text-dark, #1e293b); display:flex; align-items:center; gap:10px; }
+.pp-btn { padding:10px 22px; border:none; border-radius:8px; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:8px; font-size:0.9rem; transition:all 0.2s; }
+.pp-btn-primary { background:var(--primary, #2563eb); color:#fff; }
+.pp-btn-primary:hover { transform:translateY(-2px); box-shadow:0 4px 12px rgba(37,99,235,0.3); }
+.pp-btn-success { background:#16a34a; color:#fff; }
+.pp-btn-success:hover { background:#15803d; }
+.pp-btn-danger { background:#fee2e2; color:#dc2626; }
+.pp-btn-danger:hover { background:#dc2626; color:#fff; }
+.pp-btn-sm { padding:5px 12px; font-size:0.8rem; border-radius:6px; }
+.pp-btn-outline { background:transparent; border:1px solid #e2e8f0; color:#64748b; }
+.pp-btn-outline:hover { background:#f1f5f9; }
 
-/* Badges */
-.pp-badge {
-  display:inline-block; padding:2px 8px; border-radius:10px; font-size:0.72rem; font-weight:600;
-}
+.pp-filters-bar { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:16px; }
+.pp-filters { display:flex; gap:8px; flex-wrap:wrap; }
+.pp-filter-btn { padding:7px 16px; border:1px solid #e2e8f0; border-radius:20px; background:#fff; color:#64748b; font-size:0.82rem; font-weight:600; cursor:pointer; transition:all 0.2s; position:relative; }
+.pp-filter-btn:hover { background:#f1f5f9; }
+.pp-filter-btn.active { background:var(--primary, #2563eb); color:#fff; border-color:var(--primary, #2563eb); }
+.pp-filter-count { margin-left:5px; background:rgba(255,255,255,0.25); padding:1px 7px; border-radius:10px; font-size:0.7rem; display:inline-block; }
+.pp-filter-btn.active .pp-filter-count { background:rgba(255,255,255,0.3); }
+
+.pp-card { background:#fff; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,0.04); border:1px solid #f1f5f9; overflow:hidden; }
+.pp-table { width:100%; border-collapse:collapse; }
+.pp-table thead th { background:#f8fafc; padding:12px 16px; font-size:0.78rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.5px; text-align:left; border-bottom:2px solid #e2e8f0; white-space:nowrap; }
+.pp-table tbody td { padding:12px 16px; border-bottom:1px solid #f1f5f9; font-size:0.88rem; color:#334155; vertical-align:middle; }
+.pp-table tbody tr:hover { background:#f8fafc; }
+.pp-table tbody tr:last-child td { border-bottom:none; }
+
+.pp-badge { display:inline-block; padding:3px 10px; border-radius:12px; font-size:0.72rem; font-weight:700; }
 .pp-badge-active { background:#dcfce7; color:#166534; }
-.pp-badge-expired { background:#fef2f2; color:#991b1b; }
+.pp-badge-expired { background:#fee2e2; color:#991b1b; }
 .pp-badge-cancelled { background:#f1f5f9; color:#64748b; }
 .pp-badge-svc-active { background:#dbeafe; color:#1e40af; }
 .pp-badge-svc-suspended { background:#fef3c7; color:#92400e; }
 
-.pp-days-left { font-size:0.72rem; font-weight:600; margin-top:2px; }
-.pp-days-ok { color:#16a34a; }
-.pp-days-warning { color:#d97706; }
+.pp-days-left { font-size:0.75rem; font-weight:600; }
 .pp-days-danger { color:#dc2626; }
+.pp-days-warning { color:#d97706; }
+.pp-days-ok { color:#16a34a; }
 
-/* Pagination */
-.pp-pagination {
-  display:flex; align-items:center; gap:4px; padding:12px 14px; border-top:1px solid #e2e8f0;
-  flex-wrap:wrap;
-}
-.pp-pag-btn {
-  padding:5px 10px; border:1px solid #e2e8f0; border-radius:5px; background:#fff;
-  cursor:pointer; font-size:0.78rem; color:#475569; transition:all 0.1s;
-}
-.pp-pag-btn.active { background:var(--primary); color:#fff; border-color:var(--primary); }
-.pp-pag-btn.disabled { opacity:0.4; cursor:default; }
-.pp-pag-dots { padding:0 4px; color:#94a3b8; font-size:0.78rem; }
-.pp-pag-info { margin-left:auto; font-size:0.78rem; color:#94a3b8; }
+.pp-pagination { display:flex; justify-content:space-between; align-items:center; padding:12px 16px; border-top:1px solid #f1f5f9; flex-wrap:wrap; gap:8px; }
+.pp-pag-info { font-size:0.8rem; color:#64748b; }
+.pp-pag-btns { display:flex; gap:6px; }
+.pp-pag-btn { min-width:34px; height:34px; border:1px solid #e2e8f0; border-radius:8px; background:#fff; color:#475569; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; font-size:0.8rem; transition:all 0.2s; }
+.pp-pag-btn:hover:not(:disabled) { background:var(--primary, #2563eb); color:#fff; border-color:var(--primary, #2563eb); }
+.pp-pag-btn.active { background:var(--primary, #2563eb); color:#fff; border-color:var(--primary, #2563eb); }
+.pp-pag-btn:disabled { opacity:0.4; cursor:not-allowed; }
+.pp-pag-dots { color:#94a3b8; font-size:0.82rem; padding:0 3px; }
 
-/* Modal overlay */
-.pp-overlay {
-  position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.4);
-  z-index:4000; display:none; align-items:center; justify-content:center;
-  animation:fadeIn 0.15s;
-}
+.pp-empty { text-align:center; padding:50px 20px; color:#94a3b8; }
+.pp-empty i { font-size:2.5rem; display:block; margin-bottom:12px; opacity:0.5; }
+
+.pp-actions { display:flex; gap:6px; justify-content:flex-end; }
+
+/* Search */
+.pp-search-wrap { position:relative; }
+.pp-search-wrap input { padding:7px 12px 7px 32px; border:1px solid #e2e8f0; border-radius:8px; font-size:0.85rem; width:220px; background:#fff; color:#334155; }
+.pp-search-wrap i { position:absolute; left:10px; top:50%; transform:translateY(-50%); color:#94a3b8; font-size:0.8rem; pointer-events:none; }
+
+/* Modal */
+.pp-overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999; justify-content:center; align-items:center; }
 .pp-overlay.open { display:flex; }
-.pp-modal {
-  background:#fff; border-radius:12px; width:100%; max-width:520px; max-height:90vh;
-  overflow-y:auto; box-shadow:0 10px 40px rgba(0,0,0,0.15); animation:slideUp 0.2s;
-}
-.pp-modal-header {
-  padding:14px 18px; border-bottom:1px solid #e2e8f0; display:flex;
-  align-items:center; justify-content:space-between;
-}
-.pp-modal-header h3 { margin:0; font-size:1.05rem; color:#1e293b; display:flex; align-items:center; gap:8px; }
-.pp-modal-close {
-  width:30px; height:30px; border:none; background:#f1f5f9; border-radius:6px;
-  font-size:1.2rem; cursor:pointer; display:flex; align-items:center; justify-content:center;
-  color:#64748b; transition:all 0.15s;
-}
-.pp-modal-close:hover { background:#e2e8f0; color:#334155; }
-.pp-modal-body { padding:16px 18px; }
-.pp-modal-footer {
-  padding:12px 18px; border-top:1px solid #e2e8f0; display:flex; gap:8px; justify-content:flex-end;
-}
-.pp-form-group { margin-bottom:14px; }
-.pp-form-label {
-  display:block; font-size:0.82rem; font-weight:600; color:#475569; margin-bottom:6px;
-}
-.pp-input {
-  width:100%; padding:9px 12px; border:1px solid #d1d5db; border-radius:6px;
-  font-size:0.9rem; color:#1e293b; background:#f8fafc; box-sizing:border-box;
-}
-.pp-input:focus { outline:none; border-color:var(--primary); background:#fff; box-shadow:0 0 0 3px rgba(15,23,42,0.08); }
+.pp-modal { background:#fff; border-radius:12px; width:95%; max-width:600px; max-height:90vh; min-height:55vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,0.2); }
+.pp-modal-header { padding:18px 24px; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center; }
+.pp-modal-header h3 { margin:0; font-size:1.1rem; color:var(--text-dark, #1e293b); display:flex; align-items:center; gap:8px; }
+.pp-modal-close { background:none; border:none; font-size:1.4rem; color:#94a3b8; cursor:pointer; padding:0 4px; }
+.pp-modal-close:hover { color:#475569; }
+.pp-modal-body { padding:20px 24px; }
+.pp-modal-footer { padding:14px 24px; border-top:1px solid #e2e8f0; display:flex; justify-content:flex-end; gap:10px; }
 
-/* Search results dropdown */
-.pp-search-results {
-  position:absolute; left:0; right:0; top:100%; z-index:10;
-  background:#fff; border:1px solid #e2e8f0; border-radius:0 0 8px 8px;
-  max-height:220px; overflow-y:auto; display:none; box-shadow:0 4px 12px rgba(0,0,0,0.08);
-}
-.pp-search-item {
-  padding:10px 12px; cursor:pointer; border-bottom:1px solid #f1f5f9;
-  font-size:0.85rem; transition:background 0.1s;
-}
-.pp-search-item:hover { background:#f8fafc; }
+.pp-form-group { margin-bottom:16px; }
+.pp-form-label { font-size:0.82rem; font-weight:600; color:#475569; margin-bottom:6px; display:block; }
+.pp-input { width:100%; padding:10px 12px; border:1px solid #d1d5db; border-radius:8px; font-size:0.9rem; box-sizing:border-box; color:#1e293b; }
+.pp-input:focus { outline:none; border-color:var(--primary, #2563eb); box-shadow:0 0 0 3px rgba(37,99,235,0.1); }
+
+.pp-search-results { max-height:300px; overflow-y:auto; border:1px solid #e2e8f0; border-radius:8px; margin-top:6px; display:none; position:absolute; left:0; right:0; background:#fff; z-index:10; }
+.pp-search-item { padding:10px 14px; cursor:pointer; border-bottom:1px solid #f1f5f9; display:flex; justify-content:space-between; align-items:center; }
+.pp-search-item:hover { background:#f0f9ff; }
 .pp-search-item:last-child { border-bottom:none; }
 
-.pp-client-selected {
-  display:none; align-items:center; justify-content:space-between;
-  padding:10px 14px; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:8px;
-  margin-bottom:12px;
-}
+.pp-client-selected { background:#f0fdf4; border:1px solid #bbf7d0; border-radius:8px; padding:12px 16px; display:none; align-items:center; justify-content:space-between; margin-bottom:12px; }
 
-.pp-svc-list { max-height:240px; overflow-y:auto; border:1px solid #e2e8f0; border-radius:6px; }
-.pp-svc-item {
-  padding:8px 12px; border-bottom:1px solid #f1f5f9; display:flex;
-  justify-content:space-between; align-items:center; flex-wrap:wrap; gap:4px;
-}
+.pp-svc-list { max-height:450px; overflow-y:auto; border:1px solid #e2e8f0; border-radius:8px; }
+.pp-svc-item { display:flex; align-items:center; gap:10px; padding:8px 12px; border-bottom:1px solid #f1f5f9; flex-wrap:wrap; }
 .pp-svc-item:last-child { border-bottom:none; }
-.pp-svc-item label { display:flex; align-items:center; gap:8px; cursor:pointer; font-size:0.85rem; }
-.pp-svc-warn { font-size:0.75rem; color:#dc2626; margin-left:4px; }
-.pp-svc-ok { font-size:0.75rem; color:#16a34a; }
+.pp-svc-item label { flex:1; display:flex; align-items:center; gap:8px; cursor:pointer; font-size:0.88rem; }
+.pp-svc-warn { font-size:0.72rem; color:#dc2626; font-weight:600; }
+.pp-svc-ok { font-size:0.72rem; color:#16a34a; }
 
-@keyframes fadeIn { from{opacity:0} to{opacity:1} }
-@keyframes slideUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+/* Notes tooltip */
+.pp-notes-trigger { cursor:pointer; color:#94a3b8; font-size:0.8rem; margin-left:4px; }
+.pp-notes-trigger:hover { color:#475569; }
+.pp-notes-popup { display:none; position:absolute; background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:10px 14px; font-size:0.82rem; color:#475569; box-shadow:0 4px 12px rgba(0,0,0,0.1); z-index:100; max-width:280px; white-space:normal; line-height:1.4; }
+.pp-notes-popup.show { display:block; }
+
+/* Toast */
+.pp-toast { position:fixed; top:20px; right:20px; padding:12px 20px; border-radius:8px; z-index:99999; font-size:0.9rem; box-shadow:0 4px 12px rgba(0,0,0,0.15); display:flex; align-items:center; gap:8px; animation:ppToastIn 0.3s; }
+.pp-toast-success { background:#166534; color:#fff; }
+.pp-toast-error { background:#991b1b; color:#fff; }
+.pp-toast-info { background:#1e40af; color:#fff; }
+@keyframes ppToastIn { from{opacity:0;transform:translateX(30px)} to{opacity:1;transform:translateX(0)} }
+
+/* Mobile responsive */
+@media(max-width:768px){
+    .pp-header { gap:8px; }
+    .pp-title { font-size:1.1rem; gap:8px; }
+    .pp-btn { padding:8px 14px; font-size:0.82rem; }
+    .pp-filters-bar { gap:6px; }
+    .pp-filter-btn { padding:6px 12px; font-size:0.78rem; }
+    .pp-card { border:none; box-shadow:none; background:transparent; overflow:visible; }
+    .pp-table,
+    .pp-table thead { display:none; }
+    .pp-table tbody { display:flex; flex-direction:column; gap:10px; }
+    .pp-table tbody tr { display:grid; grid-template-columns:1fr; background:#fff; border:1px solid #e2e8f0; border-radius:10px; padding:12px; gap:4px; align-items:start; box-shadow:0 1px 4px rgba(0,0,0,0.04); }
+    .pp-table tbody tr:hover { background:#fff; }
+    .pp-table tbody td { padding:0; border:none; font-size:0.84rem; }
+    .pp-table tbody td:nth-child(1) { display:none; }
+    .pp-table tbody td:nth-child(2) { font-size:0.92rem; margin-bottom:2px; font-weight:600; }
+    .pp-table tbody td:nth-child(3) { margin-bottom:4px; }
+    .pp-table tbody td:nth-child(6) { }
+    .pp-table tbody td:nth-child(5) { font-size:0.82rem; }
+    .pp-table tbody td:nth-child(4) { font-size:0.78rem; color:#94a3b8; }
+    .pp-table tbody td:nth-child(7) { font-size:0.78rem; color:#94a3b8; }
+    .pp-table tbody td:nth-child(8) { margin-top:6px; padding-top:8px; border-top:1px solid #f1f5f9; text-align:left !important; }
+    .pp-table tbody td:nth-child(4)::before { content:'Creado: '; font-weight:600; color:#64748b; }
+    .pp-table tbody td:nth-child(5)::before { content:'Vence: '; font-weight:600; color:#64748b; }
+    .pp-table tbody td:nth-child(7)::before { content:'Por: '; font-weight:600; color:#64748b; }
+    .pp-modal { width:96%; max-height:92vh; }
+    .pp-modal-body { padding:14px; }
+    .pp-modal-header { padding:12px 14px; }
+    .pp-modal-header h3 { font-size:1rem; }
+    .pp-modal-footer { padding:12px 14px; flex-direction:column; }
+    .pp-modal-footer .pp-btn { width:100%; justify-content:center; }
+    .pp-input { font-size:16px; }
+    .pp-search-item { flex-direction:column; align-items:flex-start; gap:4px; }
+    .pp-svc-item { padding:8px 10px; }
+    .pp-svc-item label { font-size:0.82rem; flex-wrap:wrap; }
+    .pp-empty { padding:30px 16px; }
+    .pp-empty i { font-size:2rem; }
+    .pp-badge { white-space:nowrap; }
+    .pp-days-left { white-space:nowrap; }
+    .pp-actions { flex-direction:column; gap:4px; }
+    .pp-actions .pp-btn { width:100%; justify-content:center; }
+    .pp-search-wrap input { width:100%; }
+}
+@media(max-width:380px){
+    .pp-filter-btn { padding:5px 10px; font-size:0.74rem; }
+    .pp-btn { padding:7px 12px; font-size:0.78rem; }
+    .pp-title { font-size:1rem; }
+    .pp-table tbody td:nth-child(2) { font-size:0.85rem; }
+    .pp-modal-body { padding:12px; }
+}
 </style>
 
 <div class="pp-header">
     <div class="pp-title">
-        <i class="fas fa-handshake" style="color:#2563eb;"></i> Promesas de Pago
+        <i class="fas fa-handshake" style="color:var(--primary, #2563eb);"></i> Promesas de Pago
     </div>
     <button class="pp-btn pp-btn-primary" onclick="openNewPromise()">
         <i class="fas fa-plus-circle"></i> Nueva Promesa
     </button>
 </div>
 
-<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px;">
-    <div class="pp-filters" style="margin-bottom:0;">
-        <button class="pp-filter-btn active" onclick="filterList('active', this)">Activas</button>
-        <button class="pp-filter-btn" onclick="filterList('expired', this)">Vencidas</button>
-        <button class="pp-filter-btn" onclick="filterList('cancelled', this)">Canceladas</button>
-        <button class="pp-filter-btn" onclick="filterList('all', this)">Todas</button>
+<div class="pp-filters-bar">
+    <div class="pp-filters">
+        <button class="pp-filter-btn active" onclick="filterList('active', this)" id="ppFilterActive">Activas <span class="pp-filter-count" id="ppCountActive">0</span></button>
+        <button class="pp-filter-btn" onclick="filterList('expired', this)" id="ppFilterExpired">Vencidas <span class="pp-filter-count" id="ppCountExpired">0</span></button>
+        <button class="pp-filter-btn" onclick="filterList('cancelled', this)" id="ppFilterCancelled">Canceladas <span class="pp-filter-count" id="ppCountCancelled">0</span></button>
+        <button class="pp-filter-btn" onclick="filterList('all', this)" id="ppFilterAll">Todas <span class="pp-filter-count" id="ppCountAll">0</span></button>
     </div>
-    <div style="position:relative;">
-        <input type="text" id="ppListSearch" placeholder="Buscar cliente o NIC..." oninput="ppListSearchFn()"
-            style="padding:7px 12px 7px 32px;border:1px solid #e2e8f0;border-radius:8px;font-size:0.85rem;width:220px;background:#fff;color:#334155;">
-        <i class="fas fa-search" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#94a3b8;font-size:0.8rem;pointer-events:none;"></i>
+    <div class="pp-search-wrap">
+        <input type="text" id="ppListSearch" placeholder="Buscar cliente o NIC..." oninput="ppListSearchFn()">
+        <i class="fas fa-search"></i>
     </div>
 </div>
 
@@ -177,14 +193,15 @@
             <tr><td colspan="8" class="pp-empty"><i class="fas fa-spinner fa-spin"></i>Cargando...</td></tr>
         </tbody>
     </table>
+    <div id="ppPagination" class="pp-pagination"></div>
 </div>
 
 <!-- Modal Nueva Promesa -->
 <div class="pp-overlay" id="ppModal">
     <div class="pp-modal">
         <div class="pp-modal-header">
-            <h3><i class="fas fa-handshake" style="color:#2563eb;"></i> Nueva Promesa de Pago</h3>
-            <button class="pp-modal-close" onclick="closeModalPP()">&times;</button>
+            <h3><i class="fas fa-handshake" style="color:var(--primary, #2563eb);"></i> Nueva Promesa de Pago</h3>
+            <button class="pp-modal-close" onclick="ppCloseModal()">&times;</button>
         </div>
         <div class="pp-modal-body">
             <!-- Buscador -->
@@ -222,7 +239,7 @@
             </div>
         </div>
         <div class="pp-modal-footer" id="ppFooter" style="display:none;">
-            <button class="pp-btn" style="background:#e2e8f0; color:#475569;" onclick="closeModalPP()">Cancelar</button>
+            <button class="pp-btn pp-btn-outline" onclick="ppCloseModal()">Cancelar</button>
             <button class="pp-btn pp-btn-primary" onclick="savePromise()" id="ppSaveBtn">
                 <i class="fas fa-save"></i> Crear Promesa
             </button>
@@ -242,13 +259,14 @@
             <p style="color:#94a3b8; font-size:0.82rem;">El servicio quedar&aacute; sujeto a suspensi&oacute;n en el pr&oacute;ximo ciclo.</p>
         </div>
         <div class="pp-modal-footer" style="justify-content:center;">
-            <button class="pp-btn" style="background:#e2e8f0; color:#475569;" onclick="closeCancelModal()">No</button>
+            <button class="pp-btn pp-btn-outline" onclick="closeCancelModal()">No</button>
             <button class="pp-btn pp-btn-danger" onclick="confirmCancel()"><i class="fas fa-times"></i> S&iacute;, cancelar</button>
         </div>
     </div>
 </div>
 
 <script>
+// ====== STATE ======
 let ppSelectedClient = null;
 let ppSearchTimer = null;
 let ppCancelId = null;
@@ -257,11 +275,41 @@ let ppCurrentPage = 1;
 let ppCurrentFilter = 'active';
 const ppPerPage = 15;
 let ppListQ = '';
+let ppFilterCounts = { active: 0, expired: 0, cancelled: 0, all: 0 };
 
-function mostrarAlerta(titulo, msg) {
-    alert(msg);
+// ====== TOAST ======
+function ppToast(msg, type) {
+    type = type || 'success';
+    var t = document.createElement('div');
+    t.className = 'pp-toast pp-toast-' + type;
+    t.innerHTML = '<i class="fas fa-' + (type==='success' ? 'check-circle' : type==='error' ? 'exclamation-circle' : 'info-circle') + '"></i> ' + msg;
+    document.body.appendChild(t);
+    setTimeout(function(){ t.remove(); }, 3000);
 }
 
+// ====== COUNT BADGES ======
+function updateCounts() {
+    var counts = {active:0, expired:0, cancelled:0, all: ppAllData.length};
+    ppAllData.forEach(function(p) {
+        if (p.estado === 'activa') {
+            var todayStr = new Date().toISOString().split('T')[0];
+            if (p.fecha_limite < todayStr) counts.expired++;
+            else counts.active++;
+        } else if (p.estado === 'vencida') {
+            counts.expired++;
+        } else if (p.estado === 'cancelada') {
+            counts.cancelled++;
+        }
+        // Also count estado='activa'+overdue as expired in filter context
+    });
+    ppFilterCounts = counts;
+    document.getElementById('ppCountActive').textContent = counts.active;
+    document.getElementById('ppCountExpired').textContent = counts.expired;
+    document.getElementById('ppCountCancelled').textContent = counts.cancelled;
+    document.getElementById('ppCountAll').textContent = counts.all;
+}
+
+// ====== LIST SEARCH ======
 function ppListSearchFn() {
     ppListQ = document.getElementById('ppListSearch').value.trim().toLowerCase();
     ppCurrentPage = 1;
@@ -272,155 +320,215 @@ function ppListSearchFn() {
 function loadList(filter) {
     ppCurrentFilter = filter || 'active';
     ppCurrentPage = 1;
+
+    var tb = document.getElementById('ppTableBody');
+    tb.innerHTML = '<tr><td colspan="8" class="pp-empty"><i class="fas fa-spinner fa-spin"></i>Cargando...</td></tr>';
+
     fetch('/api/promesa/list?filter=' + ppCurrentFilter)
-    .then(r => r.json()).then(d => {
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
         ppAllData = d.data || [];
+        updateCounts();
         renderPage();
+    })
+    .catch(function() {
+        tb.innerHTML = '<tr><td colspan="8" class="pp-empty"><i class="fas fa-exclamation-triangle" style="color:#dc2626;"></i>Error al cargar datos</td></tr>';
     });
 }
 
 function renderPage() {
-    const tb = document.getElementById('ppTableBody');
-    const filtered = ppListQ ? ppAllData.filter(function(p) {
+    var tb = document.getElementById('ppTableBody');
+
+    // Filtro local por texto
+    var filtered = ppListQ ? ppAllData.filter(function(p) {
         var name = (p.client_name || '').toLowerCase();
         var alias = (p.alias || '').toLowerCase();
-        var nic   = (p.nics || '').toLowerCase();
-        return name.includes(ppListQ) || alias.includes(ppListQ) || nic.includes(ppListQ);
+        var nics = (p.nics || '').toLowerCase();
+        return name.indexOf(ppListQ) !== -1 || alias.indexOf(ppListQ) !== -1 || nics.indexOf(ppListQ) !== -1;
     }) : ppAllData;
+
     if (!filtered.length) {
-        tb.innerHTML = '<tr><td colspan="8" class="pp-empty"><i class="fas fa-handshake"></i>No hay promesas ' + (ppCurrentFilter === 'active' ? 'activas' : 'en este filtro') + (ppListQ ? ' para "' + ppListQ + '"' : '') + '</td></tr>';
+        var emptyMsg = 'No hay promesas ' + (ppCurrentFilter === 'active' ? 'activas' : 'en este filtro');
+        if (ppListQ) emptyMsg += ' para &quot;' + ppListQ + '&quot;';
+        tb.innerHTML = '<tr><td colspan="8" class="pp-empty"><i class="fas fa-handshake"></i>' + emptyMsg + '</td></tr>';
         renderPagination(filtered);
         return;
     }
-    const total = filtered.length;
-    const totalPages = Math.ceil(total / ppPerPage);
+
+    var total = filtered.length;
+    var totalPages = Math.ceil(total / ppPerPage);
     if (ppCurrentPage > totalPages) ppCurrentPage = totalPages;
-    const start = (ppCurrentPage - 1) * ppPerPage;
-    const items = filtered.slice(start, start + ppPerPage);
+    var start = (ppCurrentPage - 1) * ppPerPage;
+    var items = filtered.slice(start, start + ppPerPage);
 
-    let html = '';
-    items.forEach(p => {
-        const todayStr = new Date().toISOString().split('T')[0];
-        const isActive = p.estado === 'activa';
-        const isOverdue = isActive && p.fecha_limite < todayStr;
-        const badgeClass = isOverdue ? 'pp-badge-expired' : (isActive ? 'pp-badge-active' : 'pp-badge-cancelled');
-        const statusLabel = isActive ? (isOverdue ? 'Vencida' : 'Activa') : (p.estado === 'cancelada' ? 'Cancelada' : p.estado);
-        const svcBadge = p.svc_status === 'active' ? 'pp-badge-svc-active' : 'pp-badge-svc-suspended';
-        const svcLabel = p.svc_status === 'active' ? 'Activo' : 'Suspendido';
-        const alias = p.alias ? ' <span style="color:#d97706; font-style:italic;">(' + p.alias + ')</span>' : '';
-        const created = new Date(p.created_at).toLocaleDateString('es-DO',{day:'2-digit',month:'2-digit',year:'numeric'});
-        const due = new Date(p.fecha_limite + 'T12:00:00').toLocaleDateString('es-DO',{day:'2-digit',month:'2-digit',year:'numeric'});
+    var todayStr = new Date().toISOString().split('T')[0];
+    var html = '';
+    for (var i = 0; i < items.length; i++) {
+        var p = items[i];
+        var isActive = p.estado === 'activa';
+        var isOverdue = isActive && p.fecha_limite < todayStr;
+        var badgeClass = isOverdue ? 'pp-badge-expired' : (isActive ? 'pp-badge-active' : 'pp-badge-cancelled');
+        var statusLabel = isActive ? (isOverdue ? 'Vencida' : 'Activa') : (p.estado === 'vencida' ? 'Vencida' : 'Cancelada');
+        var svcBadge = p.svc_status === 'active' ? 'pp-badge-svc-active' : 'pp-badge-svc-suspended';
+        var svcLabel = p.svc_status === 'active' ? 'Activo' : 'Suspendido';
+        var alias = p.alias ? ' <span style="color:#d97706; font-style:italic;">(' + p.alias + ')</span>' : '';
+        var created = new Date(p.created_at).toLocaleDateString('es-DO', {day:'2-digit', month:'2-digit', year:'numeric'});
+        var due = new Date(p.fecha_limite + 'T12:00:00').toLocaleDateString('es-DO', {day:'2-digit', month:'2-digit', year:'numeric'});
 
-        let daysHtml = '';
+        // Días restantes
+        var daysHtml = '';
         if (isActive) {
-            const today = new Date(); today.setHours(0,0,0,0);
-            const dueD = new Date(p.fecha_limite + 'T12:00:00'); dueD.setHours(0,0,0,0);
-            const diff = Math.ceil((dueD - today) / 86400000);
-            const cls = diff <= 1 ? 'pp-days-danger' : (diff <= 3 ? 'pp-days-warning' : 'pp-days-ok');
+            var today = new Date(); today.setHours(0,0,0,0);
+            var dueD = new Date(p.fecha_limite + 'T12:00:00'); dueD.setHours(0,0,0,0);
+            var diff = Math.ceil((dueD - today) / 86400000);
+            var cls = diff <= 1 ? 'pp-days-danger' : (diff <= 3 ? 'pp-days-warning' : 'pp-days-ok');
             daysHtml = '<div class="pp-days-left ' + cls + '">' + diff + ' d&iacute;a(s)</div>';
         }
 
-        const cancelBtn = p.status === 'activa' ? '<button class="pp-btn pp-btn-danger pp-btn-sm" onclick="openCancelModal(' + p.id + ')"><i class="fas fa-times"></i></button>' : '-';
+        // Notas tooltip
+        var notesHtml = '';
+        if (p.notas) {
+            var safeNotes = (p.notas || '').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/'/g, '\\\'');
+            notesHtml = '<span class="pp-notes-trigger" onclick="event.stopPropagation();var np=document.getElementById(\'ppNotesPop\');np.style.left=this.offsetLeft+\'px\';np.style.top=this.offsetTop+20+\'px\';np.innerHTML=\'' + safeNotes + '\';np.classList.toggle(\'show\');setTimeout(function(){np.classList.remove(\'show\');},3000);" title="Ver notas"><i class="fas fa-sticky-note"></i></span>';
+        }
+
+        // Acciones
+        var actionsHtml = '';
+        if (isActive) {
+            actionsHtml = '<div class="pp-actions">' +
+                '<button class="pp-btn pp-btn-danger pp-btn-sm" onclick="openCancelModal(' + p.id + ')" title="Cancelar promesa"><i class="fas fa-times"></i></button>' +
+                '</div>';
+        } else {
+            actionsHtml = '<div class="pp-actions"><span style="color:#94a3b8;font-size:0.8rem;">&mdash;</span></div>';
+        }
 
         html += '<tr>';
         html += '<td>' + p.id + '</td>';
         html += '<td><b>' + p.client_name + '</b>' + alias + '</td>';
-        html += '<td>' + (p.nics || '-') + ' <span class="pp-badge ' + svcBadge + '">' + svcLabel + '</span></td>';
+        html += '<td>' + (p.nics || '-') + ' <span class="pp-badge ' + svcBadge + '">' + svcLabel + '</span>' + notesHtml + '</td>';
         html += '<td>' + created + '</td>';
         html += '<td>' + due + daysHtml + '</td>';
         html += '<td><span class="pp-badge ' + badgeClass + '">' + statusLabel + '</span></td>';
         html += '<td>' + (p.created_by_name || '-') + '</td>';
-        html += '<td style="text-align:right;">' + cancelBtn + '</td>';
+        html += '<td style="text-align:right;">' + actionsHtml + '</td>';
         html += '</tr>';
-    });
+    }
     tb.innerHTML = html;
     renderPagination(filtered);
 }
 
+// ====== PAGINACIÓN ======
 function renderPagination(data) {
     data = data || ppAllData;
-    let box = document.getElementById('ppPagination');
+    var box = document.getElementById('ppPagination');
     if (!box) {
         box = document.createElement('div');
         box.id = 'ppPagination';
         box.className = 'pp-pagination';
-        document.querySelector('.pp-card').appendChild(box);
+        var card = document.querySelector('.pp-card');
+        if (card) card.appendChild(box);
     }
-    const total = data.length;
-    const totalPages = Math.max(1, Math.ceil(total / ppPerPage));
-    if (totalPages <= 1) { box.innerHTML = total > 0 ? '<span class="pp-pag-info">' + total + ' registro(s)</span>' : ''; return; }
+    var total = data.length;
+    var totalPages = Math.max(1, Math.ceil(total / ppPerPage));
 
-    var html = '<button class="pp-pag-btn' + (ppCurrentPage <= 1 ? ' disabled' : '') + '" onclick="ppGoPage(' + (ppCurrentPage-1) + ')">&laquo;</button>';
+    if (totalPages <= 1) {
+        box.innerHTML = total > 0 ? '<span class="pp-pag-info">' + total + ' registro(s)</span>' : '';
+        return;
+    }
 
-    var winSize = 5;
-    var start = Math.max(1, ppCurrentPage - winSize);
-    var end   = Math.min(totalPages, ppCurrentPage + winSize);
+    var html = '<div class="pp-pag-info">P&aacute;gina ' + ppCurrentPage + ' de ' + totalPages + ' (' + total + ' registros)</div>';
+    html += '<div class="pp-pag-btns">';
 
-    if (start > 1) {
-        html += '<button class="pp-pag-btn' + (ppCurrentPage===1?' active':'') + '" onclick="ppGoPage(1)">1</button>';
-        if (start > 2) html += '<span class="pp-pag-dots">...</span>';
+    // Anterior
+    html += '<button class="pp-pag-btn' + (ppCurrentPage <= 1 ? ' disabled' : '') + '" onclick="ppGoPage(' + (ppCurrentPage - 1) + ')"' + (ppCurrentPage <= 1 ? ' disabled' : '') + '>&laquo;</button>';
+
+    var winSize = 3;
+    var startP = Math.max(1, ppCurrentPage - winSize);
+    var endP = Math.min(totalPages, ppCurrentPage + winSize);
+
+    if (startP > 1) {
+        html += '<button class="pp-pag-btn' + (ppCurrentPage === 1 ? ' active' : '') + '" onclick="ppGoPage(1)">1</button>';
+        if (startP > 2) html += '<span class="pp-pag-dots">...</span>';
     }
-    for (var p = start; p <= end; p++) {
-        html += '<button class="pp-pag-btn' + (p===ppCurrentPage?' active':'') + '" onclick="ppGoPage(' + p + ')">' + p + '</button>';
+    for (var p = startP; p <= endP; p++) {
+        html += '<button class="pp-pag-btn' + (p === ppCurrentPage ? ' active' : '') + '" onclick="ppGoPage(' + p + ')">' + p + '</button>';
     }
-    if (end < totalPages) {
-        if (end < totalPages - 1) html += '<span class="pp-pag-dots">...</span>';
-        html += '<button class="pp-pag-btn' + (ppCurrentPage===totalPages?' active':'') + '" onclick="ppGoPage(' + totalPages + ')">' + totalPages + '</button>';
+    if (endP < totalPages) {
+        if (endP < totalPages - 1) html += '<span class="pp-pag-dots">...</span>';
+        html += '<button class="pp-pag-btn' + (ppCurrentPage === totalPages ? ' active' : '') + '" onclick="ppGoPage(' + totalPages + ')">' + totalPages + '</button>';
     }
-    html += '<button class="pp-pag-btn' + (ppCurrentPage >= totalPages ? ' disabled' : '') + '" onclick="ppGoPage(' + (ppCurrentPage+1) + ')">&raquo;</button>';
-    html += '<span class="pp-pag-info">' + total + ' registro(s)</span>';
+
+    // Siguiente
+    html += '<button class="pp-pag-btn' + (ppCurrentPage >= totalPages ? ' disabled' : '') + '" onclick="ppGoPage(' + (ppCurrentPage + 1) + ')"' + (ppCurrentPage >= totalPages ? ' disabled' : '') + '>&raquo;</button>';
+    html += '</div>';
 
     box.innerHTML = html;
 }
 
 function ppGoPage(p) {
+    if (p < 1) return;
     ppCurrentPage = p;
     renderPage();
-    document.querySelector('.pp-card').scrollIntoView({behavior:'smooth',block:'start'});
+    var card = document.querySelector('.pp-card');
+    if (card) card.scrollIntoView({behavior:'smooth', block:'start'});
 }
 
 function filterList(f, btn) {
-    document.querySelectorAll('.pp-filter-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
+    document.querySelectorAll('.pp-filter-btn').forEach(function(b) { b.classList.remove('active'); });
+    if (btn) btn.classList.add('active');
     loadList(f);
 }
 
 // ====== NUEVA PROMESA ======
 function openNewPromise() {
-    console.log('[DBG-PP] openNewPromise called');
     clearClient();
     document.getElementById('ppSearchInput').value = '';
     document.getElementById('ppDueDate').value = '';
-    document.getElementById('ppDueDate').min = new Date(Date.now() + 86400000).toISOString().split('T')[0];
+    var minDate = new Date(Date.now() + 86400000).toISOString().split('T')[0];
+    document.getElementById('ppDueDate').min = minDate;
     document.getElementById('ppNotes').value = '';
     document.getElementById('ppModal').classList.add('open');
-    setTimeout(() => document.getElementById('ppSearchInput').focus(), 200);
+    setTimeout(function() {
+        var inp = document.getElementById('ppSearchInput');
+        if (inp) inp.focus();
+    }, 200);
 }
 
-function closeModalPP() {
-    console.log('[DBG-PP] closeModalPP called');
-    document.getElementById('ppModal').classList.remove('open');
+function ppCloseModal() {
+    var el = document.getElementById('ppModal');
+    if (el) el.classList.remove('open');
 }
 
+// ====== BUSCAR CLIENTES ======
 function ppSearchDebounce() {
-    console.log('[DBG-PP] search input');
     clearTimeout(ppSearchTimer);
-    const val = document.getElementById('ppSearchInput').value.trim();
-    if (val.length < 2) { document.getElementById('ppSearchResults').style.display = 'none'; return; }
-    ppSearchTimer = setTimeout(() => {
+    var val = document.getElementById('ppSearchInput').value.trim();
+    if (val.length < 2) {
+        document.getElementById('ppSearchResults').style.display = 'none';
+        return;
+    }
+    ppSearchTimer = setTimeout(function() {
         fetch('/api/promesa/search_clients?term=' + encodeURIComponent(val))
-        .then(r => r.json()).then(data => {
-            const box = document.getElementById('ppSearchResults');
-            if (!data.length) { box.innerHTML = '<div style="padding:12px; text-align:center; color:#94a3b8;">Sin resultados</div>'; box.style.display = 'block'; return; }
-            let html = '';
-            data.forEach(c => {
-                const alias = c.alias ? ' <span style="color:#d97706;">(' + c.alias + ')</span>' : '';
-                const nics = c.nics ? '<span style="font-size:0.75rem; color:#2563eb;"><i class="fas fa-ethernet"></i> ' + c.nics + '</span>' : '';
-                html += '<div class="pp-search-item" onclick="selectClient(' + c.id + ',\'' + c.name.replace(/'/g,"\\'") + '\',\'' + (c.alias||'').replace(/'/g,"\\'") + '\')">';
-                html += '<div><b>' + c.name + '</b>' + alias + '<br><span style="font-size:0.78rem; color:#64748b;">' + (c.cedula||'') + '</span></div>';
-                html += nics;
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            var box = document.getElementById('ppSearchResults');
+            if (!data || !data.length) {
+                box.innerHTML = '<div style="padding:12px; text-align:center; color:#94a3b8;">Sin resultados</div>';
+                box.style.display = 'block';
+                return;
+            }
+            var html = '';
+            for (var i = 0; i < data.length; i++) {
+                var c = data[i];
+                var aliasHtml = c.alias ? ' <span style="color:#d97706;">(' + c.alias + ')</span>' : '';
+                var nicsHtml = c.nics ? '<span style="font-size:0.75rem; color:#2563eb;"><i class="fas fa-ethernet"></i> ' + c.nics + '</span>' : '';
+                var safeName = (c.name || '').replace(/'/g, "\\'");
+                var safeAlias = (c.alias || '').replace(/'/g, "\\'");
+                html += '<div class="pp-search-item" onclick="selectClient(' + c.id + ',\'' + safeName + '\',\'' + safeAlias + '\')">';
+                html += '<div><b>' + c.name + '</b>' + aliasHtml + '<br><span style="font-size:0.78rem; color:#64748b;">' + (c.cedula || '') + '</span></div>';
+                html += nicsHtml;
                 html += '</div>';
-            });
+            }
             box.innerHTML = html;
             box.style.display = 'block';
         });
@@ -428,7 +536,6 @@ function ppSearchDebounce() {
 }
 
 function selectClient(id, name, alias) {
-    console.log('[DBG-PP] selectClient: ' + name);
     ppSelectedClient = id;
     document.getElementById('ppSearchGroup').style.display = 'none';
     document.getElementById('ppSearchResults').style.display = 'none';
@@ -449,25 +556,30 @@ function clearClient() {
 }
 
 function loadServices(clientId) {
-    console.log('[DBG-PP] loadServices ' + clientId);
     fetch('/api/promesa/get_services?client_id=' + clientId)
-    .then(r => r.json()).then(svcs => {
-        const box = document.getElementById('ppSvcList');
-        if (!svcs.length) { box.innerHTML = '<div style="padding:12px; color:#94a3b8; text-align:center;">Sin servicios activos o suspendidos</div>'; }
-        else {
-            let html = '';
-            svcs.forEach(s => {
-                const disabled = s.promesa_activa > 0 ? 'disabled' : '';
-                const checked = s.promesa_activa === 0 ? 'checked' : '';
-                const warn = s.promesa_activa > 0 ? '<span class="pp-svc-warn"><i class="fas fa-exclamation-circle"></i> Ya tiene promesa activa</span>' : '';
-                const venc = s.facturas_vencidas > 0 ? '<span class="pp-svc-warn" style="color:#d97706;">' + s.facturas_vencidas + ' vencida(s)</span>' : '<span class="pp-svc-ok"><i class="fas fa-check"></i> Al d&iacute;a</span>';
-                const statusBadge = s.status === 'suspendido' ? '<span class="pp-badge pp-badge-svc-suspended" style="margin-left:6px;">Suspendido</span>' : '';
+    .then(function(r) { return r.json(); })
+    .then(function(svcs) {
+        var box = document.getElementById('ppSvcList');
+        if (!svcs || !svcs.length) {
+            box.innerHTML = '<div style="padding:12px; color:#94a3b8; text-align:center;">Sin servicios activos o suspendidos</div>';
+        } else {
+            var html = '';
+            for (var i = 0; i < svcs.length; i++) {
+                var s = svcs[i];
+                // ispTotal backend: promesa_activa is COUNT (integer)
+                var disabled = s.promesa_activa > 0 ? 'disabled' : '';
+                var checked = s.promesa_activa === 0 ? 'checked' : '';
+                var warn = s.promesa_activa > 0 ? '<span class="pp-svc-warn"><i class="fas fa-exclamation-circle"></i> Ya tiene promesa activa</span>' : '';
+                var venc = s.facturas_vencidas > 0 ? '<span class="pp-svc-warn" style="color:#d97706;">' + s.facturas_vencidas + ' vencida(s)</span>' : '<span class="pp-svc-ok"><i class="fas fa-check"></i> Al d&iacute;a</span>';
+                // Backend doesn't return nic field, use id with 'SVC-' prefix
+                var svcName = s.nic || ('SVC-' + s.id);
+                var statusBadge = s.status === 'suspendido' ? '<span class="pp-badge pp-badge-svc-suspended" style="margin-left:6px;">Suspendido</span>' : '';
                 html += '<div class="pp-svc-item">';
                 html += '<label><input type="checkbox" value="' + s.id + '" ' + checked + ' ' + disabled + '>';
-                html += '<span><b>' + (s.nic || 'SVC-'+s.id) + '</b> - ' + (s.plan_name||'Sin plan') + statusBadge + '</span></label>';
+                html += '<span><b>' + svcName + '</b> - ' + (s.plan_name || 'Sin plan') + statusBadge + '</span></label>';
                 html += '<div>' + venc + warn + '</div>';
                 html += '</div>';
-            });
+            }
             box.innerHTML = html;
         }
         document.getElementById('ppSvcGroup').style.display = 'block';
@@ -478,19 +590,23 @@ function loadServices(clientId) {
 }
 
 function savePromise() {
-    const services = [];
-    document.querySelectorAll('#ppSvcList input[type=checkbox]:checked:not(:disabled)').forEach(c => services.push(c.value));
-    if (!services.length) { mostrarAlerta('Error','Seleccione al menos un servicio'); return; }
-    const due = document.getElementById('ppDueDate').value;
-    if (!due) { mostrarAlerta('Error','Seleccione una fecha'); return; }
+    var services = [];
+    var checkboxes = document.querySelectorAll('#ppSvcList input[type=checkbox]:checked:not(:disabled)');
+    for (var i = 0; i < checkboxes.length; i++) {
+        services.push(checkboxes[i].value);
+    }
+    if (!services.length) { ppToast('Seleccione al menos un servicio', 'error'); return; }
 
-    const btn = document.getElementById('ppSaveBtn');
+    var due = document.getElementById('ppDueDate').value;
+    if (!due) { ppToast('Seleccione una fecha l&iacute;mite', 'error'); return; }
+
+    var btn = document.getElementById('ppSaveBtn');
     btn.disabled = true;
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creando...';
 
     fetch('/api/promesa/create', {
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
             client_id: ppSelectedClient,
             services: services,
@@ -498,29 +614,66 @@ function savePromise() {
             notes: document.getElementById('ppNotes').value
         })
     })
-    .then(r => r.json()).then(d => {
-        console.log('[DBG-PP] savePromise resp:', d.status);
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
         btn.disabled = false;
         btn.innerHTML = '<i class="fas fa-save"></i> Crear Promesa';
         if (d.status === 'success') {
-            closeModalPP();
+            ppCloseModal();
+            ppToast(d.msg || 'Promesa creada correctamente', 'success');
+            // Switch to Activas after creating
             filterList('active', document.querySelector('.pp-filter-btn'));
-        } else { mostrarAlerta('Error', d.msg); }
-    }).catch(() => { btn.disabled = false; btn.innerHTML = '<i class="fas fa-save"></i> Crear Promesa'; mostrarAlerta('Error','Error de conexi&oacute;n'); });
-}
-
-// ====== CANCELAR ======
-function openCancelModal(id) { ppCancelId = id; document.getElementById('ppCancelModal').classList.add('open'); }
-function closeCancelModal() { document.getElementById('ppCancelModal').classList.remove('open'); ppCancelId = null; }
-function confirmCancel() {
-    if (!ppCancelId) return;
-    fetch('/api/promesa/cancel', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({id: ppCancelId})})
-    .then(r => r.json()).then(d => {
-        closeCancelModal();
-        filterList(ppCurrentFilter, document.querySelector('.pp-filter-btn.active'));
+        } else {
+            ppToast(d.msg || 'Error al crear promesa', 'error');
+        }
+    })
+    .catch(function() {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-save"></i> Crear Promesa';
+        ppToast('Error de conexi&oacute;n', 'error');
     });
 }
 
-// Init
-document.addEventListener('DOMContentLoaded', () => loadList('active'));
+// ====== CANCELAR ======
+function openCancelModal(id) {
+    ppCancelId = id;
+    document.getElementById('ppCancelModal').classList.add('open');
+}
+function closeCancelModal() {
+    document.getElementById('ppCancelModal').classList.remove('open');
+    ppCancelId = null;
+}
+function confirmCancel() {
+    if (!ppCancelId) return;
+    var btn = document.querySelector('#ppCancelModal .pp-btn-danger');
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cancelando...';
+    }
+    fetch('/api/promesa/cancel', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: ppCancelId })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+        closeCancelModal();
+        if (d.status === 'success') {
+            ppToast(d.msg || 'Promesa cancelada', 'success');
+        } else {
+            ppToast(d.msg || 'Error al cancelar', 'error');
+        }
+        // Reload current filter
+        filterList(ppCurrentFilter, document.querySelector('.pp-filter-btn.active'));
+    })
+    .catch(function() {
+        if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-times"></i> S&iacute;, cancelar'; }
+        ppToast('Error de conexi&oacute;n', 'error');
+    });
+}
+
+// ====== INIT ======
+document.addEventListener('DOMContentLoaded', function() {
+    loadList('active');
+});
 </script>
