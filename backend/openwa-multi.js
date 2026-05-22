@@ -245,6 +245,8 @@ function getStatus(key) {
   return { state: inst.state, qr: inst.qr, running: inst.state === 'connected' || inst.state === 'starting' || inst.state === 'qr' };
 }
 
+// Auto-start disabled — admin WA handled by openwa-service.js
+/*
 // Initialize admin instance on load
 var adminCfg = loadConfig('admin');
 if (adminCfg && adminCfg.enabled) {
@@ -256,6 +258,7 @@ if (adminCfg && adminCfg.enabled) {
     });
   }, 3000);
 }
+*/
 
 module.exports = {
   getInstance, getTenantKey, getDbForTenant,
