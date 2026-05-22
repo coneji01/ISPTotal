@@ -39,3 +39,6 @@ data/
 backend/isp.db
 backend/openwa-service.js.bak
 graphify-out/
+*.bak
+*.bak.*
+*.newbak
