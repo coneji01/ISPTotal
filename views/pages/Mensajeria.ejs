@@ -731,7 +731,8 @@ function waRender(data) {
     card.innerHTML = '<div class="wa-icon-big" style="color:#25D366;"><i class="fab fa-whatsapp"></i></div>' +
       '<span class="wa-status-badge wa-badge-qr"><i class="fas fa-qrcode"></i> Esperando escaneo</span>' +
       '<div class="wa-qr-container"><img src="' + data.qr + '" alt="QR WhatsApp"></div>' +
-      '<div class="wa-qr-hint"><strong>Para conectar:</strong><br>1. Abre WhatsApp en tu celular<br>2. Ve a <strong>Dispositivos vinculados</strong><br>3. Toca <strong>Vincular dispositivo</strong><br>4. Escanea este código QR</div>';
+      '<div class="wa-qr-hint"><strong>Para conectar:</strong><br>1. Abre WhatsApp en tu celular<br>2. Ve a <strong>Dispositivos vinculados</strong><br>3. Toca <strong>Vincular dispositivo</strong><br>4. Escanea este código QR</div>' +
+      '<div class="wa-actions" style="margin-top:15px;"><button class="wa-btn wa-btn-gray" onclick="waRestart()"><i class="fas fa-sync"></i> Generar nuevo QR</button></div>';
     testSection.style.display = 'none';
   } else if (s === 'connecting') {
     card.className = 'wa-status-card';

@@ -42,3 +42,6 @@ graphify-out/
 *.bak
 *.bak.*
 *.newbak
+
+# Graphify generated files
+.graphify/

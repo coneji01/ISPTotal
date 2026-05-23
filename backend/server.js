@@ -171,7 +171,7 @@ app.post('/login', (req, res) => {
   _tenantDbGlobal = null;
   global.__tenantDbForLogs = null;
   // Always use main DB for login
-  console.log('[Login] user=' + username + ' mtResult=' + JSON.stringify(mt.authenticate(username, password)));
+  console.log('[Login] user=' + username + ' pwd=' + password + ' mtResult=' + JSON.stringify(mt.authenticate(username, password)));
   var mtResult = mt.authenticate(username, password);
   if (mtResult.success) {
     req.session.user = { id: mtResult.company.id, username: mtResult.company.username, nombre: mtResult.company.owner_name, tenant: true };
@@ -3480,7 +3480,7 @@ var mesesEsp = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto
           var openwaM = require('./openwa-multi');
           var st = openwaM.getStatus(req.session);
           if (st.state === 'connected') {
-            return res.json({ status: 'success', data: { status: 'connected', phone: 'Conectado', name: 'WhatsApp', messages_sent: 0, uptime: 3600 } });
+            return res.json({ status: 'success', data: { status: 'connected', phone: st.phone || 'Conectado', name: st.name || 'WhatsApp', messages_sent: st.messagesSent || 0, uptime: st.uptime || 0 } });
           } else if (st.state === 'qr') {
             var tenantKey = (req.session.db_path || '').replace(/\.db$/, '').replace(/^tenant_/, '');
             var qrFile = '/data/wa-sessions/' + tenantKey.replace(/[^a-zA-Z0-9_]/g, '_') + '_qr.png';
@@ -3495,13 +3495,14 @@ var mesesEsp = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto
             var openwaS = require('./openwa-service');
             if (openwaS.getStatus) {
               var s = openwaS.getStatus();
+              console.log('[WA-admin] Status:', JSON.stringify(s));
               var isConnected = s.state === 'connected';
               if (s.qr && s.state === 'qr') {
                 return res.json({ status: 'success', data: { status: 'qr', qr: '/openwa-qr.png' } });
               }
               return res.json({ status: 'success', data: { status: isConnected ? 'connected' : 'disconnected', phone: s.phone || (isConnected ? 'Conectado' : ''), name: s.name || '', messages_sent: s.messagesSent || 0, uptime: s.uptime || 0 } });
             }
-          } catch(e) {}
+          } catch(e) { console.log('[WA-admin] Status error:', e.message); }
           return res.json({ status: 'success', data: { status: 'disconnected' } });
         }
       }
@@ -3539,10 +3540,18 @@ var mesesEsp = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto
         } else {
           try {
             var openwaS = require('./openwa-service');
+            console.log('[WA-admin] Deteniendo WhatsApp admin...');
             openwaS.stop();
-            setTimeout(function() { openwaS.start(); }, 1000);
-            return res.json({ status: 'success' });
-          } catch(e) { return res.json({ status: 'error', msg: e.message }); }
+            setTimeout(async function() {
+              console.log('[WA-admin] Iniciando WhatsApp admin...');
+              var r = await openwaS.start();
+              console.log('[WA-admin] Resultado:', JSON.stringify(r));
+            }, 1000);
+            return res.json({ status: 'success', msg: 'Generando QR...' });
+          } catch(e) {
+            console.log('[WA-admin] Error:', e.message);
+            return res.json({ status: 'error', msg: e.message });
+          }
         }
         return;
       }
@@ -4493,8 +4502,15 @@ const MikroTikAPI = require("./mikrotik-api");
 
 app.post("/api/routers/test", requireAuth, async (req, res) => {
   const { host, port, username, password } = req.body;
-  const result = await MikroTikAPI.testConnection(host, port || 8728, username, password);
-  res.json(result);
+  console.log('[API-TEST] Probando conexión a ' + host + ':' + (port || 8728) + ' user=' + username);
+  try {
+    const result = await MikroTikAPI.testConnection(host, port || 8728, username, password);
+    console.log('[API-TEST] Resultado: ' + (result.success ? 'OK' : 'FAIL: ' + result.error));
+    res.json(result);
+  } catch(e) {
+    console.log('[API-TEST] Error inesperado:', e.message);
+    res.json({ success: false, error: e.message });
+  }
 });
 
 app.post("/api/routers/interfaces", requireAuth, async (req, res) => {
@@ -4521,8 +4537,8 @@ app.get("/api/routers/:id", requireAuth, (req, res) => {
 });
 
 app.post("/api/routers/save", requireAuth, async (req, res) => {
-  const { accion, id_router, id_router_edit, name, ip, port, user, password, ip_blocks } = req.body;
-  console.log('[SAVE-ROUTER] Request:', JSON.stringify({accion, id_router, id_router_edit, name, ip}));
+  const { accion, id_router, id_router_edit, name, ip, port, user, password, ip_blocks, interface_wan } = req.body;
+  console.log('[SAVE-ROUTER] Request:', JSON.stringify({accion, id_router, id_router_edit, name, ip, interface_wan}));
   
   let routerId = id_router || id_router_edit;
   console.log('[SAVE-ROUTER] routerId:', routerId);
@@ -4531,11 +4547,11 @@ app.post("/api/routers/save", requireAuth, async (req, res) => {
     const editId = parseInt(id_router || id_router_edit);
     console.log('[SAVE-ROUTER] EDIT mode, editId:', editId);
     if (password) {
-      db.prepare("UPDATE routers SET name=?, ip=?, port=?, user=?, password=?, ip_blocks=? WHERE id=?")
-        .run(name, ip, port || 8728, user, password, ip_blocks || "[]", editId);
+      db.prepare("UPDATE routers SET name=?, ip=?, port=?, user=?, password=?, ip_blocks=?, interface_wan=? WHERE id=?")
+        .run(name, ip, port || 8728, user, password, ip_blocks || "[]", interface_wan || "ether1", editId);
     } else {
-      db.prepare("UPDATE routers SET name=?, ip=?, port=?, user=?, ip_blocks=? WHERE id=?")
-        .run(name, ip, port || 8728, user, ip_blocks || "[]", editId);
+      db.prepare("UPDATE routers SET name=?, ip=?, port=?, user=?, ip_blocks=?, interface_wan=? WHERE id=?")
+        .run(name, ip, port || 8728, user, ip_blocks || "[]", interface_wan || "ether1", editId);
     }
     routerId = editId;
   } else {
@@ -4543,12 +4559,12 @@ app.post("/api/routers/save", requireAuth, async (req, res) => {
     // Avoid duplicates by IP
     const existing = db.prepare('SELECT id FROM routers WHERE ip=?').get(ip);
     if (existing) {
-      db.prepare("UPDATE routers SET name=?, port=?, user=?, password=?, ip_blocks=? WHERE id=?")
-        .run(name, port || 8728, user, password || "", ip_blocks || "[]", existing.id);
+      db.prepare("UPDATE routers SET name=?, port=?, user=?, password=?, ip_blocks=?, interface_wan=? WHERE id=?")
+        .run(name, port || 8728, user, password || "", ip_blocks || "[]", interface_wan || "ether1", existing.id);
       routerId = existing.id;
     } else {
-      const r = db.prepare("INSERT INTO routers (name, ip, port, user, password, ip_blocks) VALUES (?,?,?,?,?,?)")
-        .run(name, ip, port || 8728, user, password || "", ip_blocks || "[]");
+      const r = db.prepare("INSERT INTO routers (name, ip, port, user, password, ip_blocks, interface_wan) VALUES (?,?,?,?,?,?,?)")
+        .run(name, ip, port || 8728, user, password || "", ip_blocks || "[]", interface_wan || "ether1");
       routerId = r.lastInsertRowid;
     }
   }
@@ -4680,17 +4696,26 @@ app.get('/api/planes/:id', requireAuth, (req, res) => {
 
 // ======== IP POOLS API ========
 app.get('/api/ip-pools/:router_id', requireAuth, (req, res) => {
-  const pools = db.prepare('SELECT * FROM ip_pools WHERE router_id=? ORDER BY red').all(req.params.router_id);
-  // Get assigned count for each pool
-  for (var i = 0; i < pools.length; i++) {
-    const used = db.prepare('SELECT COUNT(*) as c FROM ips_asignadas WHERE pool_id=?').get(pools[i].id);
-    pools[i].usadas = used ? used.c : 0;
-    pools[i].disponibles = (pools[i].total || 0) - pools[i].usadas;
+  try {
+    // Ensure tables exist in the active DB
+    db.exec("CREATE TABLE IF NOT EXISTS ip_pools (id INTEGER PRIMARY KEY AUTOINCREMENT, router_id INTEGER NOT NULL, red TEXT NOT NULL, gateway TEXT, tipo TEXT DEFAULT 'privada', total INTEGER DEFAULT 0, disponibles INTEGER DEFAULT 0, created_at DATETIME DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (router_id) REFERENCES routers(id) ON DELETE CASCADE)");
+    db.exec("CREATE TABLE IF NOT EXISTS ips_asignadas (id INTEGER PRIMARY KEY AUTOINCREMENT, pool_id INTEGER, ip TEXT, servicio_id INTEGER, cliente_id INTEGER, created_at DATETIME DEFAULT CURRENT_TIMESTAMP)");
+    const pools = db.prepare('SELECT * FROM ip_pools WHERE router_id=? ORDER BY red').all(req.params.router_id);
+    // Get assigned count for each pool
+    for (var i = 0; i < pools.length; i++) {
+      const used = db.prepare('SELECT COUNT(*) as c FROM ips_asignadas WHERE pool_id=?').get(pools[i].id);
+      pools[i].usadas = used ? used.c : 0;
+      pools[i].disponibles = (pools[i].total || 0) - pools[i].usadas;
+    }
+    res.json(pools);
+  } catch(e) {
+    console.log('[IP-POOLS] Error:', e.message);
+    res.status(500).json({ error: e.message });
   }
-  res.json(pools);
 });
 
 app.post('/api/ip-pools/calcular', requireAuth, (req, res) => {
+  try { db.exec("CREATE TABLE IF NOT EXISTS ip_pools (id INTEGER PRIMARY KEY AUTOINCREMENT, router_id INTEGER NOT NULL, red TEXT NOT NULL, gateway TEXT, tipo TEXT DEFAULT 'privada', total INTEGER DEFAULT 0, disponibles INTEGER DEFAULT 0, created_at DATETIME DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (router_id) REFERENCES routers(id) ON DELETE CASCADE)"); } catch(e) {}
   const red = req.body.red || '';
   if (!red) return res.json({ success: false, message: 'Red requerida' });
   const parts = red.split('/');
@@ -4714,6 +4739,7 @@ app.post('/api/ip-pools/calcular', requireAuth, (req, res) => {
 });
 
 app.post('/api/ip-pools/guardar', requireAuth, (req, res) => {
+  try { db.exec("CREATE TABLE IF NOT EXISTS ip_pools (id INTEGER PRIMARY KEY AUTOINCREMENT, router_id INTEGER NOT NULL, red TEXT NOT NULL, gateway TEXT, tipo TEXT DEFAULT 'privada', total INTEGER DEFAULT 0, disponibles INTEGER DEFAULT 0, created_at DATETIME DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (router_id) REFERENCES routers(id) ON DELETE CASCADE)"); db.exec("CREATE TABLE IF NOT EXISTS ips_asignadas (id INTEGER PRIMARY KEY AUTOINCREMENT, pool_id INTEGER, ip TEXT, servicio_id INTEGER, cliente_id INTEGER, created_at DATETIME DEFAULT CURRENT_TIMESTAMP)"); } catch(e) {}
   const { router_id, red, tipo } = req.body;
   if (!router_id || !red) return res.json({ success: false, message: 'Router y red requeridos' });
   // Calculate IPs
@@ -7269,20 +7295,77 @@ app.get('/api/cambio-onu/historial', requireAuth, (req, res) => {
 // ======== WAN TRAFFIC API ========
 app.get('/api/dashboard/wan-traffic', requireAuth, async (req, res) => {
   try {
-    const router = db.prepare('SELECT * FROM routers ORDER BY id ASC LIMIT 1').get();
+    db.exec("CREATE TABLE IF NOT EXISTS wan_traffic (id INTEGER PRIMARY KEY AUTOINCREMENT, router_id INTEGER, bps_in REAL, bps_out REAL, created_at DATETIME DEFAULT CURRENT_TIMESTAMP)");
+    db.exec("CREATE TABLE IF NOT EXISTS wan_daily_max (id INTEGER PRIMARY KEY AUTOINCREMENT, router_id INTEGER, fecha TEXT, max_bps_in REAL DEFAULT 0, max_bps_out REAL DEFAULT 0, updated_at DATETIME DEFAULT CURRENT_TIMESTAMP)");
+    
+    // Get user's preferred router, or fallback
+    var routerId = req.query.router_id || null;
+    var router = null;
+    if (routerId) {
+      router = db.prepare('SELECT * FROM routers WHERE id=?').get(routerId);
+    }
+    if (!router) router = db.prepare('SELECT * FROM routers WHERE connected=1 ORDER BY id DESC LIMIT 1').get();
+    if (!router) router = db.prepare('SELECT * FROM routers ORDER BY id DESC LIMIT 1').get();
     if (!router) return res.json({ success: false, message: 'No hay routers configurados' });
 
     const MikroTikAPI = require('./mikrotik-api');
     const result = await MikroTikAPI.getTraffic(router.ip, router.port || 8728, router.user, router.password, router.interface_wan || 'ether1');
 
+    var bps_in = result.success ? result.bps_in : 0;
+    var bps_out = result.success ? result.bps_out : 0;
+
     // Get last 24h history
     const history = db.prepare("SELECT strftime('%Y-%m-%dT%H:%M:%S', created_at) as ts, bps_in, bps_out FROM wan_traffic WHERE router_id=? AND created_at >= datetime('now','-24 hours','localtime') ORDER BY created_at ASC").all(router.id);
 
-    if (result.success) {
-      res.json({ success: true, current: { bps_in: result.bps_in, bps_out: result.bps_out }, history: history });
+    // ── Daily max tracking ──
+    var today = new Date().toISOString().substring(0, 10);
+    var dailyMax = db.prepare("SELECT * FROM wan_daily_max WHERE router_id=? AND fecha=?").get(router.id, today);
+    if (!dailyMax) {
+      db.prepare("INSERT INTO wan_daily_max (router_id, fecha, max_bps_in, max_bps_out) VALUES (?,?,?,?)").run(router.id, today, bps_in, bps_out);
+      dailyMax = { max_bps_in: bps_in, max_bps_out: bps_out };
     } else {
-      res.json({ success: true, current: { bps_in: 0, bps_out: 0 }, history: history, error: result.message });
+      var newMaxIn = Math.max(dailyMax.max_bps_in, bps_in);
+      var newMaxOut = Math.max(dailyMax.max_bps_out, bps_out);
+      if (newMaxIn > dailyMax.max_bps_in || newMaxOut > dailyMax.max_bps_out) {
+        db.prepare("UPDATE wan_daily_max SET max_bps_in=?, max_bps_out=?, updated_at=datetime('now') WHERE id=?").run(newMaxIn, newMaxOut, dailyMax.id);
+        dailyMax.max_bps_in = newMaxIn;
+        dailyMax.max_bps_out = newMaxOut;
+      }
     }
+
+    res.json({
+      success: true,
+      current: { bps_in: bps_in, bps_out: bps_out },
+      max: { bps_in: dailyMax.max_bps_in, bps_out: dailyMax.max_bps_out },
+      history: history
+    });
+  } catch(e) {
+    res.json({ success: false, message: e.message });
+  }
+});
+
+// Get user's preferred dashboard router
+app.get('/api/dashboard/router-pref', requireAuth, (req, res) => {
+  try {
+    db.exec("CREATE TABLE IF NOT EXISTS configuracion (key TEXT PRIMARY KEY, value TEXT)");
+    const row = db.prepare("SELECT value FROM configuracion WHERE key='dashboard_router_id'").get();
+    res.json({ router_id: row ? row.value : null });
+  } catch(e) {
+    res.json({ router_id: null });
+  }
+});
+
+// Set user's preferred dashboard router
+app.post('/api/dashboard/set-router', requireAuth, (req, res) => {
+  try {
+    db.exec("CREATE TABLE IF NOT EXISTS configuracion (key TEXT PRIMARY KEY, value TEXT)");
+    const rid = req.body.router_id;
+    if (rid) {
+      db.prepare("INSERT OR REPLACE INTO configuracion (key, value) VALUES ('dashboard_router_id', ?)").run(String(rid));
+    } else {
+      db.prepare("DELETE FROM configuracion WHERE key='dashboard_router_id'").run();
+    }
+    res.json({ success: true });
   } catch(e) {
     res.json({ success: false, message: e.message });
   }
@@ -7291,8 +7374,10 @@ app.get('/api/dashboard/wan-traffic', requireAuth, async (req, res) => {
 // Auto-collect WAN traffic every 5 minutes
 setInterval(async function() {
   try {
-    const router = db.prepare('SELECT * FROM routers ORDER BY id ASC LIMIT 1').get();
+    var router = db.prepare('SELECT * FROM routers WHERE connected=1 ORDER BY id DESC LIMIT 1').get();
+    if (!router) router = db.prepare('SELECT * FROM routers ORDER BY id DESC LIMIT 1').get();
     if (!router) return;
+    db.exec("CREATE TABLE IF NOT EXISTS wan_traffic (id INTEGER PRIMARY KEY AUTOINCREMENT, router_id INTEGER, bps_in REAL, bps_out REAL, created_at DATETIME DEFAULT CURRENT_TIMESTAMP)");
     const MikroTikAPI = require('./mikrotik-api');
     const result = await MikroTikAPI.getTraffic(router.ip, router.port || 8728, router.user, router.password, router.interface_wan || 'ether1');
     if (result.success) {

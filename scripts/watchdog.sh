@@ -4,7 +4,7 @@
 # ====================================================
 
 SERVER_PORT=3020
-SERVER_DIR="/home/jellyfin/.openclaw/workspace/isptotal"
+SERVER_DIR="/home/joel/.openclaw/workspace/isptotal"
 SERVER_LOG="/tmp/isptotal-server.log"
 WA_SESSIONS="$SERVER_DIR/data/wa-sessions"
 

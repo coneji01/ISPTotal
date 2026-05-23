@@ -11,11 +11,16 @@ db.pragma('journal_mode = WAL');
 
 const SESSION_DIR = path.join(__dirname, '..', 'openwa-sessions');
 const QR_FILE = path.join(__dirname, '..', 'openwa-qr.png');
-var CHROME_PATH = '/home/jellyfin/.cache/puppeteer/chrome/linux-131.0.6778.204/chrome-linux64/chrome';
+var CHROME_PATH = '/home/joel/.cache/puppeteer/chrome/linux-146.0.7680.31/chrome-linux64/chrome';
 try {
-  var chromeDirs = fs.readdirSync('/home/jellyfin/.cache/puppeteer/chrome/').filter(function(d) { return d.startsWith('linux-'); }).sort();
-  if (chromeDirs.length > 0) {
-    var latest = '/home/jellyfin/.cache/puppeteer/chrome/' + chromeDirs[chromeDirs.length - 1] + '/chrome-linux64/chrome';
+  var chromeDirs = fs.readdirSync('/home/joel/.cache/puppeteer/chrome/').filter(function(d) { return d.startsWith('linux-'); }).sort();
+  // Prefer Chrome 131 (matches puppeteer-core 23.11.1), fallback to latest
+  var targetVer = chromeDirs.filter(function(d) { return d.startsWith('linux-146'); });
+  if (target131.length > 0) {
+    var p = '/home/joel/.cache/puppeteer/chrome/' + targetVer[0] + '/chrome-linux64/chrome';
+    if (fs.existsSync(p)) CHROME_PATH = p;
+  } else if (chromeDirs.length > 0) {
+    var latest = '/home/joel/.cache/puppeteer/chrome/' + chromeDirs[chromeDirs.length - 1] + '/chrome-linux64/chrome';
     if (fs.existsSync(latest)) CHROME_PATH = latest;
   }
 } catch(e) {}
@@ -50,6 +55,7 @@ function cleanupStaleChrome() {
 
 function procesarColaMensajes() {
   try {
+    db.exec("CREATE TABLE IF NOT EXISTS message_queue (id INTEGER PRIMARY KEY AUTOINCREMENT, cliente_id INTEGER, servicio_id INTEGER, telefono TEXT, mensaje TEXT, tipo TEXT DEFAULT 'manual', estado TEXT DEFAULT 'pendiente', intentos INTEGER DEFAULT 0, max_intentos INTEGER DEFAULT 3, created_at DATETIME DEFAULT CURRENT_TIMESTAMP, error TEXT, enviado_at DATETIME)");
     var pendientes = db.prepare("SELECT * FROM message_queue WHERE estado='pendiente' AND intentos < max_intentos ORDER BY created_at ASC LIMIT 5").all();
     if (pendientes.length === 0) return;
     console.log('[OpenWa] Procesando ' + pendientes.length + ' mensajes en cola...');

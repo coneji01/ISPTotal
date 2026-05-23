@@ -3,7 +3,7 @@
  * Captura el QR de OpenWa desde Chromium y lo guarda como imagen.
  */
 const CDP_URL = 'http://127.0.0.1';
-const OUT = '/home/jellyfin/.openclaw/workspace/isptotal/qr-capture.png';
+const OUT = '/home/joel/.openclaw/workspace/isptotal/qr-capture.png';
 
 async function main() {
   // Find the OpenWa Chromium debugging port

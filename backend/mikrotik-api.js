@@ -6,7 +6,7 @@ class MikroTikAPI {
   constructor(host, port = 8728, options = {}) {
     this.host = host;
     this.port = port;
-    this.timeout = options.timeout || 5000;
+    this.timeout = options.timeout || 8000;
     this.socket = null;
     this.buffer = Buffer.alloc(0);
     this._execResolve = null;
@@ -14,6 +14,7 @@ class MikroTikAPI {
     this._sentences = [];
     this._currentSentence = [];
     this._tagCounter = 0;
+    this._timeoutTimer = null;
   }
 
   // Encode a word length per API protocol
@@ -140,6 +141,7 @@ class MikroTikAPI {
     const isTrap = sentence[0] === '!trap';
     
     if ((isDone || isTrap) && this._execResolve) {
+      if (this._timeoutTimer) { clearTimeout(this._timeoutTimer); this._timeoutTimer = null; }
       this._execResolve(this._sentences);
       this._sentences = [];
       this._execResolve = null;
@@ -153,15 +155,23 @@ class MikroTikAPI {
       throw new Error('Not connected to Router');
     }
 
-    return new Promise((resolve, reject) => {
-      this._execResolve = resolve;
-      this._execReject = reject;
-      this._sentences = [];
+    var self = this;
+    return new Promise(function(resolve, reject) {
+      self._execResolve = resolve;
+      self._execReject = reject;
+      self._sentences = [];
+
+      // Set timeout for this command
+      if (self._timeoutTimer) clearTimeout(self._timeoutTimer);
+      self._timeoutTimer = setTimeout(function() {
+        self._execReject = null;
+        reject(new Error('Command timeout after ' + self.timeout + 'ms'));
+      }, self.timeout);
 
       const command = args[0].startsWith('/') ? args[0] : '/' + args[0];
-      const words = [command, ...args.slice(1)];
-      const data = this._encodeSentence(words);
-      this.socket.write(data);
+      const words = [command].concat(args.slice(1));
+      const data = self._encodeSentence(words);
+      self.socket.write(data);
     });
   }
 
@@ -261,7 +271,12 @@ class MikroTikAPI {
           interfaces.push(iface);
         }
       }
-      return { success: true, interfaces };
+      // Filter physical interfaces only (ether, sfp, sfp-plus)
+      const physicalInterfaces = interfaces.filter(function(iface) {
+        var type = iface.type || '';
+        return type === 'ether' || type === 'sfp' || type === 'sfp-plus';
+      });
+      return { success: true, interfaces: physicalInterfaces };
     } catch (err) {
       if (api) api.disconnect();
       return { success: false, error: err.message };

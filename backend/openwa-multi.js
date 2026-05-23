@@ -1,275 +1,317 @@
 /**
- * OpenWa Multi-Tenant - Gestión de instancias de WhatsApp por tenant
- * Cada tenant conecta su propio número de WhatsApp.
+ * OpenWa Service v6 - whatsapp-web.js ultra estable
+ * Keep-alive, auto-reconnect con backoff, cola de mensajes, health check.
  */
-
 const path = require('path');
 const fs = require('fs');
-const SESSIONS_DIR = path.join(__dirname, '..', 'data', 'wa-sessions');
+const { execSync } = require('child_process');
+const Database = require('better-sqlite3');
+const db = new Database(path.join(__dirname, '..', 'isptotal.db'));
+db.pragma('journal_mode = WAL');
 
-// Ensure sessions directory exists
-if (!fs.existsSync(SESSIONS_DIR)) fs.mkdirSync(SESSIONS_DIR, { recursive: true });
+const SESSION_DIR = path.join(__dirname, '..', 'openwa-sessions');
+const QR_FILE = path.join(__dirname, '..', 'openwa-qr.png');
+var CHROME_PATH = '/home/joel/.cache/puppeteer/chrome/linux-146.0.7680.31/chrome-linux64/chrome';
+try {
+  var chromeDirs = fs.readdirSync('/home/joel/.cache/puppeteer/chrome/').filter(function(d) { return d.startsWith('linux-'); }).sort();
+  // Prefer Chrome 131 (matches puppeteer-core 23.11.1), fallback to latest
+  var targetVer = chromeDirs.filter(function(d) { return d.startsWith('linux-146'); });
+  if (target131.length > 0) {
+    var p = '/home/joel/.cache/puppeteer/chrome/' + targetVer[0] + '/chrome-linux64/chrome';
+    if (fs.existsSync(p)) CHROME_PATH = p;
+  } else if (chromeDirs.length > 0) {
+    var latest = '/home/joel/.cache/puppeteer/chrome/' + chromeDirs[chromeDirs.length - 1] + '/chrome-linux64/chrome';
+    if (fs.existsSync(latest)) CHROME_PATH = latest;
+  }
+} catch(e) {}
 
-// Map of running clients: { tenantKey: { client, state, config, qr, status } }
-var instances = {};
+let client = null;
+let connectionState = 'disconnected';
+let autoReconnectTimer = null;
+let healthCheckTimer = null;
+let keepAliveTimer = null;
+let reconnectAttempts = 0;
 
-function getTenantKey(session) {
-  if (!session || !session.user) return 'admin';
-  if (session.isTenant && session.db_path) return session.db_path.replace(/\.db$/, '').replace(/^tenant_/, '');
-  return 'admin';
-}
+// ========== LIMPIEZA ==========
 
-function getDbForTenant(session) {
-  if (session && session.isTenant && session.db_path) {
+function cleanupStaleChrome() {
+  try {
+    var sessionPath = path.join(SESSION_DIR, 'session');
     try {
-      var Database = require('better-sqlite3');
-      var p = path.join(__dirname, '..', 'data', session.db_path);
-      if (fs.existsSync(p)) {
-        var tdb = new Database(p);
-        tdb.pragma('journal_mode = WAL');
-        return tdb;
-      }
+      var result = execSync("ps aux | grep -i chrome | grep 'user-data-dir.*openwa-sessions' | awk '{print $2}'", { encoding: 'utf8', timeout: 3000 });
+      var pids = result.trim().split('\n').filter(Boolean);
+      pids.forEach(function(pid) {
+        try { process.kill(parseInt(pid), 'SIGKILL'); } catch(e) {}
+      });
     } catch(e) {}
-  }
-  return null;
+    ['SingletonLock','SingletonCookie','SingletonSocket','SingletonConnect'].forEach(function(f) {
+      try { fs.unlinkSync(path.join(sessionPath, f)); } catch(e) {}
+    });
+    try { fs.unlinkSync(QR_FILE); } catch(e) {}
+  } catch(e) {}
 }
 
-function getInstance(key) {
-  if (!instances[key]) {
-    instances[key] = { 
-      client: null, 
-      state: 'disconnected', 
-      config: { enabled: false },
-      qr: null,
-      ready: false,
-      start: function() { return startInstance(key); },
-      stop: function() { return stopInstance(key); },
-      getStatus: function() { return { state: instances[key].state, qr: instances[key].qr, running: instances[key].state === 'connected' }; },
-      getConfig: function() { return instances[key].config; },
-      sendMessage: function(phone, msg) { return sendMessageInstance(key, phone, msg); }
-    };
-  }
-  return instances[key];
-}
+// ========== COLA DE MENSAJES ==========
 
-function loadConfig(key) {
+function procesarColaMensajes() {
   try {
-    if (key === 'admin') {
-      var db = require('./database');
-      var row = db.prepare("SELECT value FROM configuracion WHERE key='openwa_config'").get();
-      if (row) {
-        try { return JSON.parse(row.value); } catch(e) {}
-      }
-      return { enabled: true };
-    }
-    // Tenant: load from their DB
-    var parts = key.split('tenant_');
-    if (parts.length > 1) {
-      var dbPath = parts[1] + '.db';
-      var fullPath = path.join(__dirname, '..', 'data', dbPath);
-      if (fs.existsSync(fullPath)) {
-        var Database = require('better-sqlite3');
-        var db = new Database(fullPath);
-        db.pragma('journal_mode = WAL');
-        // Ensure config table exists in tenant DB
-        db.exec("CREATE TABLE IF NOT EXISTS configuracion (key TEXT PRIMARY KEY, value TEXT)");
-        try { db.exec("INSERT OR IGNORE INTO configuracion (key, value) VALUES ('openwa_config', '{\"enabled\":false}')"); } catch(e) {}
-        var row = db.prepare("SELECT value FROM configuracion WHERE key='openwa_config'").get();
-        db.close();
-        if (row) {
-          try { return JSON.parse(row.value); } catch(e) {}
+    var pendientes = db.prepare("SELECT * FROM message_queue WHERE estado='pendiente' AND intentos < max_intentos ORDER BY created_at ASC LIMIT 5").all();
+    if (pendientes.length === 0) return;
+    console.log('[OpenWa] Procesando ' + pendientes.length + ' mensajes en cola...');
+    pendientes.forEach(function(msg) {
+      if (connectionState !== 'connected') return;
+      sendMessage(msg.telefono, msg.mensaje).then(function(r) {
+        if (r.success) {
+          db.prepare("UPDATE message_queue SET estado='enviado', enviado_at=datetime('now'), error=NULL WHERE id=?").run(msg.id);
+          console.log('[OpenWa] Cola: mensaje #' + msg.id + ' enviado OK');
+        } else {
+          db.prepare("UPDATE message_queue SET intentos=intentos+1, error=? WHERE id=?").run(r.msg || 'Error desconocido', msg.id);
+          console.log('[OpenWa] Cola: mensaje #' + msg.id + ' falló (' + r.msg + ')');
         }
-      }
-    }
-  } catch(e) {}
-  return { enabled: false };
+      });
+    });
+  } catch(e) {
+    console.log('[OpenWa] Error procesando cola:', e.message);
+  }
 }
 
-function saveConfig(key, cfg) {
+function encolarMensaje(clienteId, servicioId, telefono, mensaje, tipo) {
   try {
-    if (key === 'admin') {
-      var db = require('./database');
-      db.prepare("INSERT OR REPLACE INTO configuracion (key, value) VALUES ('openwa_config', ?)").run(JSON.stringify(cfg));
-      return true;
+    db.prepare("INSERT INTO message_queue (cliente_id, servicio_id, telefono, mensaje, tipo) VALUES (?,?,?,?,?)").run(clienteId || null, servicioId || null, telefono, mensaje, tipo || 'bienvenida');
+    console.log('[OpenWa] Mensaje encolado para ' + telefono);
+    if (connectionState === 'connected') {
+      setTimeout(procesarColaMensajes, 500);
     }
-    var parts = key.split('tenant_');
-    if (parts.length > 1) {
-      var dbPath = parts[1] + '.db';
-      var fullPath = path.join(__dirname, '..', 'data', dbPath);
-      if (fs.existsSync(fullPath)) {
-        var Database = require('better-sqlite3');
-        var db = new Database(fullPath);
-        db.pragma('journal_mode = WAL');
-        db.exec("CREATE TABLE IF NOT EXISTS configuracion (key TEXT PRIMARY KEY, value TEXT)");
-        db.prepare("INSERT OR REPLACE INTO configuracion (key, value) VALUES ('openwa_config', ?)").run(JSON.stringify(cfg));
-        db.close();
-        return true;
-      }
-    }
-  } catch(e) {}
-  return false;
+    return true;
+  } catch(e) {
+    console.log('[OpenWa] Error encolando mensaje:', e.message);
+    return false;
+  }
 }
 
-async function startInstance(key) {
-  var inst = getInstance(key);
-  if (!inst) return { success: false, msg: 'No instance' };
-  if (inst.state === 'connected') return { success: true, msg: 'Ya conectado' };
-  
-  var cfg = loadConfig(key);
-  inst.config = cfg;
-  
-  try {
-    // Try to use the existing client if available
-    if (inst.client) {
-      try { inst.client.destroy(); } catch(e) {}
-      inst.client = null;
+// ========== KEEP ALIVE ==========
+// WhatsApp Web desconecta después de ~2h de inactividad
+// Enviamos un ping cada 20 minutos para mantener la sesión activa
+
+function iniciarKeepAlive() {
+  detenerKeepAlive();
+  keepAliveTimer = setInterval(function() {
+    if (!client || connectionState !== 'connected') return;
+    try {
+      // Enviar presencia (visto) a WhatsApp para mantener sesión activa
+      client.sendPresenceAvailable().catch(function() {});
+    } catch(e) {}
+  }, 20 * 60 * 1000); // cada 20 minutos
+}
+
+function detenerKeepAlive() {
+  if (keepAliveTimer) { clearInterval(keepAliveTimer); keepAliveTimer = null; }
+}
+
+// ========== HEALTH CHECK ==========
+
+function iniciarHealthCheck() {
+  if (healthCheckTimer) clearInterval(healthCheckTimer);
+  healthCheckTimer = setInterval(function() {
+    if (!client) {
+      // Sin cliente, intentar reconectar si está habilitado
+      if (getConfig().enabled && connectionState === 'disconnected' && !autoReconnectTimer) {
+        console.log('[OpenWa] HealthCheck: sin cliente, reconectando...');
+        start();
+      }
+      return;
     }
-    
-    var sessionDir = path.join(SESSIONS_DIR, key.replace(/[^a-zA-Z0-9_]/g, '_'));
-    if (!fs.existsSync(sessionDir)) fs.mkdirSync(sessionDir, { recursive: true });
-    
-    var { Client, LocalAuth } = require('whatsapp-web.js');
-    inst.state = 'starting';
-    
-    const client = new Client({
-      authStrategy: new LocalAuth({ dataPath: sessionDir }),
+    if (connectionState === 'connected') {
+      procesarColaMensajes();
+    }
+  }, 30000);
+}
+
+function detenerHealthCheck() {
+  if (healthCheckTimer) { clearInterval(healthCheckTimer); healthCheckTimer = null; }
+}
+
+// ========== CONFIG ==========
+
+function getConfig() {
+  var row = db.prepare("SELECT value FROM configuracion WHERE key='openwa_enabled'").get();
+  return { enabled: row && (row.value === '1' || row.value === 'true' || row.value === 'Si') };
+}
+
+function saveConfig(key, value) {
+  db.prepare("INSERT OR REPLACE INTO configuracion (key, value) VALUES (?,?)").run(key, String(value));
+}
+
+// ========== START / STOP ==========
+
+async function start() {
+  if (client) {
+    if (connectionState === 'connected') return { success: true, msg: 'OpenWa ya está activo' };
+    try { await client.destroy(); } catch(e) {}
+    client = null;
+    connectionState = 'disconnected';
+  }
+
+  var cfg = getConfig();
+  if (!cfg.enabled) return { success: false, msg: 'OpenWa no habilitado' };
+
+  cleanupStaleChrome();
+
+  try {
+    if (!fs.existsSync(SESSION_DIR)) fs.mkdirSync(SESSION_DIR, { recursive: true });
+
+    const { Client, LocalAuth } = require('whatsapp-web.js');
+
+    client = new Client({
+      authStrategy: new LocalAuth({ dataPath: SESSION_DIR }),
       puppeteer: {
         headless: true,
-        args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-gpu']
+        executablePath: CHROME_PATH,
+        args: [
+          '--no-sandbox',
+          '--disable-setuid-sandbox',
+          '--disable-dev-shm-usage',
+          '--disable-gpu',
+          '--disable-background-networking',
+          '--disable-background-timer-throttling',
+          '--disable-renderer-backgrounding',
+          '--disable-backgrounding-occluded-windows',
+          '--disable-ipc-flooding-protection',
+          '--disable-extensions',
+          '--disable-sync',
+          '--autoplay-policy=user-gesture-required',
+          '--no-first-run',
+          '--disable-features=Translate,MediaRouter'
+        ]
       }
     });
-    
-    inst.client = client;
-    
-    client.on('qr', (qr) => {
-      inst.state = 'qr';
-      inst.qr = qr;
-      console.log('[WA-' + key + '] QR generado');
-      // Save QR as PNG file for serving
+
+    connectionState = 'starting';
+    reconnectAttempts = 0;
+
+    client.on('qr', function(qrCode) {
+      connectionState = 'qr';
       try {
-        var qrCodeLib = require('qrcode');
-        var qrFilePath = path.join(SESSIONS_DIR, key.replace(/[^a-zA-Z0-9_]/g, '_') + '_qr.png');
-        qrCodeLib.toFile(qrFilePath, qr, { type: 'png', width: 300, margin: 2 }, function(err) {
-          if (err) console.log('[WA-' + key + '] QR file error:', err.message);
+        var QRCode = require('qrcode');
+        QRCode.toFile(QR_FILE, qrCode, { type: 'png', width: 300, margin: 2 }, function(err) {
+          if (err) console.error('[OpenWa] QR error:', err.message);
         });
-      } catch(e) { console.log('[WA-' + key + '] QR lib error:', e.message); }
+      } catch(e) {}
     });
-    
-    client.on('ready', () => {
-      inst.state = 'connected';
-      inst.qr = null;
-      inst.ready = true;
-      console.log('[WA-' + key + '] Conectado');
-      // Update config with connected state
-      var c = loadConfig(key);
-      c.enabled = true;
-      saveConfig(key, c);
+
+    client.on('ready', function() {
+      connectionState = 'connected';
+      reconnectAttempts = 0;
+      if (autoReconnectTimer) { clearTimeout(autoReconnectTimer); autoReconnectTimer = null; }
+      console.log('[OpenWa] Conectado a WhatsApp');
+      procesarColaMensajes();
+      iniciarHealthCheck();
+      iniciarKeepAlive();
     });
-    
-    client.on('disconnected', (reason) => {
-      inst.state = 'disconnected';
-      inst.ready = false;
-      console.log('[WA-' + key + '] Desconectado:', reason);
+
+    client.on('disconnected', function(reason) {
+      console.log('[OpenWa] Desconectado:', reason);
+      connectionState = 'disconnected';
+      client = null;
+      detenerHealthCheck();
+      detenerKeepAlive();
+      if (getConfig().enabled) {
+        // Backoff exponencial: 5s, 10s, 20s, 40s, 80s, 160s, 300s max
+        reconnectAttempts++;
+        var delay = Math.min(5000 * Math.pow(2, reconnectAttempts - 1), 300000);
+        console.log('[OpenWa] Reconnect en ' + (delay/1000) + 's (intento #' + reconnectAttempts + ')');
+        autoReconnectTimer = setTimeout(function() { start(); }, delay);
+      }
     });
-    
-    client.on('auth_failure', (msg) => {
-      inst.state = 'auth_failure';
-      console.log('[WA-' + key + '] Auth failure:', msg);
+
+    client.on('auth_failure', function(msg) {
+      console.log('[OpenWa] Fallo de autenticación:', msg);
+      connectionState = 'disconnected';
+      client = null;
+      detenerHealthCheck();
+      detenerKeepAlive();
+      if (getConfig().enabled) {
+        reconnectAttempts++;
+        var delay = Math.min(5000 * Math.pow(2, reconnectAttempts - 1), 300000);
+        autoReconnectTimer = setTimeout(function() { start(); }, delay);
+      }
     });
-    
+
     await client.initialize();
-    return { success: true, msg: 'Iniciando...' };
+    return { success: true, msg: 'OpenWa iniciado' };
   } catch(e) {
-    inst.state = 'error';
-    console.error('[WA-' + key + '] Error:', e.message);
-    return { success: false, msg: e.message };
+    client = null;
+    connectionState = 'disconnected';
+    detenerHealthCheck();
+    detenerKeepAlive();
+    return { success: false, msg: 'Error: ' + e.message };
   }
 }
 
-async function stopInstance(key) {
-  var inst = instances[key];
-  if (inst && inst.client) {
+async function stop() {
+  detenerHealthCheck();
+  detenerKeepAlive();
+  if (autoReconnectTimer) { clearTimeout(autoReconnectTimer); autoReconnectTimer = null; }
+  if (!client) {
+    cleanupStaleChrome();
+    return { success: false, msg: 'No está en ejecución' };
+  }
+  try { await client.destroy(); } catch(e) {}
+  client = null;
+  connectionState = 'disconnected';
+  cleanupStaleChrome();
+  return { success: true, msg: 'OpenWa detenido' };
+}
+
+// ========== STATUS / SEND ==========
+
+function getStatus() {
+  var hasQr = false;
+  try { hasQr = fs.existsSync(QR_FILE) && fs.statSync(QR_FILE).size > 100; } catch(e) {}
+  return {
+    running: client !== null,
+    state: connectionState,
+    qr: (connectionState === 'qr' && hasQr) ? '/openwa-qr.png' : null
+  };
+}
+
+async function sendMessage(phone, message) {
+  if (!client) return { success: false, msg: 'OpenWa no iniciado' };
+  if (connectionState !== 'connected') {
+    return { success: false, msg: 'WhatsApp no conectado' };
+  }
+  try {
+    var cleanPhone = phone.replace(/[^\d]/g, '');
+    if (cleanPhone.length === 10) cleanPhone = '1' + cleanPhone;
+    
     try {
-      inst.state = 'disconnected';
-      await inst.client.destroy();
-      console.log('[WA-' + key + '] Cliente destruido');
+      var wwInfo = client.info ? (client.info.wid ? client.info.wid.user : '') : '';
+      if (wwInfo) {
+        var cleanWw = wwInfo.replace(/[^\d]/g, '');
+        if (cleanWw.length === 10) cleanWw = '1' + cleanWw;
+        if (cleanPhone === cleanWw) {
+          console.log('[OpenWa] Saltando auto-mensaje (mismo número)');
+          return { success: true, msg: 'Auto-mensaje omitido' };
+        }
+      }
     } catch(e) {}
-  }
-  inst.client = null;
-  inst.ready = false;
-  // Kill any orphaned browser processes for this session
-  try {
-    var execSync = require('child_process').execSync;
-    var sessionDir = path.join(SESSIONS_DIR, key.replace(/[^a-zA-Z0-9_]/g, '_'));
-    execSync("pkill -f '" + sessionDir + "'", { stdio: 'ignore', timeout: 3000 });
-    execSync("fuser -k " + sessionDir + "/*.lock 2>/dev/null; rm -f " + sessionDir + "/*.lock", { stdio: 'ignore', timeout: 3000 });
-  } catch(e) {}
-  inst.state = 'disconnected';
-  console.log('[WA-' + key + '] Detenido');
-  return { success: true, msg: 'Detenido' };
-}
-
-async function sendMessageInstance(key, phone, message) {
-  var inst = instances[key];
-  if (!inst || !inst.client || !inst.ready) {
-    // Enqueue for later
-    enqueueMessage(key, phone, message);
-    return { success: false, msg: 'WhatsApp no conectado, mensaje encolado' };
-  }
-  try {
-    var cleanPhone = phone.replace(/[^0-9]/g, '');
-    if (cleanPhone.startsWith('1') && cleanPhone.length === 11) cleanPhone = cleanPhone.slice(1);
-    if (!cleanPhone.endsWith('@c.us')) cleanPhone += '@c.us';
-    await inst.client.sendMessage(cleanPhone, message);
-    return { success: true, msg: 'Enviado' };
+    
+    await client.sendMessage(cleanPhone + '@c.us', message);
+    return { success: true, msg: 'Mensaje enviado' };
   } catch(e) {
-    enqueueMessage(key, phone, message);
-    return { success: false, msg: e.message };
-  }
-}
-
-function enqueueMessage(key, phone, message) {
-  try {
-    var db = key === 'admin' ? require('./database') : getDbForTenant({ isTenant: key !== 'admin', db_path: key.replace('tenant_', '') + '.db' });
-    if (db) {
-      db.exec("CREATE TABLE IF NOT EXISTS message_queue (id INTEGER PRIMARY KEY AUTOINCREMENT, phone TEXT, message TEXT, status TEXT DEFAULT 'pending', created_at DATETIME DEFAULT CURRENT_TIMESTAMP)");
-      db.prepare("INSERT INTO message_queue (phone, message) VALUES (?,?)").run(phone, message);
-      if (key !== 'admin') db.close();
+    var errMsg = e.message || '';
+    if (errMsg.includes('detached Frame') || errMsg.includes('No LID for user')) {
+      console.log('[OpenWa] Frame desconectado, reiniciando en 2s...');
+      if (!autoReconnectTimer) {
+        detenerHealthCheck();
+        detenerKeepAlive();
+        if (client) { try { client.destroy(); } catch(ex) {} client = null; }
+        connectionState = 'disconnected';
+        autoReconnectTimer = setTimeout(function() { start(); }, 2000);
+      }
     }
-  } catch(e) {}
-}
-
-function getStatus(key) {
-  var inst = instances[key];
-  if (!inst) return { state: 'disconnected', qr: null, running: false };
-  return { state: inst.state, qr: inst.qr, running: inst.state === 'connected' || inst.state === 'starting' || inst.state === 'qr' };
-}
-
-// Auto-start disabled — admin WA handled by openwa-service.js
-/*
-// Initialize admin instance on load
-var adminCfg = loadConfig('admin');
-if (adminCfg && adminCfg.enabled) {
-  setTimeout(function() {
-    startInstance('admin').then(function(r) {
-      console.log('[WA-admin] Auto-start:', r.msg);
-    }).catch(function(e) {
-      console.log('[WA-admin] Auto-start error:', e.message);
-    });
-  }, 3000);
-}
-*/
-
-module.exports = {
-  getInstance, getTenantKey, getDbForTenant,
-  getStatus: function(session) { var key = getTenantKey(session); getInstance(key); return getStatus(key); },
-  start: function(session) { var key = getTenantKey(session); getInstance(key); return startInstance(key); },
-  stop: function(session) { var key = getTenantKey(session); getInstance(key); return stopInstance(key); },
-  sendMessage: function(session, phone, msg) { return sendMessageInstance(getTenantKey(session), phone, msg); },
-  getConfig: function(session) { return loadConfig(getTenantKey(session)); },
-  saveConfig: function(session, key, value) {
-    var cfg = loadConfig(getTenantKey(session));
-    cfg[key] = value;
-    saveConfig(getTenantKey(session), cfg);
+    return { success: false, msg: 'Error: ' + errMsg };
   }
-};
+}
+
+module.exports = { getConfig, saveConfig, start, stop, getStatus, sendMessage, encolarMensaje, procesarColaMensajes };

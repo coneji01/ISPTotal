@@ -328,6 +328,9 @@ body { font-family: 'Inter', sans-serif; }
         <span class="legend-item"><span class="legend-dot" style="background:#2563eb;"></span> Descarga</span>
         <span class="legend-item"><span class="legend-dot" style="background:#10b981;"></span> Subida</span>
       </div>
+      <select id="routerSelector" onchange="cambiarRouterTrafico()" style="padding:4px 10px;border-radius:6px;border:1px solid #e2e8f0;font-size:0.78rem;background:#fff;max-width:200px;">
+        <option value="">Cargando routers...</option>
+      </select>
       <button class="btn btn-sm btn-primary" onclick="recargarTrafico()" id="btnRecargarTrafico"><i class="fas fa-sync"></i></button>
     </div>
   </div>
@@ -430,35 +433,87 @@ var MONTHS = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov',
 })();
 
 // WAN Traffic
-var chartRendered = false;
 
 document.addEventListener('DOMContentLoaded', function() {
-  setTimeout(cargarTraficoWAN, 500);
-  setInterval(cargarTraficoWAN, 5000);
+  // Cargar routers y preferencia guardada
+  fetch('/api/routers')
+    .then(function(r) { return r.json(); })
+    .then(function(routers) {
+      var sel = document.getElementById('routerSelector');
+      sel.innerHTML = '<option value="">-- Seleccionar router --</option>';
+      routers.forEach(function(r) {
+        var opt = document.createElement('option');
+        opt.value = r.id;
+        opt.textContent = r.name + ' (' + r.ip + ')';
+        sel.appendChild(opt);
+      });
+      // Cargar preferencia guardada
+      return fetch('/api/dashboard/router-pref');
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(pref) {
+      if (pref && pref.router_id) {
+        routerSeleccionado = pref.router_id;
+        document.getElementById('routerSelector').value = pref.router_id;
+      }
+      setTimeout(cargarTraficoWAN, 500);
+      setInterval(cargarTraficoWAN, 2000);
+    })
+    .catch(function() {
+      setTimeout(cargarTraficoWAN, 500);
+      setInterval(cargarTraficoWAN, 2000);
+    });
 });
 
+function cambiarRouterTrafico() {
+  var id = document.getElementById('routerSelector').value;
+  routerSeleccionado = id;
+  if (id) {
+    fetch('/api/dashboard/set-router', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ router_id: parseInt(id) })
+    }).catch(function() {});
+  }
+  cargarTraficoWAN();
+}
+
+var wanChart = null;
+var wanDataCache = [];
+var chartRendered = false;
+var routerSeleccionado = '';
+
 function cargarTraficoWAN() {
-  fetch('/api/dashboard/wan-traffic')
+  var url = '/api/dashboard/wan-traffic';
+  if (routerSeleccionado) url += '?router_id=' + routerSeleccionado;
+  
+  fetch(url)
   .then(function(r) { return r.json(); })
   .then(function(d) {
     if (!d.success) return;
+    
+    // Update current numbers
     if (d.current) {
       document.getElementById('wanDownload').textContent = formatBps(d.current.bps_in);
       document.getElementById('wanUpload').textContent = formatBps(d.current.bps_out);
     }
-    var allData = (d.history || []).slice();
-    if (d.current) {
-      allData.push({ ts: new Date().toISOString(), bps_in: d.current.bps_in, bps_out: d.current.bps_out });
+    
+    // Update max from server (persistent, resets daily at 00:00)
+    if (d.max) {
+      document.getElementById('wanMaxDownload').textContent = formatBps(d.max.bps_in);
+      document.getElementById('wanMaxUpload').textContent = formatBps(d.max.bps_out);
     }
-    if (allData.length > 0) {
-      var maxIn = Math.max(...allData.map(function(h) { return h.bps_in; }));
-      var maxOut = Math.max(...allData.map(function(h) { return h.bps_out; }));
-      document.getElementById('wanMaxDownload').textContent = formatBps(maxIn);
-      document.getElementById('wanMaxUpload').textContent = formatBps(maxOut);
-      if (!chartRendered) {
-        chartRendered = true;
-        renderWanChart(allData);
-      }
+    
+    // Chart: first load or update
+    if (!chartRendered && d.history && d.history.length > 0) {
+      chartRendered = true;
+      wanDataCache = d.history.slice();
+      renderWanChart(wanDataCache);
+    } else if (chartRendered && d.current && wanChart) {
+      var ts = new Date().toISOString();
+      wanDataCache.push({ ts: ts, bps_in: d.current.bps_in, bps_out: d.current.bps_out });
+      if (wanDataCache.length > 120) wanDataCache.shift();
+      updateWanChart();
     }
   })
   .catch(function() {});
@@ -470,50 +525,6 @@ function formatBps(bps) {
   if (bps >= 1000000) return (bps / 1000000).toFixed(1) + ' Mbps';
   if (bps >= 1000) return (bps / 1000).toFixed(1) + ' Kbps';
   return bps.toFixed(0) + ' bps';
-}
-
-var wanChart = null;
-var wanDataCache = [];  // Cache all data points
-
-function cargarTraficoWAN() {
-  fetch('/api/dashboard/wan-traffic')
-  .then(function(r) { return r.json(); })
-  .then(function(d) {
-    if (!d.success) return;
-    
-    // Update current numbers
-    if (d.current) {
-      document.getElementById('wanDownload').textContent = formatBps(d.current.bps_in);
-      document.getElementById('wanUpload').textContent = formatBps(d.current.bps_out);
-    }
-    
-    // Build combined data
-    var allData = (d.history || []).slice();
-    if (d.current) {
-      allData.push({ ts: new Date().toISOString(), bps_in: d.current.bps_in, bps_out: d.current.bps_out });
-    }
-    
-    if (allData.length > 0) {
-      var maxIn = Math.max(...allData.map(function(h) { return h.bps_in; }));
-      var maxOut = Math.max(...allData.map(function(h) { return h.bps_out; }));
-      document.getElementById('wanMaxDownload').textContent = formatBps(maxIn);
-      document.getElementById('wanMaxUpload').textContent = formatBps(maxOut);
-    }
-    
-    // Chart: smooth animation with new data
-    if (!chartRendered && allData.length > 0) {
-      chartRendered = true;
-      wanDataCache = allData.slice();
-      renderWanChart(wanDataCache);
-    } else if (chartRendered && d.current && wanChart) {
-      // Smooth update: add new point, scroll left
-      var ts = new Date().toISOString();
-      wanDataCache.push({ ts: ts, bps_in: d.current.bps_in, bps_out: d.current.bps_out });
-      if (wanDataCache.length > 100) wanDataCache.shift();  // Keep max 100 points
-      updateWanChart();
-    }
-  })
-  .catch(function() {});
 }
 
 function renderWanChart(data) {
