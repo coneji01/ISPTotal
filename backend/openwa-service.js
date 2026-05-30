@@ -11,16 +11,16 @@ db.pragma('journal_mode = WAL');
 
 const SESSION_DIR = path.join(__dirname, '..', 'openwa-sessions');
 const QR_FILE = path.join(__dirname, '..', 'openwa-qr.png');
-var CHROME_PATH = '/home/joel/.cache/puppeteer/chrome/linux-146.0.7680.31/chrome-linux64/chrome';
+var CHROME_PATH = '/home/jellyfin/.cache/puppeteer/chrome/linux-146.0.7680.31/chrome-linux64/chrome';
 try {
-  var chromeDirs = fs.readdirSync('/home/joel/.cache/puppeteer/chrome/').filter(function(d) { return d.startsWith('linux-'); }).sort();
+  var chromeDirs = fs.readdirSync('/home/jellyfin/.cache/puppeteer/chrome/').filter(function(d) { return d.startsWith('linux-'); }).sort();
   // Prefer Chrome 131 (matches puppeteer-core 23.11.1), fallback to latest
   var targetVer = chromeDirs.filter(function(d) { return d.startsWith('linux-146'); });
-  if (target131.length > 0) {
-    var p = '/home/joel/.cache/puppeteer/chrome/' + targetVer[0] + '/chrome-linux64/chrome';
+  if (targetVer.length > 0) {
+    var p = '/home/jellyfin/.cache/puppeteer/chrome/' + targetVer[0] + '/chrome-linux64/chrome';
     if (fs.existsSync(p)) CHROME_PATH = p;
   } else if (chromeDirs.length > 0) {
-    var latest = '/home/joel/.cache/puppeteer/chrome/' + chromeDirs[chromeDirs.length - 1] + '/chrome-linux64/chrome';
+    var latest = '/home/jellyfin/.cache/puppeteer/chrome/' + chromeDirs[chromeDirs.length - 1] + '/chrome-linux64/chrome';
     if (fs.existsSync(latest)) CHROME_PATH = latest;
   }
 } catch(e) {}

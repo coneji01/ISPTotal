@@ -1,24 +1,16 @@
-<style>
-.zon-search { padding:14px 18px 10px; border-bottom:1px solid var(--border-color,#e2e8f0); }
-.zon-search-wrap { position:relative; max-width:400px; }
-.zon-search-icon { position:absolute; left:12px; top:50%; transform:translateY(-50%); color:#94a3b8; font-size:0.85rem; }
-.zon-search-input { width:100%; padding:9px 12px 9px 36px; border:1px solid #e2e8f0; border-radius:8px; font-size:0.88rem; box-sizing:border-box; outline:none; transition:border-color 0.15s; }
-.zon-search-input:focus { border-color:#2563eb; box-shadow:0 0 0 3px rgba(37,99,235,0.1); }
-</style>
-
 <div class="page-header">
     <h2 class="page-title">Gestión de Zonas</h2>
-    <button class="btn-primary" onclick="zonAbrirModal()">
+    <button class="btn btn-primary" onclick="zonAbrirModal()" style="background:var(--accent); padding:10px 20px; border-radius:8px; font-weight:600; box-shadow:0 2px 8px rgba(99,102,241,0.3);">
         <i class="fas fa-plus"></i> Nueva Zona
     </button>
 </div>
 
 <div class="card">
     <!-- Buscador -->
-    <div class="zon-search">
-        <div class="zon-search-wrap">
-            <i class="fas fa-search zon-search-icon"></i>
-            <input type="text" class="zon-search-input" id="zonSearch" placeholder="Buscar por nombre, router, OLT o VLAN..." oninput="zonFiltrar()">
+    <div style="padding:15px 20px 10px; border-bottom:1px solid #f1f5f9;">
+        <div style="position:relative; max-width:400px;">
+            <i class="fas fa-search" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:#94a3b8; font-size:0.85rem;"></i>
+            <input type="text" id="buscarZona" placeholder="Buscar por nombre, router, OLT o VLAN..." oninput="filtrarZonas()" style="width:100%; padding:9px 12px 9px 36px; border:1px solid #e2e8f0; border-radius:8px; font-size:0.88rem; box-sizing:border-box; outline:none; transition:border-color 0.15s;" onfocus="this.style.borderColor='#2563eb'; this.style.boxShadow='0 0 0 3px rgba(37,99,235,0.1)'" onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none'">
         </div>
     </div>
     <table>
@@ -83,9 +75,9 @@
 </div>
 
 <!-- MODAL -->
-<div class="modal-overlay" id="modalZona" style="display:none;">
-    <div class="modal-content" style="width:440px;">
-        <div style="display:flex; justify-content:space-between; margin-bottom:20px; border-bottom:1px solid var(--border-color,#e2e8f0); padding-bottom:10px;">
+<div class="modal-overlay" id="modalZona" style="display:none; background:rgba(0,0,0,0.5);">
+    <div class="modal-content" style="width:540px; max-width:540px; padding:24px;">
+        <div style="display:flex; justify-content:space-between; margin-bottom:20px; border-bottom:1px solid var(--border-color,#e2e8f0); padding-bottom:12px;">
             <h3 style="margin:0;" id="zonModalTitle">Nueva Zona</h3>
             <button onclick="zonCerrarModal()" style="background:none; border:none; font-size:1.5rem; cursor:pointer; color:#94a3b8;">&times;</button>
         </div>
@@ -131,7 +123,7 @@
                 <input type="number" name="vlan_onu" id="zonVlan" class="form-control" placeholder="Ej: 100" min="1" max="4094">
                 <small style="color:#64748b; font-size:0.75rem; display:block; margin-top:3px;">VLAN asignada a la ONU en esta zona.</small>
             </div>
-            <button type="submit" class="btn-primary" style="width:100%; margin-top:10px;">
+            <button type="submit" class="btn btn-primary" style="width:100%; margin-top:10px; padding:12px; background:var(--accent); font-weight:600; border-radius:8px;">
                 <i class="fas fa-save"></i> Guardar
             </button>
         </form>
@@ -139,8 +131,8 @@
 </div>
 
 <script>
-function zonFiltrar() {
-    var q = document.getElementById('zonSearch').value.toLowerCase().trim();
+function filtrarZonas() {
+    var q = document.getElementById('buscarZona').value.toLowerCase().trim();
     document.querySelectorAll('.card table tbody tr').forEach(function(row) {
         row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
     });
@@ -180,7 +172,6 @@ function zonOnProfileChange() {
     var zoneGroup = document.getElementById('zonZoneGroup');
     if (profileId) {
         zoneGroup.style.display = 'block';
-        // Try to load zones from OLT if smartolt-enabled
         var zoneSelect = document.getElementById('zonZone');
         zoneSelect.innerHTML = '<option value="">-- Seleccione zona --</option>';
         fetch('/api/smartolt/zones?profile_id=' + profileId)

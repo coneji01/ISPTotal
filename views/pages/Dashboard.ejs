@@ -505,11 +505,16 @@ function cargarTraficoWAN() {
     }
     
     // Chart: first load or update
-    if (!chartRendered && d.history && d.history.length > 0) {
+    if (!chartRendered) {
       chartRendered = true;
-      wanDataCache = d.history.slice();
+      wanDataCache = (d.history || []).slice();
+      // Si no hay historial, inicializamos con datos actuales
+      if (wanDataCache.length === 0 && d.current) {
+        var ts = new Date().toISOString();
+        wanDataCache.push({ ts: ts, bps_in: d.current.bps_in, bps_out: d.current.bps_out });
+      }
       renderWanChart(wanDataCache);
-    } else if (chartRendered && d.current && wanChart) {
+    } else if (d.current && wanChart) {
       var ts = new Date().toISOString();
       wanDataCache.push({ ts: ts, bps_in: d.current.bps_in, bps_out: d.current.bps_out });
       if (wanDataCache.length > 120) wanDataCache.shift();
@@ -589,4 +594,14 @@ function recargarTrafico() {
   cargarTraficoWAN();
   setTimeout(function() { btn.innerHTML = '<i class="fas fa-sync"></i>'; }, 1000);
 }
+
+<% if (typeof _promAutoMsg !== 'undefined' && _promAutoMsg) { %>
+  document.addEventListener('DOMContentLoaded', function() {
+    var t = document.createElement('div');
+    t.style.cssText = 'position:fixed;top:20px;right:20px;z-index:999999;padding:14px 22px;border-radius:12px;font-size:0.88rem;font-weight:600;color:#fff;box-shadow:0 8px 25px rgba(0,0,0,0.2);background:#dc2626;display:flex;align-items:center;gap:10px;animation:cronSlideIn 0.3s ease;max-width:400px;';
+    t.innerHTML = '<i class="fas fa-exclamation-triangle" style="font-size:1.1rem;"></i> <%= _promAutoMsg %>';
+    document.body.appendChild(t);
+    setTimeout(function() { t.style.opacity = '0'; t.style.transform = 'translateX(20px)'; t.style.transition = 'all 0.3s'; setTimeout(function() { t.remove(); }, 300); }, 5000);
+  });
+<% } %>
 </script>

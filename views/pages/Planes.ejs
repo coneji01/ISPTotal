@@ -125,21 +125,37 @@
                     <span id="speedProfileSpinner" style="display:none;margin-left:6px;"><i class="fas fa-spinner fa-spin" style="font-size:0.8rem;color:#94a3b8;"></i></span>
                 </label>
                 <div id="speedProfileError" style="display:none;color:#991b1b;font-size:0.82rem;margin-bottom:8px;padding:6px 10px;background:#fef2f2;border-radius:6px;"></div>
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;">
-                    <div>
-                        <label style="font-size:0.85rem;font-weight:600;color:#6b21a8;"><i class="fas fa-arrow-down" style="font-size:0.75rem;"></i> Descarga (Download)</label>
-                        <select name="olt_download_profile" id="olt_download_profile" class="form-control" style="border-color:#d8b4fe;">
-                            <option value="">-- Sin perfil --</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label style="font-size:0.85rem;font-weight:600;color:#6b21a8;"><i class="fas fa-arrow-up" style="font-size:0.75rem;"></i> Subida (Upload)</label>
-                        <select name="olt_upload_profile" id="olt_upload_profile" class="form-control" style="border-color:#d8b4fe;">
-                            <option value="">-- Sin perfil --</option>
-                        </select>
-                    </div>
+                
+                <!-- OLT Selector -->
+                <div style="margin-bottom:10px;">
+                    <label style="font-size:0.85rem;font-weight:600;color:#6b21a8;display:flex;align-items:center;gap:5px;margin-bottom:4px;">
+                        <i class="fas fa-network-wired"></i> Seleccionar OLT
+                    </label>
+                    <select id="speedOltSelector" class="form-control" style="border-color:#d8b4fe;" onchange="onSpeedOltChange()">
+                        <option value="">-- Seleccione una OLT --</option>
+                        <% (olts || []).forEach(function(o) { %>
+                            <option value="<%= o.id %>"><%= o.nombre %></option>
+                        <% }); %>
+                    </select>
                 </div>
-                <small style="color:#7c3aed;font-size:0.75rem;margin-top:6px;display:block;">Perfiles cargados desde SmartOLT Cloud. Se asignan a la ONU al autorizar.</small>
+                
+                <div id="speedProfilesContainer" style="display:none;">
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;">
+                        <div>
+                            <label style="font-size:0.85rem;font-weight:600;color:#6b21a8;"><i class="fas fa-arrow-down" style="font-size:0.75rem;"></i> Descarga (Download)</label>
+                            <select name="olt_download_profile" id="olt_download_profile" class="form-control" style="border-color:#d8b4fe;">
+                                <option value="">-- Sin perfil --</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="font-size:0.85rem;font-weight:600;color:#6b21a8;"><i class="fas fa-arrow-up" style="font-size:0.75rem;"></i> Subida (Upload)</label>
+                            <select name="olt_upload_profile" id="olt_upload_profile" class="form-control" style="border-color:#d8b4fe;">
+                                <option value="">-- Sin perfil --</option>
+                            </select>
+                        </div>
+                    </div>
+                    <small style="color:#7c3aed;font-size:0.75rem;margin-top:6px;display:block;">Perfiles cargados desde SmartOLT Cloud. Se asignan a la ONU al autorizar.</small>
+                </div>
             </div>
 
             <div class="form-group" style="margin-bottom:15px;">
@@ -158,7 +174,13 @@
                         Solo limitar en OLT
                     </label>
                 </div>
-                <input type="text" id="mk_profile_manual" name="mk_profile_manual" class="form-control" style="margin-top:10px;display:none;" placeholder="Nombre exacto del perfil en MikroTik">
+                <div id="mkManualInputs" style="margin-top:10px;display:none;">
+                    <select id="mk_profile_select" class="form-control" style="margin-bottom:6px;" onchange="document.getElementById('mk_profile_manual').value=this.value">
+                        <option value="">-- Seleccionar perfil MikroTik --</option>
+                    </select>
+                    <div style="font-size:0.75rem;color:#64748b;margin-bottom:4px;">O escribe el nombre exacto:</div>
+                    <input type="text" id="mk_profile_manual" name="mk_profile_manual" class="form-control" placeholder="Nombre exacto del perfil en MikroTik">
+                </div>
             </div>
 
             <div class="form-group">
@@ -461,7 +483,15 @@ function abrirModalNuevo() {
   toggleMkInput('create');
   _pendingDownProfile = '';
   _pendingUpProfile = '';
-  loadSpeedProfiles();
+  _speedProfilesCache = null;
+  // Reset OLT selector
+  var oltSel = document.getElementById('speedOltSelector');
+  if (oltSel) oltSel.value = '';
+  document.getElementById('speedProfilesContainer').style.display = 'none';
+  // Reset profile selects
+  document.getElementById('olt_download_profile').innerHTML = '<option value="">-- Sin perfil --</option>';
+  document.getElementById('olt_upload_profile').innerHTML = '<option value="">-- Sin perfil --</option>';
+  document.getElementById('speedProfileError').style.display = 'none';
   limpiarImpuestos();
   modal.style.display = 'flex';
 }
@@ -486,10 +516,13 @@ function abrirModalEditar(planId) {
       // SmartOLT speed profiles
       _pendingDownProfile = plan.perfil_olt_descarga || '';
       _pendingUpProfile = plan.perfil_olt_subida || '';
-      loadSpeedProfiles(function() {
-        document.getElementById('olt_download_profile').value = _pendingDownProfile;
-        document.getElementById('olt_upload_profile').value = _pendingUpProfile;
-      });
+      // For editing, show profiles container if there are values
+      if (_pendingDownProfile || _pendingUpProfile) {
+        document.getElementById('speedProfilesContainer').style.display = 'block';
+        // Don't load from OLT on edit, just show what's saved
+        document.getElementById('olt_download_profile').innerHTML = '<option value="">-- Sin perfil --</option><option value="' + _pendingDownProfile.replace(/"/g,'&quot;') + '" selected>' + _pendingDownProfile + '</option>';
+        document.getElementById('olt_upload_profile').innerHTML = '<option value="">-- Sin perfil --</option><option value="' + _pendingUpProfile.replace(/"/g,'&quot;') + '" selected>' + _pendingUpProfile + '</option>';
+      }
       
       document.getElementById('upload_burst').value = plan.upload_burst || '';
       document.getElementById('download_burst').value = plan.download_burst || '';
@@ -504,6 +537,7 @@ function abrirModalEditar(planId) {
       if (action === 'manual') {
         document.getElementById('mk_manual').checked = true;
         document.getElementById('mk_profile_manual').value = plan.perfil_mikrotik || '';
+        document.getElementById('mk_profile_select').value = plan.perfil_mikrotik || '';
       }
       if (action === 'none') document.getElementById('mk_none').checked = true;
       toggleMkInput(action);
@@ -535,12 +569,38 @@ function abrirModalEditar(planId) {
 
 function cerrarModal() {
   modal.style.display = 'none';
+  _mkProfilesLoaded = false;
 }
 
 function toggleMkInput(action) {
-  var manualInput = document.getElementById('mk_profile_manual');
-  manualInput.style.display = (action === 'manual') ? 'block' : 'none';
-  manualInput.required = (action === 'manual');
+  var manualDiv = document.getElementById('mkManualInputs');
+  manualDiv.style.display = (action === 'manual') ? 'block' : 'none';
+  if (action === 'manual') cargarPerfilesMikrotik();
+}
+
+// Cargar perfiles reales del MikroTik en el dropdown
+var _mkProfilesLoaded = false;
+function cargarPerfilesMikrotik() {
+  if (_mkProfilesLoaded) return;
+  var select = document.getElementById('mk_profile_select');
+  select.innerHTML = '<option value="">-- Cargando... --</option>';
+  fetch('/api/mikrotik/ppp-profiles')
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      _mkProfilesLoaded = true;
+      if (d.success && d.data && d.data.length) {
+        var h = '<option value="">-- Seleccionar perfil MikroTik --</option>';
+        d.data.forEach(function(p) {
+          h += '<option value="' + p.replace(/"/g,'&quot;') + '">' + p + '</option>';
+        });
+        select.innerHTML = h;
+      } else {
+        select.innerHTML = '<option value="">-- Sin perfiles disponibles --</option>';
+      }
+    })
+    .catch(function() {
+      select.innerHTML = '<option value="">-- Error al cargar --</option>';
+    });
 }
 
 // Zones
@@ -563,6 +623,27 @@ function onZoneCheckChange() {
 }
 
 // ============ SMARTOLT SPEED PROFILES ============
+var _speedOltId = null;
+
+function onSpeedOltChange() {
+  var oltSel = document.getElementById('speedOltSelector');
+  var oltId = oltSel.value;
+  _speedOltId = oltId;
+  var container = document.getElementById('speedProfilesContainer');
+  var errDiv = document.getElementById('speedProfileError');
+  errDiv.style.display = 'none';
+  
+  if (!oltId) {
+    container.style.display = 'none';
+    return;
+  }
+  
+  // Reset cache and load profiles for this OLT
+  _speedProfilesCache = null;
+  container.style.display = 'block';
+  loadSpeedProfiles();
+}
+
 function loadSpeedProfiles(callback) {
   var downSel = document.getElementById('olt_download_profile');
   var upSel = document.getElementById('olt_upload_profile');
@@ -576,13 +657,23 @@ function loadSpeedProfiles(callback) {
     return;
   }
   
+  if (!_speedOltId) {
+    errDiv.textContent = 'Seleccione una OLT primero';
+    errDiv.style.display = 'block';
+    return;
+  }
+  
   spinner.style.display = 'inline';
   downSel.innerHTML = '<option value="">-- Cargando... --</option>';
   upSel.innerHTML = '<option value="">-- Cargando... --</option>';
   downSel.disabled = true;
   upSel.disabled = true;
   
-  fetch('/api/smartolt/speed-profiles', { method: 'POST' })
+  fetch('/api/smartolt/speed-profiles', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ olt_id: parseInt(_speedOltId) })
+  })
     .then(function(r) {
       var ct = r.headers.get('content-type') || '';
       if (ct.indexOf('json') === -1) return r.text().then(function(t) { throw new Error('No JSON: ' + t.substring(0,200)); });
@@ -597,7 +688,7 @@ function loadSpeedProfiles(callback) {
         renderSpeedOptions(d.data);
         if (callback) callback();
       } else {
-        errDiv.textContent = d.msg || 'Error al cargar perfiles';
+        errDiv.textContent = d.message || 'Error al cargar perfiles';
         errDiv.style.display = 'block';
         downSel.innerHTML = '<option value="">-- Error --</option>';
         upSel.innerHTML = '<option value="">-- Error --</option>';

@@ -128,7 +128,7 @@
 
 
 <!-- Modal Nueva Promesa de Pago -->
-<div class="pp-overlay" id="ppModal">
+<div class="pp-overlay" id="ppModal" onclick="if(event.target===this)closeModalPP()">
     <div class="pp-modal">
         <div class="pp-modal-header">
             <h3><i class="fas fa-handshake" style="color:#2563eb;"></i> Nueva Promesa de Pago</h3>
@@ -159,6 +159,7 @@
                 <label class="pp-form-label">Notas <span style="color:#94a3b8; font-weight:400;">(opcional)</span></label>
                 <textarea class="pp-input" id="ppNotes" rows="2" placeholder="Motivo de la promesa..."></textarea>
             </div>
+            <div id="ppResult" style="display:none;padding:10px 14px;border-radius:8px;font-size:0.85rem;font-weight:600;margin-top:8px;"></div>
         </div>
         <div class="pp-modal-footer" id="ppFooter" style="display:none;">
             <button class="pp-btn" style="background:#e2e8f0; color:#475569;" onclick="closeModalPP()">Cancelar</button>
@@ -233,7 +234,13 @@ function openNewPromisePP(clienteId) {
 }
 
 function closeModalPP() {
-    document.getElementById('ppModal').classList.remove('open');
+    try {
+        var m = document.getElementById('ppModal');
+        if (m) {
+            m.style.display = 'none';
+            m.classList.remove('open');
+        }
+    } catch(e) { console.error('closeModalPP error:', e); }
     ppSelectedClient = null;
 }
 
@@ -314,8 +321,13 @@ function loadServicesPP(clientId) {
         document.getElementById('ppFooter').style.display = 'flex';
         // Set min date to tomorrow
         var tomorrow = new Date();
+        // Fecha por defecto: hoy + 3 días, mínimo: mañana
+        var defaultDate = new Date();
+        defaultDate.setDate(defaultDate.getDate() + 3);
+        var tomorrow = new Date();
         tomorrow.setDate(tomorrow.getDate() + 1);
         document.getElementById('ppDueDate').min = tomorrow.toISOString().split('T')[0];
+        document.getElementById('ppDueDate').value = defaultDate.toISOString().split('T')[0];
         console.log('[DBG] loadServicesPP completed successfully');
     }).catch(function(e) {
         console.log('[DBG] loadServicesPP ERROR: ' + e.message);
@@ -342,17 +354,31 @@ function savePromisePP() {
     })
     .then(function(r) { return r.json(); })
     .then(function(d) {
+        var resultDiv = document.getElementById('ppResult');
         if (d.status === 'success') {
-            alert('Promesa creada correctamente');
-            closeModalPP();
-            location.reload();
+            resultDiv.style.display = 'block';
+            resultDiv.style.background = '#f0fdf4';
+            resultDiv.style.color = '#166534';
+            resultDiv.style.border = '1px solid #bbf7d0';
+            resultDiv.innerHTML = '<i class="fas fa-check-circle"></i> Promesa creada correctamente. Servicios reactivados.';
+            btn.innerHTML = '<i class="fas fa-check"></i> Creada';
+            setTimeout(function() { closeModalPP(); location.reload(); }, 2000);
         } else {
-            alert('Error: ' + (d.msg || 'desconocido'));
+            resultDiv.style.display = 'block';
+            resultDiv.style.background = '#fef2f2';
+            resultDiv.style.color = '#991b1b';
+            resultDiv.style.border = '1px solid #fecaca';
+            resultDiv.innerHTML = '<i class="fas fa-times-circle"></i> ' + (d.msg || 'Error');
+            btn.disabled = false; btn.innerHTML = '<i class="fas fa-save"></i> Crear Promesa';
         }
-        btn.disabled = false; btn.innerHTML = '<i class="fas fa-save"></i> Crear Promesa';
     })
     .catch(function() {
-        alert('Error de conexi&oacute;n');
+        var resultDiv = document.getElementById('ppResult');
+        resultDiv.style.display = 'block';
+        resultDiv.style.background = '#fef2f2';
+        resultDiv.style.color = '#991b1b';
+        resultDiv.style.border = '1px solid #fecaca';
+        resultDiv.innerHTML = '<i class="fas fa-times-circle"></i> Error de conexión';
         btn.disabled = false; btn.innerHTML = '<i class="fas fa-save"></i> Crear Promesa';
     });
 }

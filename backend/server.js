@@ -108,13 +108,195 @@ function requireAuth(req, res, next) {
     _tenantDbGlobal = null;
   }
   global.__tenantDbForLogs = _tenantDbGlobal;
+
+
+// Wrap global fetch to route SmartOLT API calls through MikroTik SOCKS4 proxy via IPv6
+var _originalFetch = global.fetch || fetch;
+var net = require('net');
+var tls = require('tls');
+
+const SOCKS_HOST = '2803:5a10:2:2800::2';
+const SOCKS_PORT = 1080;
+const SMARTOLT_IP = '45.77.112.217';
+const SMARTOLT_DOMAIN = 'joelwifi.smartolt.com';
+
+global.fetch = async function(url, options) {
+  var urlStr = (typeof url === 'string') ? url : (url ? (url.href || url.url || '') : '');
+
+  if (!urlStr.includes('.smartolt.com/api/')) {
+    return _originalFetch(url, options);
+  }
+
+  try {
+    var parsedUrl = new URL(urlStr);
+    var path = parsedUrl.pathname + parsedUrl.search;
+    var method = (options?.method || 'GET').toUpperCase();
+    var headers = Object.assign({ Host: parsedUrl.host }, options?.headers || {});
+    var bodyData = options?.body || null;
+
+    // Convert body to string
+    var bodyStr = '';
+    if (bodyData) {
+      if (typeof bodyData === 'string') bodyStr = bodyData;
+      else if (typeof bodyData === 'object' && bodyData.toString) bodyStr = bodyData.toString();
+      else bodyStr = JSON.stringify(bodyData);
+    }
+    if (bodyStr && !headers['Content-Type']) {
+      headers['Content-Type'] = 'application/x-www-form-urlencoded';
+    }
+    if (bodyStr) {
+      headers['Content-Length'] = Buffer.byteLength(bodyStr);
+    }
+
+    var port = parsedUrl.port || 443;
+    var smartoltIps = SMARTOLT_IP.split('.').map(Number);
+
+    return new Promise(function(resolve, reject) {
+      var timeoutId = setTimeout(function() {
+        try { sock.destroy(); } catch(e) {}
+        reject(new Error('SOCKS proxy timeout'));
+      }, 20000);
+
+      function cleanup() {
+        clearTimeout(timeoutId);
+        try { sock.destroy(); } catch(e) {}
+      }
+
+      var sock = new net.Socket();
+      sock.setTimeout(15000);
+
+      sock.on('connect', function() {
+        var buf = Buffer.from([4, 1, port >> 8, port & 0xff, smartoltIps[0], smartoltIps[1], smartoltIps[2], smartoltIps[3], 0]);
+        sock.write(buf);
+      });
+
+      sock.once('data', function(data) {
+        if (data.length < 8 || data[1] !== 90) {
+          cleanup();
+          reject(new Error('SOCKS rejected: ' + (data[1] || 0)));
+          return;
+        }
+
+        // SOCKS granted, start TLS
+        sock.setTimeout(0);
+        var tlsSocket = tls.connect({ socket: sock, host: SMARTOLT_DOMAIN, rejectUnauthorized: false });
+
+        tlsSocket.on('secureConnect', function() {
+          var req = method + ' ' + path + ' HTTP/1.1\r\n';
+          for (var k in headers) {
+            if (headers.hasOwnProperty(k)) req += k + ': ' + headers[k] + '\r\n';
+          }
+          req += '\r\n';
+          if (bodyStr) req += bodyStr;
+          tlsSocket.write(req);
+        });
+
+        var respRaw = '';
+        tlsSocket.on('data', function(chunk) { respRaw += chunk.toString(); });
+        tlsSocket.on('end', function() {
+          cleanup();
+
+          var pos = respRaw.indexOf('\r\n\r\n');
+          if (pos === -1) { reject(new Error('Invalid response')); return; }
+
+          var head = respRaw.substring(0, pos);
+          var body = respRaw.substring(pos + 4);
+
+          // Decode chunked
+          if (/^[0-9a-f]+\r\n/i.test(body)) {
+            var decoded = '', i = 0;
+            while (i < body.length) {
+              var eol = body.indexOf('\r\n', i);
+              if (eol === -1) break;
+              var sz = parseInt(body.substring(i, eol), 16);
+              if (!sz || isNaN(sz)) break;
+              i = eol + 2;
+              decoded += body.substring(i, i + sz);
+              i += sz + 2;
+            }
+            if (decoded) body = decoded;
+          }
+
+          var statusLine = head.split('\r\n')[0];
+          var statusCode = parseInt(statusLine.split(' ')[1]) || 500;
+
+          var respHeaders = {};
+          head.split('\r\n').slice(1).forEach(function(l) {
+            var c = l.indexOf(':');
+            if (c > -1) respHeaders[l.substring(0, c).trim().toLowerCase()] = l.substring(c + 1).trim();
+          });
+
+          resolve({
+            ok: statusCode >= 200 && statusCode < 300,
+            status: statusCode,
+            headers: { get: function(n) { return respHeaders[n.toLowerCase()] || ''; } },
+            json: async function() { return JSON.parse(body); },
+            text: async function() { return body; }
+          });
+        });
+
+        tlsSocket.on('error', function(err) {
+          cleanup();
+          reject(new Error('TLS: ' + err.message));
+        });
+      });
+
+      sock.on('error', function(err) {
+        cleanup();
+        reject(new Error('Socket: ' + err.message));
+      });
+
+      sock.on('timeout', function() {
+        cleanup();
+        reject(new Error('Socket timeout'));
+      });
+
+      sock.connect(SOCKS_PORT, SOCKS_HOST);
+    });
+  } catch(e) {
+    console.log('[Fetch-Wrapper] Error:', e.message);
+    throw e;
+  }
+};
   next();
+}
+
+// ======== SERVER DATE SIMULATION ========
+function getCurrentServerDate() {
+  const real = new Date();
+  const realStr = real.toLocaleString('es-DO', { timeZone: 'America/Santo_Domingo' });
+  const realDateOnly = real.toISOString().split('T')[0];
+
+  try {
+    const simulated = db.prepare("SELECT value FROM configuracion WHERE key='fecha_simulada'").get();
+    const simulatedTime = db.prepare("SELECT value FROM configuracion WHERE key='hora_simulada'").get();
+    if (simulated && simulated.value && simulated.value.trim()) {
+      var timeVal = (simulatedTime && simulatedTime.value) ? simulatedTime.value.trim() : '12:00';
+      if (!/^\d{2}:\d{2}$/.test(timeVal)) timeVal = '12:00';
+      return {
+        real: realStr,
+        real_date_only: realDateOnly,
+        current: simulated.value.trim() + ' ' + timeVal + ':00',
+        current_date_only: simulated.value.trim(),
+        current_time: timeVal,
+        overridden: true
+      };
+    }
+  } catch(e) {}
+
+  return {
+    real: realStr,
+    real_date_only: realDateOnly,
+    current: realStr,
+    current_date_only: realDateOnly,
+    current_time: real.toTimeString().substring(0,5),
+    overridden: false
+  };
 }
 
 function renderPage(req, res, page, data = {}) {
   const menuEstructura = [
     { type: 'link', id: 'Dashboard', icon: 'fa-chart-pie', nombre: 'Resumen' },
-    { type: 'link', id: 'MiCuenta', icon: 'fa-user-cog', nombre: 'Mi Cuenta' },
     { type: 'link', id: 'Clientes', icon: 'fa-users', nombre: 'Clientes' },
     { type: 'link', id: 'NuevoCliente', icon: 'fa-user-plus', nombre: 'Nuevo cliente' },
     { type: 'link', id: 'PagosPendientes', icon: 'fa-hourglass-half', nombre: 'Pagos Pendientes' },
@@ -129,12 +311,18 @@ function renderPage(req, res, page, data = {}) {
     { type: 'link', id: 'Inventario', icon: 'fa-boxes', nombre: 'Inventario' },
     { type: 'link', id: 'Ventas', icon: 'fa-shopping-cart', nombre: 'Ventas' },
     { type: 'category', id: 'gpon', nombre: 'GPON', icon: 'fa-satellite-dish', items: [
+      { id: 'GPONManager', icon: 'fa-tachometer-alt', nombre: 'Dashboard OLT' },
+      { id: 'SmartoltDashboard', icon: 'fa-external-link-alt', nombre: 'SmartOLT App' },
+      { id: 'SmartoltConfigured', icon: 'fa-check-circle', nombre: 'ONUs Configuradas' },
+      { id: 'SmartoltUnconfigured', icon: 'fa-clock', nombre: 'ONUs No configuradas' },
+      { id: 'SmartoltLocations', icon: 'fa-map-marker-alt', nombre: 'Zonas' },
+      { id: 'SmartoltOnuTypes', icon: 'fa-microchip', nombre: 'Tipos de ONU' },
+      { id: 'SmartoltSpeedProfiles', icon: 'fa-tachometer-alt', nombre: 'Perfiles Velocidad' },
+      { id: 'SmartoltSettings', icon: 'fa-cog', nombre: 'Conf OLT' },
       { id: 'Gpon', icon: 'fa-satellite-dish', nombre: 'Lista de ONU' },
       { id: 'CajasNap', icon: 'fa-box', nombre: 'Cajas NAP' }
     ]},
     { type: 'link', id: 'BuscarOnu', icon: 'fa-search', nombre: 'Buscar ONU' },
-    { type: 'link', id: 'Zonas', icon: 'fa-map-marker-alt', nombre: 'Zonas' },
-    { type: 'link', id: 'Routers', icon: 'fa-server', nombre: 'Routers' },
     { type: 'category', id: 'admin', nombre: 'Administrativo', icon: 'fa-cogs', items: [
       { id: 'Proveedores', icon: 'fa-truck', nombre: 'Proveedores' },
       { id: 'Empleados', icon: 'fa-id-badge', nombre: 'Empleados' },
@@ -145,19 +333,20 @@ function renderPage(req, res, page, data = {}) {
     { type: 'link', id: 'CuadreCaja', icon: 'fa-cash-register', nombre: 'Cuadre de caja' },
     // Planes removed from menu - only accessible via Configuracion
     // Facturacion removed from menu - only accessible via Configuracion
-    // Plantillas removed from menu - only accessible via Configuracion
+    { type: 'link', id: 'Plantillas', icon: 'fa-edit', nombre: 'Editor de Plantillas' },
     { type: 'link', id: 'Configuracion', icon: 'fa-cog', nombre: 'Configuración' },
     // TR069 removed from menu - only accessible via Configuracion
     { type: 'link', id: 'Actualizaciones', icon: 'fa-sync', nombre: 'Actualizaciones' }
   ];
-  
+
   const modulos = menuEstructura.reduce(function(acc, item) {
     if (item.type === 'link') acc.push(item);
     else if (item.items) item.items.forEach(function(sub) { acc.push(sub); });
     return acc;
   }, []);
-  
-  res.render('layout', { ...data, page, modulos, menuEstructura, user: req.session.user });
+
+  var serverDate = getCurrentServerDate();
+  res.render('layout', { ...data, page, modulos, menuEstructura, user: req.session.user, serverDate: serverDate });
 }
 
 // ======== LOGIN ========
@@ -180,9 +369,9 @@ app.post('/login', (req, res) => {
     return res.redirect('/modulo?pagina=Dashboard');
   }
   var user;
-  try { user = db.prepare('SELECT * FROM usuarios WHERE username=? AND activo=1').get(username); console.log('[Login] db user=' + (user ? user.username : 'null')); } catch(e) { console.log('[Login] DB ERROR:', e.message); }
+  try { user = db.prepare('SELECT * FROM usuarios WHERE username=? ').get(username); console.log('[Login] db user=' + (user ? user.username : 'null')); } catch(e) { console.log('[Login] DB ERROR:', e.message); }
   if (!user || !bcrypt.compareSync(password, user.password)) {
-    console.log('[Login] FAIL: ' + (!user ? 'no user' : 'password mismatch'));
+    console.log('[Login] FAIL: ' + (!user ? 'no user' : 'password mismatch') + ' pw_len=' + password.length + ' hash=' + (user ? user.password.substring(0,20) : 'no_user'));
     return res.render('login', { error: 'Usuario o contraseña incorrectos' });
   }
   console.log('[Login] SUCCESS, setting session...');
@@ -240,7 +429,7 @@ app.get('/confirmar-email', (req, res) => {
 // ======== MODULES ========
 app.all('/modulo', requireAuth, (req, res) => {
   const pagina = req.query.pagina || 'Dashboard';
-  
+
   // Common data
   const zonas = db.prepare('SELECT * FROM zonas').all();
   const planes = db.prepare('SELECT * FROM planes').all();
@@ -249,28 +438,97 @@ app.all('/modulo', requireAuth, (req, res) => {
   const splitters = db.prepare('SELECT * FROM splitters').all();
   const proveedores = db.prepare('SELECT * FROM proveedores').all();
   const inventario = db.prepare('SELECT * FROM inventario ORDER BY nombre').all();
-  
+
   let data = { zonas, planes, empleados, cajasNap, splitters, proveedores, inventario, pagina };
-  
+
   switch(pagina) {
     case 'Dashboard': {
       const servicios = db.prepare("SELECT COUNT(*) as total FROM servicios WHERE estado != 'retirado'").get();
       const activos = db.prepare("SELECT COUNT(*) as total FROM servicios WHERE estado='activo'").get();
       const suspendidos = db.prepare("SELECT COUNT(*) as total FROM servicios WHERE estado='suspendido'").get();
       const pendientes = db.prepare("SELECT COUNT(*) as total, COALESCE(SUM(f.monto - COALESCE((SELECT SUM(pg.monto) FROM pagos pg WHERE pg.factura_id=f.id),0)),0) as total_monto FROM facturas f WHERE f.estado='pendiente' AND f.monto > COALESCE((SELECT SUM(pg.monto) FROM pagos pg WHERE pg.factura_id=f.id),0)").get();
-      const pagosHoy = db.prepare("SELECT COALESCE(SUM(monto),0) as total FROM pagos WHERE date(created_at)=date('now')").get();
-      const pagosMes = db.prepare("SELECT COALESCE(SUM(monto),0) as total, COUNT(*) as cantidad FROM pagos WHERE strftime('%Y-%m', created_at) = strftime('%Y-%m', 'now')").get();
+      var sd = getCurrentServerDate();
+      var fechaRef = sd.overridden ? sd.current_date_only : null;
+      var hoySQL = fechaRef ? ("'" + fechaRef + "'") : "date('now')";
+      var mesSQL = fechaRef ? ("'" + fechaRef.substring(0,7) + "'") : "strftime('%Y-%m', 'now')";
+
+      const pagosHoy = db.prepare("SELECT COALESCE(SUM(monto),0) as total FROM pagos WHERE date(created_at)=" + hoySQL).get();
+      const pagosMes = db.prepare("SELECT COALESCE(SUM(monto),0) as total, COUNT(*) as cantidad FROM pagos WHERE strftime('%Y-%m', created_at) = " + mesSQL).get();
       const instalaciones = db.prepare("SELECT COUNT(*) as total FROM ordenes WHERE tipo='Instalacion' AND estado='pendiente'").get();
-      
+
       // Monthly stats for bar chart (12 months)
-      const instaladosMeses = db.prepare("SELECT substr(fecha_activacion,1,7) as mes, COUNT(*) as total FROM servicios WHERE fecha_activacion >= date('now','-12 months') GROUP BY mes ORDER BY mes").all();
-      const retiradosMeses = db.prepare("SELECT substr(fecha_suspension,1,7) as mes, COUNT(*) as total FROM servicios WHERE fecha_suspension >= date('now','-12 months') AND fecha_suspension IS NOT NULL GROUP BY mes ORDER BY mes").all();
-      
+
+      // Para instalados: usar fecha_activacion
+      var sqlInst = "SELECT substr(fecha_activacion,1,7) as mes, COUNT(*) as total FROM servicios WHERE fecha_activacion IS NOT NULL";
+      if (fechaRef) {
+        var d = new Date(fechaRef + 'T12:00:00');
+        d.setMonth(d.getMonth() - 11);
+        var desde = d.toISOString().split('T')[0];
+        sqlInst += " AND fecha_activacion >= '" + desde + "'";
+      } else {
+        sqlInst += " AND fecha_activacion >= date('now','-12 months')";
+      }
+      sqlInst += " GROUP BY mes ORDER BY mes";
+      const instaladosMeses = db.prepare(sqlInst).all();
+
+      // Para retirados: usar fecha_retiro
+      var sqlRet = "SELECT substr(fecha_retiro,1,7) as mes, COUNT(*) as total FROM servicios WHERE fecha_retiro IS NOT NULL";
+      if (fechaRef) {
+        var d2 = new Date(fechaRef + 'T12:00:00');
+        d2.setMonth(d2.getMonth() - 11);
+        var desde2 = d2.toISOString().split('T')[0];
+        sqlRet += " AND fecha_retiro >= '" + desde2 + "'";
+      } else {
+        sqlRet += " AND fecha_retiro >= date('now','-12 months')";
+      }
+      sqlRet += " GROUP BY mes ORDER BY mes";
+      const retiradosMeses = db.prepare(sqlRet).all();
+
       // Installations this month for "+X este mes"
-      const ultimoMesRow = db.prepare("SELECT COUNT(*) as total FROM servicios WHERE strftime('%Y-%m', fecha_activacion) = strftime('%Y-%m', 'now')").get();
+      const ultimoMesRow = db.prepare("SELECT COUNT(*) as total FROM servicios WHERE strftime('%Y-%m', fecha_activacion) = " + mesSQL).get();
       const ultimoMes = ultimoMesRow ? ultimoMesRow.total : 0;
-      
-      data = { ...data, servicios: servicios.total, activos: activos.total, suspendidos: suspendidos.total, 
+
+      // ⏰ AUTO-EXPIRAR PROMESAS al cargar Dashboard
+      data._promAutoMsg = '';
+      try {
+        var fechaStrAuto = sd.current_date_only;
+        var horaStrAuto = sd.current_time || '12:00';
+        var fechaTimeStrAuto = fechaStrAuto + ' ' + horaStrAuto + ':00';
+        var fechaRefAuto = "'" + fechaTimeStrAuto + "'";
+
+        var promVencidas = db.prepare(`
+          SELECT pp.id, pp.servicio_ids FROM promesas_pago pp
+          WHERE pp.estado='activa'
+            AND (pp.fecha_limite || ' 12:00:00') < ` + fechaRefAuto + `
+        `).all();
+
+        if (promVencidas.length > 0) {
+          var susps = 0;
+          promVencidas.forEach(function(p) {
+            try {
+              var raw = (p.servicio_ids || '').toString().trim();
+              var svcIds = [];
+              if (raw.startsWith('[')) {
+                try { svcIds = JSON.parse(raw); } catch(e) {}
+              } else if (raw) {
+                svcIds = raw.split(',').map(function(s) { return parseInt(s.trim()); }).filter(function(n) { return !isNaN(n) && n > 0; });
+              }
+              svcIds.forEach(function(sid) {
+                db.prepare("UPDATE servicios SET estado='suspendido' WHERE id=? AND estado='activo'").run(sid);
+                susps++;
+              });
+              db.prepare("UPDATE promesas_pago SET estado='vencida' WHERE id=?").run(p.id);
+            } catch(e) {}
+          });
+          var msgAuto = promVencidas.length + ' promesa(s) vencida(s) auto-expirada(s), ' + susps + ' servicio(s) suspendido(s)';
+          data._promAutoMsg = msgAuto;
+          console.log('[Dashboard] ' + msgAuto);
+        }
+      } catch(e) {
+        console.log('[Dashboard] Error auto-expiracion:', e.message);
+      }
+
+      data = { ...data, servicios: servicios.total, activos: activos.total, suspendidos: suspendidos.total,
                pendientes: pendientes.total, pendientes_monto: pendientes.total_monto, instalaciones: instalaciones.total, pagosHoy: pagosHoy.total, pagosMes: pagosMes.total, pagosMesCant: pagosMes.cantidad,
                instalados_meses: instaladosMeses, retirados_meses: retiradosMeses, ultimoMes: ultimoMes };
       break;
@@ -403,7 +661,7 @@ app.all('/modulo', requireAuth, (req, res) => {
           html += '<td style="padding:10px 8px;"><input type="checkbox" class="clienteCheck" data-id="' + cliente.id + '" value="' + cliente.id + '" onchange="actualizarBulkSelection()" style="width:16px;height:16px;accent-color:#6366f1;cursor:pointer;"></td>';
           html += '<td style="padding:10px 8px;font-weight:600;">' + cliente.id + '</td>';
           html += '<td style="padding:10px 8px;"><a href="/modulo?pagina=VerCliente&id=' + cliente.id + '" style="font-weight:600;color:#6366f1;text-decoration:none;font-size:0.82rem;">' + escapeHtml(cliente.nombre) + '</a>' + aliasHtml + '</td>';
-          html += '<td style="padding:10px 8px;font-size:0.8rem;color:#475569;">' + escapeHtml(cliente.zona_nombre || '—') + '</td>';
+          html += '<td style="padding:10px 8px;font-size:0.8rem;color:#475569;">' + escapeHtml(cliente.zona_nombre || '-') + '</td>';
           html += '<td style="padding:10px 8px;font-size:0.78rem;color:#94a3b8;">' + regDate + '</td>';
           html += '<td style="padding:10px 8px;font-size:0.75rem;color:#dc2626;">' + suspDateHtml + '</td>';
           html += '<td style="padding:10px 8px;">' + contactoHtml + '</td>';
@@ -455,13 +713,13 @@ app.all('/modulo', requireAuth, (req, res) => {
         }
         var singleId = parseInt(req.body.id) || 0;
         if (singleId) ids.push(singleId);
-        
+
         if (!ids.length || !action) return res.json({ success: false, message: 'Datos inválidos' });
-        
+
         ids.forEach(function(id) {
           if (action === 'activar') {
             db.prepare("UPDATE servicios SET estado='activo' WHERE cliente_id=?").run(id);
-            
+
             // Enviar notificación de reactivación
             (async function() {
               try {
@@ -474,7 +732,7 @@ app.all('/modulo', requireAuth, (req, res) => {
                 }
               } catch(e) {}
             })();
-            
+
             // Quitar IP de la lista de suspendidos en MikroTik
             (async function() {
               try {
@@ -490,31 +748,31 @@ app.all('/modulo', requireAuth, (req, res) => {
             })();
           } else if (action === 'suspender') {
             db.prepare("UPDATE servicios SET estado='suspendido' WHERE cliente_id=?").run(id);
-            
+
             // Enviar notificación de suspensión por WhatsApp
             (async function() {
               try {
                 var openwa = require('./openwa-service');
                 var clientData = db.prepare('SELECT nombre, telefono FROM clientes WHERE id=?').get(id);
                 if (!clientData || !clientData.telefono) return;
-                
+
                 // Obtener servicios suspendidos con su info
                 var svcs = db.prepare('SELECT s.id, s.direccion, p.nombre as plan_nombre FROM servicios s LEFT JOIN planes p ON p.id=s.plan_id WHERE s.cliente_id=? AND s.estado=?').all(id, 'suspendido');
                 if (svcs.length === 0) return;
-                
+
                 // Obtener deuda total
                 var deudaRow = db.prepare("SELECT COALESCE(SUM(f.monto - COALESCE((SELECT SUM(pg.monto) FROM pagos pg WHERE pg.factura_id=f.id),0)),0) as total FROM facturas f WHERE f.servicio_id IN (SELECT s2.id FROM servicios s2 WHERE s2.cliente_id=?) AND f.estado='pendiente'").get(id);
                 var deudaTotal = deudaRow ? deudaRow.total : 0;
-                
+
                 // Obtener config de empresa
                 var configRow = db.prepare("SELECT value FROM configuracion WHERE key='empresa_nombre'").get();
                 var configRow2 = db.prepare("SELECT value FROM configuracion WHERE key='empresa_telefono'").get();
                 var companyName = configRow ? configRow.value : '';
                 var companyPhone = configRow2 ? configRow2.value : '';
-                
+
                 var tpl = db.prepare("SELECT content FROM templates WHERE template_key='notif_suspension'").get();
                 var templateBase = tpl ? tpl.content : 'Hola {client_name}, su servicio ha sido suspendido.';
-                
+
                 svcs.forEach(function(svc) {
                   var msg = templateBase
                     .replace(/{client_name}/g, clientData.nombre || '')
@@ -524,7 +782,7 @@ app.all('/modulo', requireAuth, (req, res) => {
                     .replace(/{company_phone}/g, companyPhone)
                     .replace(/{company_name}/g, companyName)
                     .replace(/{current_date}/g, new Date().toLocaleDateString('es-DO'));
-                  
+
                   // Usar sistema de cola (encola si está desconectado)
                   openwa.encolarMensaje(id, svc.id, clientData.telefono, msg, 'suspension');
                 });
@@ -532,7 +790,7 @@ app.all('/modulo', requireAuth, (req, res) => {
                 console.log('[Suspension] Error notificación:', e.message);
               }
             })();
-            
+
             // Agregar IP a lista de suspendidos en MikroTik
             (async function() {
               try {
@@ -554,7 +812,7 @@ app.all('/modulo', requireAuth, (req, res) => {
                 onus.forEach(function(onu) {
                   if (!onu.smartolt_subdomain || !onu.smartolt_api_key) return;
                   var url = 'https://' + onu.smartolt_subdomain + '.smartolt.com/api/onus/' + onu.sn + '/deactivate';
-                  var headers = { 'X-API-Key': onu.smartolt_api_key, 'Content-Type': 'application/json' };
+                  var headers = { 'X-Token': onu.smartolt_api_key, 'Content-Type': 'application/json' };
                   fetch(url, { method: 'POST', headers: headers }).catch(function() {});
                 });
               } catch(e) {}
@@ -567,7 +825,7 @@ app.all('/modulo', requireAuth, (req, res) => {
                 onus.forEach(function(onu) {
                   if (onu.smartolt_subdomain && onu.smartolt_api_key) {
                     var url = 'https://' + onu.smartolt_subdomain + '.smartolt.com/api/onus/' + onu.sn + '/delete';
-                    var headers = { 'X-API-Key': onu.smartolt_api_key, 'Content-Type': 'application/json' };
+                    var headers = { 'X-Token': onu.smartolt_api_key, 'Content-Type': 'application/json' };
                     fetch(url, { method: 'POST', headers: headers }).catch(function() {});
                   }
                   db.prepare('DELETE FROM onu WHERE id=?').run(onu.onu_id);
@@ -578,14 +836,14 @@ app.all('/modulo', requireAuth, (req, res) => {
             db.prepare('DELETE FROM clientes WHERE id=?').run(id);
           }
         });
-        
+
         return res.json({ success: true, message: ids.length + ' cliente(s) procesados' });
       }
 
       // Load all clients for the template
       data.clientes = db.prepare(`
         SELECT c.*, z.nombre as zona_nombre, COUNT(s.id) as servicios_count
-        FROM clientes c LEFT JOIN zonas z ON z.id=c.zona_id 
+        FROM clientes c LEFT JOIN zonas z ON z.id=c.zona_id
         LEFT JOIN servicios s ON s.cliente_id=c.id
         GROUP BY c.id ORDER BY c.id DESC
       `).all();
@@ -712,7 +970,7 @@ app.all('/modulo', requireAuth, (req, res) => {
         if (!clientId || !serviceIds.length) return res.json({ status: 'error', msg: 'Datos requeridos' });
         const placeholders = serviceIds.map(function(){return '?'}).join(',');
         const invs = db.prepare(`
-          SELECT f.id, f.servicio_id, f.periodo, f.monto as total, 
+          SELECT f.id, f.servicio_id, f.periodo, f.monto as total,
             CASE WHEN julianday('now') > julianday(f.fecha_vencimiento) THEN 'overdue' ELSE 'pending' END as status,
             f.fecha_vencimiento as due_date,
             COALESCE((SELECT SUM(pg.monto) FROM pagos pg WHERE pg.factura_id=f.id),0) as paid_amount,
@@ -747,7 +1005,7 @@ app.all('/modulo', requireAuth, (req, res) => {
         let serviceIds = [];
         try { serviceIds = JSON.parse(req.body.service_ids || '[]'); } catch(e) {}
         if (!clientId || !serviceIds.length || montoPagar <= 0) return res.json({ status: 'error', msg: 'Datos inválidos' });
-        
+
         if (txn) {
           const dup = db.prepare('SELECT COUNT(*) as c FROM pagos WHERE transaccion=?').get(txn);
           if (dup && dup.c > 0) return res.json({ status: 'error', msg: 'Número de transacción ya registrado' });
@@ -808,7 +1066,13 @@ app.all('/modulo', requireAuth, (req, res) => {
         (async function() {
           try { sendPaymentConfirmation(clientId, montoPagar, metodo, paymentIds.length > 0 ? paymentIds[0].factura_id : null); } catch(e) {}
         })();
-        
+
+        // Si el cliente tiene promesa activa, se marca como cumplida
+        var promAct = db.prepare("SELECT id FROM promesas_pago WHERE cliente_id=? AND estado='activa' LIMIT 1").get(clientId);
+        if (promAct) {
+          db.prepare("UPDATE promesas_pago SET estado='cumplida' WHERE id=?").run(promAct.id);
+        }
+
         var msg = 'Pago registrado exitosamente por $' + montoPagar.toFixed(2);
         return res.json({ status: 'success', msg: msg, payment_ids: paymentIds.map(function(p){return p.id;}) });
       }
@@ -864,11 +1128,17 @@ app.all('/modulo', requireAuth, (req, res) => {
             })();
           }
         }
-        
+
         // Enviar confirmación de pago
         (async function() {
           try { sendPaymentConfirmation(clientId, montoPagar, metodo, paymentIds.length > 0 ? paymentIds[0].factura_id : null); } catch(e) {}
         })();
+
+        // Si el cliente tiene promesa activa, se marca como cumplida
+        var promAct2 = db.prepare("SELECT id FROM promesas_pago WHERE cliente_id=? AND estado='activa' LIMIT 1").get(clientId);
+        if (promAct2) {
+          db.prepare("UPDATE promesas_pago SET estado='cumplida' WHERE id=?").run(promAct2.id);
+        }
 
         return res.json({ status: 'success', msg: 'Adelanto registrado por $' + montoPagar.toFixed(2), payment_ids: paymentIds.map(function(p){return p.id;}) });
       }
@@ -888,7 +1158,7 @@ app.all('/modulo', requireAuth, (req, res) => {
         }
         if (dateFrom) { where += ' AND date(p.created_at) >= ?'; params.push(dateFrom); }
         if (dateTo) { where += ' AND date(p.created_at) <= ?'; params.push(dateTo); }
-        
+
         const totalRow = db.prepare(`SELECT COUNT(*) as total FROM pagos p LEFT JOIN clientes c ON c.id=p.cliente_id ${where}`).get(...params);
         const total = totalRow ? totalRow.total : 0;
         const totalPages = Math.ceil(total / perPage) || 1;
@@ -905,6 +1175,48 @@ app.all('/modulo', requireAuth, (req, res) => {
         return res.json({ status: 'success', data: rows, total: total, page: page, totalPages: totalPages });
       }
 
+      break;
+    }
+    case 'GPONManager': {
+      data.clientes = db.prepare("SELECT id, nombre, cedula, telefono FROM clientes WHERE estado='activo' ORDER BY nombre ASC").all();
+      data.olts = db.prepare('SELECT id, nombre, olt_ip, olt_port, olt_username, socks_host FROM olts ORDER BY id').all();
+      break;
+    }
+    case 'SmartoltConfigured': {
+      data.onus = db.prepare('SELECT o.*, c.nombre as cliente_nombre FROM onu o LEFT JOIN clientes c ON c.id=o.cliente_id ORDER BY o.created_at DESC').all();
+      data.olts = db.prepare('SELECT id, nombre FROM olts').all();
+      data.clientes = db.prepare("SELECT id, nombre FROM clientes WHERE estado='activo' ORDER BY nombre").all();
+      data.token = 'ispt-' + Date.now();
+      break;
+    }
+    case 'SmartoltUnconfigured': {
+      data.dbOnus = db.prepare('SELECT o.*, c.nombre as cliente_nombre FROM onu o LEFT JOIN clientes c ON c.id=o.cliente_id WHERE o.cliente_id IS NULL ORDER BY o.created_at DESC').all();
+      data.clientes = db.prepare("SELECT id, nombre FROM clientes WHERE estado='activo' ORDER BY nombre").all();
+      data.token = 'ispt-' + Date.now();
+      break;
+    }
+    case 'SmartoltLocations': {
+      data.zonas = db.prepare('SELECT z.*, (SELECT COUNT(*) FROM servicios s WHERE s.zona_id=z.id) as servicios_count FROM zonas z ORDER BY z.nombre').all();
+      data.cajas = db.prepare('SELECT cn.*, z.nombre as zona_nombre FROM cajas_nap cn LEFT JOIN zonas z ON z.id=cn.zona_id ORDER BY cn.nombre').all();
+      break;
+    }
+    case 'SmartoltOnuTypes': {
+      data.onuTypes = db.prepare("SELECT key, value FROM configuracion WHERE key LIKE 'onu_type_%' ORDER BY key").all();
+      break;
+    }
+    case 'SmartoltSpeedProfiles': {
+      data.planes = db.prepare('SELECT * FROM planes ORDER BY nombre').all();
+      break;
+    }
+    case 'SmartoltSettings': {
+      data.olts = db.prepare('SELECT * FROM olts ORDER BY id').all();
+      data.routers = db.prepare('SELECT * FROM routers ORDER BY name').all();
+      break;
+    }
+    case 'SmartoltDashboard': {
+      // Obtener la primera OLT con SmartOLT configurado
+      var smartOlt = db.prepare("SELECT smartolt_subdomain, smartolt_api_key FROM olts WHERE smartolt_subdomain IS NOT NULL AND smartolt_subdomain != '' AND smartolt_enabled=1 LIMIT 1").get();
+      data.smartoltUrl = smartOlt ? ('https://' + smartOlt.smartolt_subdomain + '.smartolt.com') : 'https://app.smartolt.com';
       break;
     }
     case 'Gpon': {
@@ -1819,7 +2131,7 @@ app.all('/modulo', requireAuth, (req, res) => {
     }
     case 'Proveedores': {
       const ajax = req.query.ajax;
-      
+
       // ==== LIST SUPPLIERS ====
       if (ajax === 'list_suppliers') {
         const search = (req.query.search || '').trim();
@@ -2073,7 +2385,7 @@ app.all('/modulo', requireAuth, (req, res) => {
 
       // Legacy: if no ajax param, just pass data
       data.proveedores = db.prepare(`
-        SELECT p.*, 
+        SELECT p.*,
         (SELECT COUNT(*) FROM facturas_compra WHERE proveedor_id=p.id AND pagado < monto) as facturas_pendientes
         FROM proveedores p ORDER BY p.id DESC
       `).all();
@@ -2091,7 +2403,7 @@ app.all('/modulo', requireAuth, (req, res) => {
       // Primero contar total real (sin LIMIT)
       var countRow = db.prepare("SELECT COUNT(*) as total FROM facturas f WHERE f.estado='pendiente' AND f.monto > COALESCE((SELECT SUM(pg.monto) FROM pagos pg WHERE pg.factura_id=f.id),0)").get();
       data.pendientes_count = countRow ? countRow.total : 0;
-      
+
       data.pendientes = db.prepare(`
         SELECT f.id as factura_id, c.id as cliente_id, c.nombre as cliente_nombre, c.telefono,
           p.nombre as plan_name, f.monto, f.fecha_vencimiento,
@@ -2133,7 +2445,7 @@ app.all('/modulo', requireAuth, (req, res) => {
     case 'PagosAdmin': {
       // AJAX handlers for PagosAdmin
       const ajax = req.query.ajax;
-      
+
       // --- Listar proveedores con deuda pendiente ---
       if (ajax === 'pa_suppliers') {
         const search = (req.query.search || '').trim();
@@ -2159,7 +2471,7 @@ app.all('/modulo', requireAuth, (req, res) => {
         }
         return res.json({ status: 'success', data: rows });
       }
-      
+
       // --- Facturas pendientes de un proveedor ---
       if (ajax === 'pa_invoices') {
         const supId = parseInt(req.query.supplier_id) || 0;
@@ -2175,7 +2487,7 @@ app.all('/modulo', requireAuth, (req, res) => {
         `).all(supId);
         return res.json({ status: 'success', data: invoices });
       }
-      
+
       // --- Pagar factura de proveedor ---
       if (ajax === 'pa_pay_invoice') {
         const invId = parseInt(req.body.invoice_id) || 0;
@@ -2184,24 +2496,24 @@ app.all('/modulo', requireAuth, (req, res) => {
         const reference = (req.body.reference || '').trim();
         const notes = (req.body.notes || '').trim();
         if (!invId || amount <= 0) return res.json({ status: 'error', msg: 'Datos inválidos' });
-        
+
         const inv = db.prepare('SELECT * FROM facturas_compra WHERE id=?').get(invId);
         if (!inv) return res.json({ status: 'error', msg: 'Factura no encontrada' });
-        
+
         const newPaid = parseFloat(inv.pagado) + amount;
         if (newPaid > inv.monto + 0.01) return res.json({ status: 'error', msg: 'El pago excede el monto de la factura' });
-        
+
         db.prepare('UPDATE facturas_compra SET pagado=? WHERE id=?').run(newPaid, invId);
-        
+
         // Register in gastos
         db.prepare(`
           INSERT INTO gastos (concepto, monto, metodo, referencia, notas, tipo, reference_id, usuario_id, categoria, payment_date)
           VALUES (?,?,?,?,?,'proveedor',?,?,'Proveedores',date('now'))
         `).run('Pago a proveedor #' + invId + ' - ' + (inv.concept || ''), amount, method, reference, notes, invId, req.session.user.id);
-        
+
         return res.json({ status: 'success', msg: 'Pago registrado' });
       }
-      
+
       // --- Listar empleados ---
       if (ajax === 'pa_employees') {
         const search = (req.query.search || '').trim();
@@ -2224,7 +2536,7 @@ app.all('/modulo', requireAuth, (req, res) => {
         }
         return res.json({ status: 'success', data: rows });
       }
-      
+
       // --- Detalle de empleado (con historial de pagos) ---
       if (ajax === 'pa_employee_detail' || ajax === 'pa_employee') {
         const empId = parseInt(req.query.id) || 0;
@@ -2237,17 +2549,17 @@ app.all('/modulo', requireAuth, (req, res) => {
           FROM empleados e WHERE e.id=?
         `).get(empId);
         if (!emp) return res.json({ status: 'error', msg: 'Empleado no encontrado' });
-        
+
         // Payment history
         const history = db.prepare(`
           SELECT id, monto as amount, periodo_label, metodo as payment_method, payment_date
           FROM gastos WHERE employee_id=? AND tipo='empleado'
           ORDER BY created_at DESC LIMIT 10
         `).all(empId);
-        
+
         return res.json({ status: 'success', data: emp, history: history });
       }
-      
+
       // --- Pagar empleado ---
       if (ajax === 'pa_pay_employee') {
         const empId = parseInt(req.body.employee_id) || 0;
@@ -2257,15 +2569,15 @@ app.all('/modulo', requireAuth, (req, res) => {
         const reference = (req.body.reference || '').trim();
         const notes = (req.body.notes || '').trim();
         const loanDeduction = parseFloat(req.body.loan_deduction) || 0;
-        
+
         if (!empId || amount <= 0) return res.json({ status: 'error', msg: 'Datos inválidos' });
-        
+
         // Register payment in gastos
         db.prepare(`
           INSERT INTO gastos (concepto, monto, metodo, referencia, notas, tipo, employee_id, usuario_id, periodo_label, categoria, payment_date)
           VALUES (?,?,?,?,?,'empleado',?,?,?,'Empleados',date('now'))
         `).run('Pago a empleado #' + empId, amount, method, reference, notes, empId, req.session.user.id, periodLabel || null);
-        
+
         let loanMsg = '';
         // Handle loan deduction if applicable
         if (loanDeduction > 0) {
@@ -2281,10 +2593,10 @@ app.all('/modulo', requireAuth, (req, res) => {
           }
           loanMsg = 'Se abonaron ' + loanDeduction.toFixed(2) + ' al préstamo';
         }
-        
+
         return res.json({ status: 'success', msg: 'Pago registrado', loan_msg: loanMsg });
       }
-      
+
       // --- Otro pago (gasto general) ---
       if (ajax === 'pa_pay_other') {
         const concept = (req.body.concept || '').trim();
@@ -2292,19 +2604,19 @@ app.all('/modulo', requireAuth, (req, res) => {
         const method = req.body.method || 'Efectivo';
         const reference = (req.body.reference || '').trim();
         const notes = (req.body.notes || '').trim();
-        
+
         if (!concept || amount <= 0) return res.json({ status: 'error', msg: 'Concepto y monto requeridos' });
-        
+
         const categoria = req.body.categoria === 'personal' ? 'Personal' : 'Empresa';
         const paymentDate = req.body.payment_date || new Date().toISOString().split('T')[0];
         db.prepare(`
           INSERT INTO gastos (concepto, monto, metodo, referencia, notas, tipo, usuario_id, categoria, payment_date)
           VALUES (?,?,?,?,?,'otro',?,?,?)
         `).run(concept, amount, method, reference, notes, req.session.user.id, categoria, paymentDate);
-        
+
         return res.json({ status: 'success', msg: 'Gasto registrado' });
       }
-      
+
       // --- Pagos recientes (últimos 20) ---
       if (ajax === 'pa_recent') {
         const rows = db.prepare(`
@@ -2320,13 +2632,13 @@ app.all('/modulo', requireAuth, (req, res) => {
         `).all();
         return res.json({ status: 'success', data: rows });
       }
-      
+
       // --- Eliminar pago ---
       if (ajax === 'pa_delete_payment' || ajax === 'pa_delete') {
         const id = parseInt(req.body.id || req.query.id) || 0;
         const tipo = req.body.tipo || '';
         if (!id) return res.json({ status: 'error', msg: 'ID requerido' });
-        
+
         db.prepare('DELETE FROM gastos WHERE id=?').run(id);
         return res.json({ status: 'success', msg: 'Pago eliminado' });
       }
@@ -2345,7 +2657,7 @@ app.all('/modulo', requireAuth, (req, res) => {
         db.prepare('UPDATE gastos SET concepto=?, monto=?, metodo=?, referencia=?, notas=?, categoria=?, payment_date=? WHERE id=?').run(concept, amount, method, reference, notes, categoria, paymentDate, id);
         return res.json({ status: 'success', msg: 'Gasto actualizado' });
       }
-      
+
       break;
     }
     case 'Estadisticas': {
@@ -2631,13 +2943,54 @@ var mesesEsp = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto
       const cid = parseInt(req.query.id) || 0;
       data.cliente = db.prepare('SELECT c.*, z.nombre as zona_nombre FROM clientes c LEFT JOIN zonas z ON z.id=c.zona_id WHERE c.id=?').get(cid);
       if (!data.cliente) return res.redirect('/modulo?pagina=Clientes');
-      data.servicios = db.prepare('SELECT s.*, p.nombre as plan_nombre, p.precio as plan_precio, z.nombre as zona_nombre FROM servicios s LEFT JOIN planes p ON p.id=s.plan_id LEFT JOIN zonas z ON z.id=s.zona_id WHERE s.cliente_id=? ORDER BY s.id DESC').all(cid);
+      data.servicios = db.prepare('SELECT s.*, p.nombre as plan_nombre, p.precio as plan_precio, z.nombre as zona_nombre, o.sn as onu_sn, o.estado as onu_estado, o.senial as onu_senial FROM servicios s LEFT JOIN planes p ON p.id=s.plan_id LEFT JOIN zonas z ON z.id=s.zona_id LEFT JOIN onu o ON o.servicio_id=s.id WHERE s.cliente_id=? ORDER BY s.id DESC').all(cid);
       // Agregar información de deuda por servicio
       data.servicios.forEach(function(s) {
         var deuda = db.prepare("SELECT COALESCE(SUM(f.monto - COALESCE((SELECT SUM(pg.monto) FROM pagos pg WHERE pg.factura_id=f.id),0)),0) as total FROM facturas f WHERE f.servicio_id=? AND f.estado='pendiente'").get(s.id);
         s.deuda_total = deuda ? deuda.total : 0;
         s.al_dia = (s.deuda_total <= 0);
       });
+      // Total ganado con este cliente (suma de facturas pagadas)
+      var totalGanado = db.prepare("SELECT COALESCE(SUM(f.monto),0) as total FROM facturas f JOIN servicios s ON s.id=f.servicio_id WHERE s.cliente_id=? AND f.estado='pagada'").get(cid);
+      data.total_ganado = totalGanado ? totalGanado.total : 0;
+
+      // Facturas pagadas con detalle de días de atraso (desde suspend_day)
+      data.facturas_pagadas = db.prepare(`
+        SELECT f.id, f.servicio_id, f.periodo, f.monto, f.fecha_vencimiento,
+          COALESCE((SELECT p.created_at FROM pagos p WHERE p.factura_id=f.id ORDER BY p.id ASC LIMIT 1), f.fecha_vencimiento) as fecha_pago,
+          COALESCE(bc.suspend_day, 4) as suspend_day,
+          COALESCE(bc.payment_day, 30) as payment_day
+        FROM facturas f
+        JOIN servicios s ON s.id=f.servicio_id
+        LEFT JOIN billing_cycles bc ON bc.id = COALESCE(s.ciclo_id, 1)
+        WHERE s.cliente_id=? AND f.estado='pagada'
+        ORDER BY f.id ASC
+      `).all(cid);
+
+      // Calcular días de atraso para cada factura pagada
+      data.facturas_pagadas.forEach(function(f) {
+        try {
+          var pagoDate = new Date(f.fecha_pago);
+          var vencDate = new Date(f.fecha_vencimiento);
+          var sd = f.suspend_day || 4;
+
+          // Determinar el mes del suspend_day (siguiente mes si suspend_day <= payment_day)
+          var susMonth = new Date(vencDate);
+          if (sd <= (f.payment_day || 30)) {
+            susMonth.setMonth(susMonth.getMonth() + 1);
+          }
+          susMonth.setDate(sd);
+
+          // Días de atraso = días desde suspend_day hasta pago
+          var diffDays = Math.round((pagoDate - susMonth) / (1000 * 60 * 60 * 24));
+          f.dias_atraso = diffDays > 0 ? diffDays : 0;
+          f.fecha_corte = susMonth.toISOString().split('T')[0];
+        } catch(e) {
+          f.dias_atraso = 0;
+          f.fecha_corte = '';
+        }
+      });
+
       data.facturas = db.prepare('SELECT f.* FROM facturas f JOIN servicios s ON s.id=f.servicio_id WHERE s.cliente_id=? ORDER BY f.id DESC LIMIT 20').all(cid);
       data.pagos = db.prepare('SELECT p.* FROM pagos p WHERE p.cliente_id=? ORDER BY p.id DESC LIMIT 20').all(cid);
       data.ordenes = db.prepare('SELECT o.*, e.nombre as tecnico_nombre FROM ordenes o LEFT JOIN empleados e ON e.id=o.tecnico_id WHERE o.cliente_id=? ORDER BY o.id DESC LIMIT 10').all(cid);
@@ -2952,7 +3305,7 @@ var mesesEsp = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto
     }
     case 'Plantillas': {
       var plantAjax = req.query.ajax;
-      
+
       // AJAX: get_logo
       if (plantAjax === 'get_logo') {
         var ld = db.prepare("SELECT value FROM configuracion WHERE key='logo_data'").get();
@@ -2963,7 +3316,7 @@ var mesesEsp = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto
         }
         return res.json({ status: 'success', logo: null });
       }
-      
+
       // AJAX: save_template
       if (plantAjax === 'save_template') {
         const { template_key, content } = req.body;
@@ -2976,7 +3329,7 @@ var mesesEsp = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto
         }
         return res.json({ status: 'success', msg: 'Plantilla guardada' });
       }
-      
+
       // AJAX: reset_template
       if (plantAjax === 'reset_template') {
         const key = req.body.template_key;
@@ -2986,7 +3339,7 @@ var mesesEsp = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto
         }
         return res.json({ status: 'error', msg: 'No hay contenido original' });
       }
-      
+
       // AJAX: upload_logo
       if (plantAjax === 'upload_logo') {
         if (req.body.logo) {
@@ -2995,7 +3348,7 @@ var mesesEsp = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto
         }
         return res.json({ status: 'error', msg: 'No se recibió logo' });
       }
-      
+
       // AJAX: save_logo_size
       if (plantAjax === 'save_logo_size') {
         const w = req.body.logo_width || '120';
@@ -3004,7 +3357,7 @@ var mesesEsp = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto
         db.prepare("INSERT OR REPLACE INTO configuracion (key, value) VALUES ('logo_height', ?)").run(String(h));
         return res.json({ status: 'success', msg: 'Tamaño guardado' });
       }
-      
+
       // AJAX: delete_logo
       if (plantAjax === 'delete_logo') {
         db.prepare("DELETE FROM configuracion WHERE key='logo_data'").run();
@@ -3012,7 +3365,7 @@ var mesesEsp = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto
         db.prepare("DELETE FROM configuracion WHERE key='logo_height'").run();
         return res.json({ status: 'success', msg: 'Logo eliminado' });
       }
-      
+
       // Load templates data for the page render
       const templatesRows = db.prepare('SELECT * FROM templates').all();
       var templatesData = {};
@@ -3088,19 +3441,20 @@ var mesesEsp = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto
         }
         const svcIds = JSON.stringify(typeof services === 'string' ? JSON.parse(services) : services);
         db.prepare('INSERT INTO promesas_pago (cliente_id, servicio_ids, fecha_limite, notas, estado, usuario_id) VALUES (?,?,?,?,?,?)').run(client_id, svcIds, due_date, notes || '', 'activa', req.session.user.id);
-        
-        // Enviar notificación de reactivación por promesa
+
+        // Reactivar servicios suspendidos
         (async function() {
           try {
             var svcIdList = [];
             try { svcIdList = JSON.parse(svcIds); } catch(e) {}
             svcIdList.forEach(function(sid) {
+              db.prepare("UPDATE servicios SET estado='activo' WHERE id=? AND estado='suspendido'").run(sid);
               sendReactivationNotification(client_id, sid, due_date);
             });
           } catch(e) {}
         })();
-        
-        return res.json({ status: 'success', msg: 'Promesa creada correctamente' });
+
+        return res.json({ status: 'success', msg: 'Promesa creada correctamente. Servicios reactivados.' });
       }
       if (ajax === 'cancel') {
         const id = parseInt(req.body.id) || 0;
@@ -3246,11 +3600,11 @@ var mesesEsp = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto
       if (ajax === 'get_pendientes_cuadre') {
         var usuario = req.query.usuario || '';
         if (!usuario) return res.json({ status: 'error', msg: 'Usuario requerido' });
-        
+
         // Encontrar el último cuadre de este usuario
         var ultimo = db.prepare("SELECT MAX(fecha_hasta) as ultima_fecha FROM cuadre_caja WHERE usuario_nombre=? AND fecha_hasta IS NOT NULL").get(usuario);
         var fechaDesde = ultimo && ultimo.ultima_fecha ? ultimo.ultima_fecha : '1970-01-01';
-        
+
         // Obtener pagos NO cuadrados de este usuario (cobrador)
         // Usamos el nombre del empleado/sistema que coincide con el usuario del cuadre
         var pagos = db.prepare(`
@@ -3260,7 +3614,7 @@ var mesesEsp = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto
           WHERE p.cuadrado=0 AND p.created_at > ?
           ORDER BY p.created_at ASC
         `).all(fechaDesde);
-        
+
         var desglose = {};
         var total = 0;
         pagos.forEach(function(p) {
@@ -3270,7 +3624,7 @@ var mesesEsp = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto
           desglose[met].total += parseFloat(p.monto || 0);
           total += parseFloat(p.monto || 0);
         });
-        
+
         return res.json({
           status: 'success',
           data: {
@@ -3288,15 +3642,15 @@ var mesesEsp = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto
         if (req.method !== 'POST') return res.status(405).json({ error: 'POST required' });
         var usuario = req.body.usuario || '';
         if (!usuario) return res.json({ status: 'error', msg: 'Usuario requerido' });
-        
+
         // Get pending payments
         var ultimo = db.prepare("SELECT MAX(fecha_hasta) as ultima_fecha FROM cuadre_caja WHERE usuario_nombre=? AND fecha_hasta IS NOT NULL").get(usuario);
         var fechaDesde = ultimo && ultimo.ultima_fecha ? ultimo.ultima_fecha : '1970-01-01';
         var ahora = new Date().toISOString();
-        
+
         var pagos = db.prepare("SELECT p.*, c.nombre as cliente_nombre FROM pagos p LEFT JOIN clientes c ON c.id=p.cliente_id WHERE p.cuadrado=0 AND p.created_at > ? ORDER BY p.created_at ASC").all(fechaDesde);
         if (pagos.length === 0) return res.json({ status: 'error', msg: 'No hay pagos pendientes de cuadrar' });
-        
+
         var total = 0;
         var detalles = [];
         var metodos = {};
@@ -3312,15 +3666,15 @@ var mesesEsp = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto
           metodos[met].cantidad++;
           metodos[met].total += m;
         });
-        
+
         var r = db.prepare("INSERT INTO cuadre_caja (usuario_nombre, fecha, fecha_desde, fecha_hasta, total_pagos, pagos_count, detalles_json, total_metodos_json) VALUES (?,?,?,?,?,?,?,?)").run(usuario, ahora.slice(0,10), fechaDesde, ahora, total, pagos.length, JSON.stringify(detalles), JSON.stringify(metodos));
         var cuadreId = r.lastInsertRowid;
-        
+
         // Mark payments as cuadrado
         pagos.forEach(function(p) {
           db.prepare("UPDATE pagos SET cuadrado=1, cuadre_id=? WHERE id=?").run(cuadreId, p.id);
         });
-        
+
         return res.json({ status: 'success', msg: 'Cuadre realizado', cuadre_id: cuadreId, total: total, cantidad: pagos.length, detalles: detalles, metodos: metodos, desde: fechaDesde, hasta: ahora });
       }
 
@@ -3339,13 +3693,13 @@ var mesesEsp = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto
     case 'Configuracion': break;
     case 'Actualizaciones': {
       const ajax = req.query.ajax;
-      
+
       // --- Obtener versión actual ---
       if (ajax === 'check_update') {
         const versionRow = db.prepare("SELECT value FROM configuracion WHERE key='version'").get();
         const currentVersion = versionRow ? versionRow.value : '1.0.0';
-        
-        // En modo informativo, no hay updates reales — solo reportar que está actualizado
+
+        // En modo informativo, no hay updates reales - solo reportar que está actualizado
         return res.json({
           status: 'success',
           data: {
@@ -3356,7 +3710,7 @@ var mesesEsp = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto
           }
         });
       }
-      
+
       // --- Changelog / historial de cambios ---
       if (ajax === 'changelog') {
         const changelog = [
@@ -3364,7 +3718,7 @@ var mesesEsp = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto
         ];
         return res.json({ status: 'success', data: changelog });
       }
-      
+
       // Pasar versión actual a la vista
       const versionRow = db.prepare("SELECT value FROM configuracion WHERE key='version'").get();
       data.version = versionRow ? versionRow.value : '1.0.0';
@@ -3384,7 +3738,7 @@ var mesesEsp = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto
     }
     case 'Cron': {
       const cronAjax = req.query.ajax;
-      
+
       if (cronAjax === 'save_task') {
         const task = req.body.task_name;
         const enabled = req.body.enabled ? 1 : 0;
@@ -3393,35 +3747,35 @@ var mesesEsp = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto
         db.prepare('UPDATE cron_tasks SET enabled=?, hour=?, minute=? WHERE task_name=?').run(enabled, hour, minute, task);
         return res.json({ status: 'success' });
       }
-      
+
       if (cronAjax === 'run_task') {
         const task = req.body.task || req.query.task;
         if (!task) return res.json({ status: 'error', msg: 'Task requerida' });
-        
+
         if (task === 'recordatorios') {
           enviarRecordatoriosWA(req, res);
           return;
         }
-        
+
         if (task === 'suspension') {
           enviarNotifSuspensionWA(req, res);
           return;
         }
-        
+
         if (task === 'generar_facturas') {
-          var output = ejecutarGenerarFacturas();
+          var output = ejecutarGenerarFacturas(req.body.ciclo_id || null);
           db.prepare("UPDATE cron_tasks SET last_run=datetime('now','localtime'), last_status=?, last_output=? WHERE task_name=?").run('ok', output, 'generar_facturas');
           return res.json({ status: 'success', data: { output: output } });
         }
-        
+
         if (task === 'expirar_promesas') {
           ejecutarExpirarPromesas(req, res);
           return;
         }
-        
+
         return res.json({ status: 'success', msg: 'Tarea ejecutada' });
       }
-      
+
       if (cronAjax === 'get_log') {
         const task = req.query.task || '';
         const row = db.prepare('SELECT * FROM cron_tasks WHERE task_name=?').get(task);
@@ -3430,8 +3784,9 @@ var mesesEsp = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto
         }
         return res.json({ status: 'error', msg: 'No encontrada' });
       }
-      
+
       data.tasks = db.prepare('SELECT * FROM cron_tasks ORDER BY id').all();
+      data.ciclos = db.prepare('SELECT * FROM billing_cycles ORDER BY id').all();
       break;
     }
     case 'Log': {
@@ -3473,7 +3828,7 @@ var mesesEsp = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto
     case 'Mensajeria': {
       const ajax = req.query.ajax;
       const isTenant = req.session && req.session.isTenant;
-      
+
       // WhatsApp status
       if (ajax === 'wa_status') {
         if (isTenant) {
@@ -3506,7 +3861,7 @@ var mesesEsp = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto
           return res.json({ status: 'success', data: { status: 'disconnected' } });
         }
       }
-      
+
       // WhatsApp disconnect
       if (ajax === 'wa_disconnect') {
         if (isTenant) {
@@ -3525,7 +3880,7 @@ var mesesEsp = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto
         }
         return;
       }
-      
+
       // WhatsApp restart (generate QR)
       if (ajax === 'wa_restart') {
         if (isTenant) {
@@ -3555,14 +3910,14 @@ var mesesEsp = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto
         }
         return;
       }
-      
+
       // WhatsApp send message
       if (ajax === 'wa_send') {
         if (req.method !== 'POST') return res.json({ status: 'error', msg: 'POST required' });
         var phone = req.body.phone || '';
         var message = req.body.message || '';
         if (!phone || !message) return res.json({ status: 'error', msg: 'Teléfono y mensaje requeridos' });
-        
+
         if (isTenant) {
           var openwaM = require('./openwa-multi');
           openwaM.sendMessage(req.session, phone, message).then(function(r) {
@@ -3582,7 +3937,7 @@ var mesesEsp = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto
         }
         return;
       }
-      
+
       // Gateway API - list
       if (ajax === 'list_gateways') {
         try {
@@ -3591,7 +3946,7 @@ var mesesEsp = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto
           return res.json({ status: 'success', data: gateways });
         } catch(e) { return res.json({ status: 'error', msg: e.message }); }
       }
-      
+
       // Gateway API - save
       if (ajax === 'save_gateway') {
         if (req.method !== 'POST') return res.json({ status: 'error', msg: 'POST required' });
@@ -3601,11 +3956,11 @@ var mesesEsp = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto
         var gUrl = (req.body.url || '').trim();
         var gParams = (req.body.params || '').trim();
         var gEncrypted = req.body.encrypted === '1' ? 1 : 0;
-        
+
         if (!gName || !gProvider || !gUrl) return res.json({ status: 'error', msg: 'Nombre, proveedor y URL son obligatorios' });
-        
+
         db.exec("CREATE TABLE IF NOT EXISTS api_whatsapp_gateways (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, provider TEXT, url TEXT, params TEXT, encrypted INTEGER DEFAULT 0, activo INTEGER DEFAULT 1, created_at DATETIME DEFAULT CURRENT_TIMESTAMP)");
-        
+
         if (gId) {
           db.prepare('UPDATE api_whatsapp_gateways SET name=?, provider=?, url=?, params=?, encrypted=? WHERE id=?').run(gName, gProvider, gUrl, gParams, gEncrypted, gId);
         } else {
@@ -3613,7 +3968,7 @@ var mesesEsp = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto
         }
         return res.json({ status: 'success', msg: gId ? 'Gateway actualizado' : 'Gateway creado' });
       }
-      
+
       // Gateway API - delete
       if (ajax === 'delete_gateway') {
         if (req.method !== 'POST') return res.json({ status: 'error', msg: 'POST required' });
@@ -3621,13 +3976,13 @@ var mesesEsp = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto
         if (delId) { db.prepare('DELETE FROM api_whatsapp_gateways WHERE id=?').run(delId); }
         return res.json({ status: 'success' });
       }
-      
+
       // Gateway API - test
       if (ajax === 'test_gateway') {
         if (req.method !== 'POST') return res.json({ status: 'error', msg: 'POST required' });
         return res.json({ status: 'success', msg: 'Prueba enviada (simulado)' });
       }
-      
+
       // Message logs
       if (ajax === 'get_log') {
         try {
@@ -3639,7 +3994,7 @@ var mesesEsp = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto
           return res.json({ status: 'success', rows: logs, total: totalLogs, pages: Math.ceil(totalLogs / logPerPage), page: logPage });
         } catch(e) { return res.json({ status: 'error', msg: e.message, rows: [], total: 0, pages: 0, page: 1 }); }
       }
-      
+
       // Bulk messaging filters
       if (ajax === 'masivos_filters') {
         try {
@@ -3648,7 +4003,7 @@ var mesesEsp = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto
           return res.json({ status: 'success', zonas: zonasList, planes: planesList });
         } catch(e) { return res.json({ status: 'error', msg: e.message }); }
       }
-      
+
       // Bulk messaging preview
       if (ajax === 'masivos_preview') {
         if (req.method !== 'POST') return res.json({ status: 'error', msg: 'POST required' });
@@ -3660,17 +4015,17 @@ var mesesEsp = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto
           var where = 'WHERE 1=1';
           var params = [];
           if (zonaFilter) { where += ' AND zona_id=?'; params.push(zonaFilter); }
-          if (planFilter) { where += ' AND id IN (SELECT cliente_id FROM servicios WHERE plan_id=? AND activo=1)'; params.push(planFilter); }
+          if (planFilter) { where += ' AND id IN (SELECT cliente_id FROM servicios WHERE plan_id=? )'; params.push(planFilter); }
           if (clientFilter) { where += ' AND (nombre LIKE ? OR telefono LIKE ?)'; var like = '%' + clientFilter + '%'; params.push(like, like); }
-          if (statusFilter) { 
-            if (statusFilter === 'activos') where += ' AND activo=1';
+          if (statusFilter) {
+            if (statusFilter === 'activos') where += ' ';
             else if (statusFilter === 'suspendidos') where += ' AND activo=0';
           }
           var clientes = db.prepare('SELECT id, nombre, telefono FROM clientes ' + where + ' ORDER BY nombre').all(params);
           return res.json({ status: 'success', total: clientes.length, data: clientes });
         } catch(e) { return res.json({ status: 'error', msg: e.message }); }
       }
-      
+
       // Bulk messaging search client
       if (ajax === 'masivos_search_client') {
         var q = (req.query.q || '').trim();
@@ -3679,7 +4034,7 @@ var mesesEsp = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto
         var resultados = db.prepare("SELECT id, nombre, telefono FROM clientes WHERE nombre LIKE ? OR telefono LIKE ? LIMIT 20").all(like, like);
         return res.json({ status: 'success', data: resultados });
       }
-      
+
       // Bulk messaging send
       if (ajax === 'masivos_send') {
         if (req.method !== 'POST') return res.json({ status: 'error', msg: 'POST required' });
@@ -3699,7 +4054,7 @@ var mesesEsp = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto
           return res.json({ status: 'success', msg: sent + ' mensajes encolados' });
         } catch(e) { return res.json({ status: 'error', msg: e.message }); }
       }
-      
+
       // Default: render the page
       data.messageLogs = [];
       try { data.messageLogs = db.prepare('SELECT * FROM message_logs ORDER BY created_at DESC LIMIT 25').all(); } catch(e) {}
@@ -3707,8 +4062,14 @@ var mesesEsp = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto
     }
 
   }
-  
-  renderPage(req, res, pagina, data);
+
+  // SmartOLT modules se renderizan sin layout (standalone)
+  var smartoltModules = ['GPONManager', 'SmartoltConfigured', 'SmartoltUnconfigured', 'SmartoltLocations', 'SmartoltOnuTypes', 'SmartoltSpeedProfiles', 'SmartoltSettings', 'SmartoltDashboard'];
+  if (smartoltModules.indexOf(pagina) !== -1) {
+    res.render('pages/' + pagina, { ...data, user: req.session.user });
+  } else {
+    renderPage(req, res, pagina, data);
+  }
   // Cleanup tenant DB pointer after request completes
   _tenantDbGlobal = null;
   global.__tenantDbForLogs = null;
@@ -3719,7 +4080,7 @@ var mesesEsp = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto
 // Función: enviar recordatorios de pago via WhatsApp (15s entre mensajes)
 function enviarRecordatoriosWA(req, res) {
   var openwa = require('./openwa-service');
-  
+
   // Obtener facturas pendientes con datos de clientes
   var pendientes = db.prepare(`
     SELECT f.id as factura_id, c.id as cliente_id, c.nombre as cliente_nombre, c.telefono,
@@ -3733,19 +4094,24 @@ function enviarRecordatoriosWA(req, res) {
     GROUP BY f.id
     LIMIT 50
   `).all();
-  
+
   if (pendientes.length === 0) {
     db.prepare("UPDATE cron_tasks SET last_run=datetime('now','localtime'), last_status='ok', last_output=? WHERE task_name='recordatorios'").run('No hay facturas pendientes');
     return res.json({ status: 'success', data: { output: 'No hay facturas pendientes' } });
   }
-  
+
+  // Cargar config de empresa
+  var config = {};
+  var cr = db.prepare("SELECT key, value FROM configuracion WHERE key IN ('empresa_nombre','empresa_telefono')").all();
+  cr.forEach(function(r) { config[r.key] = r.value || ''; });
+
   // Obtener plantilla
   var tpl = db.prepare("SELECT content FROM templates WHERE template_key='recordatorio_sms'").get();
   var template = tpl ? tpl.content : 'Hola {client_name}, tienes un pago pendiente de {invoice_remaining}. Paga al {company_phone}';
-  
+
   var output = 'Iniciando envio de ' + pendientes.length + ' recordatorios...\n';
   var success = 0, errors = 0;
-  
+
   // Enviar mensajes secuencialmente con delay de 15s
   function enviarSiguiente(i) {
     if (i >= pendientes.length) {
@@ -3753,16 +4119,16 @@ function enviarRecordatoriosWA(req, res) {
       db.prepare("UPDATE cron_tasks SET last_run=datetime('now','localtime'), last_status=?, last_output=? WHERE task_name='recordatorios'").run(errors === 0 ? 'ok' : 'error', finalOutput);
       return res.json({ status: 'success', data: { output: finalOutput } });
     }
-    
+
     var p = pendientes[i];
     var remaining = parseFloat(p.monto) - parseFloat(p.pagado || 0);
-    
+
     if (remaining <= 0 || !p.telefono) {
       output += '[' + (i+1) + '/' + pendientes.length + '] ' + p.cliente_nombre + ': sin telefono o sin deuda\n';
       setTimeout(function() { enviarSiguiente(i + 1); }, 100);
       return;
     }
-    
+
     var msg = template
       .replace(/{client_name}/g, p.cliente_nombre || '')
       .replace(/{plan_name}/g, p.plan_name || '')
@@ -3770,9 +4136,9 @@ function enviarRecordatoriosWA(req, res) {
       .replace(/{invoice_remaining}/g, '$' + remaining.toFixed(2))
       .replace(/{invoice_due_date}/g, p.fecha_vencimiento || '')
       .replace(/{invoice_total}/g, '$' + parseFloat(p.monto).toFixed(2))
-      .replace(/{company_phone}/g, '8092470033')
-      .replace(/{company_name}/g, 'Joel Wifi Dominicana');
-    
+      .replace(/{company_phone}/g, config.empresa_telefono || '8092470033')
+      .replace(/{company_name}/g, config.empresa_nombre || 'Joel Wifi Dominicana');
+
     openwa.sendMessage(p.telefono, msg).then(function(result) {
       if (result.success) {
         success++;
@@ -3788,69 +4154,90 @@ function enviarRecordatoriosWA(req, res) {
       setTimeout(function() { enviarSiguiente(i + 1); }, 15000);
     });
   }
-  
+
   enviarSiguiente(0);
 }
 
 // Función: enviar notificaciones de suspensión via WhatsApp
 function enviarNotifSuspensionWA(req, res) {
   var openwa = require('./openwa-service');
-  
+
   // Obtener config de empresa
   var configRows = db.prepare("SELECT key, value FROM configuracion WHERE key IN ('empresa_nombre','empresa_telefono')").all();
   var config = { empresa_nombre: '', empresa_telefono: '' };
   configRows.forEach(function(r) { config[r.key] = r.value || ''; });
-  
+
+  // Usar fecha simulada si está configurada
+  var sd = getCurrentServerDate();
+  var fechaRef = sd.overridden ? "'" + sd.current_date_only + "'" : "date('now')";
+
   // Clientes con facturas vencidas que tienen servicios activos
+  // Excluye clientes con promesa de pago activa con fecha limite no vencida
   var pendientes = db.prepare(`
     SELECT DISTINCT c.id as cliente_id, c.nombre as cliente_nombre, c.telefono
     FROM facturas f
     JOIN servicios s ON s.id=f.servicio_id
     JOIN clientes c ON c.id=s.cliente_id
+    LEFT JOIN billing_cycles bc ON bc.id = COALESCE(s.ciclo_id, (SELECT id FROM billing_cycles WHERE is_default=1 LIMIT 1))
     WHERE f.estado='pendiente' AND s.estado='activo'
-      AND julianday('now') > julianday(f.fecha_vencimiento) + 5
+      AND (
+        -- CASO 1: suspend_day > payment_day → corte en el MISMO mes
+        (bc.suspend_day > COALESCE(bc.payment_day, bc.invoice_day)
+         AND CAST(strftime('%d', ` + fechaRef + `) AS INTEGER) >= bc.suspend_day
+         AND julianday(` + fechaRef + `) > julianday(f.fecha_vencimiento))
+        OR
+        -- CASO 2: suspend_day <= payment_day → corte en el MES SIGUIENTE
+        (bc.suspend_day <= COALESCE(bc.payment_day, bc.invoice_day)
+         AND strftime('%Y-%m', ` + fechaRef + `) > strftime('%Y-%m', f.fecha_vencimiento)
+         AND CAST(strftime('%d', ` + fechaRef + `) AS INTEGER) >= bc.suspend_day)
+      )
       AND f.monto > COALESCE((SELECT SUM(pg.monto) FROM pagos pg WHERE pg.factura_id=f.id),0)
+      AND c.id NOT IN (
+        SELECT cliente_id FROM promesas_pago
+        WHERE estado = 'activa'
+          AND fecha_limite >= ` + fechaRef + `
+      )
     GROUP BY c.id
     LIMIT 30
   `).all();
-  
+
   if (pendientes.length === 0) {
     db.prepare("UPDATE cron_tasks SET last_run=datetime('now','localtime'), last_status='ok', last_output=? WHERE task_name='suspension'").run('No hay clientes para suspender');
     return res.json({ status: 'success', data: { output: 'No hay clientes para suspender' } });
   }
-  
+
   var tpl = db.prepare("SELECT content FROM templates WHERE template_key='notif_suspension'").get();
   var templateBase = tpl ? tpl.content : 'Hola {client_name}, su servicio ha sido suspendido.';
-  
+
   var output = 'Iniciando suspension de ' + pendientes.length + ' clientes...\n';
   var success = 0, errors = 0;
-  
+
   function procesarSiguiente(i) {
     if (i >= pendientes.length) {
       var finalOutput = output + '\nSuspendidos: ' + success + ', Errores: ' + errors;
       db.prepare("UPDATE cron_tasks SET last_run=datetime('now','localtime'), last_status=?, last_output=? WHERE task_name='suspension'").run(errors === 0 ? 'ok' : 'error', finalOutput);
       return res.json({ status: 'success', data: { output: finalOutput } });
     }
-    
+
     var p = pendientes[i];
-    
+
     if (!p.telefono) {
       output += '[' + (i+1) + '/' + pendientes.length + '] ' + p.cliente_nombre + ': sin teléfono\n';
       setTimeout(function() { procesarSiguiente(i + 1); }, 100);
       return;
     }
-    
+
     try {
       // 1. Suspender servicios del cliente
       db.prepare("UPDATE servicios SET estado='suspendido' WHERE cliente_id=? AND estado='activo'").run(p.cliente_id);
-      
+
       // 2. Obtener info de los servicios suspendidos
       var svcs = db.prepare('SELECT s.id, s.direccion, p.nombre as plan_nombre FROM servicios s LEFT JOIN planes p ON p.id=s.plan_id WHERE s.cliente_id=? AND s.estado=?').all(p.cliente_id, 'suspendido');
-      
+
       // 3. Obtener deuda total
       var deudaRow = db.prepare("SELECT COALESCE(SUM(f.monto - COALESCE((SELECT SUM(pg.monto) FROM pagos pg WHERE pg.factura_id=f.id),0)),0) as total FROM facturas f WHERE f.servicio_id IN (SELECT s2.id FROM servicios s2 WHERE s2.cliente_id=?) AND f.estado='pendiente'").get(p.cliente_id);
       var deudaTotal = deudaRow ? deudaRow.total : 0;
-      
+
       // 4. Enviar notificación
       svcs.forEach(function(svc) {
         var msg = templateBase
@@ -3861,32 +4248,130 @@ function enviarNotifSuspensionWA(req, res) {
           .replace(/{company_phone}/g, config.empresa_telefono)
           .replace(/{company_name}/g, config.empresa_nombre)
           .replace(/{current_date}/g, new Date().toLocaleDateString('es-DO'));
-        
+
         openwa.encolarMensaje(p.cliente_id, svc.id, p.telefono, msg, 'suspension');
       });
-      
+
       success++;
       output += '[' + (i+1) + '/' + pendientes.length + '] ' + p.cliente_nombre + ': suspendido y notificado\n';
     } catch(e) {
       errors++;
       output += '[' + (i+1) + '/' + pendientes.length + '] ' + p.cliente_nombre + ': ERROR - ' + e.message + '\n';
     }
-    
+
     setTimeout(function() { procesarSiguiente(i + 1); }, 2000);
   }
-  
+
   procesarSiguiente(0);
 }
 
-function ejecutarGenerarFacturas() {
+function ejecutarGenerarFacturas(cicloIdFilter) {
   var lines = [];
+  var ts = new Date().toLocaleString();
   lines.push('============================================================');
-  lines.push('[' + new Date().toLocaleString() + '] CRON GENERAR FACTURAS - START');
+  lines.push('[' + ts + '] CRON GENERAR FACTURAS - START');
   lines.push('============================================================');
-  lines.push('Ejecutando generacion...');
-  lines.push('No implementado - requiere logica de ciclos');
+
+  try {
+    // Usar fecha efectiva (simulada o real)
+    var sd = getCurrentServerDate();
+    var nowDate = sd.overridden ? new Date(sd.current_date_only + 'T12:00:00') : new Date();
+    var todayDay = nowDate.getDate();
+    var periodo = nowDate.getFullYear() + '-' + String(nowDate.getMonth() + 1).padStart(2, '0');
+    var fechaEmision = nowDate.toISOString().split('T')[0];
+
+    // Vencimiento: 30 dias despues
+    var venc = new Date(nowDate);
+    venc.setDate(venc.getDate() + 30);
+    var fechaVenc = venc.toISOString().split('T')[0];
+
+    lines.push('Fecha efectiva: ' + fechaEmision + ' (dia ' + todayDay + ')');
+    lines.push('Periodo: ' + periodo);
+    lines.push('');
+
+    // Obtener ciclos de facturacion
+    var ciclos = db.prepare('SELECT * FROM billing_cycles ORDER BY id').all();
+
+    if (!ciclos.length) {
+      lines.push('⚠ No hay ciclos de facturación configurados');
+      lines.push('   Ve a Configuración > Facturación para crear uno');
+    } else {
+      var totalCreadas = 0;
+      var totalSaltadas = 0;
+      var totalErrores = 0;
+
+      ciclos.forEach(function(ciclo) {
+        // Si hay filtro de ciclo, solo procesar ese
+        if (cicloIdFilter && cicloIdFilter != -1 && ciclo.id != cicloIdFilter) return;
+
+        var cicloName = ciclo.name || 'Ciclo #' + ciclo.id;
+        lines.push('--- ' + cicloName + ' ---');
+
+        // Verificar si hoy es el dia de facturacion
+        if (todayDay !== ciclo.invoice_day) {
+          lines.push('  ⏭ Día de facturación: ' + ciclo.invoice_day + ' (hoy es ' + todayDay + ') - saltado');
+          return;
+        }
+
+        lines.push('  ✓ Día de facturación coincide (' + ciclo.invoice_day + ')');
+
+        // Obtener servicios activos de este ciclo
+        var servicios = [];
+        if (cicloIdFilter && cicloIdFilter != -1) {
+          servicios = db.prepare("SELECT s.id, s.cliente_id, p.nombre as plan_nombre, p.precio as plan_precio, c.nombre as cliente_nombre FROM servicios s LEFT JOIN planes p ON p.id=s.plan_id LEFT JOIN clientes c ON c.id=s.cliente_id WHERE s.estado='activo' AND s.ciclo_id=?").all(ciclo.id);
+        } else {
+          servicios = db.prepare("SELECT s.id, s.cliente_id, p.nombre as plan_nombre, p.precio as plan_precio, c.nombre as cliente_nombre FROM servicios s LEFT JOIN planes p ON p.id=s.plan_id LEFT JOIN clientes c ON c.id=s.cliente_id WHERE s.estado='activo' AND (s.ciclo_id=? OR s.ciclo_id IS NULL)").all(ciclo.id);
+        }
+
+        if (!servicios.length) {
+          lines.push('  Sin servicios activos en este ciclo');
+          return;
+        }
+
+        var cicloCreadas = 0;
+        var cicloSaltadas = 0;
+        var cicloErrores = 0;
+
+        servicios.forEach(function(svc) {
+          try {
+            var precio = parseFloat(svc.plan_precio || 0);
+            if (precio <= 0) {
+              cicloSaltadas++;
+              return;
+            }
+
+            // Verificar si ya existe factura para este periodo
+            var existing = db.prepare('SELECT id FROM facturas WHERE servicio_id=? AND periodo=?').get(svc.id, periodo);
+            if (existing) {
+              cicloSaltadas++;
+              return;
+            }
+
+            // Crear factura
+            db.prepare('INSERT INTO facturas (servicio_id, periodo, monto, estado, fecha_emision, fecha_vencimiento) VALUES (?,?,?,\'pendiente\',?,?)').run(svc.id, periodo, precio, fechaEmision, fechaVenc);
+            cicloCreadas++;
+          } catch(e) {
+            cicloErrores++;
+          }
+        });
+
+        lines.push('  Creadas: ' + cicloCreadas + ' | Ya existían: ' + cicloSaltadas + ' | Errores: ' + cicloErrores + ' (de ' + servicios.length + ' servicios)');
+        totalCreadas += cicloCreadas;
+        totalSaltadas += cicloSaltadas;
+        totalErrores += cicloErrores;
+      });
+
+      lines.push('');
+      lines.push('============================================================');
+      lines.push('RESUMEN: ' + totalCreadas + ' facturas creadas, ' + totalSaltadas + ' saltadas, ' + totalErrores + ' errores');
+    }
+  } catch(e) {
+    lines.push('');
+    lines.push('❌ ERROR: ' + e.message);
+  }
+
   lines.push('============================================================');
-  lines.push('[' + new Date().toLocaleString() + '] CRON GENERAR FACTURAS - END');
+  lines.push('[' + ts + '] CRON GENERAR FACTURAS - END');
   lines.push('============================================================');
   return lines.join('\n');
 }
@@ -3894,38 +4379,52 @@ function ejecutarGenerarFacturas() {
 // Función: expirar promesas de pago vencidas
 function ejecutarExpirarPromesas(req, res) {
   try {
+    var sd = getCurrentServerDate();
+    var fechaStr = sd.current_date_only;
+    var horaStr = sd.current_time || '12:00';
+    var fechaTimeStr = fechaStr + ' ' + horaStr + ':00';
+    var fechaRef = sd.overridden ? ("'" + fechaTimeStr + "'") : "datetime('now','localtime')";
+
+    // La promesa vence a las 12:00 del dia de la fecha limite
+    // Si la fecha/hora simulada es >= fecha_limite + 12:00, la promesa esta vencida
     var vencidas = db.prepare(`
       SELECT pp.id, pp.cliente_id, pp.servicio_ids, pp.fecha_limite,
         c.nombre as cliente_nombre
       FROM promesas_pago pp
       JOIN clientes c ON c.id=pp.cliente_id
-      WHERE pp.estado='activa' AND pp.fecha_limite < date('now')
+      WHERE pp.estado='activa'
+        AND (pp.fecha_limite || ' 12:00:00') < ` + fechaRef + `
       ORDER BY pp.fecha_limite ASC
     `).all();
-    
+
     if (vencidas.length === 0) {
       db.prepare("UPDATE cron_tasks SET last_run=datetime('now','localtime'), last_status='ok', last_output=? WHERE task_name='expirar_promesas'").run('No hay promesas vencidas');
       if (res) return res.json({ status: 'success', data: { output: 'No hay promesas vencidas' } });
       return;
     }
-    
+
     var output = 'Procesando ' + vencidas.length + ' promesas vencidas...\n';
     var suspendidos = 0;
     var errores = 0;
-    
+
     vencidas.forEach(function(p) {
       try {
-        // Obtener IDs de servicios
+        // Obtener IDs de servicios (pueden venir como JSON o comma-separated)
         var svcIds = [];
-        try { svcIds = JSON.parse(p.servicio_ids); } catch(e) {}
-        
+        var raw = (p.servicio_ids || '').toString().trim();
+        if (raw.startsWith('[')) {
+          try { svcIds = JSON.parse(raw); } catch(e) {}
+        } else if (raw) {
+          svcIds = raw.split(',').map(function(s) { return parseInt(s.trim()); }).filter(function(n) { return !isNaN(n) && n > 0; });
+        }
+
         // Suspender servicios asociados a la promesa
         svcIds.forEach(function(sid) {
           db.prepare("UPDATE servicios SET estado='suspendido' WHERE id=? AND estado='activo'").run(sid);
           suspendidos++;
           output += '  Servicio #' + sid + ' suspendido por promesa vencida (' + p.fecha_limite + ')\n';
         });
-        
+
         // Marcar promesa como vencida (cambiar estado)
         db.prepare("UPDATE promesas_pago SET estado='vencida' WHERE id=?").run(p.id);
       } catch(e) {
@@ -3933,10 +4432,10 @@ function ejecutarExpirarPromesas(req, res) {
         output += '  ERROR: ' + e.message + '\n';
       }
     });
-    
+
     output += '\nTotal: ' + suspendidos + ' servicio(s) suspendidos, ' + errores + ' error(es)';
     db.prepare("UPDATE cron_tasks SET last_run=datetime('now','localtime'), last_status=?, last_output=? WHERE task_name='expirar_promesas'").run(errores === 0 ? 'ok' : 'error', output);
-    
+
     if (res) return res.json({ status: 'success', data: { output: output } });
   } catch(e) {
     var errMsg = 'Error: ' + e.message;
@@ -3947,27 +4446,50 @@ function ejecutarExpirarPromesas(req, res) {
 
 // ==================== PROMESA DE PAGO ====================
 app.get('/api/promesa/list', requireAuth, (req, res) => {
-  const filter = req.query.filter || 'active';
-  let where = '';
-  if (filter === 'active') where = "WHERE pp.estado='activa' AND pp.fecha_limite >= date('now')";
-  else if (filter === 'expired') where = "WHERE (pp.estado='vencida' OR (pp.estado='activa' AND pp.fecha_limite < date('now')))";
-  else if (filter === 'cancelled') where = "WHERE pp.estado='cancelada'";
-  const rows = db.prepare(`
-    SELECT pp.*, c.nombre as client_name, c.apodo as alias,
-    (SELECT GROUP_CONCAT('SVC-' || s.id, ', ') FROM servicios s WHERE s.id IN (
-      SELECT value FROM json_each(CASE WHEN pp.servicio_ids IS NOT NULL AND pp.servicio_ids != '' THEN pp.servicio_ids ELSE '[]' END)
-    )) as nics,
-    CASE WHEN (SELECT COUNT(*) FROM servicios s WHERE s.id IN (
-      SELECT value FROM json_each(CASE WHEN pp.servicio_ids IS NOT NULL AND pp.servicio_ids != '' THEN pp.servicio_ids ELSE '[]' END)
-    ) AND s.estado='activo') > 0 THEN 'active' ELSE 'suspended' END as svc_status,
-    u.nombre as created_by_name
-    FROM promesas_pago pp
-    LEFT JOIN clientes c ON c.id=pp.cliente_id
-    LEFT JOIN usuarios u ON u.id=pp.usuario_id
-    ${where}
-    ORDER BY pp.created_at DESC LIMIT 200
-  `).all();
-  res.json({ status: 'success', data: rows });
+  try {
+    const filter = req.query.filter || 'active';
+    let where = '';
+    if (filter === 'active') where = "WHERE pp.estado='activa' AND pp.fecha_limite >= date('now')";
+    else if (filter === 'expired') where = "WHERE (pp.estado='vencida' OR (pp.estado='activa' AND pp.fecha_limite < date('now')))";
+    else if (filter === 'cancelled') where = "WHERE pp.estado='cancelada'";
+    
+    // Obtener datos base sin json_each (que falla con formato inconsistente)
+    var rows = db.prepare(`
+      SELECT pp.*, c.nombre as client_name, c.apodo as alias,
+        u.nombre as created_by_name
+      FROM promesas_pago pp
+      LEFT JOIN clientes c ON c.id=pp.cliente_id
+      LEFT JOIN usuarios u ON u.id=pp.usuario_id
+      ${where}
+      ORDER BY pp.created_at DESC LIMIT 200
+    `).all();
+
+    // Procesar servicio_ids (puede ser JSON array o comma-separated)
+    rows.forEach(function(row) {
+      var svcIds = [];
+      var raw = (row.servicio_ids || '').toString().trim();
+      if (raw.startsWith('[')) {
+        try { svcIds = JSON.parse(raw); } catch(e) {}
+      } else if (raw) {
+        svcIds = raw.split(',').map(function(s) { return parseInt(s.trim()); }).filter(function(n) { return !isNaN(n) && n > 0; });
+      }
+
+      row.nics = svcIds.map(function(id) { return 'SVC-' + id; }).join(', ');
+
+      row.svc_status = 'suspended';
+      for (var si = 0; si < svcIds.length; si++) {
+        var svc = db.prepare('SELECT estado FROM servicios WHERE id=?').get(svcIds[si]);
+        if (svc && svc.estado === 'activo') {
+          row.svc_status = 'active';
+          break;
+        }
+      }
+    });
+
+    res.json({ status: 'success', data: rows });
+  } catch(e) {
+    res.json({ status: 'error', msg: e.message });
+  }
 });
 
 app.get('/api/promesa/search_clients', requireAuth, (req, res) => {
@@ -4005,19 +4527,20 @@ app.post('/api/promesa/create', requireAuth, (req, res) => {
   }
   const svcIds = JSON.stringify(typeof services === 'string' ? JSON.parse(services) : services);
   const r = db.prepare('INSERT INTO promesas_pago (cliente_id, servicio_ids, fecha_limite, notas, estado, usuario_id) VALUES (?,?,?,?,?,?)').run(client_id, svcIds, due_date, notes || '', 'activa', req.session.user.id);
-  
+
   // Enviar notificación de reactivación por promesa de pago
   (async function() {
     try {
       var svcIdList = [];
       try { svcIdList = JSON.parse(svcIds); } catch(e) {}
       svcIdList.forEach(function(sid) {
+        db.prepare("UPDATE servicios SET estado='activo' WHERE id=? AND estado='suspendido'").run(sid);
         sendReactivationNotification(client_id, sid, due_date);
       });
     } catch(e) {}
   })();
-  
-  res.json({ status: 'success', msg: 'Promesa creada correctamente', id: r.lastInsertRowid });
+
+  res.json({ status: 'success', msg: 'Promesa creada correctamente. Servicios reactivados.', id: r.lastInsertRowid });
 });
 
 app.post('/api/promesa/cancel', requireAuth, (req, res) => {
@@ -4035,7 +4558,7 @@ app.post('/modulo', (req, res, next) => {
     const pagina = 'Proveedores';
     var data = {};
     const ajax = req.query.ajax;
-    
+
     // ==== SAVE SUPPLIER ====
     if (ajax === 'save_supplier') {
       const id = parseInt(req.body.id) || 0;
@@ -4284,7 +4807,7 @@ app.post('/modulo', (req, res, next) => {
     }
     return res.redirect('/modulo?pagina=Facturacion');
   }
-  
+
   // ===== VENTAS: ejecutar_venta =====
   if (req.query.pagina === 'Ventas' && req.query.ajax === 'ejecutar_venta') {
     const codigo = (req.body.codigo || '').trim().toUpperCase();
@@ -4539,10 +5062,10 @@ app.get("/api/routers/:id", requireAuth, (req, res) => {
 app.post("/api/routers/save", requireAuth, async (req, res) => {
   const { accion, id_router, id_router_edit, name, ip, port, user, password, ip_blocks, interface_wan } = req.body;
   console.log('[SAVE-ROUTER] Request:', JSON.stringify({accion, id_router, id_router_edit, name, ip, interface_wan}));
-  
+
   let routerId = id_router || id_router_edit;
   console.log('[SAVE-ROUTER] routerId:', routerId);
-  
+
   if (accion === "editar" && (id_router || id_router_edit)) {
     const editId = parseInt(id_router || id_router_edit);
     console.log('[SAVE-ROUTER] EDIT mode, editId:', editId);
@@ -4638,11 +5161,11 @@ app.post('/api/planes/save', requireAuth, (req, res) => {
     const { id, nombre, precio, velocidad_subida, velocidad_bajada, upload_burst, download_burst,
       burst_threshold_up, burst_threshold_down, perfil_mikrotik, perfil_olt_descarga, perfil_olt_subida,
       zonas, disponible } = req.body;
-    
+
     if (!nombre || !nombre.trim()) {
       return res.json({ success: false, message: 'El nombre del plan es requerido' });
     }
-    
+
     const planId = parseInt(id) || 0;
     if (planId > 0) {
       db.prepare(`UPDATE planes SET nombre=?, precio=?, velocidad=?, velocidad_subida=?, velocidad_bajada=?,
@@ -4662,7 +5185,7 @@ app.post('/api/planes/save', requireAuth, (req, res) => {
           burst_threshold_up || '', burst_threshold_down || '', perfil_mikrotik || '',
           perfil_olt_descarga || '', perfil_olt_subida || '', zonas || 'all', disponible !== 0 ? 1 : 0);
     }
-    
+
     res.json({ success: true, message: 'Plan guardado' });
   } catch(e) {
     res.json({ success: false, message: e.message });
@@ -4763,14 +5286,14 @@ app.get('/api/ip-pools/:pool_id/disponibles', requireAuth, (req, res) => {
   const asignadas = db.prepare('SELECT ip FROM ips_asignadas WHERE pool_id=?').all(pool.id);
   const ipsAsignadasSet = {};
   for (var i = 0; i < asignadas.length; i++) ipsAsignadasSet[asignadas[i].ip] = true;
-  
+
   const parts = pool.red.split('/');
   const cidr = parseInt(parts[1]) || 24;
   const hostBits = 32 - cidr;
   const octets = parts[0].split('.').map(Number);
   const ipInt = (octets[0] << 24) + (octets[1] << 16) + (octets[2] << 8) + octets[3];
   const networkInt = ipInt & (0xFFFFFFFF << hostBits);
-  
+
   const disponibles = [];
   const total = Math.pow(2, hostBits) - 2;
   for (var j = 1; j <= total; j++) {
@@ -4786,11 +5309,11 @@ app.get('/api/ip-pools/:pool_id/disponibles', requireAuth, (req, res) => {
 app.post('/api/servicios/crear', requireAuth, async (req, res) => {
   const { cliente_id, plan_id, zona_id, auth_type, ip, pool, router_ip, router_port, router_user, router_pass, wifi_ssid, wifi_pass, direccion } = req.body;
   if (!cliente_id) return res.json({ success: false, error: 'Cliente requerido' });
-  
+
   // Generar PPPoE user a partir del nombre del cliente
   var pppoeUser = req.body.pppoe_user || '';
   var pppoePass = '1320'; // Contraseña fija
-  
+
   if (!pppoeUser && auth_type === 'pppoe') {
     try {
       var cliente = db.prepare('SELECT nombre FROM clientes WHERE id=?').get(cliente_id);
@@ -4804,33 +5327,33 @@ app.post('/api/servicios/crear', requireAuth, async (req, res) => {
       }
     } catch(e) {}
   }
-  
+
   // Validate plan_id - check if it's a valid plan in DB
   var planValido = parseInt(plan_id) > 0 ? parseInt(plan_id) : null;
   if (planValido) {
     const existe = db.prepare('SELECT id FROM planes WHERE id=?').get(planValido);
     if (!existe) planValido = null;
   }
-  
+
   try {
     // Create service
     const r = db.prepare("INSERT INTO servicios (cliente_id, plan_id, zona_id, ip, auth_type, pppoe_user, pppoe_pass, wifi_ssid, wifi_pass, direccion, estado, fecha_activacion, ciclo_id) VALUES (?,?,?,?,?,?,?,?,?,?,'activo',date('now'),?)").run(cliente_id, planValido, zona_id || null, ip || null, auth_type || 'dhcp', pppoeUser, pppoePass, wifi_ssid || '', wifi_pass || '', direccion || '', req.body.ciclo_id || null);
     const servicioId = r.lastInsertRowid;
-    
+
     // Assign IP if pool was selected
     if (ip && pool) {
       try {
         db.prepare('INSERT OR IGNORE INTO ips_asignadas (pool_id, ip, servicio_id, cliente_id) VALUES (?,?,?,?)').run(parseInt(pool), ip, servicioId, cliente_id);
       } catch(e) { /* IP already assigned, ignore */ }
     }
-    
+
     // Enviar mensaje de bienvenida por WhatsApp (ANTES del PPPoE, para que siempre se envie)
     try {
       sendWelcomeMessage(servicioId, cliente_id, planValido, req.body.ciclo_id);
     } catch(e) {
       console.log('[Bienvenida] Error al enviar mensaje:', e.message);
     }
-    
+
     // If PPPoE, create secret on MikroTik
     if (auth_type === 'pppoe' && router_ip && router_user && router_pass) {
       try {
@@ -4850,7 +5373,7 @@ app.post('/api/servicios/crear', requireAuth, async (req, res) => {
         return res.json({ success: true, warning: 'Servicio creado pero error al conectar con router: ' + e.message });
       }
     }
-    
+
     res.json({ success: true, message: 'Servicio creado exitosamente', id: servicioId });
   } catch(e) {
     res.json({ success: false, error: e.message });
@@ -4868,29 +5391,29 @@ function sendWelcomeMessage(servicioId, clienteId, planId, cicloId) {
       console.log('[Bienvenida] Cliente #' + clienteId + ' sin teléfono. No se envió mensaje.');
       return;
     }
-    
+
     // Datos del servicio específico
     var servicio = db.prepare('SELECT s.ip, s.direccion, s.ciclo_id, p.nombre as plan_nombre, p.precio as plan_precio, p.velocidad as plan_velocidad FROM servicios s LEFT JOIN planes p ON p.id=s.plan_id WHERE s.id=?').get(servicioId);
-    
+
     // Datos del plan
     var plan = null;
     if (planId) plan = db.prepare('SELECT nombre, precio, velocidad FROM planes WHERE id=?').get(planId);
     if (!plan && servicio) plan = { nombre: servicio.plan_nombre, precio: servicio.plan_precio, velocidad: servicio.plan_velocidad };
-    
+
     var planName = plan ? plan.nombre : '';
     var planPrice = plan ? parseFloat(plan.precio).toFixed(2) : '';
     var planSpeed = plan ? (plan.velocidad || '') : '';
-    
+
     // Ciclo de facturación
     var ciclo = null;
     var cicloIdActual = cicloId || (servicio ? servicio.ciclo_id : null);
     if (cicloIdActual) ciclo = db.prepare('SELECT * FROM billing_cycles WHERE id=?').get(cicloIdActual);
-    
+
     // Configuración de empresa
     var configRows = db.prepare("SELECT key, value FROM configuracion WHERE key IN ('empresa_nombre','empresa_telefono','empresa_correo','moneda','oficina_direccion','oficina_horario','no_cobro_msg','bancos_data')").all();
     var config = { empresa_nombre: 'ISP Total', empresa_telefono: '', empresa_correo: '', moneda: 'RD$', oficina_direccion: '', oficina_horario: '', no_cobro_msg: 'No realizamos cobros los días domingos.', bancos_data: '[]' };
     configRows.forEach(function(r) { config[r.key] = r.value || ''; });
-    
+
     // Generar listado de bancos
     var bancosListado = '';
     try {
@@ -4912,11 +5435,11 @@ function sendWelcomeMessage(servicioId, clienteId, planId, cicloId) {
         bancosListado = lines.join('\n\n');
       }
     } catch(e) {}
-    
+
     var paymentDay = ciclo ? (ciclo.payment_day || ciclo.invoice_day || '') : '';
     var suspendDay = ciclo ? (ciclo.suspend_day || '') : '';
     var graceDays = ciclo ? (ciclo.grace_days || '0') : '0';
-    
+
     // ====== CÁLCULO DE PRORRATEO ======
     var hoy = new Date();
     var diaHoy = hoy.getDate();
@@ -4928,29 +5451,29 @@ function sendWelcomeMessage(servicioId, clienteId, planId, cicloId) {
     var diasFacturados = 0;
     var diasHastaCorte = '';
     var primerPagoGratis = false;
-    
+
     if (planPriceNum > 0) {
       var meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
       var precioPorDia = planPriceNum / 30;
-      
+
       if (ciclo) {
         // Con ciclo de facturación: calcular según días de pago y corte configurados
         var payDay = parseInt(ciclo.payment_day) || parseInt(ciclo.invoice_day) || 30;
         var cutDay = parseInt(ciclo.suspend_day) || 15;
         var graceD = parseInt(ciclo.grace_days) || 0;
-        
+
         // Calcular próxima fecha de pago
         var nextPayDate = new Date(anioHoy, mesHoy, payDay);
         if (diaHoy >= payDay) {
           nextPayDate = new Date(anioHoy, mesHoy + 1, payDay);
         }
-        
+
         // Calcular días desde hoy hasta próximo pago
         var diffMs = nextPayDate.getTime() - hoy.getTime();
         var daysUntilPay = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
-        
+
         proximoPago = payDay + ' de ' + meses[nextPayDate.getMonth()];
-        
+
         if (daysUntilPay <= graceD) {
           primerPagoGratis = true;
           montoProrrateado = '✅ Sin costo: está dentro de los días de gracia.';
@@ -4960,7 +5483,7 @@ function sendWelcomeMessage(servicioId, clienteId, planId, cicloId) {
           var montoProrrateo = precioPorDia * diasFacturados;
           montoProrrateado = '💰 ' + config.moneda + montoProrrateo.toFixed(2) + ' por ' + diasFacturados + ' días de uso';
         }
-        
+
         // Calcular días desde el pago hasta el corte
         if (cutDay > payDay) {
           // Corte en el mismo mes después del pago
@@ -4977,14 +5500,14 @@ function sendWelcomeMessage(servicioId, clienteId, planId, cicloId) {
           var payDay = parseInt(primerCiclo.payment_day) || parseInt(primerCiclo.invoice_day) || 30;
           var cutDay = parseInt(primerCiclo.suspend_day) || 15;
           var graceD = parseInt(primerCiclo.grace_days) || 0;
-          
+
           var nextPayDate = new Date(anioHoy, mesHoy, payDay);
           if (diaHoy >= payDay) nextPayDate = new Date(anioHoy, mesHoy + 1, payDay);
-          
+
           var diffMs = nextPayDate.getTime() - hoy.getTime();
           var daysUntilPay = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
           proximoPago = payDay + ' de ' + meses[nextPayDate.getMonth()];
-          
+
           if (daysUntilPay <= graceD) {
             primerPagoGratis = true;
             montoProrrateado = '✅ Sin costo: está dentro de los días de gracia.';
@@ -4994,7 +5517,7 @@ function sendWelcomeMessage(servicioId, clienteId, planId, cicloId) {
             var montoProrrateo = precioPorDia * diasFacturados;
             montoProrrateado = '💰 ' + config.moneda + montoProrrateo.toFixed(2) + ' por ' + diasFacturados + ' días de uso';
           }
-          
+
           if (cutDay > payDay) {
             diasHastaCorte = (cutDay - payDay) + '';
           } else {
@@ -5011,7 +5534,7 @@ function sendWelcomeMessage(servicioId, clienteId, planId, cicloId) {
         }
       }
     }
-    
+
     // Función para reemplazar variables
     function fillTemplate(content) {
       if (!content) return '';
@@ -5043,20 +5566,20 @@ function sendWelcomeMessage(servicioId, clienteId, planId, cicloId) {
         .replace(/{no_cobro_msg}/g, config.no_cobro_msg || 'No realizamos cobros los días domingos.')
         .replace(/{moneda}/g, config.moneda || 'RD$');
     }
-    
+
     // Generar mensaje de bienvenida (solo plantilla de métodos de pago)
     var tpl1 = db.prepare("SELECT content FROM templates WHERE template_key='bienvenida_sms'").get();
     var msg1 = fillTemplate(tpl1 ? tpl1.content : 'Hola {client_name}, bienvenido a {company_name}. Tu servicio de {plan_name} ha sido activado. 📞 {company_phone}');
-    
+
     var mensajesEnviar = [];
     if (msg1.trim()) mensajesEnviar.push({ texto: msg1, tipo: 'bienvenida_pago' });
-    
+
     if (mensajesEnviar.length === 0) return;
-    
+
     // Verificar si OpenWa está conectado
     var status = openwa.getStatus();
     var conectado = (status.state === 'connected');
-    
+
     mensajesEnviar.forEach(function(m, idx) {
       if (conectado) {
         // Enviar inmediatamente
@@ -5091,22 +5614,22 @@ function sendReactivationNotification(clienteId, servicioId, promesaFecha) {
     var openwa = require('./openwa-service');
     var cliente = db.prepare('SELECT nombre, telefono FROM clientes WHERE id=?').get(clienteId);
     if (!cliente || !cliente.telefono) return;
-    
+
     var svc = db.prepare('SELECT s.direccion, p.nombre as plan_nombre FROM servicios s LEFT JOIN planes p ON p.id=s.plan_id WHERE s.id=?').get(servicioId);
     if (!svc) return;
-    
+
     var config = {};
     var cr = db.prepare("SELECT key, value FROM configuracion WHERE key IN ('empresa_nombre','empresa_telefono','empresa_correo')").all();
     cr.forEach(function(r) { config[r.key] = r.value || ''; });
-    
+
     var tpl = db.prepare("SELECT content FROM templates WHERE template_key='reactivar_servicio'").get();
     if (!tpl || !tpl.content) return;
-    
+
     var promesaMsg = '';
     if (promesaFecha) {
       promesaMsg = '⏳ Este servicio fue reactivado por una promesa de pago. Tienes hasta el ' + promesaFecha + ' para pagar. Si no pagas antes de esa fecha, el servicio volverá a suspenderse.';
     }
-    
+
     var msg = tpl.content
       .replace(/{client_name}/g, cliente.nombre || '')
       .replace(/{service_address}/g, svc.direccion || '')
@@ -5116,7 +5639,7 @@ function sendReactivationNotification(clienteId, servicioId, promesaFecha) {
       .replace(/{company_phone}/g, config.empresa_telefono || '')
       .replace(/{company_name}/g, config.empresa_nombre || '')
       .replace(/{current_date}/g, new Date().toLocaleDateString('es-DO'));
-    
+
     openwa.encolarMensaje(clienteId, servicioId, cliente.telefono, msg, 'reactivacion');
   } catch(e) {
     console.log('[Reactivacion] Error:', e.message);
@@ -5142,14 +5665,14 @@ function sendPaymentConfirmation(clienteId, monto, metodo, facturaId) {
     var openwa = require('./openwa-service');
     var cliente = db.prepare('SELECT nombre, telefono FROM clientes WHERE id=?').get(clienteId);
     if (!cliente || !cliente.telefono) return;
-    
+
     var config = {};
     var cr = db.prepare("SELECT key, value FROM configuracion WHERE key IN ('empresa_nombre','empresa_telefono')").all();
     cr.forEach(function(r) { config[r.key] = r.value || ''; });
-    
+
     var tpl = db.prepare("SELECT content FROM templates WHERE template_key='confirmacion_pago'").get();
     if (!tpl || !tpl.content) return;
-    
+
     var msg = tpl.content
       .replace(/{client_name}/g, cliente.nombre || '')
       .replace(/{payment_amount}/g, '$' + parseFloat(monto || 0).toFixed(2))
@@ -5160,7 +5683,7 @@ function sendPaymentConfirmation(clienteId, monto, metodo, facturaId) {
       .replace(/{plan_name}/g, '')
       .replace(/{company_name}/g, config.empresa_nombre || '')
       .replace(/{company_phone}/g, config.empresa_telefono || '');
-    
+
     openwa.encolarMensaje(clienteId, null, cliente.telefono, msg, 'confirmacion_pago');
   } catch(e) {
     console.log('[Pago] Error notificación:', e.message);
@@ -5175,39 +5698,124 @@ async function smartoltFetch(endpoint, method = 'GET', body = null) {
   const cfg = db.prepare("SELECT key, value FROM configuracion WHERE key IN ('smartolt_subdomain','smartolt_api_key','smartolt_olt_id')").all();
   const config = {};
   cfg.forEach(function(c) { config[c.key] = c.value; });
-  
+
   if (!config.smartolt_subdomain || !config.smartolt_api_key) {
     throw new Error('SmartOLT no configurado. Configure subdominio y API Key');
   }
-  
+
   // Use subdomain-based API URL
   const apiUrl = 'https://' + config.smartolt_subdomain + '.smartolt.com/api';
   const headers = {
-    'X-API-Key': config.smartolt_api_key,
+    'X-Token': config.smartolt_api_key,
     'Content-Type': 'application/json',
     'Accept': 'application/json'
   };
-  
+
   const opts = {
     method: method,
     headers: headers
   };
   if (body) opts.body = JSON.stringify(body);
-  
+
   const response = await fetch(apiUrl + endpoint, opts);
-  
+
   // Handle non-JSON responses
   const ct = response.headers.get('content-type') || '';
   if (ct.indexOf('json') === -1) {
     const text = await response.text();
     throw new Error('Respuesta no JSON: ' + text.substring(0, 300));
   }
-  
+
   const data = await response.json();
   if (data.status === 'error' || data.error) {
     throw new Error(data.msg || data.message || data.error || 'Error en API SmartOLT');
   }
   return data;
+}
+
+
+// Helper: fetch SmartOLT API via MikroTik proxy (para OLTs especificas)
+var _mikrotikApiInstance = null;
+
+async function _getMikrotikApi() {
+  if (_mikrotikApiInstance) {
+    try {
+      await _mikrotikApiInstance.exec('/system/resource/print', '=count-only');
+      return _mikrotikApiInstance;
+    } catch(e) {
+      try { _mikrotikApiInstance.disconnect(); } catch(e2) {}
+      _mikrotikApiInstance = null;
+    }
+  }
+  var router = db.prepare('SELECT * FROM routers WHERE connected=1 ORDER BY id LIMIT 1').get();
+  if (!router) router = db.prepare('SELECT * FROM routers ORDER BY id LIMIT 1').get();
+  if (!router) throw new Error('No hay routers configurados en la base de datos');
+  var MikroTikAPI = require('./mikrotik-api');
+  var api = new MikroTikAPI(router.ip, router.port || 8730, { timeout: 15000 });
+  await api.connect();
+  await api.login(router.user, router.password);
+  _mikrotikApiInstance = api;
+  return api;
+}
+
+async function smartoltFetchOlt(oltObj, endpoint, method, body) {
+  if (!oltObj || !oltObj.smartolt_subdomain || !oltObj.smartolt_api_key) {
+    throw new Error('OLT no tiene configuracion SmartOLT');
+  }
+  var subdomain = oltObj.smartolt_subdomain;
+  var apiKey = oltObj.smartolt_api_key;
+  var apiUrl = 'https://' + subdomain + '.smartolt.com/api' + endpoint;
+  var randomTag = Math.random().toString(36).substring(2, 8);
+  var fileName = 'so_' + randomTag + '.txt';
+  try {
+    var api = await _getMikrotikApi();
+    var args = [
+      '/tool/fetch',
+      '=url=' + apiUrl,
+      '=dst-path=' + fileName,
+      '=http-method=' + (method || 'GET').toLowerCase(),
+      '=http-header-field=X-Token: ' + apiKey
+    ];
+    if (body) {
+      var bodyStr = body;
+      if (typeof body === 'object' && body.toString) {
+        bodyStr = body.toString();
+        // Usar text/plain porque CloudFront bloquea urlencoded
+        args.push('=http-header-field=Content-Type: text/plain');
+      } else {
+        bodyStr = JSON.stringify(body);
+        args.push('=http-header-field=Content-Type: application/json');
+      }
+      args.push('=http-data=' + bodyStr);
+    }
+    var fetchResult = await api.exec(...args);
+    for (var s of fetchResult) {
+      if (s[0] === '!trap') {
+        var msg = s.find(w => w.startsWith('=message='));
+        throw new Error(msg ? msg.split('=').slice(2).join('=') : 'Error en fetch');
+      }
+    }
+    var fileResult = await api.exec('/file/print', '?name=' + fileName);
+    var contents = null;
+    for (var s of fileResult) {
+      if (s[0] === '!re') {
+        var contentVal = s.find(w => w.startsWith('=contents='));
+        if (contentVal) {
+          contents = contentVal.substring('=contents='.length);
+        }
+      }
+    }
+    try { await api.exec('/file/remove', '=.id=' + fileName); } catch(e) {}
+    if (!contents) throw new Error('Respuesta vacia de SmartOLT');
+    try { return JSON.parse(contents); } catch(e) {
+      throw new Error('Respuesta no JSON: ' + contents.substring(0, 300));
+    }
+  } catch(e) {
+    if (e.message && (e.message.indexOf('Not connected') >= 0 || e.message.indexOf('connect') >= 0)) {
+      _mikrotikApiInstance = null;
+    }
+    throw e;
+  }
 }
 
 // GET /api/smartolt/config - Get SmartOLT configuration
@@ -5237,22 +5845,22 @@ app.post('/api/smartolt/config/save', requireAuth, (req, res) => {
 // POST /api/smartolt/test - Test SmartOLT connection
 app.post('/api/smartolt/test', requireAuth, async (req, res) => {
   const { subdomain, api_key, olt_id } = req.body;
-  
+
   if (!subdomain || !api_key) {
     return res.json({ success: false, message: 'Subdominio y API Key son requeridos' });
   }
-  
+
   try {
     const apiUrl = 'https://' + subdomain + '.smartolt.com/api';
     const headers = {
-      'X-API-Key': api_key,
+      'X-Token': api_key,
       'Content-Type': 'application/json',
       'Accept': 'application/json'
     };
-    
-    // Try to get OLTs list
-    const response = await fetch(apiUrl + '/olts', { method: 'GET', headers: headers });
-    
+
+    // Try to get configured ONUs (endpoint confirmado que funciona)
+    const response = await fetch(apiUrl + '/onu/configured_onus/status', { method: 'GET', headers: headers });
+
     // Handle non-JSON
     const ct = response.headers.get('content-type') || '';
     if (ct.indexOf('json') === -1) {
@@ -5262,9 +5870,9 @@ app.post('/api/smartolt/test', requireAuth, async (req, res) => {
       }
       return res.json({ success: true, message: 'Conexión exitosa (respuesta no JSON)', olts: [] });
     }
-    
+
     const data = await response.json();
-    
+
     let olts = [];
     if (data.data && Array.isArray(data.data)) {
       olts = data.data;
@@ -5273,7 +5881,7 @@ app.post('/api/smartolt/test', requireAuth, async (req, res) => {
     } else if (data.olts && Array.isArray(data.olts)) {
       olts = data.olts;
     }
-    
+
     return res.json({
       success: true,
       message: 'Conexión exitosa. OLTs encontradas: ' + olts.length,
@@ -5287,7 +5895,7 @@ app.post('/api/smartolt/test', requireAuth, async (req, res) => {
 // POST /api/smartolt/sync - Sync ONUs from SmartOLT (multi-OLT)
 app.post('/api/smartolt/sync', requireAuth, async (req, res) => {
   try {
-    const olts = db.prepare("SELECT * FROM olts WHERE smartolt_subdomain IS NOT NULL AND smartolt_subdomain != '' AND smartolt_api_key IS NOT NULL AND smartolt_api_key != '' AND activo=1").all();
+    const olts = db.prepare("SELECT * FROM olts WHERE smartolt_subdomain IS NOT NULL AND smartolt_subdomain != '' AND smartolt_api_key IS NOT NULL AND smartolt_api_key != '' ").all();
     if (olts.length === 0) return res.json({ success: false, message: 'No hay OLTs configuradas' });
     let totalOnus = 0, errors = [];
     for (const olt of olts) {
@@ -5348,28 +5956,28 @@ app.get('/api/smartolt/onus', requireAuth, (req, res) => {
 app.post('/api/smartolt/onu/:id/action', requireAuth, async (req, res) => {
   const onuId = parseInt(req.params.id);
   const { action } = req.body;
-  
+
   try {
     const cfg = db.prepare("SELECT key, value FROM configuracion WHERE key IN ('smartolt_subdomain','smartolt_api_key')").all();
     const config = {};
     cfg.forEach(function(c) { config[c.key] = c.value; });
-    
+
     if (!config.smartolt_subdomain || !config.smartolt_api_key) {
       return res.json({ success: false, message: 'SmartOLT no configurado' });
     }
-    
+
     const onu = db.prepare('SELECT * FROM onu WHERE id = ?').get(onuId);
     if (!onu) {
       return res.json({ success: false, message: 'ONU no encontrada en la base de datos' });
     }
-    
+
     const apiUrl = 'https://' + config.smartolt_subdomain + '.smartolt.com/api';
     const headers = {
-      'X-API-Key': config.smartolt_api_key,
+      'X-Token': config.smartolt_api_key,
       'Content-Type': 'application/json',
       'Accept': 'application/json'
     };
-    
+
     const actionsMap = {
       'activate': { endpoint: '/onus/' + onu.sn + '/activate', method: 'POST', description: 'activar' },
       'deactivate': { endpoint: '/onus/' + onu.sn + '/deactivate', method: 'POST', description: 'suspender' },
@@ -5377,12 +5985,12 @@ app.post('/api/smartolt/onu/:id/action', requireAuth, async (req, res) => {
       'delete': { endpoint: '/onus/' + onu.sn + '/delete', method: 'POST', description: 'eliminar' },
       'resync': { endpoint: '/onus/' + onu.sn, method: 'GET', description: 'resincronizar' }
     };
-    
+
     const act = actionsMap[action];
     if (!act) {
       return res.json({ success: false, message: 'Acción no válida: ' + action });
     }
-    
+
     // For local actions (delete from DB, resync from API)
     if (action === 'delete') {
       // Try API delete first, then remove from local DB
@@ -5396,7 +6004,7 @@ app.post('/api/smartolt/onu/:id/action', requireAuth, async (req, res) => {
       db.prepare('DELETE FROM onu WHERE id = ?').run(onuId);
       return res.json({ success: true, message: 'ONU eliminada' });
     }
-    
+
     if (action === 'resync') {
       // Re-fetch this ONU from SmartOLT API
       try {
@@ -5416,7 +6024,7 @@ app.post('/api/smartolt/onu/:id/action', requireAuth, async (req, res) => {
         return res.json({ success: false, message: 'Error al resincronizar: ' + e.message });
       }
     }
-    
+
     // API actions (activate, deactivate, reboot)
     try {
       const resp = await fetch(apiUrl + act.endpoint, { method: act.method, headers: headers });
@@ -5431,13 +6039,13 @@ app.post('/api/smartolt/onu/:id/action', requireAuth, async (req, res) => {
         }
         return res.json({ success: false, message: 'Error ' + resp.status + ': ' + text.substring(0, 200) });
       }
-      
+
       const data = await resp.json();
-      
+
       // Update local state
       const newEstado = action === 'activate' ? 'activo' : 'inactive';
       db.prepare('UPDATE onu SET estado = ? WHERE id = ?').run(newEstado, onuId);
-      
+
       return res.json({ success: true, message: 'ONU ' + act.description + ' exitosamente' });
     } catch (e) {
       return res.json({ success: false, message: 'Error en API SmartOLT: ' + e.message });
@@ -5450,29 +6058,29 @@ app.post('/api/smartolt/onu/:id/action', requireAuth, async (req, res) => {
 // POST /api/smartolt/onu/link - Link ONU to client
 app.post('/api/smartolt/onu/link', requireAuth, (req, res) => {
   const { onu_id, cliente_id } = req.body;
-  
+
   if (!onu_id || !cliente_id) {
     return res.json({ success: false, message: 'ONU ID y Cliente ID son requeridos' });
   }
-  
+
   try {
     const onu = db.prepare('SELECT * FROM onu WHERE id = ?').get(onu_id);
     if (!onu) {
       return res.json({ success: false, message: 'ONU no encontrada' });
     }
-    
+
     const cliente = db.prepare('SELECT * FROM clientes WHERE id = ?').get(cliente_id);
     if (!cliente) {
       return res.json({ success: false, message: 'Cliente no encontrado' });
     }
-    
+
     // Find or create a service for this client
     let servicio = db.prepare('SELECT * FROM servicios WHERE cliente_id = ? LIMIT 1').get(cliente_id);
-    
+
     // Link ONU to cliente and servicio
     db.prepare('UPDATE onu SET cliente_id = ?, servicio_id = ? WHERE id = ?')
       .run(cliente_id, servicio ? servicio.id : null, onu_id);
-    
+
     res.json({ success: true, message: 'ONU vinculada a ' + cliente.nombre });
   } catch (e) {
     res.json({ success: false, message: e.message });
@@ -5515,7 +6123,7 @@ app.post('/api/smartolt/onu-types/save', requireAuth, (req, res) => {
       });
       typeId = maxId + 1;
     }
-    
+
     const data = JSON.stringify({
       id: typeId,
       name: name,
@@ -5523,10 +6131,10 @@ app.post('/api/smartolt/onu-types/save', requireAuth, (req, res) => {
       ethernet_ports: parseInt(ethernet_ports) || 4,
       wifi_band: wifi_band || 'none'
     });
-    
+
     db.prepare('INSERT OR REPLACE INTO configuracion (key, value) VALUES (?, ?)')
       .run('onu_type_' + typeId, data);
-    
+
     res.json({ success: true, message: 'Modelo de ONU guardado' });
   } catch (e) {
     res.json({ success: false, message: e.message });
@@ -5576,6 +6184,14 @@ app.post('/api/nuevo-cliente/save', requireAuth, (req, res) => {
     ).run(clienteId, plan_id, sector_id || null, cicloVal);
     servicioId = servResult.lastInsertRowid;
 
+
+    // Enviar mensaje de bienvenida por WhatsApp
+    try {
+      sendWelcomeMessage(servicioId, clienteId, plan_id, cicloVal);
+    } catch(e) {
+      console.log('[Bienvenida] Error al enviar mensaje (nuevo cliente):', e.message);
+    }
+
     // 3. Crear orden de instalaci\u00f3n
     let detalle = 'Instalaci\u00f3n';
     if (wifi_ssid) detalle += ' | WiFi: ' + wifi_ssid;
@@ -5620,7 +6236,31 @@ app.post('/api/ordenes', requireAuth, (req, res) => {
   const { tipo, cliente_id, detalle, zona_id, plan_id } = req.body;
   const r = db.prepare('INSERT INTO ordenes (tipo, cliente_id, detalle, zona_id, servicio_id) VALUES (?,?,?,?,?)')
     .run(tipo, cliente_id, detalle, zona_id || null, plan_id || null);
-  res.json({ id: r.lastInsertRowid, message: 'Orden creada' });
+  res.json({ status:'success', id: r.lastInsertRowid, message: 'Orden creada' });
+});
+
+// POST /api/ordenes/:id/completar - Completar orden
+app.post('/api/ordenes/:id/completar', requireAuth, (req, res) => {
+  const id = parseInt(req.params.id) || 0;
+  if (!id) return res.json({ status:'error', msg:'ID requerido' });
+  var usuarioId = req.session.user ? req.session.user.id : 0;
+  try {
+    const orden = db.prepare('SELECT * FROM ordenes WHERE id=?').get(id);
+    if (!orden) return res.json({ status:'error', msg:'Orden no encontrada' });
+    db.prepare("UPDATE ordenes SET estado='completada', tecnico_id=?, direccion=?, detalle=?, fecha_completada=datetime('now'), completada_por=? WHERE id=?")
+      .run(req.body.tecnico_id || orden.tecnico_id, req.body.direccion || orden.direccion || '', (orden.detalle || '') + (req.body.observaciones ? ' | Res: ' + req.body.observaciones : ''), usuarioId, id);
+    res.json({ status:'success', msg:'Orden completada' });
+  } catch(e) { res.json({ status:'error', msg:e.message }); }
+});
+
+// POST /api/ordenes/:id/cancelar - Cancelar orden
+app.post('/api/ordenes/:id/cancelar', requireAuth, (req, res) => {
+  const id = parseInt(req.params.id) || 0;
+  if (!id) return res.json({ status:'error', msg:'ID requerido' });
+  try {
+    db.prepare("UPDATE ordenes SET estado='cancelada' WHERE id=?").run(id);
+    res.json({ status:'success', msg:'Orden cancelada' });
+  } catch(e) { res.json({ status:'error', msg:e.message }); }
 });
 
 app.post('/api/pagos', requireAuth, (req, res) => {
@@ -5630,6 +6270,13 @@ app.post('/api/pagos', requireAuth, (req, res) => {
   if (factura_id) {
     db.prepare('UPDATE facturas SET estado=\'pagada\' WHERE id=?').run(factura_id);
   }
+
+  // Si el cliente tiene promesa activa, se marca como cumplida
+  var promesaActiva = db.prepare("SELECT id FROM promesas_pago WHERE cliente_id=? AND estado='activa' LIMIT 1").get(cliente_id);
+  if (promesaActiva) {
+    db.prepare("UPDATE promesas_pago SET estado='cumplida' WHERE id=?").run(promesaActiva.id);
+  }
+
   res.json({ id: r.lastInsertRowid, message: 'Pago registrado' });
 });
 
@@ -5671,14 +6318,14 @@ app.post("/api/clientes/save", requireAuth, (req, res) => {
 app.post("/api/clientes/servicios-info", requireAuth, (req, res) => {
   const { ids } = req.body;
   if (!ids || ids.length === 0) return res.json({ success: false, data: [] });
-  
+
   var result = [];
   ids.forEach(function(clienteId) {
     var cliente = db.prepare('SELECT id, nombre, telefono FROM clientes WHERE id=?').get(clienteId);
     if (!cliente) return;
-    
+
     var servicios = db.prepare('SELECT s.id, s.estado, s.direccion, p.nombre as plan_nombre, p.precio as plan_precio FROM servicios s LEFT JOIN planes p ON p.id=s.plan_id WHERE s.cliente_id=? AND s.estado IN (\'activo\',\'suspendido\') ORDER BY s.id').all(clienteId);
-    
+
     var serviciosInfo = [];
     servicios.forEach(function(s) {
       var deuda = db.prepare("SELECT COALESCE(SUM(f.monto - COALESCE((SELECT SUM(pg.monto) FROM pagos pg WHERE pg.factura_id=f.id),0)),0) as total FROM facturas f WHERE f.servicio_id=? AND f.estado='pendiente'").get(s.id);
@@ -5690,7 +6337,7 @@ app.post("/api/clientes/servicios-info", requireAuth, (req, res) => {
         deuda: deuda ? deuda.total : 0
       });
     });
-    
+
     if (serviciosInfo.length > 0) {
       result.push({
         cliente_id: cliente.id,
@@ -5700,7 +6347,7 @@ app.post("/api/clientes/servicios-info", requireAuth, (req, res) => {
       });
     }
   });
-  
+
   res.json({ success: true, data: result });
 });
 
@@ -5736,7 +6383,7 @@ app.post("/api/clientes/bulk", requireAuth, (req, res) => {
 app.post("/api/clientes/:id/delete", requireAuth, async (req, res) => {
   try {
     var eliminarOnuSmartolt = req.body.eliminar_onu_smartolt === true;
-    
+
     // Delete from SmartOLT if requested
     if (eliminarOnuSmartolt) {
       var onus = db.prepare("SELECT o.sn, o.olt_id FROM onu o WHERE o.cliente_id=? AND o.sn IS NOT NULL").all(req.params.id);
@@ -5762,7 +6409,7 @@ app.post("/api/clientes/:id/delete", requireAuth, async (req, res) => {
         } catch(e2) { /* ignore per-ONU errors */ }
       }
     }
-    
+
     // Delete in order to avoid FK constraints
     db.prepare("DELETE FROM pagos WHERE cliente_id=?").run(req.params.id);
     db.prepare("DELETE FROM facturas WHERE servicio_id IN (SELECT id FROM servicios WHERE cliente_id=?)").run(req.params.id);
@@ -5790,7 +6437,7 @@ app.get('/api/clientes/buscar', requireAuth, (req, res) => {
 app.get('/api/stats', requireAuth, (req, res) => {
   const servicios = db.prepare("SELECT estado, COUNT(*) as count FROM servicios GROUP BY estado").all();
   const pagosMes = db.prepare(`
-    SELECT strftime('%m', created_at) as mes, COALESCE(SUM(monto),0) as total 
+    SELECT strftime('%m', created_at) as mes, COALESCE(SUM(monto),0) as total
     FROM pagos WHERE strftime('%Y', created_at)=strftime('%Y','now')
     GROUP BY strftime('%m', created_at)
   `).all();
@@ -5820,7 +6467,7 @@ app.get('/api/empleados', requireAuth, (req, res) => {
   const search = (req.query.search || '').trim();
   const limit = 20;
   const offset = (page - 1) * limit;
-  
+
   let where = 'WHERE e.activo=1';
   let params = [];
   if (search) {
@@ -5828,10 +6475,10 @@ app.get('/api/empleados', requireAuth, (req, res) => {
     const s = '%' + search + '%';
     params.push(s, s, s);
   }
-  
+
   const total = db.prepare('SELECT COUNT(*) as cnt FROM empleados e ' + where).get(...params).cnt;
   const pages = Math.max(1, Math.ceil(total / limit));
-  
+
   const data = db.prepare(`
     SELECT e.*,
       COALESCE((SELECT SUM(restante) FROM prestamos_empleado WHERE empleado_id=e.id AND restante>0),0) as deuda,
@@ -5842,7 +6489,7 @@ app.get('/api/empleados', requireAuth, (req, res) => {
     ORDER BY e.id DESC
     LIMIT ? OFFSET ?
   `).all(...params, limit, offset);
-  
+
   res.json({ success: true, data, page, pages, total });
 });
 
@@ -5862,14 +6509,14 @@ app.get('/api/empleados/:id', requireAuth, (req, res) => {
 app.post('/api/empleados/save', requireAuth, (req, res) => {
   const { id, nombre, cedula, telefono, tipo, tipo_otro, salario, periodo, dia_pago1, dia_pago2, fecha_ingreso, usuario_id } = req.body;
   if (!nombre) return res.json({ success: false, message: 'Nombre requerido' });
-  
+
   const sal = parseFloat(salario) || 0;
   const dp1 = parseInt(dia_pago1) || 1;
   const dp2 = parseInt(dia_pago2) || 15;
   const uid = parseInt(usuario_id) || null;
   const per = periodo === 'quincenal' ? 'quincenal' : 'mensual';
   const tp = tipo || 'Tecnico';
-  
+
   if (parseInt(id) > 0) {
     db.prepare(`UPDATE empleados SET nombre=?, cedula=?, telefono=?, tipo=?, tipo_otro=?, salario=?, periodo=?, dia_pago1=?, dia_pago2=?, fecha_ingreso=?, usuario_id=? WHERE id=?`)
       .run(nombre, cedula || null, telefono || null, tp, tipo_otro || null, sal, per, dp1, dp2, fecha_ingreso || null, uid, parseInt(id));
@@ -5892,7 +6539,7 @@ app.get('/api/empleados/:id/ordenes', requireAuth, (req, res) => {
   const id = req.params.id;
   const mes = parseInt(req.query.mes) || (new Date().getMonth() + 1);
   const anio = parseInt(req.query.anio) || new Date().getFullYear();
-  
+
   const data = db.prepare(`
     SELECT o.*, c.nombre as cliente_nombre, z.nombre as zona_nombre
     FROM ordenes o
@@ -5901,7 +6548,7 @@ app.get('/api/empleados/:id/ordenes', requireAuth, (req, res) => {
     WHERE o.tecnico_id=? AND strftime('%m', o.created_at)=? AND strftime('%Y', o.created_at)=?
     ORDER BY o.id DESC
   `).all(id, String(mes).padStart(2,'0'), String(anio));
-  
+
   const total = data.length;
   const completadas = data.filter(o => o.estado === 'completada' || o.estado === 'completed').length;
   res.json({ success: true, data, total, completadas });
@@ -5918,7 +6565,7 @@ app.get('/api/empleados/:id/prestamos', requireAuth, (req, res) => {
 app.post('/api/empleados/prestamo', requireAuth, (req, res) => {
   const { empleado_id, loan_id, monto, descripcion, fecha } = req.body;
   if (!parseFloat(monto)) return res.json({ success: false, message: 'Monto requerido' });
-  
+
   const loanId = parseInt(loan_id);
   if (loanId > 0) {
     // Edit existing loan: update monto, descripcion, fecha, reset restante to new monto minus what was already paid
@@ -5944,17 +6591,17 @@ app.post('/api/empleados/prestamo', requireAuth, (req, res) => {
 // Pay/abonar or delete loan
 app.post('/api/empleados/prestamo/abonar', requireAuth, (req, res) => {
   const { loan_id, monto, delete: isDelete } = req.body;
-  
+
   if (isDelete || req.body._delete) {
     db.prepare('DELETE FROM prestamos_empleado WHERE id=?').run(loan_id);
     return res.json({ success: true });
   }
-  
+
   if (!loan_id || !parseFloat(monto)) return res.json({ success: false, message: 'Datos incompletos' });
-  
+
   const loan = db.prepare('SELECT * FROM prestamos_empleado WHERE id=?').get(loan_id);
   if (!loan) return res.json({ success: false, message: 'Préstamo no encontrado' });
-  
+
   let newRestante = parseFloat(loan.restante) - parseFloat(monto);
   if (newRestante < 0) newRestante = 0;
   db.prepare('UPDATE prestamos_empleado SET restante=? WHERE id=?').run(newRestante, loan_id);
@@ -5999,16 +6646,16 @@ app.post('/api/smartolt/onu/authorize', requireAuth, async (req, res) => {
   const { olt_id, serial, model, descripcion, vlan, servicio_id, cliente_nombre, board, port, onu_mode, pppoe_user, pppoe_pass, auth_type } = req.body;
   require('fs').appendFileSync('/tmp/isptotal.log', new Date().toISOString() + ' [AUTHORIZE-ONU] REQ olt=' + olt_id + ' sn=' + serial + ' model=' + (model||'') + ' vlan=' + (vlan||'') + ' board=' + (board||'') + ' port=' + (port||'') + ' mode=' + (onu_mode||'') + '\n');
   if (!olt_id || !serial) return res.json({ success: false, message: 'OLT y Serial requeridos' });
-  const olt = db.prepare('SELECT * FROM olts WHERE id=? AND activo=1').get(olt_id);
+  const olt = db.prepare('SELECT * FROM olts WHERE id=? ').get(olt_id);
   if (!olt || !olt.smartolt_subdomain || !olt.smartolt_api_key) return res.json({ success: false, message: 'OLT no configurada' });
-  
+
   // Get zone from the service
   let zonaName = '';
   if (servicio_id) {
     const svc = db.prepare('SELECT s.*, z.nombre as zona_nombre FROM servicios s LEFT JOIN zonas z ON z.id=s.zona_id WHERE s.id=?').get(servicio_id);
     if (svc && svc.zona_nombre) zonaName = svc.zona_nombre;
   }
-  
+
   try {
     const apiUrl = 'https://' + olt.smartolt_subdomain + '.smartolt.com/api';
     const params = new URLSearchParams();
@@ -6025,8 +6672,8 @@ app.post('/api/smartolt/onu/authorize', requireAuth, async (req, res) => {
         }
       } catch(eDet) {}
     }
-    // No enviamos onu_type para evitar error 'type not defined' en SmartOLT
-    // SmartOLT asigna el tipo automáticamente o permite configurarlo después
+    // Enviar onu_type si está disponible (requerido por SmartOLT)
+    if (model) params.append('onu_type', model);
     // Siempre Routing a menos que el usuario envíe explícitamente 'bridge'
     var onuMode = 'Routing';
     if (req.body.onu_mode && (req.body.onu_mode.toLowerCase() === 'bridging' || req.body.onu_mode.toLowerCase() === 'bridge')) onuMode = 'Bridging';
@@ -6037,7 +6684,7 @@ app.post('/api/smartolt/onu/authorize', requireAuth, async (req, res) => {
     else if (olt.vlan_default) params.append('vlan', olt.vlan_default);
     if (board) params.append('board', board);
     if (port) params.append('port', port);
-    
+
     // If ONU was already pre-authorized, delete it first
     try {
       const searchResp = await fetch(apiUrl + '/onu/get_onus_details_by_sn/' + serial, {
@@ -6054,7 +6701,7 @@ app.post('/api/smartolt/onu/authorize', requireAuth, async (req, res) => {
         });
       }
     } catch(e) {}
-    
+
     console.log('[CAMBIO-ONU] Params enviados a SmartOLT:', params.toString());
     console.log('[CAMBIO-ONU-2] Params:', params.toString());
     const response = await fetch(apiUrl + '/onu/authorize_onu', {
@@ -6074,8 +6721,8 @@ app.post('/api/smartolt/onu/authorize', requireAuth, async (req, res) => {
     console.log('[CAMBIO-ONU] Auth response:', JSON.stringify(data));
     if (data.status === 'success' || data.status === true || data.response_code === 'success') {
       // Wait 15 seconds for ONU to register on OLT before sending config
-      
-      
+
+
       // Get ONU external ID for further configuration
       let extId = '';
       try {
@@ -6088,7 +6735,7 @@ app.post('/api/smartolt/onu/authorize', requireAuth, async (req, res) => {
           extId = onuList[0].unique_external_id || onuList[0].id || onuList[0].onu_id || '';
         }
       } catch(e) {}
-      
+
       // Get service plan info for speed profiles (down/up)
       let planProfiles = null;
       if (servicio_id) {
@@ -6096,7 +6743,7 @@ app.post('/api/smartolt/onu/authorize', requireAuth, async (req, res) => {
       }
       var dlProfile = (planProfiles && planProfiles.perfil_olt_descarga) ? planProfiles.perfil_olt_descarga : (planProfiles ? (planProfiles.perfil_mikrotik || planProfiles.plan_name || '') : '');
       var ulProfile = (planProfiles && planProfiles.perfil_olt_subida) ? planProfiles.perfil_olt_subida : dlProfile;
-      
+
       if (extId) {
         var logVlan = vlan || olt.vlan_default || '';
         var logTr069Vlan = olt.tr069_vlan || logVlan;
@@ -6116,7 +6763,7 @@ app.post('/api/smartolt/onu/authorize', requireAuth, async (req, res) => {
             require('fs').appendFileSync('/tmp/isptotal.log', '[AUTHORIZE-ONU] SpeedProfile=' + JSON.stringify(spData) + '\n');
           } catch(e) { console.log('[AUTHORIZE-ONU] Speed profile error:', e.message); }
         }
-        
+
                 console.log('[AUTHORIZE-ONU] Enabling TR069 with profile SmartOLT...');
         // Set Mgmt IP mode to DHCP with VLAN
         try {
@@ -6133,8 +6780,8 @@ app.post('/api/smartolt/onu/authorize', requireAuth, async (req, res) => {
           require('fs').appendFileSync('/tmp/isptotal.log', '[AUTHORIZE-ONU] MgmtIP=' + JSON.stringify(mgmtData) + '\n');
         } catch(e) { console.log('[AUTHORIZE-ONU] Mgmt IP error:', e.message); }
       }
-      
-      
+
+
         // Enable TR069 with SmartOLT profile
         try {
           const tr069Params = new URLSearchParams();
@@ -6147,9 +6794,9 @@ app.post('/api/smartolt/onu/authorize', requireAuth, async (req, res) => {
           const trData = await trResp.json();
           require('fs').appendFileSync('/tmp/isptotal.log', '[AUTHORIZE-ONU] TR069=' + JSON.stringify(trData) + '\n');
         } catch(e) { console.log('[AUTHORIZE-ONU] TR069 error:', e.message); }
-        
+
         console.log('[AUTHORIZE-ONU] Setting Mgmt IP to DHCP with vlan=' + (vlan || olt.vlan_default || ''));
-        
+
         // Read service WAN data from DB (like TR069 does)
         if (servicio_id) {
           var wanSvc = db.prepare('SELECT pppoe_user, pppoe_pass, auth_type, wifi_ssid, wifi_pass FROM servicios WHERE id=?').get(servicio_id);
@@ -6185,7 +6832,7 @@ app.post('/api/smartolt/onu/authorize', requireAuth, async (req, res) => {
             require('fs').appendFileSync('/tmp/isptotal.log', '[AUTHORIZE-ONU] WAN DHCP=' + JSON.stringify(dhcpWanData) + '\\n');
           }
         } catch(e) { require('fs').appendFileSync('/tmp/isptotal.log', '[AUTHORIZE-ONU] WAN error:' + e.message + '\\n'); }
-        
+
         // Set WiFi if service has SSID configured
         if (extId && servicio_id) {
           try {
@@ -6202,7 +6849,7 @@ app.post('/api/smartolt/onu/authorize', requireAuth, async (req, res) => {
             }
           } catch(eW) { console.log('[AUTHORIZE-ONU] WiFi error:', eW.message); }
         }
-        
+
         // Save config to OLT
       try {
         console.log('[AUTHORIZE-ONU] Saving config to OLT...');
@@ -6210,7 +6857,7 @@ app.post('/api/smartolt/onu/authorize', requireAuth, async (req, res) => {
         const saveData = await saveResp.json();
         require('fs').appendFileSync('/tmp/isptotal.log', '[AUTHORIZE-ONU] SaveConfig=' + JSON.stringify(saveData) + '\n');
       } catch(e) { console.log('[AUTHORIZE-ONU] save_config error:', e.message); }
-      
+
       // Link ONU to service
       if (servicio_id && serial) {
         try {
@@ -6219,12 +6866,17 @@ app.post('/api/smartolt/onu/authorize', requireAuth, async (req, res) => {
             var svc2 = db.prepare('SELECT cliente_id FROM servicios WHERE id=?').get(servicio_id);
             if (svc2) clId = svc2.cliente_id;
           }
+          // Validar que cliente_id y servicio_id existan antes de insertar
+          var valCliente = clId ? db.prepare('SELECT id FROM clientes WHERE id=?').get(clId) : null;
+          var valServicio = db.prepare('SELECT id FROM servicios WHERE id=?').get(servicio_id);
+          var finalClId = valCliente ? clId : null;
+          var finalSvcId = valServicio ? servicio_id : null;
           db.prepare('INSERT INTO onu (sn, nombre, cliente_id, olt_id, servicio_id, estado) VALUES (?,?,?,?,?,\'activo\') ON CONFLICT(sn) DO UPDATE SET cliente_id=COALESCE(excluded.cliente_id,onu.cliente_id), servicio_id=COALESCE(excluded.servicio_id,onu.servicio_id), olt_id=COALESCE(excluded.olt_id,onu.olt_id)')
-            .run(serial, cliente_nombre || descripcion || serial, clId, olt_id, servicio_id);
-          require('fs').appendFileSync('/tmp/isptotal.log', '[AUTHORIZE-ONU] ONU vinculada a servicio #' + servicio_id + '\n');
+            .run(serial, cliente_nombre || descripcion || serial, finalClId, olt_id, finalSvcId);
+          require('fs').appendFileSync('/tmp/isptotal.log', '[AUTHORIZE-ONU] ONU vinculada a servicio #' + servicio_id + ' (cliente=' + (finalClId||'?') + ')\n');
         } catch(e2) { require('fs').appendFileSync('/tmp/isptotal.log', '[AUTHORIZE-ONU] Error vinculando ONU: ' + e2.message + '\n'); }
       }
-      
+
       return res.json({ success: true, message: 'ONU autorizada y configurada exitosamente' });
     }
     require('fs').appendFileSync('/tmp/isptotal.log', new Date().toISOString() + ' [CAMBIO-ONU] Auth FAILED: ' + JSON.stringify(data) + '\n');
@@ -6234,7 +6886,7 @@ app.post('/api/smartolt/onu/authorize', requireAuth, async (req, res) => {
   }
 });
 
-// POST /api/smartolt/onu/scan - Scan unconfigured ONUs from specific SmartOLT
+// POST /api/smartolt/onu/scan - Scan unconfigured ONUs from specific SmartOLT (via MikroTik)
 app.post('/api/smartolt/onu/scan', requireAuth, async (req, res) => {
   const { olt_id } = req.body;
   const olt = db.prepare('SELECT * FROM olts WHERE id=?').get(olt_id);
@@ -6242,12 +6894,7 @@ app.post('/api/smartolt/onu/scan', requireAuth, async (req, res) => {
     return res.json({ success: false, message: 'OLT no configurada para SmartOLT' });
   }
   try {
-    const apiUrl = 'https://' + olt.smartolt_subdomain + '.smartolt.com/api';
-    const headers = { 'X-Token': olt.smartolt_api_key, 'Accept': 'application/json' };
-    const response = await fetch(apiUrl + '/onu/unconfigured_onus', { method: 'GET', headers: headers });
-    const ct = response.headers.get('content-type') || '';
-    if (ct.indexOf('json') === -1) return res.json({ success: false, message: 'Respuesta no JSON' });
-    const data = await response.json();
+    var data = await smartoltFetchOlt(olt, '/onu/unconfigured_onus', 'GET');
     let onus = [];
     if (data.response && Array.isArray(data.response)) onus = data.response;
     else if (data.data && Array.isArray(data.data)) onus = data.data;
@@ -6260,7 +6907,7 @@ app.post('/api/smartolt/onu/scan', requireAuth, async (req, res) => {
 app.post('/api/smartolt/onu/detalle', requireAuth, async (req, res) => {
   const { sn, olt_id } = req.body;
   if (!sn || !olt_id) return res.json({ success: false, message: 'SN y OLT requeridos' });
-  const olt = db.prepare('SELECT * FROM olts WHERE id=? AND activo=1').get(olt_id);
+  const olt = db.prepare('SELECT * FROM olts WHERE id=? ').get(olt_id);
   if (!olt || !olt.smartolt_subdomain || !olt.smartolt_api_key) {
     return res.json({ success: false, message: 'OLT no configurada' });
   }
@@ -6295,7 +6942,7 @@ app.post('/api/smartolt/onu/detalle', requireAuth, async (req, res) => {
 app.post('/api/smartolt/onu/accion', requireAuth, async (req, res) => {
   const { sn, olt_id, action } = req.body;
   if (!sn || !olt_id || !action) return res.json({ success: false, message: 'SN, OLT y acción requeridos' });
-  
+
   // Actions that map directly: enable, disable, reboot, delete, resync
   const endpoints = {
     enable: '/onu/enable/',
@@ -6306,16 +6953,16 @@ app.post('/api/smartolt/onu/accion', requireAuth, async (req, res) => {
   };
   const ep = endpoints[action];
   if (!ep) return res.json({ success: false, message: 'Acción no válida: ' + action });
-  
-  const olt = db.prepare('SELECT * FROM olts WHERE id=? AND activo=1').get(olt_id);
+
+  const olt = db.prepare('SELECT * FROM olts WHERE id=? ').get(olt_id);
   if (!olt || !olt.smartolt_subdomain || !olt.smartolt_api_key) {
     return res.json({ success: false, message: 'OLT no configurada' });
   }
-  
+
   try {
     const apiUrl = 'https://' + olt.smartolt_subdomain + '.smartolt.com/api';
     const headers = { 'X-Token': olt.smartolt_api_key, 'Accept': 'application/json' };
-    
+
     // First get the ONU external ID by SN
     const detResp = await fetch(apiUrl + '/onu/get_onus_details_by_sn/' + sn, { method: 'GET', headers: headers });
     const detData = await detResp.json();
@@ -6324,7 +6971,7 @@ app.post('/api/smartolt/onu/accion', requireAuth, async (req, res) => {
     }
     const extId = detData.response[0].id || detData.response[0].onu_id || detData.response[0].external_id || '';
     if (!extId) return res.json({ success: false, message: 'No se pudo obtener el ID externo de la ONU' });
-    
+
     const resp = await fetch(apiUrl + ep + extId, { method: 'POST', headers: { 'X-Token': olt.smartolt_api_key } });
     const ct = resp.headers.get('content-type') || '';
     if (ct.indexOf('json') !== -1) {
@@ -6347,39 +6994,39 @@ app.post('/api/smartolt/onu/enviar-tr069', requireAuth, async (req, res) => {
   const { servicio_id } = req.body;
   if (!servicio_id) return res.json({ success: false, message: 'Servicio requerido' });
   require('fs').appendFileSync('/tmp/isptotal.log', '\n[TR069-BTN] iniciando para servicio #' + servicio_id + '\n');
-  
+
   try {
     // Get service info
     const svc = db.prepare('SELECT s.*, c.nombre as cliente_nombre FROM servicios s LEFT JOIN clientes c ON c.id=s.cliente_id WHERE s.id=?').get(servicio_id);
     if (!svc) return res.json({ success: false, message: 'Servicio no encontrado' });
-    
+
     // Find ONU associated with this service
     // First try by servicio_id or cliente_id in the local onu table
     var onu = db.prepare('SELECT * FROM onu WHERE servicio_id=? OR cliente_id=? ORDER BY id DESC LIMIT 1').get(servicio_id, svc.cliente_id);
-    
+
     // If not found in local table, try looking up by IP address from the service
     if (!onu && svc.ip) {
       onu = db.prepare('SELECT * FROM onu WHERE sn LIKE ? OR nombre LIKE ? ORDER BY id DESC LIMIT 1').get('%' + svc.ip.replace(/\./g,'_') + '%', '%' + svc.ip + '%');
     }
-    
+
     // If still not found, try to get it from SmartOLT directly
     if (!onu || !onu.sn) {
       // Look up all OLTs to find any ONU that might be associated
       require('fs').appendFileSync('/tmp/isptotal.log', '[TR069-BTN] ONU no encontrada localmente. Buscando IP=' + (svc.ip||'') + ' cliente=' + (svc.cliente_id||'') + '\n');
       return res.json({ success: false, message: 'No se encontró ONU asociada a este servicio' });
     }
-    
+
     // Find which OLT this ONU belongs to
     var oltId = onu.olt_id;
     if (!oltId) return res.json({ success: false, message: 'ONU sin OLT asociada' });
-    
-    const olt = db.prepare('SELECT * FROM olts WHERE id=? AND activo=1').get(oltId);
+
+    const olt = db.prepare('SELECT * FROM olts WHERE id=? ').get(oltId);
     if (!olt || !olt.smartolt_subdomain || !olt.smartolt_api_key) return res.json({ success: false, message: 'OLT no configurada para SmartOLT' });
-    
+
     const apiUrl = 'https://' + olt.smartolt_subdomain + '.smartolt.com/api';
     const sn = onu.sn;
     require('fs').appendFileSync('/tmp/isptotal.log', '[TR069-BTN] ONU sn=' + sn + ' olt=' + olt.nombre + ' (' + olt.smartolt_subdomain + ')\n');
-    
+
     // Get ONU external ID by SN
     const detResp = await fetch(apiUrl + '/onu/get_onus_details_by_sn/' + sn, {
       method: 'GET', headers: { 'X-Token': olt.smartolt_api_key, 'Accept': 'application/json' }
@@ -6389,9 +7036,9 @@ app.post('/api/smartolt/onu/enviar-tr069', requireAuth, async (req, res) => {
     if (!onuList.length) return res.json({ success: false, message: 'ONU no encontrada en SmartOLT' });
     const extId = onuList[0].unique_external_id || onuList[0].id || onuList[0].onu_id || '';
     if (!extId) return res.json({ success: false, message: 'No se pudo obtener ID externo de la ONU' });
-    
+
     require('fs').appendFileSync('/tmp/isptotal.log', '[TR069-BTN] extId=' + extId + '\n');
-    
+
     // Look up plan profiles for speed
     var planProfile = db.prepare('SELECT perfil_olt_descarga, perfil_olt_subida, perfil_mikrotik FROM planes WHERE id=?').get(svc.plan_id);
     if (planProfile && (planProfile.perfil_olt_descarga || planProfile.perfil_olt_subida)) {
@@ -6419,7 +7066,7 @@ app.post('/api/smartolt/onu/enviar-tr069', requireAuth, async (req, res) => {
       var trData = await trResp.json();
       require('fs').appendFileSync('/tmp/isptotal.log', '[TR069-BTN] TR069 enable response: ' + JSON.stringify(trData) + '\n');
     } catch(eTr) { require('fs').appendFileSync('/tmp/isptotal.log', '[TR069-BTN] TR069 enable error: ' + eTr.message + '\n'); }
-    
+
     // Set Mgmt IP to DHCP (needed for TR069)
     try {
       var mgmtParams = new URLSearchParams();
@@ -6445,7 +7092,7 @@ app.post('/api/smartolt/onu/enviar-tr069', requireAuth, async (req, res) => {
       });
       var ppData = await ppResp.json();
       require('fs').appendFileSync('/tmp/isptotal.log', '[TR069-BTN] WAN PPPoE=' + JSON.stringify(ppData) + '\n');
-      
+
       // Set WiFi if service has SSID configured
       require('fs').appendFileSync('/tmp/isptotal.log', '[TR069-BTN] WiFi svc.wifi_ssid="' + (svc.wifi_ssid||'') + '"\n');
       if (svc.wifi_ssid) {
@@ -6462,7 +7109,7 @@ app.post('/api/smartolt/onu/enviar-tr069', requireAuth, async (req, res) => {
           require('fs').appendFileSync('/tmp/isptotal.log', '[TR069-BTN] WiFi=' + JSON.stringify(wifiData) + '\n');
         } catch(eW) { require('fs').appendFileSync('/tmp/isptotal.log', '[TR069-BTN] WiFiError=' + eW.message + '\n'); }
       }
-      
+
       // Save config
       require('fs').appendFileSync('/tmp/isptotal.log', '[TR069-BTN] Guardando config...\n');
       try {
@@ -6470,7 +7117,7 @@ app.post('/api/smartolt/onu/enviar-tr069', requireAuth, async (req, res) => {
         var saveD = await saveR.json();
         require('fs').appendFileSync('/tmp/isptotal.log', '[TR069-BTN] SaveConfig=' + JSON.stringify(saveD) + '\n');
       } catch(e2) { require('fs').appendFileSync('/tmp/isptotal.log', '[TR069-BTN] SaveError=' + e2.message + '\n'); }
-      
+
       res.json({ success: true, message: 'WAN PPPoE configurado' });
     } catch(e) {
       require('fs').appendFileSync('/tmp/isptotal.log', '[TR069-BTN] Error=' + e.message + '\n');
@@ -6488,12 +7135,12 @@ app.post('/api/smartolt/onu/wifi', requireAuth, async (req, res) => {
   if (!sn || !olt_id || !wifi_port) return res.json({ success: false, message: 'SN, OLT y puerto WiFi requeridos' });
   if (!wifi_ssid) return res.json({ success: false, message: 'SSID requerido' });
   if (!wifi_pass) return res.json({ success: false, message: 'Contraseña requerida' });
-  const olt = db.prepare('SELECT * FROM olts WHERE id=? AND activo=1').get(olt_id);
+  const olt = db.prepare('SELECT * FROM olts WHERE id=? ').get(olt_id);
   if (!olt || !olt.smartolt_subdomain || !olt.smartolt_api_key) return res.json({ success: false, message: 'OLT no configurada' });
   try {
     const apiUrl = 'https://' + olt.smartolt_subdomain + '.smartolt.com/api';
     const headers = { 'X-Token': olt.smartolt_api_key, 'Accept': 'application/json' };
-    
+
     // Get ONU external ID by SN
     const detResp = await fetch(apiUrl + '/onu/get_onus_details_by_sn/' + sn, { method: 'GET', headers: headers });
     const detData = await detResp.json();
@@ -6501,20 +7148,20 @@ app.post('/api/smartolt/onu/wifi', requireAuth, async (req, res) => {
     if (!onuList.length) return res.json({ success: false, message: 'ONU no encontrada en SmartOLT' });
     const extId = onuList[0].unique_external_id || onuList[0].id || onuList[0].onu_id || '';
     if (!extId) return res.json({ success: false, message: 'No se pudo obtener el ID de la ONU' });
-    
+
     // Call SmartOLT to set WiFi on the ONU (using set_wifi_port_lan which accepts ssid)
     const params = new URLSearchParams();
     params.append('wifi_port', wifi_port);
     params.append('ssid', wifi_ssid);
     params.append('password', wifi_pass);
     params.append('authentication_mode', 'WPA2');
-    
+
     const resp = await fetch(apiUrl + '/onu/set_wifi_port_lan/' + extId, {
       method: 'POST',
       headers: { 'X-Token': olt.smartolt_api_key, 'Content-Type': 'application/x-www-form-urlencoded' },
       body: params
     });
-    
+
     const ct = resp.headers.get('content-type') || '';
     if (ct.indexOf('json') !== -1) {
       const data = await resp.json();
@@ -6537,7 +7184,7 @@ app.get('/api/smartolt/onu/trafico', requireAuth, async (req, res) => {
   const oltId = parseInt(req.query.olt_id) || 0;
   const graphType = req.query.graph_type || 'daily';
   if (!sn || !oltId) return res.status(400).send('SN y OLT requeridos');
-  const olt = db.prepare('SELECT * FROM olts WHERE id=? AND activo=1').get(oltId);
+  const olt = db.prepare('SELECT * FROM olts WHERE id=? ').get(oltId);
   if (!olt || !olt.smartolt_subdomain || !olt.smartolt_api_key) return res.status(400).send('OLT no configurada');
   try {
     const apiUrl = 'https://' + olt.smartolt_subdomain + '.smartolt.com/api';
@@ -6569,44 +7216,44 @@ app.get('/api/smartolt/onu/trafico', requireAuth, async (req, res) => {
 app.post('/api/smartolt/onu/reset-y-eliminar', requireAuth, async (req, res) => {
   const { servicio_id } = req.body;
   if (!servicio_id) return res.json({ success: false, message: 'Servicio requerido' });
-  
+
   try {
     // Find ONU linked to this service
     var onu = db.prepare('SELECT o.*, ol.smartolt_subdomain, ol.smartolt_api_key FROM onu o LEFT JOIN olts ol ON ol.id=o.olt_id WHERE o.servicio_id=? AND o.sn IS NOT NULL').get(servicio_id);
     if (!onu || !onu.sn) return res.json({ success: false, message: 'No se encontró ONU asociada a este servicio' });
     if (!onu.smartolt_subdomain || !onu.smartolt_api_key) return res.json({ success: false, message: 'OLT no configurada para SmartOLT' });
-    
+
     const apiUrl = 'https://' + onu.smartolt_subdomain + '.smartolt.com/api';
-    
+
     // Step 1: Find the ONU in SmartOLT to get external ID
     const detResp = await fetch(apiUrl + '/onu/get_onus_details_by_sn/' + onu.sn, {
       method: 'GET', headers: { 'X-Token': onu.smartolt_api_key, 'Accept': 'application/json' }
     });
     const detData = await detResp.json();
     let onuList = detData.onus || detData.response || [];
-    
+
     if (onuList.length > 0) {
       var extId = onuList[0].unique_external_id || onuList[0].id || onuList[0].onu_id || '';
-      
+
       // Step 2: Reset ONU to factory defaults via SmartOLT
       if (extId) {
         try {
           await fetch(apiUrl + '/onu/factory_reset/' + extId, { method: 'POST', headers: { 'X-Token': onu.smartolt_api_key } });
         } catch(e) {}
-        
+
         // Step 3: Delete ONU from SmartOLT
         await fetch(apiUrl + '/onu/delete/' + extId, { method: 'POST', headers: { 'X-Token': onu.smartolt_api_key } });
       }
     }
-    
+
     // Step 4: Save config
     try {
       await fetch(apiUrl + '/system/save_config', { method: 'POST', headers: { 'X-Token': onu.smartolt_api_key } });
     } catch(e) {}
-    
+
     // Step 5: Delete from local DB
     db.prepare('DELETE FROM onu WHERE id=?').run(onu.id);
-    
+
     res.json({ success: true, message: 'ONU reseteada a fábrica y eliminada de SmartOLT' });
   } catch(e) {
     res.json({ success: false, message: e.message });
@@ -6760,26 +7407,36 @@ app.get('/api/traslados/servicios/:cliente_id', requireAuth, (req, res) => {
 });
 
 app.post('/api/traslados/guardar', requireAuth, (req, res) => {
-  const { client_id, service_id, sector_id, address, observations } = req.body;
+  const { client_id, service_id, sector_id, address, observations, crear_factura, precio_traslado, traslado_pagada } = req.body;
   if (!client_id) return res.json({ status: 'error', msg: 'Seleccione un cliente' });
   if (!service_id) return res.json({ status: 'error', msg: 'Seleccione un servicio' });
   if (!sector_id) return res.json({ status: 'error', msg: 'La zona nueva es obligatoria' });
   if (!address) return res.json({ status: 'error', msg: 'La dirección nueva es obligatoria' });
-  
+
   try {
     // Get user info
     var usuarioId = req.session.user ? req.session.user.id : 0;
-    
+
     // Crear orden de traslado
     var detalle = 'Traslado a nueva zona (ID: ' + sector_id + '), dirección: ' + address;
     if (observations) detalle += '. Obs: ' + observations;
-    
+
     var r = db.prepare("INSERT INTO ordenes (tipo, cliente_id, servicio_id, detalle, zona_id, direccion, estado, usuario_id) VALUES ('traslado',?,?,?,?,?,'pendiente',?)").run(client_id, service_id, detalle, sector_id, address, usuarioId);
-    
+
     // Update service address and zona
     if (address) db.prepare("UPDATE servicios SET direccion=? WHERE id=?").run(address, service_id);
     if (sector_id) db.prepare("UPDATE servicios SET zona_id=? WHERE id=?").run(sector_id, service_id);
-    
+
+    // Crear factura de traslado si aplica
+    var precio = parseFloat(precio_traslado) || 0;
+    if (crear_factura && precio > 0) {
+      var pagada = traslado_pagada === true || traslado_pagada === '1' || traslado_pagada === 1 ? 1 : 0;
+      db.prepare("INSERT INTO facturas (servicio_id, periodo, monto, estado, fecha_emision, fecha_vencimiento) VALUES (?,?,?,?,date('now'),date('now','+30 days'))").run(service_id, 'Traslado', precio, pagada ? 'pagada' : 'pendiente');
+      if (pagada) {
+        db.prepare("INSERT INTO pagos (servicio_id, cliente_id, monto, metodo, usuario_id) VALUES (?,?,?,'efectivo',?)").run(service_id, client_id, precio, usuarioId);
+      }
+    }
+
     res.json({ status: 'success', order_id: String(r.lastInsertRowid) });
   } catch(e) {
     res.json({ status: 'error', msg: e.message });
@@ -6811,22 +7468,22 @@ app.get('/api/ordenes/servicio-info/:id', requireAuth, (req, res) => {
 app.post('/api/ordenes/completar-traslado', requireAuth, (req, res) => {
   const { orden_id, tecnico_id, sector_id, direccion, observaciones } = req.body;
   if (!orden_id) return res.json({ status: 'error', msg: 'ID de orden requerido' });
-  
+
   try {
     const orden = db.prepare('SELECT * FROM ordenes WHERE id=?').get(orden_id);
     if (!orden) return res.json({ status: 'error', msg: 'Orden no encontrada' });
-    
+
     // Update service with new zone & address
     if (orden.servicio_id) {
       if (sector_id) db.prepare("UPDATE servicios SET zona_id=? WHERE id=?").run(sector_id, orden.servicio_id);
       if (direccion) db.prepare("UPDATE servicios SET direccion=? WHERE id=?").run(direccion, orden.servicio_id);
     }
-    
+
     // Mark order as completed
     var userId = req.session.user ? req.session.user.id : 0;
     db.prepare("UPDATE ordenes SET estado='completada', tecnico_id=?, direccion=?, detalle=?, fecha_completada=datetime('now'), completada_por=? WHERE id=?")
       .run(tecnico_id || orden.tecnico_id, direccion || orden.direccion, (orden.detalle || '') + (observaciones ? ' | Res: ' + observaciones : ''), userId, orden_id);
-    
+
     res.json({ status: 'success', msg: 'Traslado completado correctamente' });
   } catch(e) {
     res.json({ status: 'error', msg: e.message });
@@ -6879,7 +7536,7 @@ app.get('/api/cambio-onu/scan-onus', requireAuth, async (req, res) => {
   const oltId = parseInt(req.query.olt_id) || 0;
   if (!oltId) return res.json({ success: false, message: 'OLT requerida' });
   try {
-    const olt = db.prepare('SELECT * FROM olts WHERE id=? AND activo=1').get(oltId);
+    const olt = db.prepare('SELECT * FROM olts WHERE id=? ').get(oltId);
     if (!olt || !olt.smartolt_subdomain || !olt.smartolt_api_key) {
       return res.json({ success: false, message: 'OLT no configurada para SmartOLT' });
     }
@@ -6935,13 +7592,13 @@ app.post('/api/cambio-onu/eliminar-onu-vieja', requireAuth, async (req, res) => 
   const { sn, olt_id, servicio_id } = req.body;
   if (!sn || !olt_id) return res.json({ success: false, message: 'SN de ONU y OLT requeridos' });
   try {
-    const olt = db.prepare('SELECT * FROM olts WHERE id=? AND activo=1').get(olt_id);
+    const olt = db.prepare('SELECT * FROM olts WHERE id=? ').get(olt_id);
     if (!olt || !olt.smartolt_subdomain || !olt.smartolt_api_key) {
       return res.json({ success: false, message: 'OLT no configurada' });
     }
     const apiUrl = 'https://' + olt.smartolt_subdomain + '.smartolt.com/api';
     const headers = { 'X-Token': olt.smartolt_api_key, 'Content-Type': 'application/json', 'Accept': 'application/json' };
-    
+
     // Get ONU external ID by SN
     const detResp = await fetch(apiUrl + '/onu/get_onus_details_by_sn/' + sn, { method: 'GET', headers: { 'X-Token': olt.smartolt_api_key, 'Accept': 'application/json' } });
     const detData = await detResp.json();
@@ -6950,7 +7607,7 @@ app.post('/api/cambio-onu/eliminar-onu-vieja', requireAuth, async (req, res) => 
     if (onuList.length > 0) {
       extId = onuList[0].unique_external_id || onuList[0].id || onuList[0].onu_id || onuList[0].external_id || '';
     }
-    
+
     // Try to delete from SmartOLT
     require('fs').appendFileSync('/tmp/isptotal.log', '[ELIMINAR-ONU] sn=' + sn + ' olt_id=' + olt_id + ' extId=' + extId + '\n');
     if (extId) {
@@ -6982,13 +7639,13 @@ app.post('/api/cambio-onu/eliminar-onu-vieja', requireAuth, async (req, res) => 
         } catch(e3) { require('fs').appendFileSync('/tmp/isptotal.log', '[ELIMINAR-ONU] save_config error: ' + (e3.message||'') + '\n'); }
       }
     }
-    
+
     // Delete old ONU from local DB completely
     var delResult = db.prepare('DELETE FROM onu WHERE sn = ?').run(sn);
     require('fs').appendFileSync('/tmp/isptotal.log', '[ELIMINAR-ONU] local DB deleted ' + (delResult ? delResult.changes : 0) + ' rows\n');
     // Delete from local onu table if exists
     db.prepare('DELETE FROM onu WHERE sn = ?').run(sn);
-    
+
     res.json({ success: true, message: 'ONU vieja eliminada' + (extId ? ' de SmartOLT y ' : ' ') + 'desvinculada del servicio' });
   } catch(e) {
     res.json({ success: false, message: e.message });
@@ -7000,16 +7657,16 @@ app.post('/api/cambio-onu/autorizar-nueva-onu', requireAuth, async (req, res) =>
   const { olt_id, serial, onu_type, cliente_nombre, servicio_id, vlan, pppoe_user, pppoe_pass, board, port, onu_mode } = req.body;
   if (!olt_id || !serial) return res.json({ success: false, message: 'OLT y Serial requeridos' });
   try {
-    const olt = db.prepare('SELECT * FROM olts WHERE id=? AND activo=1').get(olt_id);
+    const olt = db.prepare('SELECT * FROM olts WHERE id=? ').get(olt_id);
     if (!olt || !olt.smartolt_subdomain || !olt.smartolt_api_key) {
       return res.json({ success: false, message: 'OLT no configurada para SmartOLT' });
     }
     const apiUrl = 'https://' + olt.smartolt_subdomain + '.smartolt.com/api';
-    
+
     // Delete old ONU first (if provided)
     if (req.body.old_sn && req.body.old_olt_id) {
       try {
-        const oldOlt = db.prepare('SELECT * FROM olts WHERE id=? AND activo=1').get(req.body.old_olt_id);
+        const oldOlt = db.prepare('SELECT * FROM olts WHERE id=? ').get(req.body.old_olt_id);
         if (oldOlt && oldOlt.smartolt_subdomain && oldOlt.smartolt_api_key) {
           const oldApiUrl = 'https://' + oldOlt.smartolt_subdomain + '.smartolt.com/api';
           const oldDetResp = await fetch(oldApiUrl + '/onu/get_onus_details_by_sn/' + req.body.old_sn, {
@@ -7028,14 +7685,14 @@ app.post('/api/cambio-onu/autorizar-nueva-onu', requireAuth, async (req, res) =>
         db.prepare('DELETE FROM onu WHERE sn = ?').run(req.body.old_sn);
       } catch(eOld) { /* best effort */ }
     }
-    
+
     // Get zone name from service
     let zonaName = '';
     if (servicio_id) {
       const svc = db.prepare('SELECT s.*, z.nombre as zona_nombre FROM servicios s LEFT JOIN zonas z ON z.id=s.zona_id WHERE s.id=?').get(servicio_id);
       if (svc && svc.zona_nombre) zonaName = svc.zona_nombre;
     }
-    
+
     // Authorize ONU - solo parámetros mínimos (como en la interfaz web de SmartOLT)
     const params = new URLSearchParams();
     params.append('olt_id', olt.smartolt_olt_id || olt_id);
@@ -7069,7 +7726,7 @@ app.post('/api/cambio-onu/autorizar-nueva-onu', requireAuth, async (req, res) =>
     else if (olt.vlan_default) params.append('vlan', olt.vlan_default);
     if (board) params.append('board', board);
     if (port) params.append('port', port);
-    
+
     // If pre-authorized, delete first
     try {
       const searchResp = await fetch(apiUrl + '/onu/get_onus_details_by_sn/' + serial, {
@@ -7084,7 +7741,7 @@ app.post('/api/cambio-onu/autorizar-nueva-onu', requireAuth, async (req, res) =>
         }
       }
     } catch(e) {}
-    
+
     const response = await fetch(apiUrl + '/onu/authorize_onu', {
       method: 'POST',
       headers: { 'X-Token': olt.smartolt_api_key, 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -7098,7 +7755,7 @@ app.post('/api/cambio-onu/autorizar-nueva-onu', requireAuth, async (req, res) =>
       const text = await response.text();
       return res.json({ success: false, message: text.substring(0, 300) });
     }
-    
+
     if (data.status === 'success' || data.status === true || data.response_code === 'success') {
       // Get external ID (retry up to 3 times)
       let extId = '';
@@ -7116,7 +7773,7 @@ app.post('/api/cambio-onu/autorizar-nueva-onu', requireAuth, async (req, res) =>
         } catch(e) {}
       }
       require('fs').appendFileSync('/tmp/isptotal.log', new Date().toISOString() + ' [CAMBIO-ONU] extId=' + extId + '\n');
-      
+
       // Get plan profiles for speed
       var dlProfile = '', ulProfile = '';
       if (servicio_id) {
@@ -7126,7 +7783,7 @@ app.post('/api/cambio-onu/autorizar-nueva-onu', requireAuth, async (req, res) =>
           ulProfile = pp.perfil_olt_subida || dlProfile;
         }
       }
-      
+
       if (extId) {
         // Speed profiles
         if (dlProfile) {
@@ -7139,7 +7796,7 @@ app.post('/api/cambio-onu/autorizar-nueva-onu', requireAuth, async (req, res) =>
             require('fs').appendFileSync('/tmp/isptotal.log', new Date().toISOString() + ' [CAMBIO-ONU] SpeedProfile: ' + JSON.stringify(spDataC) + '\n');
           } catch(eSp) { require('fs').appendFileSync('/tmp/isptotal.log', new Date().toISOString() + ' [CAMBIO-ONU] SpeedProfile error: ' + (eSp.message||'') + '\n'); }
         }
-        
+
         // Set Mgmt IP DHCP first (TR069 needs it)
         try {
           var mgP = new URLSearchParams();
@@ -7149,7 +7806,7 @@ app.post('/api/cambio-onu/autorizar-nueva-onu', requireAuth, async (req, res) =>
           var mgDataC = await mgRespC.json();
           require('fs').appendFileSync('/tmp/isptotal.log', new Date().toISOString() + ' [CAMBIO-ONU] MgmtIP: ' + JSON.stringify(mgDataC) + '\n');
         } catch(eM) { require('fs').appendFileSync('/tmp/isptotal.log', new Date().toISOString() + ' [CAMBIO-ONU] MgmtIP error: ' + (eM.message||'') + '\n'); }
-        
+
         // Enable TR069 (after Mgmt IP is ready)
         try {
           var trP = new URLSearchParams();
@@ -7158,7 +7815,7 @@ app.post('/api/cambio-onu/autorizar-nueva-onu', requireAuth, async (req, res) =>
           var trDataC = await trRespC.json();
           require('fs').appendFileSync('/tmp/isptotal.log', new Date().toISOString() + ' [CAMBIO-ONU] TR069 response: ' + JSON.stringify(trDataC) + '\n');
         } catch(eTr) {}
-        
+
         // Read WAN data from DB (like TR069 does)
         if (servicio_id) {
           var wanS = db.prepare('SELECT pppoe_user, pppoe_pass, auth_type FROM servicios WHERE id=?').get(servicio_id);
@@ -7168,7 +7825,7 @@ app.post('/api/cambio-onu/autorizar-nueva-onu', requireAuth, async (req, res) =>
             if (wanS.pppoe_pass && !pppoe_pass) pppoe_pass = wanS.pppoe_pass;
           }
         }
-        
+
         // Set WAN mode
         try {
           if (pppoe_user) {
@@ -7189,7 +7846,7 @@ app.post('/api/cambio-onu/autorizar-nueva-onu', requireAuth, async (req, res) =>
             require('fs').appendFileSync('/tmp/isptotal.log', new Date().toISOString() + ' [CAMBIO-ONU] WAN DHCP: ' + JSON.stringify(dhcpDataC) + '\n');
           }
         } catch(eW) { require('fs').appendFileSync('/tmp/isptotal.log', new Date().toISOString() + ' [CAMBIO-ONU] WAN error: ' + (eW.message||'') + '\n'); }
-        
+
         // Set WiFi
         if (servicio_id) {
           try {
@@ -7204,13 +7861,13 @@ app.post('/api/cambio-onu/autorizar-nueva-onu', requireAuth, async (req, res) =>
             }
           } catch(eWi) {}
         }
-        
+
         // Save config
         try {
           await fetch(apiUrl + '/system/save_config', { method: 'POST', headers: { 'X-Token': olt.smartolt_api_key } });
         } catch(eSv) {}
       }
-      
+
       // Link ONU to service in local DB
       if (servicio_id && serial) {
         try {
@@ -7221,7 +7878,7 @@ app.post('/api/cambio-onu/autorizar-nueva-onu', requireAuth, async (req, res) =>
             .run(serial, cliente_nombre || serial, clId, olt_id, servicio_id);
         } catch(e2) {}
       }
-      
+
       return res.json({ success: true, message: 'ONU autorizada y configurada exitosamente' });
     }
     return res.json({ success: false, message: data.msg || data.message || data.error || 'Error al autorizar ONU' });
@@ -7235,7 +7892,7 @@ app.post('/api/cambio-onu/verificar-onu', requireAuth, async (req, res) => {
   const { olt_id, serial } = req.body;
   if (!olt_id || !serial) return res.json({ found: false });
   try {
-    const olt = db.prepare('SELECT * FROM olts WHERE id=? AND activo=1').get(olt_id);
+    const olt = db.prepare('SELECT * FROM olts WHERE id=? ').get(olt_id);
     if (!olt || !olt.smartolt_subdomain || !olt.smartolt_api_key) return res.json({ found: false });
     const apiUrl = 'https://' + olt.smartolt_subdomain + '.smartolt.com/api';
     const resp = await fetch(apiUrl + '/onu/get_onus_details_by_sn/' + serial, {
@@ -7271,7 +7928,7 @@ app.get('/api/cambio-onu/historial', requireAuth, (req, res) => {
     const limit = parseInt(req.query.limit) || 20;
     const offset = (page - 1) * limit;
     const search = (req.query.search || '').trim();
-    
+
     let where = '1=1';
     let params = [];
     if (search) {
@@ -7279,13 +7936,13 @@ app.get('/api/cambio-onu/historial', requireAuth, (req, res) => {
       const s = '%' + search + '%';
       params.push(s, s, s, s);
     }
-    
+
     const countSql = "SELECT COUNT(*) as cnt FROM cambio_onu_swaps cs LEFT JOIN clientes c ON c.id=cs.cliente_id WHERE " + where;
     const total = db.prepare(countSql).get(...params).cnt;
     const pages = Math.max(1, Math.ceil(total / limit));
-    
+
     const data = db.prepare("SELECT cs.*, c.nombre as cliente_nombre, c.cedula, old_ol.nombre as old_olt_nombre, new_ol.nombre as new_olt_nombre, u.nombre as creado_por FROM cambio_onu_swaps cs LEFT JOIN clientes c ON c.id=cs.cliente_id LEFT JOIN olts old_ol ON old_ol.id=cs.old_olt_id LEFT JOIN olts new_ol ON new_ol.id=cs.new_olt_id LEFT JOIN usuarios u ON u.id=cs.created_by WHERE " + where + " ORDER BY cs.id DESC LIMIT ? OFFSET ?").all(...params, limit, offset);
-    
+
     res.json({ success: true, data: data, page: page, pages: pages, total: total });
   } catch(e) {
     res.json({ success: false, message: e.message });
@@ -7297,7 +7954,7 @@ app.get('/api/dashboard/wan-traffic', requireAuth, async (req, res) => {
   try {
     db.exec("CREATE TABLE IF NOT EXISTS wan_traffic (id INTEGER PRIMARY KEY AUTOINCREMENT, router_id INTEGER, bps_in REAL, bps_out REAL, created_at DATETIME DEFAULT CURRENT_TIMESTAMP)");
     db.exec("CREATE TABLE IF NOT EXISTS wan_daily_max (id INTEGER PRIMARY KEY AUTOINCREMENT, router_id INTEGER, fecha TEXT, max_bps_in REAL DEFAULT 0, max_bps_out REAL DEFAULT 0, updated_at DATETIME DEFAULT CURRENT_TIMESTAMP)");
-    
+
     // Get user's preferred router, or fallback
     var routerId = req.query.router_id || null;
     var router = null;
@@ -7390,11 +8047,11 @@ setInterval(async function() {
 app.post('/api/clientes/editar', requireAuth, (req, res) => {
   const { cliente_id, nombre, cedula, telefono, telefono2, direccion, apodo, zona_id, servicios } = req.body;
   if (!cliente_id || !nombre) return res.json({ success: false, message: 'ID y nombre requeridos' });
-  
+
   try {
     db.prepare('UPDATE clientes SET nombre=?, cedula=?, telefono=?, telefono2=?, direccion=?, apodo=?, zona_id=? WHERE id=?')
       .run(nombre, cedula || '', telefono || '', telefono2 || '', direccion || '', apodo || '', zona_id || null, cliente_id);
-    
+
     if (servicios && Array.isArray(servicios)) {
       var stmt = db.prepare('UPDATE servicios SET ip=?, pppoe_user=?, pppoe_pass=?, wifi_ssid=?, wifi_pass=? WHERE id=? AND cliente_id=?');
       for (var i = 0; i < servicios.length; i++) {
@@ -7402,20 +8059,113 @@ app.post('/api/clientes/editar', requireAuth, (req, res) => {
         stmt.run(s.ip || '', s.pppoe_user || '', s.pppoe_pass || '', s.wifi_ssid || '', s.wifi_pass || '', s.id, cliente_id);
       }
     }
-    
+
     res.json({ success: true, message: 'Cliente actualizado' });
   } catch(e) {
     res.json({ success: false, message: e.message });
   }
 });
 
-// POST /api/servicios/editar - Editar servicio
-app.post('/api/servicios/editar', requireAuth, (req, res) => {
+// GET /api/servicios/:id - Obtener datos de un servicio
+app.get('/api/servicios/:id', requireAuth, (req, res) => {
+  const id = parseInt(req.params.id) || 0;
+  if (!id) return res.json({ success: false, message: 'ID requerido' });
+  try {
+    const svc = db.prepare(`
+      SELECT s.*, p.nombre as plan_nombre, p.precio as plan_precio,
+             z.id as zona_id, z.nombre as zona_nombre,
+             o.sn as onu_sn
+      FROM servicios s
+      LEFT JOIN planes p ON p.id=s.plan_id
+      LEFT JOIN zonas z ON z.id=s.zona_id
+      LEFT JOIN onu o ON o.servicio_id=s.id
+      WHERE s.id=?
+    `).get(id);
+    if (!svc) return res.json({ success: false, message: 'No encontrado' });
+    res.json({ success: true, data: svc });
+  } catch(e) {
+    res.json({ success: false, message: e.message });
+  }
+});
+
+// POST /api/servicios/editar - Editar servicio (también envía WiFi/WAN a ONU si aplica)
+app.post('/api/servicios/editar', requireAuth, async (req, res) => {
   const { id, ip, plan_id, auth_type, pppoe_user, pppoe_pass, wifi_ssid, wifi_pass, direccion, tipo_servicio, ciclo_id, netflix_email, netflix_password, netflix_perfil, netflix_vencimiento, descripcion_servicio, precio_servicio } = req.body;
   if (!id) return res.json({ success: false, message: 'ID de servicio requerido' });
   try {
     db.prepare(`UPDATE servicios SET ip=?, plan_id=?, auth_type=?, pppoe_user=?, pppoe_pass=?, wifi_ssid=?, wifi_pass=?, direccion=?, tipo_servicio=?, ciclo_id=?, netflix_email=?, netflix_password=?, netflix_perfil=?, netflix_vencimiento=?, descripcion_servicio=?, precio_servicio=? WHERE id=?`)
       .run(ip || '', plan_id || null, auth_type || 'dhcp', pppoe_user || '', pppoe_pass || '', wifi_ssid || '', wifi_pass || '', direccion || '', tipo_servicio || 'internet', ciclo_id || null, netflix_email || '', netflix_password || '', netflix_perfil || '', netflix_vencimiento || null, descripcion_servicio || '', precio_servicio || 0, id);
+
+    // ===== Enviar WiFi/WAN a la ONU via SmartOLT TR069 =====
+    var tr069Promise = null;
+    try {
+      var onu = db.prepare('SELECT * FROM onu WHERE servicio_id=? ORDER BY id DESC LIMIT 1').get(id);
+      if (onu && onu.sn && onu.olt_id) {
+        var olt = db.prepare('SELECT * FROM olts WHERE id=? ').get(onu.olt_id);
+        if (olt && olt.smartolt_subdomain && olt.smartolt_api_key) {
+          require('fs').appendFileSync('/tmp/isptotal.log', '\\n[EDIT-SRV-' + id + '] ONU sn=' + onu.sn + ' olt=' + olt.smartolt_subdomain + ' sniff, enviando config...\\n');
+          tr069Promise = (async function() {
+            try {
+              const apiUrl = 'https://' + olt.smartolt_subdomain + '.smartolt.com/api';
+              // Get ONU external ID
+              const detResp = await fetch(apiUrl + '/onu/get_onus_details_by_sn/' + onu.sn, {
+                method: 'GET', headers: { 'X-Token': olt.smartolt_api_key, 'Accept': 'application/json' }
+              });
+              const detData = await detResp.json();
+              let onuList = detData.onus || detData.response || [];
+              if (onuList.length) {
+                const extId = onuList[0].unique_external_id || onuList[0].id || onuList[0].onu_id || '';
+                if (extId) {
+                  // Set WiFi if service has SSID
+                  if (wifi_ssid) {
+                    try {
+                      var wifiParams = new URLSearchParams();
+                      wifiParams.append('wifi_port', 'wifi_0/1');
+                      wifiParams.append('ssid', wifi_ssid);
+                      wifiParams.append('password', wifi_pass || '');
+                      wifiParams.append('authentication_mode', 'WPA2');
+                      await fetch(apiUrl + '/onu/set_wifi_port_lan/' + extId, {
+                        method: 'POST', headers: { 'X-Token': olt.smartolt_api_key, 'Content-Type': 'application/x-www-form-urlencoded' }, body: wifiParams
+                      });
+                      require('fs').appendFileSync('/tmp/isptotal.log', '[EDIT-SRV-' + id + '] WiFi configurado en ONU\\n');
+                    } catch(eW) { require('fs').appendFileSync('/tmp/isptotal.log', '[EDIT-SRV-' + id + '] WiFi error: ' + eW.message + '\\n'); }
+                  }
+                  // Update WAN if auth_type changed / PPPoE creds changed
+                  if (auth_type === 'pppoe' && pppoe_user) {
+                    try {
+                      var ppParams = new URLSearchParams();
+                      ppParams.append('username', pppoe_user);
+                      ppParams.append('password', pppoe_pass || '');
+                      ppParams.append('configuration_method', 'TR069');
+                      ppParams.append('ip_protocol', 'ipv4ipv6');
+                      await fetch(apiUrl + '/onu/set_onu_wan_mode_pppoe/' + extId, {
+                        method: 'POST', headers: { 'X-Token': olt.smartolt_api_key, 'Content-Type': 'application/x-www-form-urlencoded' }, body: ppParams
+                      });
+                      require('fs').appendFileSync('/tmp/isptotal.log', '[EDIT-SRV-' + id + '] WAN PPPoE actualizado en ONU\\n');
+                    } catch(eP) { require('fs').appendFileSync('/tmp/isptotal.log', '[EDIT-SRV-' + id + '] WAN error: ' + eP.message + '\\n'); }
+                  }
+                  // Save config
+                  try {
+                    await fetch(apiUrl + '/system/save_config', { method: 'POST', headers: { 'X-Token': olt.smartolt_api_key } });
+                    require('fs').appendFileSync('/tmp/isptotal.log', '[EDIT-SRV-' + id + '] Config guardada en OLT\\n');
+                  } catch(eS) { require('fs').appendFileSync('/tmp/isptotal.log', '[EDIT-SRV-' + id + '] SaveConfig error: ' + eS.message + '\\n'); }
+                }
+              }
+            } catch(eD) {
+              require('fs').appendFileSync('/tmp/isptotal.log', '[EDIT-SRV-' + id + '] Error obteniendo extId: ' + eD.message + '\\n');
+            }
+          })();
+        }
+      }
+    } catch(eO) {
+      require('fs').appendFileSync('/tmp/isptotal.log', '[EDIT-SRV-' + id + '] Error buscando ONU: ' + eO.message + '\\n');
+    }
+
+    // No esperar a que termine TR069 para responder
+    if (tr069Promise) {
+      tr069Promise.catch(function() {});
+    }
+
     res.json({ success: true, message: 'Servicio actualizado' });
   } catch(e) {
     res.json({ success: false, message: e.message });
@@ -7469,7 +8219,7 @@ app.post('/api/facturar/bulk', requireAuth, (req, res) => {
     var vencimiento = new Date(now);
     vencimiento.setDate(vencimiento.getDate() + 15);
     var vencStr = vencimiento.toISOString().split('T')[0];
-    
+
     clientes.forEach(function(clienteId) {
       var servicios = db.prepare("SELECT s.id, p.precio FROM servicios s LEFT JOIN planes p ON p.id=s.plan_id WHERE s.cliente_id=? AND s.estado='activo'").all(clienteId);
       servicios.forEach(function(svc) {
@@ -7483,7 +8233,7 @@ app.post('/api/facturar/bulk', requireAuth, (req, res) => {
         }
       });
     });
-    
+
     var msg = creadas > 0 ? creadas + ' factura(s) generadas' : 'Los clientes ya tienen facturas para este periodo';
     res.json({ success: true, message: msg, count: creadas });
   } catch(e) {
@@ -7498,43 +8248,59 @@ app.post('/api/servicios/:id/activar', requireAuth, (req, res) => {
   try {
     const svc = db.prepare('SELECT s.cliente_id FROM servicios s WHERE s.id=?').get(id);
     db.prepare("UPDATE servicios SET estado='activo', fecha_activacion=date('now') WHERE id=?").run(id);
-    
+
     // Enviar notificación de reactivación
     if (svc) {
       (async function() {
         try { sendReactivationNotification(svc.cliente_id, id, null); } catch(e) {}
       })();
     }
-    
+
     res.json({ success: true, message: 'Servicio activado' });
   } catch(e) {
     res.json({ success: false, message: e.message });
   }
 });
 
-// POST /api/servicios/:id/retirar - Retirar servicio
+// POST /api/servicios/:id/retirar - Retirar servicio (como DomISP)
 app.post('/api/servicios/:id/retirar', requireAuth, (req, res) => {
   const id = parseInt(req.params.id) || 0;
   if (!id) return res.json({ success: false, message: 'ID requerido' });
   try {
     var svc = db.prepare('SELECT s.*, o.sn as onu_sn, o.olt_id FROM servicios s LEFT JOIN onu o ON o.servicio_id=s.id WHERE s.id=?').get(id);
     if (!svc) return res.json({ success: false, message: 'Servicio no encontrado' });
-    db.prepare("UPDATE servicios SET estado='retirado', fecha_suspension=date('now') WHERE id=?").run(id);
-    
-    // Intentar eliminar ONU de SmartOLT (usando URL de la OLT correcta)
+
+    var motivo = (req.body.motivo || '').trim();
+
+    db.prepare("UPDATE servicios SET estado='retirado', fecha_retiro=datetime('now','localtime'), motivo_retiro=? WHERE id=?").run(motivo, id);
+
+    // Intentar eliminar ONU de SmartOLT
     try {
-      var oltCfg = db.prepare('SELECT smartolt_subdomain, smartolt_api_key FROM olts WHERE id=?').get(svc.olt_id);
-      if (oltCfg && oltCfg.smartolt_subdomain && oltCfg.smartolt_api_key && svc.onu_sn) {
-        var url = 'https://' + oltCfg.smartolt_subdomain + '.smartolt.com/api/onus/' + svc.onu_sn + '/delete';
-        var headers = { 'X-API-Key': oltCfg.smartolt_api_key, 'Content-Type': 'application/json' };
-        fetch(url, { method: 'POST', headers: headers }).catch(function() {});
+      if (svc.onu_sn && svc.olt_id) {
+        var oltCfg = db.prepare('SELECT smartolt_subdomain, smartolt_api_key FROM olts WHERE id=?').get(svc.olt_id);
+        if (oltCfg && oltCfg.smartolt_subdomain && oltCfg.smartolt_api_key) {
+          // Buscar external_id de la ONU primero
+          var searchUrl = 'https://' + oltCfg.smartolt_subdomain + '.smartolt.com/api/onu/get_onus_details_by_sn/' + svc.onu_sn;
+          fetch(searchUrl, { headers: { 'X-Token': oltCfg.smartolt_api_key } }).then(function(r) { return r.json(); }).then(function(sd) {
+            var list = sd.onus || sd.response || [];
+            if (list.length > 0) {
+              var extId = list[0].unique_external_id || list[0].id || list[0].onu_id || '';
+              if (extId) {
+                var delUrl = 'https://' + oltCfg.smartolt_subdomain + '.smartolt.com/api/onu/delete/' + extId;
+                fetch(delUrl, { method: 'POST', headers: { 'X-Token': oltCfg.smartolt_api_key } }).catch(function() {});
+              }
+            }
+          }).catch(function() {});
+        }
       }
     } catch(e) {}
-    
-    // Eliminar ONU de la base de datos
+
+    // Eliminar ONU de BD local
     db.prepare('DELETE FROM onu WHERE servicio_id=?').run(id);
-    
-    res.json({ success: true, message: 'Servicio retirado' });
+
+    db.logActivity(req.session.user, 'Retiró servicio #' + id + ': ' + motivo, 'Servicios', { servicio_id: id, usuario_id: req.session.user.id });
+
+    res.json({ success: true, message: 'Servicio retirado correctamente' });
   } catch(e) {
     res.json({ success: false, message: e.message });
   }
@@ -7550,7 +8316,7 @@ app.post('/api/servicios/:id/eliminar', requireAuth, (req, res) => {
     // Delete related records first, then the service itself
     db.prepare('DELETE FROM pagos WHERE servicio_id=?').run(id);
     db.prepare('DELETE FROM ordenes WHERE servicio_id=?').run(id);
-    db.prepare('DELETE FROM promesas_pago WHERE servicio_id=?').run(id);
+    db.prepare('DELETE FROM promesas_pago WHERE servicio_ids=? OR servicio_ids LIKE ? OR servicio_ids LIKE ? OR servicio_ids LIKE ?').run(String(id), '%,' + id + ',%', id + ',%', '%,' + id);
     db.prepare('DELETE FROM onu WHERE servicio_id=?').run(id);
     db.prepare('DELETE FROM facturas WHERE servicio_id=?').run(id);
     db.prepare('DELETE FROM ips_asignadas WHERE servicio_id=?').run(id);
@@ -7574,21 +8340,21 @@ app.post('/api/servicios/batch-suspender', requireAuth, (req, res) => {
       if (svc && svc.estado !== 'suspendido') {
         db.prepare('UPDATE servicios SET estado=\'suspendido\' WHERE id=?').run(sid);
         suspendidos++;
-        
+
         // Enviar notificación
         (async function() {
           try {
             var openwa = require('./openwa-service');
             var clientData = db.prepare('SELECT nombre, telefono FROM clientes WHERE id=?').get(svc.cliente_id);
             if (!clientData || !clientData.telefono) return;
-            
+
             var deudaRow = db.prepare("SELECT COALESCE(SUM(f.monto - COALESCE((SELECT SUM(pg.monto) FROM pagos pg WHERE pg.factura_id=f.id),0)),0) as total FROM facturas f WHERE f.servicio_id=? AND f.estado='pendiente'").get(sid);
             var deudaTotal = deudaRow ? deudaRow.total : 0;
-            
+
             var config = {};
             var cr = db.prepare("SELECT key, value FROM configuracion WHERE key IN ('empresa_nombre','empresa_telefono')").all();
             cr.forEach(function(r) { config[r.key] = r.value || ''; });
-            
+
             var tpl = db.prepare("SELECT content FROM templates WHERE template_key='notif_suspension'").get();
             var msg = (tpl ? tpl.content : '')
               .replace(/{client_name}/g, clientData.nombre || '')
@@ -7597,13 +8363,13 @@ app.post('/api/servicios/batch-suspender', requireAuth, (req, res) => {
               .replace(/{invoice_remaining}/g, '$' + deudaTotal.toFixed(2))
               .replace(/{company_phone}/g, config.empresa_telefono)
               .replace(/{company_name}/g, config.empresa_nombre);
-            
+
             if (msg.trim()) openwa.encolarMensaje(svc.cliente_id, sid, clientData.telefono, msg, 'suspension');
           } catch(e) {}
         })();
       }
     });
-    
+
     res.json({ success: true, message: suspendidos + ' servicio(s) suspendido(s)' });
   } catch(e) {
     res.json({ success: false, message: e.message });
@@ -7615,18 +8381,44 @@ app.post('/api/servicios/:id/suspender', requireAuth, (req, res) => {
   const id = parseInt(req.params.id) || 0;
   if (!id) return res.json({ success: false, message: 'ID de servicio requerido' });
   try {
-    const svc = db.prepare('SELECT s.*, c.id as cliente_id FROM servicios s JOIN clientes c ON c.id=s.cliente_id WHERE s.id=?').get(id);
+    const svc = db.prepare('SELECT s.*, c.id as cliente_id, p.nombre as plan_nombre FROM servicios s JOIN clientes c ON c.id=s.cliente_id LEFT JOIN planes p ON p.id=s.plan_id WHERE s.id=?').get(id);
     if (!svc) return res.json({ success: false, message: 'Servicio no encontrado' });
     const nuevoEstado = svc.estado === 'suspendido' ? 'activo' : 'suspendido';
-    db.prepare('UPDATE servicios SET estado=? WHERE id=?').run(nuevoEstado, id);
-    
-    // Si se reactivó, enviar notificación
-    if (nuevoEstado === 'activo') {
+    db.prepare("UPDATE servicios SET estado=?, fecha_suspension=CASE WHEN ?='suspendido' THEN datetime('now','localtime') ELSE fecha_suspension END WHERE id=?").run(nuevoEstado, nuevoEstado, id);
+
+    // Enviar notificación según el estado
+    if (nuevoEstado === 'suspendido') {
+      (async function() {
+        try {
+          var openwa = require('./openwa-service');
+          var cli = db.prepare('SELECT nombre, telefono FROM clientes WHERE id=?').get(svc.cliente_id);
+          if (cli && cli.telefono) {
+            var tpl = db.prepare("SELECT content FROM templates WHERE template_key='notif_suspension'").get();
+            if (tpl && tpl.content) {
+              var deuda = db.prepare("SELECT COALESCE(SUM(f.monto - COALESCE((SELECT SUM(pg.monto) FROM pagos pg WHERE pg.factura_id=f.id),0)),0) as total FROM facturas f WHERE f.servicio_id=? AND f.estado='pendiente'").get(id);
+              var deudaTotal = deuda ? deuda.total : 0;
+              var configRows = db.prepare("SELECT key, value FROM configuracion WHERE key IN ('empresa_nombre','empresa_telefono')").all();
+              var config = { empresa_nombre: '', empresa_telefono: '' };
+              configRows.forEach(function(r) { config[r.key] = r.value || ''; });
+              var msg = tpl.content
+                .replace(/{client_name}/g, cli.nombre || '')
+                .replace(/{service_address}/g, svc.direccion || '')
+                .replace(/{plan_name}/g, svc.plan_nombre || '')
+                .replace(/{invoice_remaining}/g, '$' + deudaTotal.toFixed(2))
+                .replace(/{company_phone}/g, config.empresa_telefono || '')
+                .replace(/{company_name}/g, config.empresa_nombre || '')
+                .replace(/{current_date}/g, new Date().toLocaleDateString('es-DO'));
+              openwa.encolarMensaje(svc.cliente_id, id, cli.telefono, msg, 'suspension');
+            }
+          }
+        } catch(eNotif) { console.log('[Suspender] Error notificación:', eNotif.message); }
+      })();
+    } else if (nuevoEstado === 'activo') {
       (async function() {
         try { sendReactivationNotification(svc.cliente_id, id, null); } catch(e) {}
       })();
     }
-    
+
     // MikroTik: agregar/quitar IP de lista de suspendidos
     (async function() {
       try {
@@ -7638,7 +8430,7 @@ app.post('/api/servicios/:id/suspender', requireAuth, (req, res) => {
         }
       } catch(e) {}
     })();
-    
+
     res.json({ success: true, message: 'Servicio ' + (nuevoEstado === 'suspendido' ? 'suspendido' : 'reactivado') });
   } catch(e) {
     res.json({ success: false, message: e.message });
@@ -7686,9 +8478,1671 @@ app.post('/api/tenant/profile', requireAuth, (req, res) => {
     res.json({ status: 'success', msg: 'Perfil actualizado' });
   } catch(e) { res.json({ status: 'error', msg: e.message }); }
 });
+// ======== GPON MANAGER API ========
+const ZteOLT = require('./zte-olt');
+var gponConnections = {}; // { userId: ZteOLT instance }
+var gponDataCache = {}; // { userId: { data, timestamp } }
+var gponConfigMap = {}; // { userId: { oltId, host, port, user, pass, socksHost, socksPort } }
+
+// ---- Cache persistente en SQLite ----
+// Inicializar tabla de caché GPON
+function initGponDbCache() {
+  db.exec("CREATE TABLE IF NOT EXISTS gpon_cache (id INTEGER PRIMARY KEY CHECK(id=1), configured_json TEXT, unconfigured_json TEXT, state_json TEXT, total_count INTEGER DEFAULT 0, online_count INTEGER DEFAULT 0, offline_count INTEGER DEFAULT 0, pending_count INTEGER DEFAULT 0, updated_at DATETIME)");
+  // Insert row if not exists
+  var row = db.prepare('SELECT id FROM gpon_cache WHERE id=1').get();
+  if (!row) {
+    db.prepare("INSERT INTO gpon_cache (id, updated_at) VALUES (1, datetime('now'))").run();
+  }
+}
+initGponDbCache();
+
+function saveGponCache(configured, unconfigured, state, total, online, offline, pending) {
+  try {
+    db.prepare("UPDATE gpon_cache SET configured_json=?, unconfigured_json=?, state_json=?, total_count=?, online_count=?, offline_count=?, pending_count=?, updated_at=datetime('now') WHERE id=1")
+      .run(JSON.stringify(configured), JSON.stringify(unconfigured), JSON.stringify(state), total, online, offline, pending);
+  } catch(e) {
+    console.log('[GPON-CACHE] Error saving to DB:', e.message);
+  }
+}
+
+function loadGponCache() {
+  try {
+    var row = db.prepare('SELECT * FROM gpon_cache WHERE id=1').get();
+    if (!row || !row.updated_at) return null;
+    return {
+      configured: row.configured_json ? JSON.parse(row.configured_json) : [],
+      unconfigured: row.unconfigured_json ? JSON.parse(row.unconfigured_json) : [],
+      state: row.state_json ? JSON.parse(row.state_json) : [],
+      total_count: row.total_count || 0,
+      online_count: row.online_count || 0,
+      offline_count: row.offline_count || 0,
+      pending_count: row.pending_count || 0,
+      updated_at: row.updated_at
+    };
+  } catch(e) {
+    console.log('[GPON-CACHE] Error loading from DB:', e.message);
+    return null;
+  }
+}
+
+function getGponCache(req) {
+  var key = getOltKey(req);
+  var cache = gponDataCache[key];
+  if (cache && (Date.now() - cache.timestamp < 300000)) return cache.data; // 5 min cache
+  return null;
+}
+
+function setGponCache(req, data) {
+  var key = getOltKey(req);
+  gponDataCache[key] = { data: data, timestamp: Date.now() };
+}
+
+function storeOltConfig(req, oltId) {
+  var key = getOltKey(req);
+  if (oltId) {
+    var cfg = db.prepare('SELECT * FROM olts WHERE id=?').get(oltId);
+    if (cfg) {
+      gponConfigMap[key] = { oltId: oltId, host: cfg.olt_ip, port: cfg.olt_port, user: cfg.olt_username, pass: cfg.olt_password, socksHost: cfg.socks_host, socksPort: cfg.socks_port };
+    }
+  }
+}
+
+async function ensureOltConnection(req) {
+  // Check if already connected
+  var olt = getOltConnection(req);
+  if (olt && olt.isConnected && olt.isConnected()) return olt;
+
+  // Try to reconnect from stored config
+  var key = getOltKey(req);
+  var cfg = gponConfigMap[key];
+  if (!cfg) {
+    // Try first OLT from DB
+    var firstOlt = db.prepare("SELECT * FROM olts WHERE olt_ip IS NOT NULL AND olt_ip != '' ORDER BY id LIMIT 1").get();
+    if (firstOlt) {
+      cfg = { oltId: firstOlt.id, host: firstOlt.olt_ip, port: firstOlt.olt_port, user: firstOlt.olt_username, pass: firstOlt.olt_password, socksHost: firstOlt.socks_host, socksPort: firstOlt.socks_port };
+      gponConfigMap[key] = cfg;
+    }
+  }
+
+  if (cfg) {
+    try {
+      var ZteOLT = require('./zte-olt');
+      var newOlt = new ZteOLT(
+        { host: cfg.socksHost || '2803:5a10:2:2800::2', port: cfg.socksPort || 1080 },
+        { host: cfg.host || '192.168.20.80', username: cfg.user || 'zte', password: cfg.pass || 'zte' }
+      );
+      await newOlt.connect();
+      setOltConnectionRaw(key, newOlt);
+      return newOlt;
+    } catch(e) {
+      console.log('[GPON] Auto-reconnect failed:', e.message);
+    }
+  }
+  return null;
+}
+
+function setOltConnectionRaw(key, olt) {
+  gponConnections[key] = olt;
+}
+
+function getOltKey(req) {
+  // Usar user ID si está autenticado, sino session ID
+  return req.session.user ? ('user_' + req.session.user.id) : ('sess_' + req.session.id);
+}
+
+function getOltConnection(req) {
+  var key = getOltKey(req);
+  return gponConnections[key] || null;
+}
+
+function setOltConnection(req, olt) {
+  var key = getOltKey(req);
+  gponConnections[key] = olt;
+}
+
+function clearOltConnection(req) {
+  var key = getOltKey(req);
+  delete gponConnections[key];
+}
+
+// GET /api/gpon/config - Obtener config de OLT
+app.get('/api/gpon/config', requireAuth, async (req, res) => {
+  try {
+    var olts = db.prepare('SELECT id, nombre, olt_ip, olt_port, olt_username, olt_password, socks_host, socks_port, tipo FROM olts ORDER BY id').all();
+    res.json({ success: true, data: olts });
+  } catch(e) {
+    res.json({ success: false, msg: e.message });
+  }
+});
+
+// POST /api/gpon/config/save - Guardar config de OLT
+app.post('/api/gpon/config/save', requireAuth, async (req, res) => {
+  try {
+    var oltId = parseInt(req.body.id) || 0;
+    var oltIp = (req.body.olt_ip || '192.168.20.80').trim();
+    var oltPort = parseInt(req.body.olt_port) || 23;
+    var oltUsername = (req.body.olt_username || 'zte').trim();
+    var oltPassword = (req.body.olt_password || 'zte').trim();
+    var socksHost = (req.body.socks_host || '2803:5a10:2:2800::2').trim();
+    var socksPort = parseInt(req.body.socks_port) || 1080;
+
+    if (oltId) {
+      db.prepare('UPDATE olts SET olt_ip=?, olt_port=?, olt_username=?, olt_password=?, socks_host=?, socks_port=? WHERE id=?').run(oltIp, oltPort, oltUsername, oltPassword, socksHost, socksPort, oltId);
+    } else {
+      var r = db.prepare('INSERT INTO olts (nombre, olt_ip, olt_port, olt_username, olt_password, socks_host, socks_port, tipo) VALUES (?,?,?,?,?,?,?,\'local\')').run('Mi OLT', oltIp, oltPort, oltUsername, oltPassword, socksHost, socksPort);
+      oltId = r.lastInsertRowid;
+    }
+
+    db.logActivity(req.session.user, 'Configuró OLT #' + oltId, 'GPON', { usuario_id: req.session.user.id });
+    res.json({ success: true, msg: 'OLT configurada', id: oltId });
+  } catch(e) {
+    res.json({ success: false, msg: 'Error: ' + e.message });
+  }
+});
+
+// POST /api/gpon/connect - Conectar a OLT via SOCKS proxy (MikroTik) + telnet
+app.post('/api/gpon/connect', requireAuth, async (req, res) => {
+  try {
+    var oltConfig;
+    var oltId = parseInt(req.body.olt_id) || 0;
+
+    if (oltId) {
+      oltConfig = db.prepare('SELECT * FROM olts WHERE id=?').get(oltId);
+    } else {
+      // Usar la primera OLT configurada
+      oltConfig = db.prepare("SELECT * FROM olts WHERE olt_ip IS NOT NULL AND olt_ip != '' ORDER BY id LIMIT 1").get();
+    }
+
+    if (!oltConfig) {
+      return res.json({ success: false, msg: 'No hay OLT configurada. Ve a Configuraci\u00f3n > OLT primero.' });
+    }
+
+    var socksHost = oltConfig.socks_host || '2803:5a10:2:2800::2';
+    var socksPort = parseInt(oltConfig.socks_port) || 1080;
+    var oltHost = oltConfig.olt_ip || '192.168.20.80';
+    var oltPort = parseInt(oltConfig.olt_port) || 23;
+    var oltUser = oltConfig.olt_username || 'zte';
+    var oltPass = oltConfig.olt_password || 'zte';
+
+    var olt = new ZteOLT(
+      { host: socksHost, port: socksPort },
+      { host: oltHost, username: oltUser, password: oltPass }
+    );
+    await olt.connect();
+    setOltConnection(req, olt);
+    storeOltConfig(req, oltId || oltConfig.id);
+
+    res.json({ success: true, msg: 'Conectado a OLT ' + oltHost + ' via SOCKS proxy' });
+  } catch(e) {
+    res.json({ success: false, msg: 'Error: ' + e.message });
+  }
+});
+
+// POST /api/gpon/disconnect - Desconectar
+app.post('/api/gpon/disconnect', requireAuth, async (req, res) => {
+  try {
+    var olt = await ensureOltConnection(req);
+    if (olt) await olt.disconnect();
+    clearOltConnection(req);
+    res.json({ success: true });
+  } catch(e) {
+    res.json({ success: false, msg: e.message });
+  }
+});
+
+// GET /api/gpon/onus - Obtener lista de ONUs
+// Lee INSTANTÁNEAMENTE desde la DB local (cache persistente)
+// El background refresh service actualiza los datos cada 3 minutos
+app.get('/api/gpon/onus', requireAuth, async (req, res) => {
+  try {
+    var dbOnus = db.prepare('SELECT o.*, c.nombre as cliente_nombre FROM onu o LEFT JOIN clientes c ON c.id=o.cliente_id ORDER BY o.id DESC').all();
+
+    // === 1. Intentar cache en memoria primero (ultra rápido) ===
+    var cached = gponDataCache['background'];
+    if (cached && (Date.now() - cached.timestamp < 240000)) { // 4 min cache
+      return res.json(cached.data);
+    }
+
+    // === 2. Cache en DB (persistente) ===
+    var dbCache = loadGponCache();
+    if (dbCache && dbCache.total_count > 0) {
+      var gponResult = {
+        success: true,
+        configured: dbCache.configured || [],
+        unconfigured: dbCache.unconfigured || [],
+        state: dbCache.state || dbCache.configured || [],
+        db_onus: dbOnus,
+        low_signal: 0
+      };
+      // Cachear en memoria también
+      gponDataCache['background'] = { data: gponResult, timestamp: Date.now() };
+      return res.json(gponResult);
+    }
+
+    // Fallback: DB local
+    var mergedState = [];
+    if (dbOnus.length > 0) {
+      mergedState = dbOnus.map(function(d) {
+        return { port: '', onuId: d.sn || '', sn: d.sn || '', name: d.cliente_nombre || '', state: d.estado || 'unknown', adminState: 'unknown', omccState: 'unknown', phaseState: 'unknown' };
+      });
+    }
+
+    var result = {
+      success: true,
+      configured: mergedState,
+      unconfigured: [],
+      state: mergedState,
+      db_onus: dbOnus,
+      low_signal: 0
+    };
+
+    res.json(result);
+  } catch(e) {
+    console.log('[GPON] Error en /api/gpon/onus:', e.message);
+    res.json({ success: false, msg: 'Error: ' + e.message });
+  }
+});
+
+// POST /api/gpon/authorize - Autorizar ONU (vía telnet directo OLT)
+app.post('/api/gpon/authorize', requireAuth, async (req, res) => {
+  try {
+    var olt = await ensureOltConnection(req);
+    if (!olt) return res.json({ success: false, msg: 'No conectado a OLT' });
+
+    var sn = (req.body.sn || '').trim().toUpperCase();
+    var port = req.body.port || '';
+    var profile = parseInt(req.body.profile) || 1;
+    var lineProfile = parseInt(req.body.line_profile) || 1;
+    var clienteId = req.body.cliente_id || null;
+    var nombre = (req.body.nombre || '').trim();
+    var vlan = (req.body.vlan || '').trim();
+    var planId = parseInt(req.body.plan_id) || 0;
+
+    if (!sn) return res.json({ success: false, msg: 'SN requerido' });
+
+    // Si no se especificó puerto, buscar uno libre automáticamente
+    if (!port) {
+      var onus = await olt.getConfiguredOnus();
+      var usedPorts = {};
+      onus.forEach(function(o) { if (o.port) usedPorts[o.port] = (usedPorts[o.port] || 0) + 1; });
+      for (var s = 1; s <= 3; s++) {
+        for (var p = 1; p <= 8; p++) {
+          var portKey = '1/' + s + '/' + p;
+          if ((usedPorts[portKey] || 0) < 64) { port = portKey; break; }
+        }
+        if (port) break;
+      }
+      if (!port) return res.json({ success: false, msg: 'No hay puertos disponibles en la OLT' });
+    }
+
+    // Asignar perfil según plan si no se especificó
+    if (planId && profile === 1) {
+      var plan = db.prepare('SELECT * FROM planes WHERE id=?').get(planId);
+      if (plan) {
+        var dlProfile = (plan.perfil_olt_descarga || '').replace(/[^0-9]/g, '');
+        var speed = parseInt(dlProfile) || 0;
+        if (speed <= 10) profile = 2;
+        else if (speed <= 30) profile = 3;
+        else if (speed <= 50) profile = 4;
+        else if (speed <= 100) profile = 5;
+        else if (speed <= 200) profile = 6;
+        else if (speed <= 500) profile = 7;
+        else profile = 8;
+      }
+    }
+
+    var parts = port.split('/');
+    var frame = parseInt(parts[0]) || 1;
+    var slot = parseInt(parts[1]) || 2;
+    var portNum = parseInt(parts[2]) || 1;
+
+    var result = await olt.authorizeOnu(frame, slot, portNum, sn, profile, lineProfile);
+
+    if (result.success) {
+      var oltId = 6;
+
+      // Guardar en BD local con todos los datos
+      var insertData = {
+        sn: sn,
+        nombre: nombre || 'ONU ' + sn,
+        vlan: vlan || null,
+        plan_id: planId || null,
+        cliente_id: clienteId || null,
+        olt_id: oltId
+      };
+
+      if (clienteId) {
+        db.prepare("INSERT INTO onu (sn, nombre, cliente_id, vlan, olt_id, estado, created_at) VALUES (?, ?, ?, ?, ?, 'activo', datetime('now'))").run(sn, nombre || 'ONU ' + sn, clienteId, vlan || null, oltId);
+      } else {
+        db.prepare("INSERT INTO onu (sn, nombre, vlan, cliente_id, olt_id, estado, created_at) VALUES (?, ?, ?, ?, ?, 'activo', datetime('now'))").run(sn, nombre || 'ONU ' + sn, vlan || null, null, oltId);
+      }
+
+      res.json({ success: true, msg: 'ONU ' + sn + ' autorizada en puerto ' + port });
+    } else {
+      res.json({ success: false, msg: result.output || 'Error al autorizar' });
+    }
+  } catch(e) {
+    res.json({ success: false, msg: 'Error: ' + e.message });
+  }
+});
+
+// POST /api/gpon/sync - Sincronizar ONUs desde SmartOLT a DB local
+// Toma los datos de SmartOLT (con SN, nombres, zonas) y los guarda en la tabla onu
+// Así al consultar la DB local ya tenemos los nombres aunque la OLT no los tenga
+app.post('/api/gpon/sync', requireAuth, async (req, res) => {
+  try {
+    var stats = { added: 0, updated: 0, skipped: 0, errors: 0 };
+    
+    // 1. Obtener ONUs configuradas desde SmartOLT (tienen SN + nombre)
+    var smartoltData = null;
+    try {
+      var p = new Promise(function(resolve) {
+        smartoltFetch('/onu/configured_onus/status', 'GET').then(function(data) { resolve(data); }).catch(function() { resolve(null); });
+        setTimeout(function() { resolve(null); }, 15000);
+      });
+      smartoltData = await p;
+    } catch(e) {}
+    
+    if (!smartoltData || !smartoltData.response || smartoltData.response.length === 0) {
+      return res.json({ success: false, msg: 'No se pudieron obtener datos de SmartOLT' });
+    }
+    
+    // 2. Para cada ONU de SmartOLT, guardar/actualizar en DB local
+    var oltId = 6; // ID por defecto de la OLT
+    smartoltData.response.forEach(function(apiOnu) {
+      if (!apiOnu.sn || apiOnu.sn.length < 8) {
+        stats.skipped++;
+        return;
+      }
+      try {
+        var sn = apiOnu.sn;
+        var name = apiOnu.location_name || '';
+        var description = apiOnu.description || ''; // "gpon-onu_1/3/3:1"
+        
+        var existing = db.prepare('SELECT id, nombre FROM onu WHERE sn=?').get(sn);
+        if (existing) {
+          // Actualizar nombre si estaba vacío
+          if (!existing.nombre && name) {
+            db.prepare('UPDATE onu SET nombre=?, olt_id=? WHERE id=?').run(name, oltId, existing.id);
+            stats.updated++;
+          } else {
+            stats.skipped++;
+          }
+        } else {
+          // Insertar nueva ONU
+          db.prepare("INSERT INTO onu (sn, nombre, olt_id, estado, created_at) VALUES (?, ?, ?, 'activo', datetime('now'))").run(sn, name, oltId);
+          stats.added++;
+        }
+      } catch(e) {
+        stats.errors++;
+      }
+    });
+    
+    // 3. También sincronizar ONUs no configuradas (pendientes)
+    try {
+      var p2 = new Promise(function(resolve) {
+        smartoltFetch('/onu/unconfigured_onus', 'GET').then(function(data) { resolve(data); }).catch(function() { resolve(null); });
+        setTimeout(function() { resolve(null); }, 10000);
+      });
+      var unconfData = await p2;
+      if (unconfData && unconfData.response) {
+        unconfData.response.forEach(function(u) {
+          if (!u.sn || u.sn.length < 8) return;
+          try {
+            var existing = db.prepare('SELECT id FROM onu WHERE sn=?').get(u.sn);
+            if (!existing) {
+              db.prepare("INSERT INTO onu (sn, olt_id, estado, created_at) VALUES (?, ?, 'pendiente', datetime('now'))").run(u.sn, oltId);
+              stats.added++;
+            }
+          } catch(e) { stats.errors++; }
+        });
+      }
+    } catch(e) {}
+    
+    res.json({ 
+      success: true, 
+      msg: stats.added + ' agregadas, ' + stats.updated + ' actualizadas, ' + stats.skipped + ' omitidas' + (stats.errors ? ', ' + stats.errors + ' errores' : '')
+    });
+  } catch(e) {
+    res.json({ success: false, msg: 'Error: ' + e.message });
+  }
+});
+
+// GET /api/gpon/signal/:sn - Obtener señal de ONU
+app.get('/api/gpon/signal/:sn', requireAuth, async (req, res) => {
+  try {
+    var olt = await ensureOltConnection(req);
+    if (!olt) return res.json({ success: false, msg: 'No conectado a OLT' });
+
+    var signal = await olt.getOnuSignal(req.params.sn);
+    res.json({ success: true, data: signal });
+  } catch(e) {
+    res.json({ success: false, msg: 'Error: ' + e.message });
+  }
+});
+
+// GET /api/gpon/onus/detailed - ONUs configuradas + pendientes
+// Lee de la CACHÉ en DB (actualizada cada 3 min por background refresh)
+app.get('/api/gpon/onus/detailed', requireAuth, async (req, res) => {
+  try {
+    // 1. Intentar cache en memoria primero
+    var cached = gponDataCache['background'];
+    if (cached && (Date.now() - cached.timestamp < 240000)) {
+      var data = cached.data;
+      // Combinar configured con pending
+      var allOnus = (data.configured || []).map(function(o) {
+        return { id: '', sn: o.sn || '', name: o.name || '', description: o.onuId || '', onuId: o.onuId || '', port: o.port || '', state: o.state || 'unknown', type: 'configured', zone_name: o.zone_name || '', onu_type_name: o.onu_type_name || '', wan_mode: o.wan_mode || o.mode || '', vlan: o.vlan || '' };
+      });
+      (data.unconfigured || []).forEach(function(p) {
+        allOnus.push({
+          id: '',
+          sn: p.sn || '',
+          name: 'Pendiente',
+          description: 'Board: ' + (p.board || '?') + ' Port: ' + (p.port || '?'),
+          onuId: p.sn || '',
+          port: (p.board || '') + '/' + (p.port || ''),
+          state: 'pending',
+          type: 'unconfigured',
+          zone_name: '',
+          onu_type_name: p.onu_type_name || '',
+          wan_mode: '',
+          vlan: ''
+        });
+      });
+      return res.json({ success: true, onus: allOnus });
+    }
+
+    // 2. Fallback: leer de DB cache
+    var dbCache = loadGponCache();
+    if (dbCache && dbCache.configured && dbCache.configured.length > 0) {
+      var allOnus = (dbCache.configured || []).map(function(o) {
+        return { id: '', sn: o.sn || '', name: o.name || '', description: o.onuId || '', onuId: o.onuId || '', port: o.port || '', state: o.state || 'unknown', type: 'configured', zone_name: o.zone_name || '', onu_type_name: o.onu_type_name || '', wan_mode: o.wan_mode || o.mode || '', vlan: o.vlan || '' };
+      });
+      (dbCache.unconfigured || []).forEach(function(p) {
+        allOnus.push({
+          id: '',
+          sn: (typeof p === 'string') ? p : (p.sn || ''),
+          name: 'Pendiente',
+          description: 'SN: ' + ((typeof p === 'string') ? p : (p.sn || '')),
+          onuId: (typeof p === 'string') ? p : (p.sn || ''),
+          port: '',
+          state: 'pending',
+          type: 'unconfigured',
+          zone_name: '',
+          onu_type_name: (typeof p === 'object' && p.onu_type_name) ? p.onu_type_name : '',
+          wan_mode: '',
+          vlan: ''
+        });
+      });
+      return res.json({ success: true, onus: allOnus });
+    }
+
+    res.json({ success: true, onus: [] });
+  } catch(e) {
+    console.log('[GPON] Error detailed:', e.message);
+    res.json({ success: false, msg: 'Error: ' + e.message, onus: [] });
+  }
+});
+
+// GET /api/gpon/onu/detail/:sn - Obtener detalles de una ONU (SmartOLT + DB local + señal)
+// Acepta tanto SN como ONU ID (ej: gpon-onu_1/2/1:1)
+app.get('/api/gpon/onu/detail/:sn', requireAuth, async (req, res) => {
+  try {
+    var sn = (req.params.sn || '').trim();
+    if (!sn) return res.json({ success: false, msg: 'ID requerido' });
+    
+    var resolvedSn = sn;
+    var isOnuId = sn.indexOf('gpon-onu_') === 0;
+    
+    // Si es ONU ID, buscar SN en caché
+    if (isOnuId) {
+      var cache = gponDataCache['background'];
+      var data = cache ? cache.data : null;
+      if (data && data.configured) {
+        var found = data.configured.find(function(o) { return o.onuId === sn; });
+        if (found && found.sn) resolvedSn = found.sn;
+      }
+      if (!resolvedSn || resolvedSn === sn) {
+        // Fallback: buscar en DB cache
+        var dbCache = loadGponCache();
+        if (dbCache && dbCache.configured) {
+          var found = dbCache.configured.find(function(o) { return o.onuId === sn; });
+          if (found && found.sn) resolvedSn = found.sn;
+        }
+      }
+    }
+
+    // 1. Buscar en DB local
+    var local = db.prepare('SELECT o.*, c.nombre as cliente_nombre, c.telefono, c.direccion FROM onu o LEFT JOIN clientes c ON c.id=o.cliente_id WHERE o.sn=?').get(resolvedSn);
+    
+    // Si no se encontró por SN, buscar por descripción
+    if (!local && isOnuId) {
+      local = db.prepare('SELECT o.*, c.nombre as cliente_nombre, c.telefono, c.direccion FROM onu o LEFT JOIN clientes c ON c.id=o.cliente_id WHERE o.puerto_olt=?').get(sn);
+    }
+
+    // 2. Buscar en SmartOLT (solo si tenemos un SN real)
+    var smartolt = null;
+    if (resolvedSn && resolvedSn.length >= 8 && !isOnuId) {
+      try {
+        var p = new Promise(function(resolve) {
+          smartoltFetch('/onu/get_onus_details_by_sn/' + resolvedSn, 'GET').then(function(d) { resolve(d); }).catch(function() { resolve(null); });
+          setTimeout(function() { resolve(null); }, 10000);
+        });
+        var data = await p;
+        if (data && data.onus && data.onus.length > 0) {
+          smartolt = data.onus[0];
+        }
+      } catch(e) {}
+
+      // 3. Buscar señal óptica
+      var signal = null;
+      try {
+        var p2 = new Promise(function(resolve) {
+          smartoltFetch('/onu/get_onu_full_status_info/' + resolvedSn, 'GET').then(function(d) { resolve(d); }).catch(function() { resolve(null); });
+          setTimeout(function() { resolve(null); }, 8000);
+        });
+        var sigData = await p2;
+        if (sigData && sigData.full_status_json) {
+          signal = sigData.full_status_json;
+        }
+      } catch(e) {}
+      return res.json({ success: true, data: { sn: resolvedSn, onuId: isOnuId ? sn : '', local: local || null, smartolt: smartolt, signal: signal || null } });
+    }
+    
+    res.json({ success: true, data: { sn: resolvedSn, onuId: isOnuId ? sn : '', local: local || null, smartolt: smartolt, signal: null } });
+  } catch(e) {
+    console.log('[GPON] Error detail:', e.message);
+    res.json({ success: false, msg: 'Error: ' + e.message });
+  }
+});
+
+// POST /api/gpon/onu/save - Guardar cambios de una ONU
+app.post('/api/gpon/onu/save', requireAuth, async (req, res) => {
+  try {
+    var sn = (req.body.sn || '').trim();
+    var nombre = (req.body.nombre || '').trim();
+    var zona = (req.body.zona || '').trim();
+    var vlan = (req.body.vlan || '').trim();
+    var onuType = (req.body.onu_type || '').trim();
+
+    if (!sn) return res.json({ success: false, msg: 'SN requerido' });
+
+    var existing = db.prepare('SELECT id FROM onu WHERE sn=?').get(sn);
+    if (existing) {
+      var updates = [];
+      var params = [];
+      if (nombre) { updates.push('nombre=?'); params.push(nombre); }
+      if (zona) { updates.push('zona=?'); params.push(zona); }
+      if (vlan) { updates.push('vlan=?'); params.push(vlan); }
+      if (onuType) { updates.push('onu_type=?'); params.push(onuType); }
+      if (updates.length > 0) {
+        params.push(sn);
+        db.prepare('UPDATE onu SET ' + updates.join(',') + ' WHERE sn=?').run.apply(null, params);
+      }
+    } else {
+      db.prepare("INSERT INTO onu (sn, nombre, zona, vlan, onu_type, olt_id, estado, created_at) VALUES (?, ?, ?, ?, ?, 6, 'activo', datetime('now'))").run(sn, nombre || '', zona || '', vlan || '', onuType || '');
+    }
+
+    res.json({ success: true, msg: 'ONU actualizada' });
+  } catch(e) {
+    res.json({ success: false, msg: 'Error: ' + e.message });
+  }
+});
+
+// ======== SMARTOLT REPLACEMENT - NUEVOS ENDPOINTS ========
+
+// GET /api/gpon/onus/all - Listar TODAS las ONUs con estado + detalle
+app.get('/api/gpon/onus/all', requireAuth, async (req, res) => {
+  try {
+    var olt = await ensureOltConnection(req);
+    if (!olt) return res.json({ success: false, msg: 'No conectado a OLT' });
+
+    var onus = await olt.getConfiguredOnus();
+    var uncfg = await olt.getUnconfiguredOnus();
+
+    // Enriquecer con datos de BD local
+    onus.forEach(function(o) {
+      var dbOnu = db.prepare('SELECT * FROM onu WHERE sn=?').get(o.sn);
+      if (dbOnu) {
+        o.nombre = dbOnu.nombre || o.nombre;
+        o.cliente_id = dbOnu.cliente_id;
+        o.zona = dbOnu.zona;
+        o.vlan = dbOnu.vlan;
+        o.onu_type = dbOnu.onu_type;
+      }
+      if (o.sn) {
+        var cli = db.prepare('SELECT c.nombre, c.id FROM clientes c JOIN servicios s ON s.cliente_id=c.id JOIN onu o2 ON o2.sn=? WHERE o2.sn=? LIMIT 1').get(o.sn, o.sn);
+        if (!cli) cli = db.prepare('SELECT c.nombre, c.id FROM onu o2 JOIN clientes c ON c.id=o2.cliente_id WHERE o2.sn=? LIMIT 1').get(o.sn);
+        if (cli) o.cliente_nombre = cli.nombre;
+      }
+    });
+
+    res.json({ success: true, data: { onus: onus, uncfg: uncfg } });
+  } catch(e) {
+    res.json({ success: false, msg: 'Error: ' + e.message });
+  }
+});
+
+// POST /api/gpon/onu/action - Acciones: delete, disable, enable, reboot, factory-reset, signal
+app.post('/api/gpon/onu/action', requireAuth, async (req, res) => {
+  try {
+    var olt = await ensureOltConnection(req);
+    if (!olt) return res.json({ success: false, msg: 'No conectado a OLT' });
+
+    var action = req.body.action || '';
+    var onuId = req.body.onu_id || '';
+    var sn = req.body.sn || '';
+
+    if (!action || !onuId) return res.json({ success: false, msg: 'Acción y ONU ID requeridos' });
+
+    var result;
+    switch(action) {
+      case 'delete':
+        var m = onuId.match(/gpon-onu_(\S+):(\d+)/);
+        if (!m) return res.json({ success: false, msg: 'Formato inválido' });
+        result = await olt.deleteOnu(m[1], m[2]);
+        if (result.success) {
+          if (sn) db.prepare('DELETE FROM onu WHERE sn=?').run(sn);
+          await olt.saveConfig();
+        }
+        break;
+      case 'disable': result = await olt.disableOnu(onuId); break;
+      case 'enable': result = await olt.enableOnu(onuId); break;
+      case 'reboot': result = await olt.rebootOnu(onuId); break;
+      case 'factory-reset': result = await olt.factoryResetOnu(onuId); break;
+      case 'signal':
+        if (!sn) return res.json({ success: false, msg: 'SN requerido para señal' });
+        var sig = await olt.getOnuSignal(sn);
+        return res.json({ success: true, data: sig });
+      default:
+        return res.json({ success: false, msg: 'Acción desconocida: ' + action });
+    }
+
+    res.json({
+      success: result.success,
+      msg: result.success ? 'Acción completada: ' + action : (result.output || result.msg || 'Error')
+    });
+  } catch(e) {
+    res.json({ success: false, msg: 'Error: ' + e.message });
+  }
+});
+
+// POST /api/gpon/onu/assign-cliente - Asignar ONU a cliente
+app.post('/api/gpon/onu/assign-cliente', requireAuth, async (req, res) => {
+  try {
+    var sn = (req.body.sn || '').trim();
+    var clienteId = parseInt(req.body.cliente_id) || 0;
+    var servicioId = parseInt(req.body.servicio_id) || 0;
+
+    if (!sn || !clienteId) return res.json({ success: false, msg: 'SN y Cliente requeridos' });
+
+    // Validar que cliente_id y servicio_id existan
+    var valCliente = db.prepare('SELECT id FROM clientes WHERE id=?').get(clienteId);
+    if (!valCliente) return res.json({ success: false, msg: 'Cliente no existe (ID: ' + clienteId + ')' });
+    var valServicio = servicioId ? db.prepare('SELECT id FROM servicios WHERE id=?').get(servicioId) : null;
+    var finalSvcId = valServicio ? servicioId : null;
+
+    var existing = db.prepare('SELECT id FROM onu WHERE sn=?').get(sn);
+    if (existing) {
+      db.prepare('UPDATE onu SET cliente_id=?, servicio_id=? WHERE sn=?').run(clienteId, finalSvcId, sn);
+    } else {
+      db.prepare("INSERT INTO onu (sn, cliente_id, servicio_id, olt_id, estado) VALUES (?,?,?,6,'activo')").run(sn, clienteId, finalSvcId);
+    }
+
+    res.json({ success: true, msg: 'ONU asignada al cliente' });
+  } catch(e) {
+    res.json({ success: false, msg: 'Error: ' + e.message });
+  }
+});
+
+// GET /api/gpon/ports/disponibles - Puertos disponibles en la OLT
+app.get('/api/gpon/ports/disponibles', requireAuth, async (req, res) => {
+  try {
+    var olt = await ensureOltConnection(req);
+    if (!olt) return res.json({ success: false, msg: 'No conectado a OLT' });
+
+    var onus = await olt.getConfiguredOnus();
+    var portCounts = {};
+    onus.forEach(function(o) {
+      var p = o.port || (o.onuId ? o.onuId.match(/gpon-onu_(\d+\/\d+\/\d+)/) : null);
+      if (p) {
+        if (Array.isArray(p)) p = p[1];
+        portCounts[p] = (portCounts[p] || 0) + 1;
+      }
+    });
+
+    var ports = Object.keys(portCounts).map(function(p) {
+      var libre = 64 - portCounts[p];
+      return { port: p, usadas: portCounts[p], libres: Math.max(0, libre), total: 64 };
+    });
+
+    res.json({ success: true, data: ports });
+  } catch(e) {
+    res.json({ success: false, msg: 'Error: ' + e.message });
+  }
+});
+
+// GET /api/gpon/onu/servicios-sin-onu - Servicios activos sin ONU asignada
+app.get('/api/gpon/onu/servicios-sin-onu', requireAuth, (req, res) => {
+  try {
+    var rows = db.prepare(`
+      SELECT s.id, c.nombre as cliente, p.nombre as plan
+      FROM servicios s
+      JOIN clientes c ON c.id=s.cliente_id
+      JOIN planes p ON p.id=s.plan_id
+      WHERE s.estado='activo'
+        AND NOT EXISTS (SELECT 1 FROM onu WHERE servicio_id=s.id)
+      ORDER BY c.nombre
+    `).all();
+    res.json({ success: true, data: rows });
+  } catch(e) {
+    res.json({ success: false, data: [] });
+  }
+});
+
+// ===== SMARTOLT FILTER API ENDPOINTS =====
+
+// GET /api/gpon/locations - Zonas para filtros
+app.get('/api/gpon/locations', requireAuth, (req, res) => {
+  try {
+    var rows = db.prepare('SELECT id, nombre as name FROM zonas ORDER BY nombre').all();
+    res.json({ response: rows });
+  } catch(e) { res.json({ response: [] }); }
+});
+
+// GET /api/gpon/odbs - ODBs (Cajas NAP) para filtros
+app.get('/api/gpon/odbs', requireAuth, (req, res) => {
+  try {
+    var rows = db.prepare('SELECT id, nombre as name FROM cajas_nap ORDER BY nombre').all();
+    res.json({ response: rows });
+  } catch(e) { res.json({ response: [] }); }
+});
+
+// GET /api/gpon/onu_types - Tipos de ONU
+app.get('/api/gpon/onu_types', requireAuth, (req, res) => {
+  try {
+    var rows = db.prepare("SELECT key, value FROM configuracion WHERE key LIKE 'onu_type_%' ORDER BY key").all();
+    var types = rows.map(function(r) { return { name: r.value || r.key.replace('onu_type_','') }; });
+    res.json({ response: types });
+  } catch(e) { res.json({ response: [] }); }
+});
+
+// GET /api/gpon/speed_profiles - Perfiles de velocidad
+app.get('/api/gpon/speed_profiles', requireAuth, (req, res) => {
+  try {
+    var rows = db.prepare('SELECT id, nombre as name, velocidad FROM planes ORDER BY nombre').all();
+    res.json({ response: rows });
+  } catch(e) { res.json({ response: [] }); }
+});
+
+// GET /api/gpon/pon_types - Tipos de PON
+app.get('/api/gpon/pon_types', requireAuth, (req, res) => {
+  res.json({ response: [{ name: 'GPON' }, { name: 'EPON' }] });
+});
+
+// GET /api/gpon/olts - OLTs para filtros
+app.get('/api/gpon/olts', requireAuth, (req, res) => {
+  try {
+    var rows = db.prepare('SELECT id, nombre as name FROM olts ORDER BY nombre').all();
+    res.json({ response: rows });
+  } catch(e) { res.json({ response: [] }); }
+});
+
+// POST /api/gpon/debug - Ejecutar comando raw y ver salida (para depuración)
+app.post('/api/gpon/debug', requireAuth, async (req, res) => {
+  try {
+    var olt = await ensureOltConnection(req);
+    if (!olt) return res.json({ success: false, msg: 'No conectado a OLT' });
+
+    var cmd = (req.body.command || '').trim();
+    if (!cmd) return res.json({ success: false, msg: 'Comando requerido' });
+
+    var timeout = parseInt(req.body.timeout) || 5000;
+    var output = await olt.exec(cmd, timeout);
+
+    res.json({ success: true, command: cmd, output: output, length: output.length });
+  } catch(e) {
+    res.json({ success: false, msg: 'Error: ' + e.message });
+  }
+});
+
+// ======== SERVER DATE API ========
+app.get('/api/server/date', requireAuth, (req, res) => {
+  try {
+    var sd = getCurrentServerDate();
+    res.json({ status: 'success', ...sd });
+  } catch(e) {
+    res.json({ status: 'error', msg: e.message });
+  }
+});
+
+app.post('/api/server/date', requireAuth, (req, res) => {
+  try {
+    var dateVal = (req.body.date || '').trim();
+    var timeVal = (req.body.time || '').trim();
+    if (!dateVal) return res.json({ status: 'error', msg: 'Fecha requerida' });
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(dateVal)) {
+      return res.json({ status: 'error', msg: 'Formato inválido. Use YYYY-MM-DD' });
+    }
+    if (timeVal && !/^\d{2}:\d{2}$/.test(timeVal)) {
+      timeVal = '12:00';
+    }
+    db.prepare("INSERT OR REPLACE INTO configuracion (key, value) VALUES ('fecha_simulada', ?)").run(dateVal);
+    if (timeVal) {
+      db.prepare("INSERT OR REPLACE INTO configuracion (key, value) VALUES ('hora_simulada', ?)").run(timeVal);
+    }
+    db.logActivity(req.session.user, 'Cambió fecha simulada a ' + dateVal + ' ' + timeVal, 'Configuración', { usuario_id: req.session.user.id });
+
+    // ⏰ AUTO-EXPIRAR PROMESAS: al cambiar la fecha, detectar promesas vencidas y suspender de una vez
+    var promExpOutput = '';
+    try {
+      var sd = getCurrentServerDate();
+      var fechaStr = sd.current_date_only;
+      var horaStr = sd.current_time || '12:00';
+      var fechaTimeStr = fechaStr + ' ' + horaStr + ':00';
+      var fechaRef = "'" + fechaTimeStr + "'";
+
+      var vencidas = db.prepare(`
+        SELECT pp.id, pp.cliente_id, pp.servicio_ids, pp.fecha_limite,
+          c.nombre as cliente_nombre
+        FROM promesas_pago pp
+        JOIN clientes c ON c.id=pp.cliente_id
+        WHERE pp.estado='activa'
+          AND (pp.fecha_limite || ' 12:00:00') < ` + fechaRef + `
+        ORDER BY pp.fecha_limite ASC
+      `).all();
+
+      if (vencidas.length > 0) {
+        var suspendidos = 0;
+        vencidas.forEach(function(p) {
+          try {
+            var raw = (p.servicio_ids || '').toString().trim();
+            var svcIds = [];
+            if (raw.startsWith('[')) {
+              try { svcIds = JSON.parse(raw); } catch(e) {}
+            } else if (raw) {
+              svcIds = raw.split(',').map(function(s) { return parseInt(s.trim()); }).filter(function(n) { return !isNaN(n) && n > 0; });
+            }
+            svcIds.forEach(function(sid) {
+              db.prepare("UPDATE servicios SET estado='suspendido' WHERE id=? AND estado='activo'").run(sid);
+              suspendidos++;
+            });
+            db.prepare("UPDATE promesas_pago SET estado='vencida' WHERE id=?").run(p.id);
+          } catch(e) {}
+        });
+        promExpOutput = 'Auto: ' + vencidas.length + ' promesas vencidas, ' + suspendidos + ' servicios suspendidos';
+        db.prepare("UPDATE cron_tasks SET last_run=datetime('now','localtime'), last_status='ok', last_output=? WHERE task_name='expirar_promesas'").run(promExpOutput);
+        console.log('[Fecha] ' + promExpOutput);
+      }
+    } catch(e) {
+      console.log('[Fecha] Error auto-expiracion:', e.message);
+    }
+
+    var sd = getCurrentServerDate();
+    var respData = { status: 'success', msg: 'Fecha cambiada a ' + dateVal + ' ' + timeVal, ...sd };
+    if (promExpOutput) respData.promExpired = promExpOutput;
+    res.json(respData);
+  } catch(e) {
+    res.json({ status: 'error', msg: e.message });
+  }
+});
+
+app.post('/api/server/date/reset', requireAuth, (req, res) => {
+  try {
+    db.prepare("DELETE FROM configuracion WHERE key='fecha_simulada'").run();
+    db.logActivity(req.session.user, 'Restauró fecha real del servidor', 'Configuración', { usuario_id: req.session.user.id });
+    var sd = getCurrentServerDate();
+    res.json({ status: 'success', msg: 'Fecha restaurada a la real', ...sd });
+  } catch(e) {
+    res.json({ status: 'error', msg: e.message });
+  }
+});
+
+// ======== CRON SCHEDULER ========
+// Verifica cada 60 segundos si hay tareas programadas que ejecutar
+setInterval(function() {
+  try {
+    var sd = getCurrentServerDate();
+    var realNow = new Date();
+    var horaActual = realNow.getHours();
+    var minActual = realNow.getMinutes();
+
+    // Obtener tareas habilitadas
+    var tasks = db.prepare('SELECT * FROM cron_tasks WHERE enabled=1').all();
+
+    tasks.forEach(function(t) {
+      // Verificar si la hora y minuto coinciden (tolerancia de 2 min)
+      var diffMin = Math.abs((horaActual * 60 + minActual) - (t.hour * 60 + t.minute));
+      if (diffMin > 2) return;
+
+      // Evitar ejecutar si ya se ejecutó en los últimos 5 minutos (usando tiempo real, no simulado)
+      if (t.last_run) {
+        var lastRun = new Date(t.last_run + 'Z');
+        var diffReal = (new Date().getTime() - lastRun.getTime()) / 1000 / 60;
+        if (diffReal < 5) return;
+      }
+
+      console.log('[Cron] Ejecutando tarea: ' + t.task_name + ' a las ' + horaActual + ':' + String(minActual).padStart(2,'0'));
+
+      try {
+        var output = '';
+        if (t.task_name === 'generar_facturas') {
+          output = ejecutarGenerarFacturas(null);
+        } else if (t.task_name === 'suspension') {
+          // La suspension usa response, creamos un mock parcial
+          try {
+            var fakeRes = { json: function(o) { output = (o.data && o.data.output) || o.msg || 'OK'; } };
+            enviarNotifSuspensionWA({}, fakeRes);
+            return;
+          } catch(e2) { output = 'Error: ' + e2.message; }
+        } else if (t.task_name === 'expirar_promesas') {
+          try {
+            var fakeRes2 = { json: function(o) { output = (o.data && o.data.output) || o.msg || 'OK'; } };
+            ejecutarExpirarPromesas({}, fakeRes2);
+            return;
+          } catch(e2) { output = 'Error: ' + e2.message; }
+        } else if (t.task_name === 'backup') {
+          output = '[Backup] Simulado - ' + new Date().toLocaleString();
+        }
+
+        if (output) {
+          db.prepare("UPDATE cron_tasks SET last_run=datetime('now','localtime'), last_status='ok', last_output=? WHERE task_name=?").run(output, t.task_name);
+        }
+      } catch(e) {
+        console.log('[Cron] Error en ' + t.task_name + ': ' + e.message);
+        db.prepare("UPDATE cron_tasks SET last_run=datetime('now','localtime'), last_status='error', last_output=? WHERE task_name=?").run('Error: ' + e.message, t.task_name);
+      }
+    });
+  } catch(e) {
+    console.log('[Cron-Scheduler] Error: ' + e.message);
+  }
+}, 60000);
+
+console.log('[Cron] Scheduler iniciado (cada 60s)');
+
+// ======== GPON BACKGROUND REFRESH SERVICE ========
+// Cada 3 minutos refresca los datos de la OLT y los guarda en DB local
+// La página carga INSTANTÁNEA desde la DB sin esperar a la OLT
+
+var _gponRefreshTimer = null;
+var _gponRefreshing = false;
+
+async function refreshGponData() {
+  if (_gponRefreshing) return;
+  _gponRefreshing = true;
+
+  try {
+    console.log('[GPON-Refresh] Background refresh started...');
+    var startTime = Date.now();
+
+    // Conectar a la OLT (autodetect from DB)
+    var oltConfig = db.prepare("SELECT * FROM olts WHERE olt_ip IS NOT NULL AND olt_ip != '' ORDER BY id LIMIT 1").get();
+    if (!oltConfig) {
+      console.log('[GPON-Refresh] No OLT configured');
+      _gponRefreshing = false;
+      return;
+    }
+
+    var ZteOLT = require('./zte-olt');
+    var olt = new ZteOLT(
+      { host: oltConfig.socks_host || '2803:5a10:2:2800::2', port: parseInt(oltConfig.socks_port) || 1080 },
+      { host: oltConfig.olt_ip || '192.168.20.80', username: oltConfig.olt_username || 'zte', password: oltConfig.olt_password || 'zte' }
+    );
+
+    await olt.connect();
+
+    // 1. Obtener estado de ONUs configuradas
+    var stateFromTelnet = await olt.getConfiguredOnus();
+
+    // 2. ONUs no configuradas
+    var unconfiguredTelnet = [];
+    try { unconfiguredTelnet = await olt.getUnconfiguredOnus(); } catch(e) {}
+
+    // 3. SmartOLT API enrichment (nombres y SN - timeout 10s)
+    var smartoltNameMap = {};
+    try {
+      var p = new Promise(function(resolve) {
+        smartoltFetch('/onu/configured_onus/status', 'GET').then(function(data) { resolve(data); }).catch(function() { resolve(null); });
+        setTimeout(function() { resolve(null); }, 10000);
+      });
+      var data = await p;
+      if (data && data.response) {
+        data.response.forEach(function(apiOnu) {
+          // La descripción de SmartOLT ya viene como "gpon-onu_1/3/3:1"
+          var desc = apiOnu.description || '';
+          var onuId = desc.indexOf('gpon-onu_') === 0 ? desc : 'gpon-onu_' + desc;
+          smartoltNameMap[onuId] = { sn: apiOnu.sn || '', name: apiOnu.location_name || '' };
+        });
+      }
+    } catch(e) {}
+    
+    // 3b. Obtener info detallada de ONUs desde la OLT (150 por ciclo, secuencial)
+    // La OLT guarda: Name, SN, Type, Distance - todo directo del detail-info
+    var oltFullInfo = {};
+    try {
+      var batchInfo = await olt.getOnuBatchInfo(stateFromTelnet, 150);
+      if (Object.keys(batchInfo).length > 0) {
+        console.log('[GPON-Refresh] Got info for ' + Object.keys(batchInfo).length + ' ONUs from OLT');
+        oltFullInfo = batchInfo;
+      }
+    } catch(e) {
+      console.log('[GPON-Refresh] OLT batch-info error:', e.message);
+    }
+    
+    var unconfiguredFinal = unconfiguredTelnet;
+    try {
+      var p2 = new Promise(function(resolve) {
+        smartoltFetch('/onu/unconfigured_onus', 'GET').then(function(data) { resolve(data); }).catch(function() { resolve(null); });
+        setTimeout(function() { resolve(null); }, 8000);
+      });
+      var data2 = await p2;
+      if (data2 && data2.response) unconfiguredFinal = data2.response;
+    } catch(e) {}
+
+    // 4. Merge: enriquecer con SNs de OLT + SmartOLT
+    var mergedState = stateFromTelnet.map(function(t) {
+      var enrich = smartoltNameMap[t.onuId] || {};
+      // Si SmartOLT no tiene SN, buscar en el config de la OLT
+      var oltInfo = {};
+      if (t.onuId && oltFullInfo[t.onuId]) oltInfo = oltFullInfo[t.onuId];
+      var mergedSn = enrich.sn || oltInfo.sn || t.sn || '';
+      var mergedName = enrich.name || oltInfo.name || t.name || '';
+      return {
+        port: t.port || '',
+        onuId: t.onuId || '',
+        sn: mergedSn,
+        name: mergedName,
+        type: oltInfo.type || '',
+        distance: oltInfo.distance || '',
+        duration: oltInfo.duration || '',
+        vlans: oltInfo.vlans || [],
+        adminState: t.adminState || 'unknown',
+        omccState: t.omccState || 'unknown',
+        phaseState: t.phaseState || 'unknown',
+        state: t.state || 'unknown'
+      };
+    });
+
+    var total = mergedState.length;
+    var online = mergedState.filter(function(s) { return s.state === 'working' || s.state === 'online'; }).length;
+    var offline = total - online;
+    var pending = (Array.isArray(unconfiguredFinal) ? unconfiguredFinal.length : 0);
+
+    // 5. Guardar en DB (cache persistente)
+    saveGponCache(mergedState, unconfiguredFinal, mergedState, total, online, offline, pending);
+    
+    // 5b. Sincronizar nombres de SmartOLT a la tabla onu (para tener nombres en DB local)
+    try {
+      Object.keys(smartoltNameMap).forEach(function(key) {
+        if (!key.startsWith('gpon-onu_')) return;
+        var info = smartoltNameMap[key];
+        if (!info.sn || info.sn.length < 8) return;
+        try {
+          var existing = db.prepare('SELECT id, nombre FROM onu WHERE sn=?').get(info.sn);
+          if (existing) {
+            if (!existing.nombre && info.name) {
+              db.prepare('UPDATE onu SET nombre=?, olt_id=6 WHERE id=?').run(info.name, existing.id);
+            }
+          } else {
+            db.prepare("INSERT INTO onu (sn, nombre, olt_id, estado, created_at) VALUES (?, ?, 6, 'activo', datetime('now'))").run(info.sn, info.name);
+          }
+        } catch(e) {}
+      });
+    } catch(e) {}
+    
+    // 5c. Sincronizar info de la OLT a la tabla onu (usando puerto_olt como key, no SN)
+    try {
+      Object.keys(oltFullInfo).forEach(function(onuId) {
+        var info = oltFullInfo[onuId];
+        if (!info.sn || info.sn.length < 8) return;
+        try {
+          // Buscar por ONU ID (puerto_olt) - esto es único y NO se mezcla como el SN
+          var byPort = db.prepare('SELECT id, sn, nombre, onu_type FROM onu WHERE puerto_olt=?').get(onuId);
+          if (byPort) {
+            var updates = [];
+            var params = [];
+            // Si el SN almacenado es diferente al real, corregirlo
+            if (byPort.sn !== info.sn) { updates.push('sn=?'); params.push(info.sn); }
+            if (info.name && !byPort.nombre) { updates.push('nombre=?'); params.push(info.name); }
+            if (info.type && !byPort.onu_type) { updates.push('onu_type=?'); params.push(info.type); }
+            if (updates.length > 0) {
+              params.push(byPort.id);
+              db.prepare('UPDATE onu SET ' + updates.join(',') + ' WHERE id=?').run.apply(null, params);
+            }
+          } else {
+            db.prepare("INSERT INTO onu (sn, nombre, onu_type, puerto_olt, olt_id, estado, created_at) VALUES (?, ?, ?, ?, 6, 'activo', datetime('now'))").run(info.sn, info.name || '', info.type || '', onuId);
+          }
+        } catch(e) {}
+      });
+    } catch(e) {}
+
+    // 6. Actualizar cache en memoria
+    var dbOnus = db.prepare('SELECT o.*, c.nombre as cliente_nombre FROM onu o LEFT JOIN clientes c ON c.id=o.cliente_id ORDER BY o.id DESC').all();
+    var gponResult = {
+      success: true,
+      configured: mergedState,
+      unconfigured: (Array.isArray(unconfiguredFinal) ? unconfiguredFinal.map(function(u) { return { sn: u.sn || '', pon_type: u.pon_type || '', board: u.board || '', port: u.port || '', onu: u.onu || '', onu_type_name: u.onu_type_name || '' }; }) : []),
+      state: mergedState,
+      db_onus: dbOnus,
+      low_signal: 0
+    };
+    gponDataCache['background'] = { data: gponResult, timestamp: Date.now() };
+
+    var took = Date.now() - startTime;
+    console.log('[GPON-Refresh] Done in ' + took + 'ms: ' + total + ' ONUs (' + online + ' online, ' + offline + ' offline, ' + pending + ' pending)');
+
+    await olt.disconnect();
+  } catch(e) {
+    console.log('[GPON-Refresh] Error:', e.message);
+  }
+
+  _gponRefreshing = false;
+}
+
+// ======== SMARTOLT ONU AUTHORIZATION WITH PROGRESS (SSE) ========
+// Este endpoint transmite progreso en tiempo real durante la autorización
+app.get('/api/smartolt/onu/authorize/progress', requireAuth, async (req, res) => {
+  var olt_id = req.query.olt_id;
+  var serial = req.query.serial;
+  if (!olt_id || !serial) {
+    res.writeHead(400, { 'Content-Type': 'text/event-stream' });
+    res.write('data: ' + JSON.stringify({ step: 'error', msg: 'Faltan parámetros' }) + '\n\n');
+    res.end();
+    return;
+  }
+
+  // Headers SSE
+  res.writeHead(200, {
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache',
+    'Connection': 'keep-alive',
+    'X-Accel-Buffering': 'no'
+  });
+
+  function sendProgress(step, msg) {
+    res.write('data: ' + JSON.stringify({ step: step, msg: msg }) + '\n\n');
+    if (res.flush) res.flush();
+  }
+
+  // Leer IDs al inicio para que estén disponibles en toda la función
+  var clienteId = parseInt(req.query.cliente_id) || null;
+  var servicioId = parseInt(req.query.servicio_id) || null;
+
+  try {
+    var olt = db.prepare('SELECT * FROM olts WHERE id=? ').get(olt_id);
+    if (!olt || !olt.smartolt_subdomain || !olt.smartolt_api_key) {
+      sendProgress('error', 'OLT no configurada');
+      res.end();
+      return;
+    }
+
+    sendProgress('search', 'Buscando ONU en SmartOLT...');
+    var apiUrl = 'https://' + olt.smartolt_subdomain + '.smartolt.com/api';
+
+    // 1. Verificar si la ONU ya existe
+    var searchResp = await fetch(apiUrl + '/onu/get_onus_details_by_sn/' + serial, {
+      method: 'GET', headers: { 'X-Token': olt.smartolt_api_key, 'Accept': 'application/json' }
+    });
+    var searchData = await searchResp.json();
+    var existingList = searchData.onus || searchData.response || [];
+    var existingId = null;
+    if (existingList.length > 0) {
+      existingId = existingList[0].unique_external_id || existingList[0].id || existingList[0].onu_id || null;
+    }
+
+    if (existingId) {
+      sendProgress('delete', 'ONU ya existe en SmartOLT. Eliminando...');
+      await fetch(apiUrl + '/onu/delete/' + existingId, {
+        method: 'POST', headers: { 'X-Token': olt.smartolt_api_key }
+      });
+    }
+
+    sendProgress('authorize', 'Autorizando ONU en SmartOLT...');
+    // Construir params
+    var params = new URLSearchParams();
+    params.append('olt_id', olt.smartolt_olt_id || olt_id);
+    params.append('sn', serial);
+    params.append('pon_type', 'gpon');
+    var model = req.query.model || '';
+    if (model) params.append('onu_type', model);
+    params.append('onu_mode', 'Routing');
+    if (req.query.onu_mode === 'bridge' || req.query.onu_mode === 'bridging') params.set('onu_mode', 'Bridging');
+    params.append('zone', req.query.zone || 'default');
+    params.append('name', (req.query.name || serial).replace(/[^a-zA-Z0-9 @\$&()\-`.+,/_\:;]/g, '').trim().substring(0, 64) || serial);
+    if (req.query.vlan) params.append('vlan', req.query.vlan);
+    else if (olt.vlan_default) params.append('vlan', olt.vlan_default);
+    if (req.query.board) params.append('board', req.query.board);
+    if (req.query.port) params.append('port', req.query.port);
+
+    var authResp = await fetch(apiUrl + '/onu/authorize_onu', {
+      method: 'POST',
+      headers: { 'X-Token': olt.smartolt_api_key, 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: params
+    });
+    var authData = await authResp.json();
+
+    if (authData.status !== 'success' && authData.status !== true && authData.response_code !== 'success') {
+      sendProgress('error', authData.error || authData.message || 'Error al autorizar');
+      res.end();
+      return;
+    }
+
+    // Obtener external ID de la ONU recién autorizada
+    sendProgress('config', 'Obteniendo datos de la ONU...');
+    var extSearch = await fetch(apiUrl + '/onu/get_onus_details_by_sn/' + serial, {
+      method: 'GET', headers: { 'X-Token': olt.smartolt_api_key, 'Accept': 'application/json' }
+    });
+    var extData = await extSearch.json();
+    var onuList = extData.onus || extData.response || [];
+    var extId = '';
+    if (onuList.length > 0) {
+      extId = onuList[0].unique_external_id || onuList[0].id || onuList[0].onu_id || '';
+    }
+
+    // ✅ Cerrar SSE inmediatamente (usuario ve "completado" al instante)
+    sendProgress('done', '✅ ONU autorizada exitosamente. Aplicando configuración en segundo plano...');
+    res.end();
+
+    // ====== CONTINUAR CONFIG EN SEGUNDO PLANO ======
+    if (!extId) {
+      require('fs').appendFileSync('/tmp/isptotal.log', '[AUTHORIZE-BG] No se obtuvo extId, saltando config\n');
+      return;
+    }
+
+    configurarOnuBackground(serial, olt, apiUrl, extId, servicioId, clienteId, req);
+
+  } catch(e) {
+    sendProgress('error', 'Error: ' + e.message);
+    res.end();
+  }
+});
+
+// ====== FUNCIÓN EN SEGUNDO PLANO: configurar TR069, WAN, WiFi ======
+async function configurarOnuBackground(serial, olt, apiUrl, extId, servicioId, clienteId, req) {
+  try {
+    // Obtener perfiles de velocidad desde el plan del servicio
+    var dlProfile = req.query.dl_profile || '';
+    var ulProfile = req.query.ul_profile || '';
+    if (!dlProfile && servicioId) {
+      var planInfo = db.prepare('SELECT p.perfil_olt_descarga, p.perfil_olt_subida, p.perfil_mikrotik, p.nombre FROM servicios s LEFT JOIN planes p ON p.id=s.plan_id WHERE s.id=?').get(servicioId);
+      if (planInfo) {
+        dlProfile = planInfo.perfil_olt_descarga || planInfo.perfil_mikrotik || planInfo.nombre || '';
+        ulProfile = planInfo.perfil_olt_subida || dlProfile;
+      }
+    }
+
+    // Speed profiles
+    if (dlProfile) {
+      try {
+        var spParams = new URLSearchParams();
+        spParams.append('upload_speed_profile_name', ulProfile || dlProfile);
+        spParams.append('download_speed_profile_name', dlProfile);
+        await fetch(apiUrl + '/onu/update_onu_speed_profiles/' + extId, {
+          method: 'POST', headers: { 'X-Token': olt.smartolt_api_key, 'Content-Type': 'application/x-www-form-urlencoded' }, body: spParams
+        });
+      } catch(e) {}
+    }
+
+    // TR069 + Mgmt IP
+    var mgmtVlan = olt.tr069_vlan || req.query.vlan || olt.vlan_default || '';
+    if (mgmtVlan) {
+      try {
+        var mgmtParams = new URLSearchParams();
+        mgmtParams.append('vlan', mgmtVlan);
+        await fetch(apiUrl + '/onu/set_onu_mgmt_ip_dhcp/' + extId, {
+          method: 'POST', headers: { 'X-Token': olt.smartolt_api_key, 'Content-Type': 'application/x-www-form-urlencoded' }, body: mgmtParams
+        });
+      } catch(e) {}
+    }
+
+    try {
+      var tr069Params = new URLSearchParams();
+      tr069Params.append('tr069_profile', olt.tr069_profile || 'SmartOLT');
+      await fetch(apiUrl + '/onu/enable_tr069/' + extId, {
+        method: 'POST', headers: { 'X-Token': olt.smartolt_api_key, 'Content-Type': 'application/x-www-form-urlencoded' }, body: tr069Params
+      });
+    } catch(e) {}
+
+    // WAN mode
+    var authType = req.query.auth_type || 'dhcp';
+    var pppoeUser = req.query.pppoe_user || '';
+    var pppoePass = req.query.pppoe_pass || '';
+    if (!pppoeUser && servicioId) {
+      try {
+        var svcWan = db.prepare('SELECT pppoe_user, pppoe_pass, auth_type, wifi_ssid, wifi_pass FROM servicios WHERE id=?').get(servicioId);
+        if (svcWan) {
+          if (svcWan.pppoe_user) pppoeUser = svcWan.pppoe_user;
+          if (svcWan.pppoe_pass) pppoePass = svcWan.pppoe_pass;
+          if (svcWan.auth_type) authType = svcWan.auth_type;
+        }
+      } catch(e) {}
+    }
+
+    if (authType === 'pppoe' && pppoeUser) {
+      try {
+        var wanParams = new URLSearchParams();
+        wanParams.append('username', pppoeUser);
+        wanParams.append('password', pppoePass || '1320');
+        wanParams.append('configuration_method', 'TR069');
+        wanParams.append('ip_protocol', 'ipv4ipv6');
+        await fetch(apiUrl + '/onu/set_onu_wan_mode_pppoe/' + extId, {
+          method: 'POST', headers: { 'X-Token': olt.smartolt_api_key, 'Content-Type': 'application/x-www-form-urlencoded' }, body: wanParams
+        });
+      } catch(e) {}
+    } else {
+      try {
+        var dhcpParams = new URLSearchParams();
+        dhcpParams.append('vlan', req.query.vlan || olt.vlan_default || '');
+        dhcpParams.append('configuration_method', 'TR069');
+        dhcpParams.append('ip_protocol', 'ipv4ipv6');
+        await fetch(apiUrl + '/onu/set_onu_wan_mode_dhcp/' + extId, {
+          method: 'POST', headers: { 'X-Token': olt.smartolt_api_key, 'Content-Type': 'application/x-www-form-urlencoded' }, body: dhcpParams
+        });
+      } catch(e) {}
+    }
+
+    // WiFi
+    var wifiSsid = req.query.wifi_ssid || '';
+    var wifiPass = req.query.wifi_pass || '';
+    if (!wifiSsid && servicioId) {
+      try {
+        var svcWifi = db.prepare('SELECT wifi_ssid, wifi_pass FROM servicios WHERE id=?').get(servicioId);
+        if (svcWifi) {
+          wifiSsid = svcWifi.wifi_ssid || '';
+          wifiPass = svcWifi.wifi_pass || '';
+        }
+      } catch(e) {}
+    }
+    if (wifiSsid) {
+      try {
+        var wifiParams = new URLSearchParams();
+        wifiParams.append('wifi_port', 'wifi_0/1');
+        wifiParams.append('ssid', wifiSsid);
+        wifiParams.append('password', wifiPass || '');
+        wifiParams.append('authentication_mode', 'WPA2');
+        await fetch(apiUrl + '/onu/set_wifi_port_lan/' + extId, {
+          method: 'POST', headers: { 'X-Token': olt.smartolt_api_key, 'Content-Type': 'application/x-www-form-urlencoded' }, body: wifiParams
+        });
+      } catch(e) {}
+    }
+
+    // Guardar config en OLT
+    try {
+      await fetch(apiUrl + '/system/save_config', { method: 'POST', headers: { 'X-Token': olt.smartolt_api_key } });
+    } catch(e) {}
+
+    // Guardar en BD local
+    if (clienteId) {
+      try {
+        var valCliente = db.prepare('SELECT id FROM clientes WHERE id=?').get(clienteId);
+        if (valCliente) {
+          var valServicio = servicioId ? db.prepare('SELECT id FROM servicios WHERE id=?').get(servicioId) : null;
+          var finalSvcId = valServicio ? servicioId : null;
+          var existingOnu = db.prepare('SELECT id FROM onu WHERE sn=?').get(serial);
+          if (existingOnu) {
+            db.prepare('UPDATE onu SET cliente_id=?, servicio_id=?, nombre=? WHERE sn=?').run(clienteId, finalSvcId, req.query.name || null, serial);
+          } else {
+            db.prepare("INSERT INTO onu (sn, nombre, cliente_id, servicio_id, vlan, olt_id, estado) VALUES (?,?,?,?,?,?,'activo')").run(serial, req.query.name || '', clienteId, finalSvcId, req.query.vlan || null, olt.id);
+          }
+        }
+      } catch(e) {
+        require('fs').appendFileSync('/tmp/isptotal.log', '[AUTHORIZE-BG] Error BD: ' + e.message + '\n');
+      }
+    }
+
+    require('fs').appendFileSync('/tmp/isptotal.log', '[AUTHORIZE-BG] Config completa para ' + serial + '\n');
+  } catch(e) {
+    require('fs').appendFileSync('/tmp/isptotal.log', '[AUTHORIZE-BG] Error: ' + e.message + '\n');
+  }
+}
+
+// ======== SERVICIOS CONFIG (como DomISP) ========
+
+// GET /api/servicios/config-data/:cliente_id - Obtener datos de config de servicios
+app.get('/api/servicios/config-data/:clienteId', requireAuth, (req, res) => {
+  try {
+    var clienteId = parseInt(req.params.clienteId) || 0;
+    var rows = db.prepare(`
+      SELECT s.id, s.es_gratis as free, s.no_suspender as no_suspend,
+        s.ciclo_id as billing_cycle_id, s.custom_suspend_day,
+        s.descuento_monto as discount, s.notify_invoices,
+        s.ncf_type, s.consolidated, s.estado,
+        p.nombre as plan, p.precio as price
+      FROM servicios s
+      LEFT JOIN planes p ON p.id=s.plan_id
+      WHERE s.cliente_id=? AND s.estado != 'retirado'
+      ORDER BY s.id
+    `).all(clienteId);
+    res.json({ success: true, data: rows });
+  } catch(e) {
+    res.json({ success: false, msg: e.message });
+  }
+});
+
+// POST /api/servicios/config/save - Guardar config de servicio
+app.post('/api/servicios/config/save', requireAuth, (req, res) => {
+  try {
+    var serviceId = parseInt(req.body.service_id) || 0;
+    if (!serviceId) return res.json({ success: false, msg: 'ID requerido' });
+
+    var updates = [];
+    var params = [];
+
+    if (req.body.free_service !== undefined) {
+      updates.push('es_gratis=?');
+      params.push(parseInt(req.body.free_service) ? 1 : 0);
+    }
+    if (req.body.no_suspend !== undefined) {
+      updates.push('no_suspender=?');
+      params.push(parseInt(req.body.no_suspend) ? 1 : 0);
+    }
+    if (req.body.billing_cycle_id !== undefined) {
+      updates.push('ciclo_id=?');
+      params.push(parseInt(req.body.billing_cycle_id) || null);
+    }
+    if (req.body.custom_suspend_day !== undefined) {
+      var day = parseInt(req.body.custom_suspend_day);
+      updates.push('custom_suspend_day=?');
+      params.push(day > 0 && day <= 31 ? day : null);
+    }
+    if (req.body.discount !== undefined) {
+      updates.push('descuento_monto=?');
+      params.push(parseFloat(req.body.discount) || 0);
+    }
+    if (req.body.notify_invoices !== undefined) {
+      updates.push('notify_invoices=?');
+      params.push(parseInt(req.body.notify_invoices) ? 1 : 0);
+    }
+    if (req.body.ncf_type !== undefined) {
+      updates.push('ncf_type=?');
+      params.push(req.body.ncf_type || '');
+    }
+    if (req.body.consolidated !== undefined) {
+      updates.push('consolidated=?');
+      params.push(parseInt(req.body.consolidated) ? 1 : 0);
+    }
+
+    if (updates.length > 0) {
+      params.push(serviceId);
+      var stmt = db.prepare('UPDATE servicios SET ' + updates.join(',') + ' WHERE id=?');
+      stmt.run.apply(stmt, params);
+    }
+
+    res.json({ success: true, msg: 'Configuración guardada' });
+  } catch(e) {
+    res.json({ success: false, msg: e.message });
+  }
+});
+
+// ======== EXCEL IMPORT/EXPORT ========
+const XLSX = require('xlsx');
+
+app.get('/api/clientes/export/excel', requireAuth, (req, res) => {
+  try {
+    var clientes = db.prepare(`
+      SELECT c.id, c.nombre, c.apodo, c.cedula, c.telefono, c.direccion,
+        COALESCE(z.nombre, '') as zona,
+        GROUP_CONCAT(s.estado || '|' || COALESCE(p.nombre, 'Sin plan') || '|' || COALESCE(p.precio, 0) || '|' || COALESCE(s.direccion, ''), '; ') as servicios_info,
+        COALESCE((SELECT SUM(f.monto - COALESCE((SELECT SUM(pg.monto) FROM pagos pg WHERE pg.factura_id=f.id),0))
+          FROM facturas f JOIN servicios s2 ON s2.id=f.servicio_id
+          WHERE s2.cliente_id=c.id AND f.estado='pendiente'
+          AND f.monto > COALESCE((SELECT SUM(pg.monto) FROM pagos pg WHERE pg.factura_id=f.id),0)), 0) as deuda_total
+      FROM clientes c
+      LEFT JOIN zonas z ON z.id=c.zona_id
+      LEFT JOIN servicios s ON s.cliente_id=c.id AND s.estado != 'retirado'
+      LEFT JOIN planes p ON p.id=s.plan_id
+      GROUP BY c.id
+      ORDER BY c.nombre
+    `).all();
+
+    var data = clientes.map(function(c) {
+      return {
+        ID: c.id,
+        Nombre: c.nombre || '',
+        Apodo: c.apodo || '',
+        Cedula: c.cedula || '',
+        Telefono: c.telefono || '',
+        Direccion: c.direccion || '',
+        Zona: c.zona || '',
+        Servicios: c.servicios_info || '',
+        Deuda_Total: c.deuda_total || 0
+      };
+    });
+
+    var ws = XLSX.utils.json_to_sheet(data);
+    ws['!cols'] = [
+      {wch:6},{wch:30},{wch:20},{wch:14},{wch:14},{wch:30},{wch:20},{wch:50},{wch:12}
+    ];
+    var wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Clientes');
+
+    var buf = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', 'attachment; filename=clientes_export_' + new Date().toISOString().slice(0,10) + '.xlsx');
+    res.send(buf);
+  } catch(e) {
+    res.json({ status: 'error', msg: e.message });
+  }
+});
+
+app.post('/api/clientes/import/excel', requireAuth, (req, res) => {
+  try {
+    if (!req.files || !req.files.file) {
+      return res.json({ status: 'error', msg: 'No se subió ningún archivo' });
+    }
+
+    var file = req.files.file;
+    var wb = XLSX.read(file.data, { type: 'buffer' });
+    var ws = wb.Sheets[wb.SheetNames[0]];
+    var rows = XLSX.utils.sheet_to_json(ws, { defval: '' });
+
+    if (!rows || rows.length === 0) {
+      return res.json({ status: 'error', msg: 'El archivo Excel está vacío' });
+    }
+
+    var creados = 0;
+    var actualizados = 0;
+    var errores = [];
+
+    var insertCliente = db.prepare(`INSERT INTO clientes (nombre, apodo, cedula, telefono, direccion, zona_id) VALUES (?,?,?,?,?,?)`);
+    var getZona = db.prepare("SELECT id FROM zonas WHERE nombre LIKE ? LIMIT 1");
+    var getPlan = db.prepare("SELECT id, precio FROM planes WHERE nombre LIKE ? LIMIT 1");
+
+    rows.forEach(function(row, i) {
+      try {
+        var nombre = (row['Nombre'] || '').toString().trim();
+        if (!nombre) { errores.push('Fila ' + (i+2) + ': Sin nombre'); return; }
+
+        var cedula = (row['Cedula'] || '').toString().trim();
+        var telefono = (row['Telefono'] || '').toString().trim();
+        var apodo = (row['Apodo'] || '').toString().trim();
+        var direccion = (row['Direccion'] || '').toString().trim();
+        var zonaNombre = (row['Zona'] || '').toString().trim();
+
+        var zonaId = null;
+        if (zonaNombre) {
+          var z = getZona.get('%' + zonaNombre + '%');
+          if (z) zonaId = z.id;
+        }
+
+        // Buscar si ya existe por cédula o teléfono
+        var existente = null;
+        if (cedula) existente = db.prepare("SELECT id FROM clientes WHERE cedula=? LIMIT 1").get(cedula);
+        if (!existente && telefono) existente = db.prepare("SELECT id FROM clientes WHERE telefono=? LIMIT 1").get(telefono);
+
+        if (existente) {
+          db.prepare("UPDATE clientes SET nombre=?, apodo=?, telefono=?, direccion=?, zona_id=? WHERE id=?")
+            .run(nombre, apodo, telefono, direccion, zonaId, existente.id);
+          actualizados++;
+        } else {
+          var r = insertCliente.run(nombre, apodo, cedula, telefono, direccion, zonaId);
+          creados++;
+        }
+      } catch(e) {
+        errores.push('Fila ' + (i+2) + ': ' + e.message);
+      }
+    });
+
+    var msg = creados + ' cliente(s) creado(s), ' + actualizados + ' actualizado(s)';
+    if (errores.length > 0) msg += ', ' + errores.length + ' error(es)';
+
+    res.json({ status: 'success', msg: msg, creados: creados, actualizados: actualizados, errores: errores });
+  } catch(e) {
+    res.json({ status: 'error', msg: e.message });
+  }
+});
+
+// Template de Excel para descargar
+app.get('/api/clientes/import/template', requireAuth, (req, res) => {
+  try {
+    var template = [{
+      Nombre: 'Ejemplo Juan',
+      Apodo: 'Juan',
+      Cedula: '001-0000000-0',
+      Telefono: '8090000000',
+      Direccion: 'Calle Principal #123',
+      Zona: 'Zona 1'
+    }];
+    var ws = XLSX.utils.json_to_sheet(template);
+    ws['!cols'] = [{wch:30},{wch:20},{wch:16},{wch:14},{wch:30},{wch:20}];
+    var wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Clientes');
+
+    // Add a second sheet with instructions
+    var instr = XLSX.utils.aoa_to_sheet([
+      ['INSTRUCCIONES PARA IMPORTAR CLIENTES'],
+      [''],
+      ['Columnas obligatorias: Nombre'],
+      ['Columnas opcionales: Apodo, Cedula, Telefono, Direccion, Zona'],
+      [''],
+      ['- Si la cedula ya existe, se actualiza el cliente'],
+      ['- Si el telefono ya existe, se actualiza el cliente'],
+      ['- La zona debe coincidir con una existente en el sistema'],
+      ['- Borre la fila de ejemplo y ponga sus datos'],
+    ]);
+    XLSX.utils.book_append_sheet(wb, instr, 'Instrucciones');
+
+    var buf = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', 'attachment; filename=plantilla_importar_clientes.xlsx');
+    res.send(buf);
+  } catch(e) {
+    res.json({ status: 'error', msg: e.message });
+  }
+});
+
+function startGponBackgroundRefresh() {
+  if (_gponRefreshTimer) clearInterval(_gponRefreshTimer);
+  // Primer refresh a los 10 segundos
+  setTimeout(refreshGponData, 10000);
+  // Luego cada 3 minutos
+  _gponRefreshTimer = setInterval(refreshGponData, 180000);
+  console.log('[GPON-Refresh] Background refresh cada 3 minutos');
+}
+
 app.listen(PORT, () => {
   console.log(`ISP Total corriendo en http://localhost:${PORT}`);
-  
+
   // Auto-start OpenWa if enabled
   try {
     var openwa = require('./openwa-service');
@@ -7706,4 +10160,7 @@ app.listen(PORT, () => {
   } catch(e) {
     console.log('[OpenWa] Auto-start error: ' + e.message);
   }
+
+  // Iniciar background refresh de GPON (cada 3 minutos)
+  startGponBackgroundRefresh();
 });

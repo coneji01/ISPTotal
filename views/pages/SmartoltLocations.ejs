@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en" class="smartolt-night">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zonas / Locations - ISPTotal</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-primary: #1a1d23;
+  --bg-secondary: #22262e;
+  --bg-card: #2a2d35;
+  --bg-hover: #32363e;
+  --text-primary: #e8eaed;
+  --text-secondary: #9aa0a8;
+  --text-muted: #6b7280;
+  --border-color: #383c44;
+  --accent-blue: #3b82f6;
+  --accent-green: #22c55e;
+  --accent-red: #ef4444;
+  --accent-yellow: #eab308;
+  --accent-cyan: #06b6d4;
+  --shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+:root.smartolt-light {
+  --bg-primary: #f1f5f9;
+  --bg-secondary: #ffffff;
+  --bg-card: #ffffff;
+  --bg-hover: #f8fafc;
+  --text-primary: #1e293b;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+  --border-color: #e2e8f0;
+  --shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+[class=""] {
+  --bg-primary: #1a1d23;
+  --bg-secondary: #22262e;
+  --bg-card: #2a2d35;
+  --bg-hover: #32363e;
+  --text-primary: #e8eaed;
+  --text-secondary: #9aa0a8;
+  --text-muted: #6b7280;
+  --border-color: #383c44;
+  --accent-blue: #3b82f6;
+  --accent-green: #22c55e;
+  --accent-red: #ef4444;
+  --accent-yellow: #eab308;
+  --accent-cyan: #06b6d4;
+  --shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; background:var(--bg-primary); color:var(--text-primary); min-height:100vh; }
+.smartolt-site { position:relative; }
+.smartolt-landing-hero-bg { position:fixed; top:0; left:0; width:100%; height:100%; background:radial-gradient(ellipse at 50% 0%, rgba(59,130,246,0.08) 0%, transparent 60%); pointer-events:none; z-index:0; }
+#content-wrapper { position:relative; z-index:1; }
+.topbar { background:var(--bg-secondary); border-bottom:1px solid var(--border-color); padding:0 24px; height:56px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:100; backdrop-filter:blur(8px); }
+.topbar-brand { font-size:1.1rem; font-weight:700; color:var(--text-primary); text-decoration:none; display:flex; align-items:center; gap:10px; }
+.topbar-brand i { color:var(--accent-blue); }
+.topbar-actions { display:flex; align-items:center; gap:12px; }
+.night-toggle { background:none; border:none; color:var(--text-secondary); font-size:1.2rem; cursor:pointer; padding:8px; border-radius:8px; transition:all 0.2s; width:38px; height:38px; display:flex; align-items:center; justify-content:center; }
+.night-toggle:hover { background:var(--bg-hover); color:var(--text-primary); }
+.container { max-width:1400px; margin:0 auto; padding:20px 24px; }
+.content-wrap { padding:0; }
+h2 { font-size:1.4rem; font-weight:600; color:var(--text-primary); margin-bottom:20px; display:flex; align-items:center; gap:10px; }
+h2 i { color:var(--accent-blue); }
+.filters-row { display:flex; flex-wrap:wrap; gap:12px; align-items:flex-end; margin-bottom:16px; }
+.form-group { display:flex; flex-direction:column; gap:4px; }
+.form-group label { font-size:0.75rem; font-weight:600; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.3px; }
+.form-control { padding:8px 12px; background:var(--bg-card); border:1px solid var(--border-color); border-radius:6px; color:var(--text-primary); font-family:'Inter',sans-serif; font-size:0.85rem; outline:none; transition:border-color 0.2s; }
+.form-control:focus { border-color:var(--accent-blue); }
+.form-control.input-search { min-width:200px; }
+.form-control.input-220 { min-width:220px; }
+.clearfix::after { content:""; display:table; clear:both; }
+.pull-left { float:left; }
+.pull-right { float:right; }
+.margin-bottom { margin-bottom:10px; }
+.margin-right { margin-right:8px; }
+.text-center { text-align:center; }
+.text-right { text-align:right; }
+.text-muted { color:var(--text-muted); }
+/* GPON Table */
+.gpon-table-wrap { background:var(--bg-card); border-radius:10px; border:1px solid var(--border-color); overflow:hidden; box-shadow:var(--shadow); }
+.gpon-table { width:100%; border-collapse:collapse; font-size:0.85rem; }
+.gpon-table thead { background:var(--bg-secondary); }
+.gpon-table th { padding:12px 14px; text-align:left; color:var(--text-secondary); font-size:0.75rem; font-weight:600; text-transform:uppercase; letter-spacing:0.5px; border-bottom:2px solid var(--border-color); white-space:nowrap; }
+.gpon-table td { padding:10px 14px; border-bottom:1px solid var(--border-color); vertical-align:middle; color:var(--text-primary); }
+.gpon-table tbody tr:hover { background:var(--bg-hover); }
+.gpon-table .text-center { text-align:center; }
+.gpon-table .sort-link { color:var(--text-secondary); text-decoration:none; display:inline-flex; align-items:center; gap:4px; }
+.gpon-table .sort-link:hover { color:var(--accent-blue); }
+/* GPON Buttons */
+.gpon-btn { display:inline-flex; align-items:center; gap:6px; padding:7px 14px; border:none; border-radius:6px; font-family:'Inter',sans-serif; font-size:0.82rem; font-weight:500; cursor:pointer; transition:all 0.2s; text-decoration:none; white-space:nowrap; }
+.gpon-btn i { font-size:0.9rem; }
+.gpon-btn-primary { background:var(--accent-blue); color:#fff; }
+.gpon-btn-primary:hover { background:#2563eb; }
+.gpon-btn-success { background:var(--accent-green); color:#fff; }
+.gpon-btn-success:hover { background:#16a34a; }
+.gpon-btn-danger { background:var(--accent-red); color:#fff; }
+.gpon-btn-danger:hover { background:#dc2626; }
+.gpon-btn-warning { background:var(--accent-yellow); color:#000; }
+.gpon-btn-warning:hover { background:#d97706; }
+.gpon-btn-info { background:var(--accent-cyan); color:#fff; }
+.gpon-btn-info:hover { background:#0891b2; }
+.gpon-btn-secondary { background:var(--bg-hover); color:var(--text-primary); border:1px solid var(--border-color); }
+.gpon-btn-secondary:hover { background:var(--border-color); }
+.gpon-btn-link { background:none; border:none; color:var(--accent-blue); padding:4px 8px; cursor:pointer; font-family:'Inter',sans-serif; font-size:0.85rem; text-decoration:none; }
+.gpon-btn-link:hover { text-decoration:underline; }
+.gpon-btn-sm { padding:5px 10px; font-size:0.78rem; }
+.info-text { font-size:0.82rem; color:var(--text-secondary); margin-bottom:16px; padding:12px 16px; background:var(--bg-secondary); border:1px solid var(--border-color); border-radius:8px; }
+.info-text i { color:var(--accent-blue); margin-right:6px; }
+.smartolt-topbar-network { position:absolute; top:0; left:0; width:100%; height:100px; pointer-events:none; overflow:hidden; z-index:0; }
+.smartolt-topbar-network-inner { position:relative; width:100%; height:100%; opacity:0.06; }
+.smartolt-topbar-network-lines { width:100%; height:100%; stroke:var(--accent-blue); stroke-width:0.5; fill:none; }
+@media(max-width:768px){
+  .container { padding:12px; }
+  .gpon-table-wrap { overflow-x:auto; }
+  .pull-left,.pull-right { float:none; }
+}
+</style>
+</head>
+<body class="smartolt-site">
+<div class="smartolt-landing-hero-bg"></div>
+<div id="content-wrapper">
+  <div class="smartolt-topbar-network" aria-hidden="true">
+    <div class="smartolt-topbar-network-inner">
+      <svg class="smartolt-topbar-network-lines" viewBox="0 0 100 100" preserveAspectRatio="none">
+        <line x1="8" y1="68" x2="23" y2="78"></line>
+        <line x1="23" y1="78" x2="37" y2="63"></line>
+        <line x1="8" y1="68" x2="37" y2="63"></line>
+        <line x1="37" y1="63" x2="65" y2="18"></line>
+        <line x1="65" y1="18" x2="89" y2="34"></line>
+        <line x1="23" y1="78" x2="65" y2="18"></line>
+        <line x1="37" y1="63" x2="89" y2="34"></line>
+      </svg>
+      <span class="smartolt-topbar-node smartolt-topbar-node-a"></span>
+      <span class="smartolt-topbar-node smartolt-topbar-node-b"></span>
+      <span class="smartolt-topbar-node smartolt-topbar-node-c"></span>
+    </div>
+  </div>
+
+  <div class="topbar">
+    <a href="/gpon" class="topbar-brand">
+      <i class="fas fa-map-marker-alt"></i> ISPTotal - GPON
+    </a>
+    <div class="topbar-actions">
+      <button class="night-toggle" id="nightToggle" title="Night mode">
+        <i class="fas fa-moon"></i>
+      </button>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="content-wrap">
+      <h2><i class="fas fa-map-marker-alt"></i> Zonas / Locations</h2>
+
+      <!-- Filters -->
+      <form class="filters-row" id="searchForm">
+        <div class="form-group">
+          <label>Buscar</label>
+          <input type="text" class="form-control input-search" id="searchZone" placeholder="Nombre de zona..." oninput="filterZones()">
+        </div>
+      </form>
+
+      <!-- Action buttons -->
+      <div class="clearfix" style="margin-bottom:16px;">
+        <div class="pull-left" style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="gpon-btn gpon-btn-success" onclick="addZone()">
+            <i class="fas fa-plus"></i> Agregar Zona
+          </button>
+          <button class="gpon-btn gpon-btn-danger" onclick="deleteUnusedZones()">
+            <i class="fas fa-trash"></i> Eliminar zonas sin uso
+          </button>
+        </div>
+        <div class="pull-right" style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="gpon-btn gpon-btn-secondary" onclick="exportZones()">
+            <i class="fas fa-upload"></i> Exportar
+          </button>
+          <button class="gpon-btn gpon-btn-secondary" onclick="importZones()">
+            <i class="fas fa-download"></i> Importar
+          </button>
+        </div>
+      </div>
+
+      <!-- Info text -->
+      <div class="info-text">
+        <i class="fas fa-info-circle"></i>
+        Use zonas para agrupar ONUs por pueblo, barrio o sector. Las zonas son separaciones visuales sin influencia en la configuración de las ONUs.
+      </div>
+
+      <!-- Zones table -->
+      <div class="gpon-table-wrap">
+        <table class="gpon-table" id="zonesTable">
+          <thead>
+            <tr>
+              <th><a href="#" class="sort-link" data-sort="name">Nombre <i class="fas fa-sort"></i></a></th>
+              <th>ONUs</th>
+              <th></th>
+              <th class="text-center">Acción</th>
+            </tr>
+          </thead>
+          <tbody id="zonesTableBody">
+            <% if(locals.zones && locals.zones.length){ locals.zones.forEach(function(z){ %>
+            <tr class="zone-row" data-name="<%= z.name.toLowerCase() %>">
+              <td>
+                <a href="#" class="gpon-btn-link" onclick="editZone('<%= z.id %>')"><%= z.name %></a>
+              </td>
+              <td><a href="/gpon/configured?zone=<%= z.id %>" class="gpon-btn-link"><%= z.onuCount || 0 %></a></td>
+              <td></td>
+              <td class="text-center">
+                <button class="gpon-btn gpon-btn-warning gpon-btn-sm" onclick="editZone('<%= z.id %>')" title="Editar">
+                  <i class="fas fa-pen"></i>
+                </button>
+                <button class="gpon-btn gpon-btn-danger gpon-btn-sm" onclick="deleteZone('<%= z.id %>','<%= z.name %>')" title="Eliminar">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </td>
+            </tr>
+            <% }); }else{ %>
+            <tr><td colspan="4" style="text-align:center;padding:40px;color:var(--text-muted);">
+              <i class="fas fa-map-marker-alt" style="font-size:2rem;opacity:0.3;display:block;margin-bottom:10px;"></i>
+              No hay zonas creadas.
+            </td></tr>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  try{
+    if(localStorage.getItem('smartolt-night')==='1'){
+      document.documentElement.classList.add('smartolt-night');
+      document.documentElement.classList.remove('smartolt-light');
+    } else if(localStorage.getItem('smartolt-night')==='0'){
+      document.documentElement.classList.remove('smartolt-night');
+      document.documentElement.classList.add('smartolt-light');
+    }
+  }catch(e){}
+})();
+
+document.getElementById('nightToggle').addEventListener('click', function(){
+  var html = document.documentElement;
+  if(html.classList.contains('smartolt-night')){
+    html.classList.remove('smartolt-night'); html.classList.add('smartolt-light');
+    localStorage.setItem('smartolt-night','0');
+  } else {
+    html.classList.remove('smartolt-light'); html.classList.add('smartolt-night');
+    localStorage.setItem('smartolt-night','1');
+  }
+});
+
+function filterZones(){
+  var q = (document.getElementById('searchZone').value||'').toLowerCase();
+  document.querySelectorAll('.zone-row').forEach(function(r){
+    r.style.display = r.getAttribute('data-name').includes(q) ? '' : 'none';
+  });
+}
+
+function addZone(){
+  var name = prompt('Nombre de la nueva zona:');
+  if(name && name.trim()){
+    // Implementar: POST /api/zones
+    alert('Creando zona "' + name.trim() + '"...');
+  }
+}
+
+function editZone(id){
+  alert('Editar zona ID: ' + id);
+}
+
+function deleteZone(id, name){
+  if(confirm('¿Eliminar la zona "' + name + '"?')){
+    // Implementar: DELETE /api/zones/:id
+    alert('Eliminando zona "' + name + '"...');
+  }
+}
+
+function deleteUnusedZones(){
+  if(confirm('¿Eliminar todas las zonas sin ONUs asignadas?')){
+    alert('Eliminando zonas sin uso...');
+  }
+}
+
+function exportZones(){
+  alert('Exportando zonas...');
+}
+
+function importZones(){
+  alert('Importar archivo de zonas...');
+}
+</script>
+</body>
+</html>

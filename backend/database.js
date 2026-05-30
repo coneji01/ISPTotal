@@ -59,6 +59,19 @@ try { db.exec("ALTER TABLE inventario_movimientos ADD COLUMN tecnico_nombre TEXT
 try { db.exec("ALTER TABLE inventario_movimientos ADD COLUMN cliente_servicio TEXT"); } catch(e) {}
 try { db.exec("ALTER TABLE inventario_movimientos ADD COLUMN oficina_destino TEXT"); } catch(e) {}
 
+// Migration: Add columns to planes table
+try { db.exec("ALTER TABLE planes ADD COLUMN velocidad_subida TEXT"); } catch(e) {}
+try { db.exec("ALTER TABLE planes ADD COLUMN velocidad_bajada TEXT"); } catch(e) {}
+try { db.exec("ALTER TABLE planes ADD COLUMN upload_burst TEXT"); } catch(e) {}
+try { db.exec("ALTER TABLE planes ADD COLUMN download_burst TEXT"); } catch(e) {}
+try { db.exec("ALTER TABLE planes ADD COLUMN burst_threshold_up TEXT"); } catch(e) {}
+try { db.exec("ALTER TABLE planes ADD COLUMN burst_threshold_down TEXT"); } catch(e) {}
+try { db.exec("ALTER TABLE planes ADD COLUMN perfil_mikrotik TEXT"); } catch(e) {}
+try { db.exec("ALTER TABLE planes ADD COLUMN perfil_olt_descarga TEXT"); } catch(e) {}
+try { db.exec("ALTER TABLE planes ADD COLUMN perfil_olt_subida TEXT"); } catch(e) {}
+try { db.exec("ALTER TABLE planes ADD COLUMN zonas TEXT DEFAULT 'all'"); } catch(e) {}
+try { db.exec("ALTER TABLE planes ADD COLUMN disponible INTEGER DEFAULT 1"); } catch(e) {}
+
 // Crear tabla mensajes si no existe
 db.exec(`
 CREATE TABLE IF NOT EXISTS mensajes (
@@ -249,6 +262,7 @@ if (!_alertCfg) {
     db.prepare('INSERT INTO mon_alerta_wa (id, telefono, activo) VALUES (1, \'\', 0)').run();
   } catch(e) {}
 }
+try { db.exec("CREATE TABLE IF NOT EXISTS routers (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, ip TEXT NOT NULL, port INTEGER DEFAULT 8728, user TEXT, password TEXT, ip_blocks TEXT DEFAULT '[]', connected INTEGER DEFAULT 0, last_sync TEXT, created_at DATETIME DEFAULT CURRENT_TIMESTAMP, interface_wan TEXT DEFAULT 'ether1', auth_type TEXT DEFAULT 'dhcp')"); } catch(e) {}
 
 module.exports = db;
 module.exports.logActivity = logActivity;

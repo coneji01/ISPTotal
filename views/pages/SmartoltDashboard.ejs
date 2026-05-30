@@ -1,0 +1,130 @@
+<style>
+.smartolt-landing {
+  max-width: 700px;
+  margin: 40px auto;
+  padding: 0 16px;
+  text-align: center;
+}
+
+.smartolt-logo {
+  font-size: 3rem;
+  color: #018FFB;
+  margin-bottom: 16px;
+}
+
+.smartolt-landing h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 8px;
+}
+
+.smartolt-landing p {
+  color: #64748b;
+  font-size: 0.95rem;
+  margin-bottom: 28px;
+  line-height: 1.5;
+}
+
+.smartolt-btn-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+}
+
+.smartolt-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 24px;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s;
+  border: none;
+  cursor: pointer;
+  min-width: 200px;
+  justify-content: center;
+}
+
+.smartolt-btn-primary {
+  background: #018FFB;
+  color: #fff;
+}
+.smartolt-btn-primary:hover {
+  background: #0175cc;
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(1, 143, 251, 0.25);
+  text-decoration: none;
+}
+
+.smartolt-btn-secondary {
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+}
+.smartolt-btn-secondary:hover {
+  background: #e2e8f0;
+  color: #1e293b;
+  text-decoration: none;
+}
+
+.smartolt-info-box {
+  margin-top: 32px;
+  padding: 18px 22px;
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+  border-radius: 10px;
+  text-align: left;
+  font-size: 0.85rem;
+  color: #334155;
+  line-height: 1.5;
+}
+
+.smartolt-info-box strong {
+  color: #0369a1;
+}
+</style>
+
+<div class="smartolt-landing">
+  <div class="smartolt-logo"><i class="fas fa-satellite-dish"></i></div>
+  <h2>SmartOLT</h2>
+  <p>
+    SmartOLT no permite ser embebido dentro de otras páginas por seguridad.
+    Accede directamente haciendo clic abajo.
+  </p>
+
+  <div class="smartolt-btn-grid">
+    <a href="https://joelwifi.smartolt.com" target="_blank" rel="noopener" class="smartolt-btn smartolt-btn-primary">
+      <i class="fas fa-external-link-alt"></i> Abrir SmartOLT
+    </a>
+    <a href="/modulo?pagina=GPONManager" class="smartolt-btn smartolt-btn-secondary">
+      <i class="fas fa-tachometer-alt"></i> Dashboard OLT
+    </a>
+  </div>
+
+  <div class="smartolt-btn-grid" style="margin-top:10px;">
+    <a href="/modulo?pagina=SmartoltConfigured" class="smartolt-btn smartolt-btn-secondary" style="min-width:160px;padding:10px 16px;font-size:0.82rem;">
+      <i class="fas fa-check-circle"></i> ONUs Configuradas
+    </a>
+    <a href="/modulo?pagina=SmartoltUnconfigured" class="smartolt-btn smartolt-btn-secondary" style="min-width:160px;padding:10px 16px;font-size:0.82rem;">
+      <i class="fas fa-clock"></i> ONUs No configuradas
+    </a>
+  </div>
+
+  <div class="smartolt-info-box">
+    <strong><i class="fas fa-info-circle"></i> ¿Por qué no se puede embeker?</strong>
+    <br><br>
+    SmartOLT bloquea la visualización dentro de iframes por seguridad (<code>X-Frame-Options</code>).
+    <br><br>
+    Pero todos los datos de SmartOLT <strong>ya están disponibles</strong> en los módulos de tu sistema vía API:
+    <ul style="margin:8px 0 0 16px;padding:0;">
+      <li><strong>Dashboard OLT</strong> — KPIs, lista de ONUs, estados</li>
+      <li><strong>ONUs Configuradas</strong> — Detalle de cada ONU</li>
+      <li><strong>ONUs No configuradas</strong> — ONUs detectadas sin autorizar</li>
+    </ul>
+  </div>
+</div>

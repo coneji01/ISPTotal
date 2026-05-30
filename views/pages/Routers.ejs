@@ -238,11 +238,46 @@ function abrirModalEditar(id) {
       document.getElementById('routerPort').value = r.port || 8728;
       document.getElementById('routerUser').value = r.user || '';
       document.getElementById('routerPass').value = r.password || '';
-      document.getElementById('routerWan').value = r.interface_wan || 'ether1';
       document.getElementById('modalTitle').innerHTML = '<i class="fas fa-edit" style="color:#f59e0b;"></i> Editar Router';
       routerActualId = r.id;
       try { cargarPools(r.id); } catch(e) {}
       document.getElementById('modalRouter').style.display = 'flex';
+      // Detectar interfaces y luego seleccionar la guardada
+      setTimeout(function() {
+        var host = r.ip;
+        var port = parseInt(r.port) || 8728;
+        var username = r.user || '';
+        var password = r.password || '';
+        if (host && username) {
+          fetch('/api/routers/interfaces', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ host: host, port: port, username: username, password: password })
+          })
+          .then(function(resp) { return resp.json(); })
+          .then(function(res) {
+            var sel = document.getElementById('routerWan');
+            sel.innerHTML = '';
+            if (res.success && res.interfaces && res.interfaces.length > 0) {
+              res.interfaces.forEach(function(iface) {
+                var opt = document.createElement('option');
+                opt.value = iface.name;
+                opt.textContent = iface.name + ' (' + (iface.type || '') + ') ' + (iface.running === 'true' ? '🟢' : '🔴');
+                sel.appendChild(opt);
+              });
+            } else {
+              sel.innerHTML = '<option value="ether1">ether1 (por defecto)</option><option value="">-- Detectar interfaces --</option>';
+            }
+            sel.value = r.interface_wan || 'ether1';
+          })
+          .catch(function() {
+            // Si falla la detección, dejamos opciones por defecto
+            var sel = document.getElementById('routerWan');
+            sel.innerHTML = '<option value="ether1">ether1 (por defecto)</option><option value="">-- Detectar interfaces --</option>';
+            sel.value = r.interface_wan || 'ether1';
+          });
+        }
+      }, 100);
     })
     .catch(function(e) {
       showToast('Error al cargar router: ' + e.message, 'error');

@@ -465,7 +465,7 @@
         if (_rpAbortCtrl) { try { _rpAbortCtrl.abort(); } catch(e){} }
         _rpSearchTimer = setTimeout(() => {
             _rpAbortCtrl = new AbortController();
-            fetch('/modulo?pagina=RegistrarPago&ajax=search&term=' + encodeURIComponent(val), {signal: _rpAbortCtrl.signal})
+            fetch('/modulo?pagina=RegistrarPago&ajax=search_clients&q=' + encodeURIComponent(val), {signal: _rpAbortCtrl.signal})
             .then(function(r) { if (!r.ok) throw new Error('HTTP '+r.status); return r.text(); })
             .then(function(txt) { try { return JSON.parse(txt); } catch(e) { console.error('JSON parse error:', txt.substring(0,200)); throw e; } })
             .then(function(d) {
@@ -1486,7 +1486,10 @@
 
     function printReceiptByIds(ids) {
         if (!ids || ids.length === 0) return;
-        const idsStr = ids.join(',');
+        // Filtrar IDs inválidos
+        var validIds = ids.filter(function(id) { return id && !isNaN(parseInt(id)); });
+        if (validIds.length === 0) return;
+        const idsStr = validIds.join(',');
         const printUrl = '/modulo?pagina=ImprimirRecibo&ajax=print&ids=' + idsStr;
         const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) 
                          || (navigator.maxTouchPoints > 1 && window.innerWidth < 1024);

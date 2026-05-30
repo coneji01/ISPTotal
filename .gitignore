@@ -45,3 +45,10 @@ graphify-out/
 
 # Graphify generated files
 .graphify/
+
+# Tracked files removed from index (DB + logs)
+backend/database.sqlite
+backend/database.sqlite-wal
+backend/database.sqlite-shm
+logs/
+*.log

@@ -50,6 +50,20 @@
     .svc-badge { padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
     .svc-active { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
     .svc-suspended { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+.svc-btn-onu{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:6px;font-size:0.8rem;font-weight:600;background:#eff6ff;color:#1e40af;border:1px solid #bfdbfe;cursor:pointer;transition:all 0.15s;}
+.svc-btn-onu:hover{background:#dbeafe;border-color:#93c5fd;}
+.svc-btn-edit{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:6px;font-size:0.8rem;font-weight:600;background:#f5f3ff;color:#5b21b6;border:1px solid #ddd6fe;cursor:pointer;transition:all 0.15s;}
+.svc-btn-edit:hover{background:#ede9fe;border-color:#c4b5fd;}
+.svc-btn-danger{background:#ef4444;color:#fff;}
+.svc-btn-danger:hover{background:#dc2626;}
+.svc-btn-tr069{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:6px;font-size:0.8rem;font-weight:600;background:#f5f3ff;color:#5b21b6;border:1px solid #ddd6fe;cursor:pointer;transition:all 0.15s;}
+.svc-btn-tr069:hover{background:#ede9fe;border-color:#c4b5fd;}
+.vc-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:7px;font-size:0.82rem;font-weight:600;border:none;cursor:pointer;transition:all 0.15s;}
+.vc-btn-primary{background:#2563eb;color:#fff;}
+.vc-btn-primary:hover{background:#1d4ed8;box-shadow:0 2px 8px rgba(37,99,235,0.3);}
+.vc-btn-secondary{background:#f1f5f9;color:#475569;border:1px solid #e2e8f0;}
+.vc-btn-secondary:hover{background:#e2e8f0;}
+.vc-btn-sm{padding:6px 12px;font-size:0.78rem;}
     .svc-retired { background: #f1f5f9; color: var(--text-muted); border: 1px solid var(--border-color); }
     .svc-connecting { background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
 
@@ -190,12 +204,13 @@
             <div class="p-id">ID: <%= cliente.id %></div>
         </div>
         <div class="p-menu">
-            <div class="p-item active" onclick="showTab('datos', this)"><i class="fas fa-id-card"></i> Datos Generales</div>
-            <div class="p-item" onclick="showTab('servicios', this)"><i class="fas fa-wifi"></i> Servicios</div>
+            <div class="p-item" onclick="showTab('datos', this)"><i class="fas fa-id-card"></i> Datos Generales</div>
+            <div class="p-item active" onclick="showTab('servicios', this)"><i class="fas fa-wifi"></i> Servicios</div>
             <div class="p-item" onclick="showTab('facturas', this)"><i class="fas fa-file-invoice"></i> Facturas</div>
             <div class="p-item" onclick="showTab('pagos', this)"><i class="fas fa-money-bill-wave"></i> Pagos</div>
             <div class="p-item" onclick="showTab('ordenes', this)"><i class="fas fa-clipboard-list"></i> Órdenes</div>
             <div class="p-item" onclick="showTab('mensajeria', this)"><i class="fas fa-comment-dots"></i> Mensajería</div>
+            <div class="p-item" onclick="showTab('config', this);loadSvcConfig()"><i class="fas fa-cog"></i> Configuración</div>
         </div>
     </div>
 
@@ -203,52 +218,52 @@
     <div class="content-area">
 
         <!-- ===== TAB: DATOS ===== -->
-        <div id="tab-datos" class="tab-content active">
-            <form method="POST" action="/modulo?pagina=VerCliente&id=<%= cliente.id %>">
-                <input type="hidden" name="accion" value="editar_cliente">
+        <div id="tab-datos" class="tab-content">
+            <form onsubmit="return editarCliente(event)">
+                <input type="hidden" id="editClienteId" value="<%= cliente.id %>">
                 <h4 class="section-title">Información Personal</h4>
                 <div class="form-grid">
                     <div class="f-group full-w">
                         <label>Nombre Completo</label>
-                        <input type="text" name="name" class="f-input" value="<%= cliente.nombre %>" required>
+                        <input type="text" id="editClienteName" class="f-input" value="<%= cliente.nombre %>" required>
                     </div>
                     <div class="f-group">
                         <label>Cédula</label>
-                        <input type="text" name="cedula" class="f-input" value="<%= cliente.cedula || '' %>">
+                        <input type="text" id="editClienteCedula" class="f-input" value="<%= cliente.cedula || '' %>">
                     </div>
                     <div class="f-group">
                         <label>Alias</label>
-                        <input type="text" name="alias" class="f-input" value="<%= cliente.apodo || '' %>">
+                        <input type="text" id="editClienteAlias" class="f-input" value="<%= cliente.apodo || '' %>">
                     </div>
                     <div class="f-group">
                         <label>Teléfono</label>
-                        <input type="text" name="phone" class="f-input" value="<%= cliente.telefono || '' %>">
+                        <input type="text" id="editClientePhone" class="f-input" value="<%= cliente.telefono || '' %>">
                     </div>
                     <div class="f-group">
                         <label>Teléfono 2 <small style="color:#94a3b8;">(opcional)</small></label>
-                        <input type="text" name="phone2" class="f-input" value="<%= cliente.telefono2 || '' %>" placeholder="Segundo teléfono">
+                        <input type="text" id="editClientePhone2" class="f-input" value="<%= cliente.telefono2 || '' %>" placeholder="Segundo teléfono">
                     </div>
                     <div class="f-group">
                         <label>Email</label>
-                        <input type="email" name="email" class="f-input" value="<%= cliente.email || '' %>">
+                        <input type="email" id="editClienteEmail" class="f-input" value="<%= cliente.email || '' %>">
                     </div>
                     <div class="f-group full-w">
                         <label>Dirección Principal</label>
-                        <input type="text" name="address" class="f-input" value="<%= cliente.direccion || '' %>">
+                        <input type="text" id="editClienteAddress" class="f-input" value="<%= cliente.direccion || '' %>">
                     </div>
                     <div class="f-group">
                         <label>Zona</label>
-                        <input type="text" name="zona" class="f-input" value="<%= cliente.zona_nombre || '' %>" readonly>
+                        <input type="text" class="f-input" value="<%= cliente.zona_nombre || '' %>" readonly>
                     </div>
                 </div>
                 <div style="text-align:right;">
-                    <button type="submit" class="btn-save"><i class="fas fa-save"></i> Guardar Datos</button>
+                    <button type="submit" class="btn-save" id="btnEditCliente"><i class="fas fa-save"></i> Guardar Datos</button>
                 </div>
             </form>
         </div>
 
         <!-- ===== TAB: SERVICIOS ===== -->
-        <div id="tab-servicios" class="tab-content">
+        <div id="tab-servicios" class="tab-content active">
             <div class="svc-header">
                 <h4 class="section-title" style="margin:0; border:none;">Servicios Contratados</h4>
                 <button class="btn-new-svc" onclick="openNuevoServicio()"><i class="fas fa-plus-circle"></i> Nuevo Servicio</button>
@@ -293,6 +308,9 @@
                                     <% if (s.estado === 'suspendido') { %>
                                         <button class="btn-act btn-reactivate" onclick="confirmAction('activar', <%= s.id %>)"><i class="fas fa-play"></i> Reactivar</button>
                                     <% } %>
+                                    <button class="svc-btn svc-btn-onu" onclick="openAddOnuModal(<%= s.id %>,<%= cliente.id %>,'<%= (s.plan_nombre||'').replace(/'/g,"\\'") %>','<%= (s.auth_type||'dhcp') %>','<%= (s.pppoe_user||'').replace(/'/g,"\\'") %>','<%= (s.pppoe_pass||'').replace(/'/g,"\\'") %>')"><i class="fas fa-plus-circle"></i> Añadir ONU</button>
+                                    <button class="svc-btn svc-btn-edit" onclick="openTransferModal(<%= s.id %>,'<%= (cliente.nombre||'').replace(/'/g,"\\'") %>')"><i class="fas fa-user-friends"></i> Cambiar Titular</button>
+                                    <button class="svc-btn svc-btn-edit" onclick="openEditSrvModal(<%= s.id %>)" style="background:#e0f2fe;color:#0369a1;border-color:#bae6fd;"><i class="fas fa-pen"></i> Editar</button>
                                 </div>
                                 <div class="toolbar-right">
                                     <% if (s.estado === 'activo') { %>
@@ -301,8 +319,30 @@
                                     <% if (s.estado !== 'retirado') { %>
                                         <button class="btn-act btn-retire" onclick="openRetireModal(<%= s.id %>)"><i class="fas fa-ban"></i> Retirar</button>
                                     <% } %>
+                                    <button class="btn-act" style="background:#fef2f2;color:#991b1b;border-color:#fecaca;" onclick="confirmAction('eliminar', <%= s.id %>)"><i class="fas fa-trash"></i> Eliminar</button>
                                 </div>
                             </div>
+
+                            <% if (s.onu_sn) { %>
+                            <div style="background:#f0fdf4;padding:10px 14px;border-radius:8px;margin-bottom:12px;border:1px solid #bbf7d0;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+                                <div style="display:flex;align-items:center;gap:10px;">
+                                    <i class="fas fa-microchip" style="color:#16a34a;font-size:1.1rem;"></i>
+                                    <div>
+                                        <span style="font-weight:600;color:#166534;font-size:0.85rem;">ONU: <code style="background:#dcfce7;padding:2px 6px;border-radius:4px;font-size:0.82rem;"><%= s.onu_sn %></code></span>
+                                        <span style="font-size:0.78rem;color:#15803d;margin-left:8px;">
+                                            <% if (s.onu_estado === 'activo') { %>✅ Activo<% } else { %>🔴 <%= s.onu_estado || 'Inactivo' %><% } %>
+                                            <% if (s.onu_senial) { %> | Señal: <%= s.onu_senial %> dBm<% } %>
+                                        </span>
+                                    </div>
+                                </div>
+                                <button class="svc-btn svc-btn-tr069" onclick="enviarTR069(<%= s.id %>)"><i class="fas fa-satellite-dish"></i> TR069</button>
+                            </div>
+                            <% } else { %>
+                            <div style="background:#fefce8;padding:10px 14px;border-radius:8px;margin-bottom:12px;border:1px solid #fef08a;display:flex;align-items:center;gap:10px;">
+                                <i class="fas fa-exclamation-triangle" style="color:#ca8a04;font-size:0.9rem;"></i>
+                                <span style="font-size:0.82rem;color:#92400e;">Sin ONU asignada. Usa <strong>Añadir ONU</strong> para vincular una.</span>
+                            </div>
+                            <% } %>
 
                             <form id="formEditSrv_<%= s.id %>" onsubmit="return guardarServicio(event, <%= s.id %>, <%= cliente.id %>)">
                                 <input type="hidden" name="servicio_id" value="<%= s.id %>">
@@ -379,6 +419,47 @@
                     <div style="padding:20px; text-align:center; color:#94a3b8;"><i class="fas fa-spinner fa-spin"></i> Cargando...</div>
                 </div>
             </div>
+
+            <!-- RESUMEN DE FACTURACIÓN -->
+            <div style="background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:1px solid #bbf7d0;border-radius:10px;padding:16px 20px;margin-top:16px;display:flex;flex-wrap:wrap;gap:16px;align-items:center;">
+                <div style="flex:1;min-width:150px;">
+                    <div style="font-size:0.75rem;color:#166534;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Total Ganado con este Cliente</div>
+                    <div style="font-size:1.5rem;font-weight:700;color:#15803d;">$<%= parseFloat(total_ganado || 0).toFixed(2) %></div>
+                    <div style="font-size:0.8rem;color:#166534;"><%= facturas_pagadas ? facturas_pagadas.length : 0 %> factura(s) pagada(s)</div>
+                </div>
+                <div style="flex:2;min-width:250px;">
+                    <div style="font-size:0.75rem;color:#166534;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">Días de Atraso por Factura (desde día de corte)</div>
+                    <% if (facturas_pagadas && facturas_pagadas.length > 0) { %>
+                        <div style="display:flex;flex-wrap:wrap;gap:6px;">
+                            <% facturas_pagadas.forEach(function(fp) { %>
+                                <% 
+                                    var atrasoClass = 'atraso-bueno';
+                                    if (fp.dias_atraso > 5) atrasoClass = 'atraso-malo';
+                                    else if (fp.dias_atraso > 2) atrasoClass = 'atraso-medio';
+                                %>
+                                <div style="padding:6px 12px;border-radius:6px;font-size:0.8rem;font-weight:600;background:<%= fp.dias_atraso > 5 ? '#fef2f2' : (fp.dias_atraso > 2 ? '#fffbeb' : '#f0fdf4') %>;border:1px solid <%= fp.dias_atraso > 5 ? '#fecaca' : (fp.dias_atraso > 2 ? '#fde68a' : '#bbf7d0') %>;">
+                                    <span style="color:#64748b;"><%= fp.periodo %></span>
+                                    <span style="margin:0 4px;">→</span>
+                                    <span style="color:<%= fp.dias_atraso > 5 ? '#dc2626' : (fp.dias_atraso > 2 ? '#d97706' : '#16a34a') %>;">
+                                        <%= fp.dias_atraso %> día<%= fp.dias_atraso !== 1 ? 's' : '' %>
+                                    </span>
+                                    <% if (fp.dias_atraso > 0) { %>
+                                        <span style="font-size:0.7rem;color:#94a3b8;margin-left:4px;">(corte <%= fp.fecha_corte %>)</span>
+                                    <% } %>
+                                </div>
+                            <% }); %>
+                        </div>
+                    <% } else { %>
+                        <span style="color:#94a3b8;font-size:0.85rem;">Sin facturas pagadas</span>
+                    <% } %>
+                </div>
+            </div>
+
+            <style>
+                .atraso-bueno { border-left: 3px solid #16a34a; }
+                .atraso-medio { border-left: 3px solid #d97706; }
+                .atraso-malo { border-left: 3px solid #dc2626; }
+            </style>
 
             <% if (facturas && facturas.length > 0) { %>
             <div style="margin-top:20px;">
@@ -505,12 +586,135 @@
             </div>
         </div>
 
+        <!-- ===== TAB: CONFIGURACION ===== -->
+        <div id="tab-config" class="tab-content">
+            <h4 class="section-title">Configuración</h4>
+            <div id="svcConfigLoading" style="padding:40px;text-align:center;color:#94a3b8;">
+                <i class="fas fa-spinner fa-spin" style="font-size:1.5rem;"></i><br>Cargando...
+            </div>
+            <div id="svcConfigContent" style="display:none;"></div>
+        </div>
+
     </div><!-- /content-area -->
 </div><!-- /client-layout -->
+
+<style>
+.cfg-card{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:14px 18px;cursor:pointer;transition:all 0.2s;margin-bottom:10px;}
+.cfg-card:hover{border-color:#cbd5e1;box-shadow:0 2px 8px rgba(0,0,0,0.04);}
+.cfg-card-header{display:flex;justify-content:space-between;align-items:center;}
+.cfg-card-title{font-weight:600;font-size:0.9rem;color:#1e293b;display:flex;align-items:center;gap:8px;}
+.cfg-card-desc{font-size:0.8rem;color:#64748b;margin-top:2px;}
+</style>
+<div id="modalSvcConfig" class="cli-modal-overlay" style="display:none;z-index:10001;">
+  <div class="cli-modal-box" style="max-width:550px;border-top:5px solid #6366f1;">
+    <div class="cli-modal-head" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <h3 style="margin:0;color:#6366f1;font-size:1rem;" id="svcCfgTitle"></h3>
+      <span onclick="closeSvcConfigModal()" style="cursor:pointer;font-size:1.5rem;color:#94a3b8;">&times;</span>
+    </div>
+    <div id="svcCfgBody" style="max-height:60vh;overflow-y:auto;"></div>
+    <div style="text-align:right;margin-top:14px;padding-top:12px;border-top:1px solid #e2e8f0;">
+      <button class="btn-mini" onclick="closeSvcConfigModal()" style="margin-right:8px;">Cancelar</button>
+      <button class="btn-save" onclick="saveSvcConfig()" id="btnSvcCfgSave" style="background:#6366f1;">Guardar</button>
+    </div>
+  </div>
+</div>
 
 <!-- ===== MODALS ===== -->
 
 <!-- Confirm Action Modal -->
+<!-- Modal Añadir ONU -->
+<div class="cli-modal-overlay" id="modalAddOnu" style="display:none;">
+  <div class="cli-modal-box" style="max-width:600px;border-top:5px solid #2563eb;">
+    <div class="cli-modal-head" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <h3 style="margin:0;color:#2563eb;"><i class="fas fa-plus-circle"></i> Añadir ONU</h3>
+      <span onclick="closeModal('modalAddOnu')" style="cursor:pointer;font-size:1.5rem;color:#94a3b8;">&times;</span>
+    </div>
+    <input type="hidden" id="addOnuServicioId" value="0">
+    
+    <!-- SmartOLT Selector -->
+    <div style="margin-bottom:14px;">
+      <label style="font-weight:600;font-size:0.85rem;color:#374151;display:block;margin-bottom:4px;">Seleccionar OLT</label>
+      <select id="addOnuOltSelect" class="f-input" onchange="addOnuOltChanged()">
+        <option value="">-- Cargando OLTs... --</option>
+      </select>
+    </div>
+    
+    <!-- Step 1: Scan -->
+    <div id="addonu-step1">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <div style="font-weight:600;color:#1e293b;">ONUs pendientes de autorizar</div>
+        <button class="vc-btn vc-btn-primary vc-btn-sm" onclick="scanOnus()" style="background:#7c3aed;color:#fff;"><i class="fas fa-radar"></i> Escanear</button>
+      </div>
+      <div id="addonu-list" style="max-height:200px;overflow-y:auto;border:1px solid #e2e8f0;border-radius:8px;background:#f8fafc;">
+        <div style="padding:30px;text-align:center;color:#94a3b8;">
+          <i class="fas fa-satellite-dish" style="font-size:2rem;margin-bottom:10px;display:block;"></i>
+          Presiona <b>Escanear</b> para buscar ONUs
+        </div>
+      </div>
+    </div>
+    
+    <!-- Step 2: Authorize form -->
+    <div id="addonu-step2" style="display:none;margin-top:14px;padding:14px;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0;">
+      <div style="display:flex;gap:8px;margin-bottom:10px;">
+        <button class="vc-btn vc-btn-secondary vc-btn-sm" onclick="addOnuBackToStep1()"><i class="fas fa-arrow-left"></i> Volver</button>
+      </div>
+      <div class="form-grid">
+        <div class="f-group"><label>Board</label><input type="text" id="addonu-board" class="f-input" readonly></div>
+        <div class="f-group"><label>Puerto PON</label><input type="text" id="addonu-port" class="f-input" readonly></div>
+        <div class="f-group full-w"><label>Serial</label><input type="text" id="addonu-sn" class="f-input" readonly></div>
+        <div class="f-group"><label>Modelo</label><select id="addonu-model" class="f-input"><option value="">Seleccionar</option></select></div>
+        <div class="f-group"><label>Srv Profile</label><input type="text" id="addonu-srvprofile" class="f-input"></div>
+        <div class="f-group full-w"><label>Descripción</label><input type="text" id="addonu-desc" class="f-input" placeholder="Descripción de la ONU"></div>
+        <div class="f-group full-w"><label>VLAN</label><input type="text" id="addonu-vlan" class="f-input" placeholder="Ej: 100"></div>
+        <div class="f-group" style="grid-column:1/-1;">
+          <label>ONU Mode</label>
+          <div style="display:flex;gap:8px;">
+            <label style="flex:1;padding:10px;border:2px solid #2563eb;border-radius:8px;cursor:pointer;text-align:center;background:#eff6ff;font-weight:600;" id="onuModeRoute" onclick="seleccionarModoONU('route')">
+              <input type="radio" name="onu_mode" value="route" checked style="display:none;">
+              <i class="fas fa-route"></i> Route
+            </label>
+            <label style="flex:1;padding:10px;border:2px solid #e2e8f0;border-radius:8px;cursor:pointer;text-align:center;background:#fff;font-weight:400;" id="onuModeBridge" onclick="seleccionarModoONU('bridge')">
+              <input type="radio" name="onu_mode" value="bridge" style="display:none;">
+              <i class="fas fa-link"></i> Bridge
+            </label>
+          </div>
+        </div>
+      </div>
+      <div id="addonu-result" style="margin-top:10px;"></div>
+      <div style="text-align:right;margin-top:14px;">
+        <button class="vc-btn vc-btn-primary" onclick="authorizeOnu()"><i class="fas fa-check-circle"></i> Autorizar ONU</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+<!-- Modal Cambiar Titular -->
+<div class="cli-modal-overlay" id="modalTransfer" style="display:none;">
+  <div class="cli-modal-box" style="max-width:480px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <h3 style="margin:0;color:#7c3aed;"><i class="fas fa-user-friends"></i> Cambiar Titular</h3>
+      <span onclick="closeModal('modalTransfer')" style="cursor:pointer;font-size:1.5rem;color:#94a3b8;">&times;</span>
+    </div>
+    <input type="hidden" id="tfServicioId" value="0">
+    <div style="font-size:0.82rem;color:#64748b;margin-bottom:12px;">
+      Titular actual: <strong id="tfCurrentOwner" style="color:#1e293b;"></strong>
+    </div>
+    <input type="text" id="tfSearch" class="f-input" placeholder="Buscar cliente por nombre o cédula..." oninput="searchTransferClients()" style="margin-bottom:10px;">
+    <div id="tfResults" style="max-height:200px;overflow-y:auto;border:1px solid #e2e8f0;border-radius:8px;background:#fff;">
+      <div style="padding:20px;text-align:center;color:#94a3b8;">Escriba al menos 2 caracteres para buscar</div>
+    </div>
+    <div id="tfResultMsg" style="margin-top:8px;"></div>
+    <div style="text-align:right;margin-top:14px;border-top:1px solid #e2e8f0;padding-top:14px;">
+      <button class="vc-btn vc-btn-secondary" onclick="closeModal('modalTransfer')">Cancelar</button>
+      <button class="vc-btn vc-btn-primary" id="tfConfirmBtn" disabled onclick="confirmTransfer()"><i class="fas fa-exchange-alt"></i> Transferir</button>
+    </div>
+  </div>
+</div>
+
+
+
 <div id="modalConfirm" class="modal-overlay">
     <div class="modal-box">
         <div class="modal-header">
@@ -536,16 +740,16 @@
             <span style="color:#e11d48;"><i class="fas fa-ban"></i> Retirar Servicio</span>
             <span class="close-modal" onclick="document.getElementById('modalRetiro').style.display='none'">×</span>
         </div>
-        <form id="formRetiro" method="POST" action="/modulo?pagina=VerCliente&id=<%= cliente.id %>">
-            <input type="hidden" name="accion" value="retirar_servicio">
+        <form id="formRetiro" onsubmit="return ejecutarRetiro(event)">
             <input type="hidden" name="servicio_id" id="idRetiro" value="">
             <div style="margin-bottom:15px;">
                 <label style="font-weight:600; color:#475569; font-size:0.85rem; display:block; margin-bottom:6px;">Motivo de retiro</label>
-                <textarea name="motivo" class="f-input" rows="3" placeholder="Especifique el motivo..." style="resize:vertical;"></textarea>
+                <textarea id="motivoRetiro" class="f-input" rows="3" placeholder="Especifique el motivo..." style="resize:vertical;"></textarea>
             </div>
+            <div id="retiroResult" style="display:none;margin-bottom:10px;padding:8px 12px;border-radius:6px;font-size:0.85rem;"></div>
             <div style="display:flex; gap:10px; justify-content:flex-end;">
                 <button type="button" class="btn-mini" onclick="document.getElementById('modalRetiro').style.display='none'">Cancelar</button>
-                <button type="submit" class="btn-save" style="background:#e11d48;">Retirar Servicio</button>
+                <button type="submit" class="btn-save" style="background:#e11d48;" id="btnRetiroSubmit">Retirar Servicio</button>
             </div>
         </form>
     </div>
@@ -747,6 +951,125 @@
   </div>
 </div>
 
+<!-- ===== MODAL EDITAR SERVICIO ===== -->
+<div class="cli-modal-overlay" id="modalEditSrv" style="display:none;">
+  <div class="cli-modal-box" style="max-width:600px;border-top:5px solid #7c3aed;">
+    <h3 class="cli-modal-title" style="color:#5b21b6;"><i class="fas fa-pen"></i> Editar Servicio #<span id="editSrvModalId">-</span></h3>
+    <p style="font-size:0.85rem;color:#64748b;margin-bottom:18px;">Editando servicio de <b><%= cliente.nombre %></b></p>
+    
+    <div class="f-group" style="margin-bottom:18px;">
+      <label style="font-weight:600;font-size:0.88rem;color:#1e293b;display:block;margin-bottom:6px;">Tipo de Servicio</label>
+      <select id="esTipoServicio" class="f-input" onchange="esOnTipoChange()" style="font-weight:600;padding:12px;border:2px solid #7c3aed;border-radius:8px;">
+        <option value="internet">🌐 Servicio de Internet</option>
+        <option value="netflix">🎬 Cuenta de Netflix</option>
+        <option value="servicio_247">🔄 Servicio 24/7</option>
+      </select>
+    </div>
+
+    <div id="esInternetFields">
+    <div class="form-grid">
+      <div class="f-group">
+        <label>Zona</label>
+        <select id="esZona" class="f-input" onchange="esUpdatePlans(); esUpdateZonaRouter();">
+          <option value="">-- Seleccionar --</option>
+          <% (zonas || []).forEach(function(z) { %>
+          <option value="<%= z.id %>"><%= z.nombre %></option>
+          <% }) %>
+        </select>
+      </div>
+      <div class="f-group">
+        <label>Plan</label>
+        <select id="esPlan" class="f-input">
+          <option value="">-- Seleccionar zona --</option>
+        </select>
+      </div>
+      <div class="f-group">
+        <label>Router</label>
+        <select id="esRouter" class="f-input" onchange="esOnRouterChange()">
+          <option value="">-- Seleccionar --</option>
+        </select>
+      </div>
+      <div class="f-group">
+        <label>Método de Conexión</label>
+        <select id="esMetodo" class="f-input" onchange="esOnMetodoChange()">
+          <option value="dhcp">DHCP (IPoE)</option>
+          <option value="pppoe">PPPoE</option>
+          <option value="static">IP Estática</option>
+        </select>
+      </div>
+      
+      <div id="esPppoeFields" class="form-grid" style="display:none;">
+        <div class="f-group"><label>Usuario PPPoE</label><input type="text" id="esPppoeUser" class="f-input" placeholder="Usuario"></div>
+        <div class="f-group"><label>Contraseña</label><input type="text" id="esPppoePass" class="f-input" placeholder="Contraseña"></div>
+        <div class="f-group" style="display:flex;align-items:flex-end;">
+          <button type="button" class="btn-gen" onclick="esGenerateCredentials()" style="margin-bottom:10px;">Generar</button>
+        </div>
+      </div>
+    </div>
+      
+      <div class="f-group" style="background:#f8fafc;padding:10px;border:1px solid #e2e8f0;border-radius:8px;">
+        <div style="font-weight:600;font-size:0.85rem;color:#334155;margin-bottom:5px;"><i class="fas fa-network-wired"></i> IP</div>
+        <input type="text" id="esIp" class="f-input" style="font-size:0.85rem;font-family:monospace;" placeholder="Dirección IP">
+      </div>
+        <div id="esWifiFields">
+          <div class="form-grid" style="margin-top:8px;background:#faf5ff;padding:12px;border-radius:8px;border:1px solid #e9d5ff;">
+            <div class="f-group">
+              <label><i class="fas fa-wifi" style="color:#7c3aed;"></i> Nombre WiFi (SSID)</label>
+              <input type="text" id="esWifiSsid" class="f-input" placeholder="Ej: ISP_Total_Fibra">
+            </div>
+            <div class="f-group">
+              <label><i class="fas fa-lock" style="color:#7c3aed;"></i> Contraseña WiFi</label>
+              <input type="text" id="esWifiPass" class="f-input" minlength="8" placeholder="Mín. 8 caracteres">
+            </div>
+          </div>
+        </div>
+        <div class="f-group full-w" style="margin-top:8px;">
+          <label>Dirección Exacta</label>
+          <input type="text" id="esAddress" class="f-input" placeholder="Dirección del servicio">
+        </div>
+        <div class="f-group full-w">
+          <label>Observaciones</label>
+          <input type="text" id="esObs" class="f-input" placeholder="Notas adicionales">
+        </div>
+    </div>
+
+    <div id="esNetflixFields" style="display:none;">
+      <div class="form-grid">
+        <div class="f-group"><label>Correo Electrónico (Netflix)</label><input type="email" id="esNfEmail" class="f-input" placeholder="correo@ejemplo.com"></div>
+        <div class="f-group"><label>Contraseña</label><input type="text" id="esNfPassword" class="f-input" placeholder="Contraseña"></div>
+        <div class="f-group"><label>Perfil</label><input type="text" id="esNfPerfil" class="f-input" placeholder="Ej: Principal, Kids, etc."></div>
+        <div class="f-group"><label>Fecha de Vencimiento</label><input type="date" id="esNfVencimiento" class="f-input"></div>
+      </div>
+    </div>
+
+    <div id="es247Fields" style="display:none;">
+      <div class="form-grid">
+        <div class="f-group full-w"><label>Descripción del Servicio</label><textarea id="es247Desc" class="f-input" rows="2" placeholder="Describe el servicio que se ofrece..."></textarea></div>
+        <div class="f-group"><label>Precio Mensual (RD$)</label><input type="number" id="es247Precio" class="f-input" step="0.01" min="0" placeholder="0.00"></div>
+      </div>
+    </div>
+
+    <div id="esCicloSection" class="f-group full-w" style="margin-top:12px;background:#f0f9ff;padding:12px;border-radius:8px;border:1px solid #dbeafe;">
+      <label style="font-weight:600;font-size:0.88rem;color:#1e293b;display:block;margin-bottom:6px;">
+        <i class="fas fa-file-invoice-dollar" style="color:#2563eb;"></i> Ciclo de Facturación
+      </label>
+      <select id="esCiclo" class="f-input">
+        <option value="">-- Sin cambios --</option>
+        <% if (typeof ciclos !== 'undefined' && ciclos) { ciclos.forEach(function(c) { %>
+        <option value="<%= c.id %>"><%= c.name || (c.billing_type.toUpperCase()+' | Gen: Día '+c.invoice_day+' | Corte: Día '+c.suspend_day) %></option>
+        <% }); } %>
+      </select>
+    </div>
+
+    <div class="cli-modal-footer" style="margin-top:20px;">
+      <button type="button" onclick="closeModal('modalEditSrv')" class="cli-btn-cancel">Cancelar</button>
+      <button type="button" onclick="esGuardar()" id="btnGuardarES" class="cli-btn-confirm" style="background:#7c3aed;">
+        <i class="fas fa-save"></i> Guardar Cambios
+      </button>
+    </div>
+  </div>
+</div>
+
 <script>
     // ==================================================================
     // DATA
@@ -780,11 +1103,19 @@
     // TABS
     // ==================================================================
     function showTab(tab, btn) {
+        // Remover active de todos los items del menu y tabs
         document.querySelectorAll('.p-item').forEach(function(i) { i.classList.remove('active'); });
-        if (btn) btn.classList.add('active');
         document.querySelectorAll('.tab-content').forEach(function(c) { c.classList.remove('active'); });
+        // Activar el tab clickeado
+        if (btn) btn.classList.add('active');
         var el = document.getElementById('tab-' + tab);
-        if (el) el.classList.add('active');
+        if (el) {
+            el.classList.add('active');
+            console.log('[Tab] Activado:', tab);
+        } else {
+            console.warn('[Tab] No encontrado: tab-' + tab);
+        }
+        // Cargar contenido dinamico si aplica
         if (tab === 'facturas') loadInvoices();
         if (tab === 'mensajeria') loadMessages(1);
     }
@@ -806,6 +1137,10 @@
         var btn = document.getElementById('confBtnSubmit');
         document.getElementById('confActInput').value = tipo + '_servicio';
         document.getElementById('confSrvIdInput').value = id;
+        
+        // Store tipo for the submit handler
+        document.getElementById('formConfirmAction').dataset.tipo = tipo;
+        document.getElementById('formConfirmAction').dataset.srvId = id;
 
         if (tipo === 'suspender') {
             title.innerText = 'Suspender';
@@ -820,18 +1155,170 @@
             btn.style.background = '#166534';
             btn.innerHTML = '<i class="fas fa-play"></i> Reactivar';
         } else if (tipo === 'eliminar') {
-            title.innerText = 'Eliminar';
+            title.innerText = 'Eliminar Servicio';
             title.style.color = '#991b1b';
-            msg.innerHTML = 'ATENCIÓN: Se eliminará todo registro.<br>¿Continuar?';
+            msg.innerHTML = '⚠️ ATENCIÓN: Se eliminará todo registro del servicio, facturas, pagos, ONU y el secreto PPPoE del MikroTik. La IP quedará liberada.<br><br><strong>¿Estás seguro?</strong>';
             btn.style.background = '#991b1b';
-            btn.innerHTML = '<i class="fas fa-trash"></i> Eliminar';
+            btn.innerHTML = '<i class="fas fa-trash"></i> Eliminar permanentemente';
         }
         document.getElementById('modalConfirm').style.display = 'flex';
     }
 
+    // Handle confirm form submit via fetch (for all actions)
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('formConfirmAction').addEventListener('submit', function(e) {
+            e.preventDefault();
+            var tipo = this.dataset.tipo;
+            var srvId = this.dataset.srvId;
+            var btn = document.getElementById('confBtnSubmit');
+            btn.disabled = true;
+            
+            var endpoint = '';
+            if (tipo === 'eliminar') {
+                endpoint = '/api/servicios/' + srvId + '/eliminar';
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Eliminando...';
+            } else if (tipo === 'suspender') {
+                endpoint = '/api/servicios/' + srvId + '/suspender';
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Suspendiendo...';
+            } else if (tipo === 'activar') {
+                endpoint = '/api/servicios/' + srvId + '/suspender';
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Reactivando...';
+            }
+            
+            if (endpoint) {
+                fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({})
+                })
+                .then(function(r) { return r.json(); })
+                .then(function(d) {
+                    if (d.success) {
+                        document.getElementById('modalConfirm').style.display = 'none';
+                        location.reload();
+                    } else {
+                        alert('Error: ' + (d.message || d.error || 'desconocido'));
+                        btn.disabled = false;
+                        btn.innerHTML = tipo === 'eliminar' 
+                            ? '<i class="fas fa-trash"></i> Eliminar permanentemente'
+                            : (tipo === 'suspender' 
+                                ? '<i class="fas fa-pause"></i> Suspender'
+                                : '<i class="fas fa-play"></i> Reactivar');
+                    }
+                })
+                .catch(function(e) {
+                    alert('Error de conexión: ' + e.message);
+                    btn.disabled = false;
+                    btn.innerHTML = tipo === 'eliminar' 
+                        ? '<i class="fas fa-trash"></i> Eliminar permanentemente'
+                        : (tipo === 'suspender' 
+                            ? '<i class="fas fa-pause"></i> Suspender'
+                            : '<i class="fas fa-play"></i> Reactivar');
+                });
+            }
+        });
+    });
+
     function openRetireModal(id) {
         document.getElementById('idRetiro').value = id;
+        document.getElementById('retiroResult').style.display = 'none';
+        document.getElementById('motivoRetiro').value = '';
         document.getElementById('modalRetiro').style.display = 'flex';
+    }
+
+    function ejecutarRetiro(e) {
+        e.preventDefault();
+        var srvId = document.getElementById('idRetiro').value;
+        var motivo = document.getElementById('motivoRetiro').value.trim();
+        if (!srvId) { alert('Error: ID de servicio no encontrado'); return false; }
+        if (!motivo) { alert('Debe especificar un motivo de retiro'); return false; }
+        if (!confirm('¿Está seguro de retirar este servicio?\n\nMotivo: ' + motivo)) return false;
+
+        var btn = document.getElementById('btnRetiroSubmit');
+        var resultDiv = document.getElementById('retiroResult');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Retirando...';
+        resultDiv.style.display = 'none';
+
+        fetch('/api/servicios/' + srvId + '/retirar', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ motivo: motivo })
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+            if (d.success) {
+                resultDiv.style.cssText = 'display:block;margin-bottom:10px;padding:8px 12px;border-radius:6px;font-size:0.85rem;background:#f0fdf4;color:#166534;';
+                resultDiv.innerHTML = '<i class="fas fa-check-circle"></i> Servicio retirado correctamente';
+                setTimeout(function() {
+                    document.getElementById('modalRetiro').style.display = 'none';
+                    location.reload();
+                }, 1500);
+            } else {
+                resultDiv.style.cssText = 'display:block;margin-bottom:10px;padding:8px 12px;border-radius:6px;font-size:0.85rem;background:#fef2f2;color:#991b1b;';
+                resultDiv.innerHTML = '<i class="fas fa-times-circle"></i> ' + (d.message || 'Error al retirar');
+                btn.disabled = false;
+                btn.innerHTML = 'Retirar Servicio';
+            }
+        })
+        .catch(function(e) {
+            resultDiv.style.cssText = 'display:block;margin-bottom:10px;padding:8px 12px;border-radius:6px;font-size:0.85rem;background:#fef2f2;color:#991b1b;';
+            resultDiv.innerHTML = '<i class="fas fa-times-circle"></i> Error de conexión';
+            btn.disabled = false;
+            btn.innerHTML = 'Retirar Servicio';
+        });
+        return false;
+    }
+
+    // ==================================================================
+    // EDITAR CLIENTE (via fetch)
+    // ==================================================================
+    function editarCliente(e) {
+      e.preventDefault();
+      var btn = document.getElementById('btnEditCliente');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+
+      var data = {
+        cliente_id: parseInt(document.getElementById('editClienteId').value),
+        nombre: document.getElementById('editClienteName').value.trim(),
+        cedula: document.getElementById('editClienteCedula').value.trim(),
+        telefono: document.getElementById('editClientePhone').value.trim(),
+        telefono2: document.getElementById('editClientePhone2').value.trim(),
+        direccion: document.getElementById('editClienteAddress').value.trim(),
+        apodo: document.getElementById('editClienteAlias').value.trim()
+      };
+
+      if (!data.nombre || !data.cliente_id) {
+        showToast('Nombre requerido', 'error');
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-save"></i> Guardar Datos';
+        return;
+      }
+
+      fetch('/api/clientes/editar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      })
+      .then(function(r) { return r.json(); })
+      .then(function(d) {
+        if (d.success) {
+          showToast(d.message, 'success');
+          setTimeout(function() { location.reload(); }, 1000);
+        } else {
+          showToast(d.message || 'Error al guardar', 'error');
+        }
+      })
+      .catch(function(e) {
+        showToast('Error de conexión: ' + e.message, 'error');
+      })
+      .finally(function() {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-save"></i> Guardar Datos';
+      });
+
+      return false;
     }
 
     // ==================================================================
@@ -1091,6 +1578,7 @@
       loadNsPlans();
     }
 
+    function openModal(id) { document.getElementById(id).style.display = 'flex'; }
     function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
     function loadNsRouters() {
@@ -1220,6 +1708,16 @@
       document.getElementById('nsPppoePass').value = '1320';
     }
 
+    function esGenerateCredentials() {
+      var nombre = '<%= (cliente.nombre || "").replace(/'/g, "\\'") %>';
+      if (nombre) {
+        var parts = nombre.trim().split(/\s+/);
+        var user = parts.map(function(p) { return p.charAt(0).toUpperCase() + p.slice(1).toLowerCase(); }).join('').replace(/[^a-zA-Z0-9]/g, '');
+        document.getElementById('esPppoeUser').value = user;
+      }
+      document.getElementById('esPppoePass').value = '1320';
+    }
+
     function nsGuardar() {
       const routerId = document.getElementById('nsRouter').value;
       const metodo = document.getElementById('nsMetodo').value;
@@ -1270,9 +1768,1065 @@
     // MODAL CLOSE ON OUTER CLICK
     // ==================================================================
     window.onclick = function(e) {
-        var overlays = document.querySelectorAll('.modal-overlay');
+        var overlays = document.querySelectorAll('.modal-overlay, .cli-modal-overlay');
         overlays.forEach(function(el) {
             if (e.target === el) el.style.display = 'none';
         });
     };
+
+    // ==================================================================
+    // EDITAR SERVICIO (es*) — Reutiliza el modal editSrv
+    // ==================================================================
+    var _editSrvId = null;
+
+    function openEditSrvModal(srvId) {
+      _editSrvId = srvId;
+      document.getElementById('editSrvModalId').textContent = srvId;
+      openModal('modalEditSrv');
+      
+      // Show loading in relevant fields
+      var planSel = document.getElementById('esPlan');
+      planSel.innerHTML = '<option value="">Cargando planes...</option>';
+      var routerSel = document.getElementById('esRouter');
+      routerSel.innerHTML = '<option value="">Cargando routers...</option>';
+      
+      // Load service data via AJAX
+      fetch('/api/servicios/' + srvId)
+        .then(function(r) { return r.json(); })
+        .then(function(resp) {
+          if (!resp.success || !resp.data) {
+            showToast('Error cargando datos del servicio', 'error');
+            return;
+          }
+          var d = resp.data;
+          
+          // 1. Set simple fields first (all at once)
+          document.getElementById('esTipoServicio').value = d.tipo_servicio || 'internet';
+          esOnTipoChange();
+          
+          document.getElementById('esMetodo').value = d.auth_type || 'dhcp';
+          esOnMetodoChange();
+          
+          document.getElementById('esPppoeUser').value = d.pppoe_user || '';
+          document.getElementById('esPppoePass').value = d.pppoe_pass || '';
+          document.getElementById('esIp').value = d.ip || '';
+          document.getElementById('esWifiSsid').value = d.wifi_ssid || '';
+          document.getElementById('esWifiPass').value = d.wifi_pass || '';
+          document.getElementById('esAddress').value = d.direccion || '';
+          document.getElementById('esObs').value = d.observaciones || '';
+          
+          document.getElementById('esNfEmail').value = d.netflix_email || '';
+          document.getElementById('esNfPassword').value = d.netflix_password || '';
+          document.getElementById('esNfPerfil').value = d.netflix_perfil || '';
+          document.getElementById('esNfVencimiento').value = d.netflix_vencimiento || '';
+          
+          document.getElementById('es247Desc').value = d.descripcion_servicio || '';
+          document.getElementById('es247Precio').value = d.precio_servicio || '';
+          
+          if (d.ciclo_id) document.getElementById('esCiclo').value = d.ciclo_id;
+          
+          // 2. Set zona (options are static from EJS, always available)
+          if (d.zona_id) {
+            document.getElementById('esZona').value = d.zona_id;
+          }
+          
+          // 3. Load plans and routers from API, then set plan/router values
+          esUpdatePlans(function() {
+            if (d.plan_id) document.getElementById('esPlan').value = d.plan_id;
+          });
+          esUpdateZonaRouter(function() {
+            if (d.router_id) document.getElementById('esRouter').value = d.router_id;
+          });
+        })
+        .catch(function(e) {
+          showToast('Error de conexión: ' + e.message, 'error');
+        });
+    }
+
+    function esOnTipoChange() {
+      var t = document.getElementById('esTipoServicio').value;
+      document.getElementById('esInternetFields').style.display = (t === 'internet') ? '' : 'none';
+      document.getElementById('esNetflixFields').style.display = (t === 'netflix') ? '' : 'none';
+      document.getElementById('es247Fields').style.display = (t === 'servicio_247') ? '' : 'none';
+    }
+
+    function esUpdatePlans(callback) {
+      var zonaId = document.getElementById('esZona').value;
+      var planSel = document.getElementById('esPlan');
+      planSel.innerHTML = '<option value="">-- Seleccionar --</option>';
+      if (!zonaId) { if (callback) callback(); return; }
+      fetch('/api/planes')
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          var list = Array.isArray(data) ? data : (data.planes || []);
+          list.forEach(function(p) {
+            var opt = document.createElement('option');
+            opt.value = p.id;
+            opt.textContent = (p.nombre || p.name) + ' - $' + (parseFloat(p.precio) || 0).toFixed(2);
+            planSel.appendChild(opt);
+          });
+          if (callback) callback();
+        })
+        .catch(function(e) {
+          console.log('esUpdatePlans error:', e);
+          if (callback) callback();
+        });
+    }
+
+    function esUpdateZonaRouter(callback) {
+      var zonaId = document.getElementById('esZona').value;
+      var routerSel = document.getElementById('esRouter');
+      routerSel.innerHTML = '<option value="">-- Seleccionar --</option>';
+      if (!zonaId) { if (callback) callback(); return; }
+      fetch('/api/routers')
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+          // /api/routers returns array directly
+          var list = Array.isArray(d) ? d : (d.routers || []);
+          list.forEach(function(r) {
+            var opt = document.createElement('option');
+            opt.value = r.id;
+            opt.textContent = (r.name || r.nombre) + ' (' + (r.ip || '') + ')';
+            routerSel.appendChild(opt);
+          });
+          if (callback) callback();
+        })
+        .catch(function() {
+          if (callback) callback();
+        });
+    }
+
+    function esOnRouterChange() {}
+
+    function esOnMetodoChange() {
+      var m = document.getElementById('esMetodo').value;
+      document.getElementById('esPppoeFields').style.display = (m === 'pppoe') ? '' : 'none';
+    }
+
+    function esGuardar() {
+      if (!_editSrvId) return;
+      var btn = document.getElementById('btnGuardarES');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+      
+      var metodo = document.getElementById('esMetodo').value;
+      var data = {
+        id: _editSrvId,
+        plan_id: parseInt(document.getElementById('esPlan').value) || null,
+        auth_type: metodo,
+        ip: document.getElementById('esIp').value,
+        pppoe_user: document.getElementById('esPppoeUser').value,
+        pppoe_pass: document.getElementById('esPppoePass').value,
+        wifi_ssid: document.getElementById('esWifiSsid').value,
+        wifi_pass: document.getElementById('esWifiPass').value,
+        direccion: document.getElementById('esAddress').value,
+        tipo_servicio: document.getElementById('esTipoServicio').value,
+        ciclo_id: parseInt(document.getElementById('esCiclo').value) || null,
+        netflix_email: document.getElementById('esNfEmail').value,
+        netflix_password: document.getElementById('esNfPassword').value,
+        netflix_perfil: document.getElementById('esNfPerfil').value,
+        netflix_vencimiento: document.getElementById('esNfVencimiento').value,
+        descripcion_servicio: document.getElementById('es247Desc').value,
+        precio_servicio: parseFloat(document.getElementById('es247Precio').value) || 0
+      };
+      
+      fetch('/api/servicios/editar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      })
+      .then(function(r) { return r.json(); })
+      .then(function(res) {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-save"></i> Guardar Cambios';
+        if (res.success) {
+          showToast('Servicio actualizado ✅ (WiFi/WAN enviado a ONU)');
+          closeModal('modalEditSrv');
+          setTimeout(function() { location.reload(); }, 1200);
+        } else {
+          showToast('Error: ' + (res.message || 'desconocido'), 'error');
+        }
+      })
+      .catch(function(e) {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-save"></i> Guardar Cambios';
+        showToast('Error de conexión: ' + e.message, 'error');
+      });
+    }
+function enviarTR069(servicioId) {
+  var btn = event.target;
+  btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> TR069...';
+  showToast('Enviando configuracion TR-069...');
+  
+  fetch('/api/smartolt/onu/enviar-tr069', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ servicio_id: servicioId })
+  })
+  .then(r => r.json())
+  .then(function(d) {
+    btn.disabled = false; btn.innerHTML = '<i class="fas fa-satellite-dish"></i> TR069';
+    if (d.success) {
+      showToast('TR-069 configurado exitosamente');
+    } else {
+      showToast('Error: ' + (d.message || 'desconocido'), 'error');
+    }
+  })
+  .catch(function(e) {
+    btn.disabled = false; btn.innerHTML = '<i class="fas fa-satellite-dish"></i> TR069';
+    showToast('Error de conexion: ' + e.message, 'error');
+  });
+}
+
+function openAddOnuModal(srvId, clId, planName, authType, pppoeUser, pppoePass) {
+  addOnuServicioId = srvId;
+  addOnuClienteId = clId;
+  addOnuAuthType = authType || 'dhcp';
+  addOnuPppoeUser = pppoeUser || '';
+  addOnuPppoePass = pppoePass || '';
+  document.getElementById('addOnuServicioId').value = srvId;
+  document.getElementById('addonu-step1').style.display = 'block';
+  document.getElementById('addonu-step2').style.display = 'none';
+  document.getElementById('addonu-list').innerHTML = '<div style="padding:30px;text-align:center;color:#94a3b8;"><i class="fas fa-spinner fa-spin" style="font-size:1.5rem;"></i><br>Cargando OLTs...</div>';
+  
+  // Load OLTs
+  fetch('/api/olts')
+    .then(r => r.json())
+    .then(olts => {
+      const sel = document.getElementById('addOnuOltSelect');
+      sel.innerHTML = '<option value="">-- Seleccionar OLT --</option>';
+      olts.forEach(function(o) {
+        if (o.smartolt_subdomain && o.smartolt_api_key) {
+          sel.innerHTML += '<option value="' + o.id + '">' + o.nombre + ' (' + o.smartolt_subdomain + '.smartolt.com)</option>';
+        }
+      });
+      sel.innerHTML += '<option value="new">+ Agregar nueva OLT...</option>';
+      document.getElementById('addonu-list').innerHTML = '<div style="padding:30px;text-align:center;color:#94a3b8;"><i class="fas fa-satellite-dish" style="font-size:2rem;margin-bottom:10px;display:block;"></i>Seleccione una OLT y presione <b>Escanear</b></div>';
+    })
+    .catch(() => {
+      document.getElementById('addonu-list').innerHTML = '<div style="padding:20px;color:#ef4444;text-align:center;">Error al cargar OLTs</div>';
+    });
+  
+  document.getElementById('addonu-result').innerHTML = '';
+  openModal('modalAddOnu');
+}
+
+function addOnuOltChanged() {
+  const val = document.getElementById('addOnuOltSelect').value;
+  if (val === 'new') {
+    closeModal('modalAddOnu');
+    showToast('Vaya a Configuración > SmartOLT para agregar una nueva OLT');
+    return;
+  }
+  // Load OLT details to get default VLAN
+  fetch('/api/olts')
+    .then(r => r.json())
+    .then(olts => {
+      const olt = olts.find(function(o) { return o.id == val; });
+      if (olt && olt.vlan_default) {
+        document.getElementById('addonu-vlan').value = olt.vlan_default;
+      } else {
+        document.getElementById('addonu-vlan').value = '';
+      }
+    })
+    .catch(function() {});
+}
+
+function scanOnus() {
+  const oltId = document.getElementById('addOnuOltSelect').value;
+  if (!oltId) { showToast('Seleccione una OLT primero', 'error'); return; }
+  
+  const listEl = document.getElementById('addonu-list');
+  listEl.innerHTML = '<div style="padding:30px;text-align:center;color:#94a3b8;"><i class="fas fa-spinner fa-spin" style="font-size:1.5rem;"></i><br>Escanenado ONUs...</div>';
+  
+  fetch('/api/smartolt/onu/scan', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ olt_id: parseInt(oltId) })
+  })
+  .then(r => r.json())
+  .then(d => {
+    if (d.success && d.onus && d.onus.length > 0) {
+      let h = '';
+      d.onus.forEach(function(o) {
+        const sn = o.sn || o.serial || o.serial_number || '';
+        const nombre = o.name || o.nombre || '';
+        const port = o.port || o.puerto || o.pon_port || '';
+        const board = o.board || '';
+        const scanNombre = o.name || o.nombre || '';
+        h += '<div class="onu-scan-item" onclick="selectOnu(\'' + sn + '\',\'' + port + '\',\'' + (scanNombre || sn).replace(/'/g,'') + '\',\'' + ((o.onu_type_name||o.model||'')).replace(/'/g,'') + '\',\'' + board + '\')" style="padding:8px 12px;cursor:pointer;border-bottom:1px solid #f1f5f9;display:flex;justify-content:space-between;align-items:center;" onmouseover="this.style.background=\'#eff6ff\'" onmouseout="this.style.background=\'\'">';
+        var modelo = o.onu_type_name || o.model || '';
+        h += '<div><span style="font-family:monospace;font-weight:600;color:#1e293b;">' + sn + '</span><br><span style="font-size:0.8rem;color:#64748b;">' + (modelo ? modelo + ' | ' : '') + (nombre || '') + '</span></div>';
+        h += '<div style="text-align:right;"><span style="font-size:0.8rem;color:#6366f1;">' + (port ? 'Puerto ' + port : '') + '</span></div>';
+        h += '</div>';
+      });
+      listEl.innerHTML = h;
+    } else {
+      listEl.innerHTML = '<div style="padding:30px;text-align:center;color:#94a3b8;"><i class="fas fa-satellite-dish" style="font-size:2rem;margin-bottom:10px;display:block;"></i>No hay ONUs pendientes<br><small>' + (d.message || '') + '</small></div>';
+    }
+  })
+  .catch(e => {
+    listEl.innerHTML = '<div style="padding:20px;color:#ef4444;text-align:center;">Error: ' + e.message + '</div>';
+  });
+}
+
+function selectOnu(sn, port, nombre, model, board) {
+  addOnuSelectedSerial = sn;
+  addOnuSelectedPort = port;
+  addOnuSelectedBoard = board;
+  document.getElementById('addonu-board').value = board || '';
+  document.getElementById('addonu-port').value = port || '';
+  document.getElementById('addonu-sn').value = sn;
+  document.getElementById('addonu-desc').value = nombre || '';
+  document.getElementById('addonu-srvprofile').value = '';
+  
+  // Load ONU models and auto-select the one from SmartOLT
+  var modeloDetectado = model || '';
+  fetch('/api/smartolt/onu-types')
+    .then(r => r.json())
+    .then(d => {
+      const sel = document.getElementById('addonu-model');
+      sel.innerHTML = '<option value="">Seleccionar modelo</option>';
+      var encontrado = false;
+      if (d.success && d.data) {
+        d.data.forEach(function(t) {
+          var selected = (t.name === modeloDetectado) ? 'selected' : '';
+          if (selected) encontrado = true;
+          sel.innerHTML += '<option value="' + (t.name||'') + '" ' + selected + '>' + (t.name||'') + '</option>';
+        });
+      }
+      // If model was detected but not in list, add it as selected
+      if (modeloDetectado && !encontrado) {
+        sel.innerHTML += '<option value="' + modeloDetectado + '" selected>' + modeloDetectado + ' (detectado)</option>';
+      }
+    })
+    .catch(() => {
+      // If failed to load types, still set the detected model
+      if (modeloDetectado) {
+        document.getElementById('addonu-model').innerHTML = '<option value="' + modeloDetectado + '" selected>' + modeloDetectado + '</option>';
+      }
+    });
+  
+  document.getElementById('addonu-step1').style.display = 'none';
+  document.getElementById('addonu-step2').style.display = 'block';
+}
+
+var addOnuMode = 'route';
+
+function seleccionarModoONU(mode) {
+  addOnuMode = mode;
+  var r = document.getElementById('onuModeRoute');
+  var b = document.getElementById('onuModeBridge');
+  if (mode === 'route') {
+    r.style.borderColor = '#2563eb'; r.style.background = '#eff6ff'; r.style.fontWeight = '600';
+    b.style.borderColor = '#e2e8f0'; b.style.background = '#fff'; b.style.fontWeight = '400';
+  } else {
+    b.style.borderColor = '#2563eb'; b.style.background = '#eff6ff'; b.style.fontWeight = '600';
+    r.style.borderColor = '#e2e8f0'; r.style.background = '#fff'; r.style.fontWeight = '400';
+  }
+}
+
+function addOnuBackToStep1() {
+  document.getElementById('addonu-step2').style.display = 'none';
+  document.getElementById('addonu-step1').style.display = 'block';
+}
+
+function authorizeOnu() {
+  const oltId = document.getElementById('addOnuOltSelect').value;
+  const serial = document.getElementById('addonu-sn').value;
+  const model = document.getElementById('addonu-model').value;
+  const desc = document.getElementById('addonu-desc').value;
+  const srvId = document.getElementById('addOnuServicioId').value;
+  
+  if (!oltId || !serial) { showToast('Seleccione una ONU', 'error'); return; }
+  
+  // Mostrar barra de progreso
+  var resultDiv = document.getElementById('addonu-result');
+  resultDiv.innerHTML = '' +
+    '<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:12px;">' +
+      '<div style="font-weight:600;font-size:0.85rem;color:#475569;margin-bottom:8px;">' +
+        '<i class="fas fa-sync-alt"></i> Autorizando ONU...' +
+      '</div>' +
+      '<div style="height:6px;background:#e2e8f0;border-radius:3px;overflow:hidden;margin-bottom:8px;">' +
+        '<div id="authProgressBar" style="width:0%;height:100%;background:linear-gradient(90deg,#6366f1,#8b5cf6);border-radius:3px;transition:width 0.5s;"></div>' +
+      '</div>' +
+      '<div id="authProgressStep" style="font-size:0.78rem;color:#64748b;">Iniciando...</div>' +
+    '</div>';
+
+  // Construir URL con parámetros
+  var params = new URLSearchParams();
+  params.append('olt_id', oltId);
+  params.append('serial', serial);
+  if (model) params.append('model', model);
+  params.append('vlan', document.getElementById('addonu-vlan').value || '');
+  // Enviar ID real del cliente (no el servicio) para evitar FOREIGN KEY error
+  params.append('cliente_id', addOnuClienteId || '');
+  if (addOnuServicioId) params.append('servicio_id', addOnuServicioId);
+  params.append('name', '<%= cliente.nombre.replace(/'/g, "\\'") %>' || desc || serial);
+  if (addOnuSelectedBoard) params.append('board', addOnuSelectedBoard);
+  if (addOnuSelectedPort) params.append('port', addOnuSelectedPort);
+  params.append('onu_mode', addOnuMode || 'route');
+  params.append('auth_type', addOnuAuthType || 'dhcp');
+  if (addOnuPppoeUser) {
+    params.append('pppoe_user', addOnuPppoeUser);
+    params.append('pppoe_pass', addOnuPppoePass || '');
+  }
+  
+  // Obtener perfiles del plan
+  var planSelect = document.getElementById('authPlan');
+  if (planSelect && planSelect.value) {
+    params.append('plan_id', planSelect.value);
+  }
+
+  var evtSource = new EventSource('/api/smartolt/onu/authorize/progress?' + params.toString());
+  var progressBar = document.getElementById('authProgressBar');
+  var progressStep = document.getElementById('authProgressStep');
+  var steps = { search: 15, delete: 25, authorize: 55, config: 65, speed: 75, tr069: 85, wan: 92, done: 100 };
+
+  evtSource.onmessage = function(e) {
+    var data = JSON.parse(e.data);
+    if (data.step === 'error') {
+      resultDiv.innerHTML = '<div style="color:#ef4444;font-weight:600;"><i class="fas fa-times-circle"></i> ' + data.msg + '</div>';
+      evtSource.close();
+      return;
+    }
+    if (progressStep) progressStep.textContent = data.msg;
+    if (progressBar && steps[data.step]) {
+      progressBar.style.width = steps[data.step] + '%';
+    }
+    if (data.step === 'done') {
+      progressBar.style.width = '100%';
+      progressStep.innerHTML = '<span style="color:#16a34a;"><i class="fas fa-check-circle"></i> ' + data.msg + '</span>';
+      setTimeout(function() { closeModal('modalAddOnu'); location.reload(); }, 1500);
+      evtSource.close();
+    }
+  };
+
+  evtSource.onerror = function() {
+    resultDiv.innerHTML = '<div style="color:#ef4444;font-weight:600;"><i class="fas fa-times-circle"></i> Error de conexión. La ONU pudo haberse autorizado, recargue la página.</div>';
+    evtSource.close();
+  };
+}
+
+// ========== CAMBIAR TITULAR ==========
+var tfSelectedClient = null;
+
+function openTransferModal(srvId, currentOwner) {
+  tfSelectedClient = null;
+  document.getElementById('tfServicioId').value = srvId;
+  document.getElementById('tfCurrentOwner').textContent = currentOwner;
+  document.getElementById('tfSearch').value = '';
+  document.getElementById('tfResults').innerHTML = '<div style="padding:20px;text-align:center;color:#94a3b8;">Escriba al menos 2 caracteres para buscar</div>';
+  document.getElementById('tfConfirmBtn').disabled = true;
+  document.getElementById('tfResultMsg').innerHTML = '';
+  openModal('modalTransfer');
+}
+
+var tfSearchTimeout = null;
+function searchTransferClients() {
+  if (tfSearchTimeout) clearTimeout(tfSearchTimeout);
+  var q = document.getElementById('tfSearch').value.trim();
+  if (q.length < 2) {
+    document.getElementById('tfResults').innerHTML = '<div style="padding:20px;text-align:center;color:#94a3b8;">Escriba al menos 2 caracteres para buscar</div>';
+    return;
+  }
+  tfSearchTimeout = setTimeout(function() {
+    fetch('/api/clientes/buscar?q=' + encodeURIComponent(q))
+      .then(function(r) { return r.json(); })
+      .then(function(clientes) {
+        var h = '';
+        if (!clientes || clientes.length === 0) {
+          h = '<div style="padding:20px;text-align:center;color:#94a3b8;">No se encontraron clientes</div>';
+        } else {
+          for (var ci = 0; ci < clientes.length; ci++) {
+            var cl = clientes[ci];
+            var nom = (cl.nombre || '').replace(/'/g, '');
+          h += '<div class="tf-result-item" onclick="selectTransferClient.call(this, ' + cl.id + ')" data-nombre="' + nom + '" style="padding:10px 14px;cursor:pointer;border-bottom:1px solid #f1f5f9;">';
+            h += '<div style="font-weight:600;">' + nom + '</div>';
+            h += '<div style="font-size:0.78rem;color:#64748b;">' + (cl.cedula || '') + ' | ' + (cl.telefono || '') + '</div>';
+            h += '</div>';
+          }
+        }
+        document.getElementById('tfResults').innerHTML = h;
+      })
+      .catch(function() {
+        document.getElementById('tfResults').innerHTML = '<div style="padding:20px;text-align:center;color:#ef4444;">Error de conexion</div>';
+      });
+  }, 300);
+}// ========== CONFIGURACIÓN ==========
+var clientConfigCache = null;
+
+function loadClientConfig() {
+  var cid = <%= cliente.id %>;
+  fetch('/api/clientes/' + cid + '/config')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (!data.success) return;
+      clientConfigCache = data;
+
+      // Update free services description
+      var freeSvc = data.gratis || [];
+      document.getElementById('cfg-free-desc').textContent = freeSvc.length > 0
+        ? freeSvc.map(function(s) { return s.plan_nombre || ('Svc #' + s.id); }).join(', ')
+        : 'Ninguno';
+
+      // Update no-suspend services description
+      var noSuspSvc = data.no_suspend || [];
+      document.getElementById('cfg-nosuspend-desc').textContent = noSuspSvc.length > 0
+        ? noSuspSvc.map(function(s) { return s.plan_nombre || ('Svc #' + s.id); }).join(', ')
+        : 'Ninguno';
+
+      // Update discounts description
+      var descSvc = data.descuentos || [];
+      document.getElementById('cfg-discount-desc').textContent = descSvc.length > 0
+        ? descSvc.map(function(s) { return (s.plan_nombre || 'Svc #' + s.id) + ' (' + parseFloat(s.descuento_monto).toFixed(2) + ')'; }).join(', ')
+        : 'Ninguno';
+
+      // Notificar facturas toggle
+      document.getElementById('cfg-notificar-facturas').checked = data.cliente.notificar_facturas === 1 || data.cliente.notificar_facturas === true;
+
+      // Facturar consolidado toggle
+      document.getElementById('cfg-facturar-consolidado').checked = data.cliente.facturar_consolidado === 1 || data.cliente.facturar_consolidado === true;
+
+      // Comprobante fiscal
+      var cf = data.cliente.comprobante_fiscal || 'ninguno';
+      var radios = document.querySelectorAll('input[name="cfg-comprobante"]');
+      radios.forEach(function(r) { r.checked = (r.value === cf); });
+    })
+    .catch(function(e) {
+      showToast('Error al cargar configuración: ' + e.message, 'error');
+    });
+}
+
+function openSvcConfigModal(tipo) {
+  var cid = <%= cliente.id %>;
+  var titleEl = document.getElementById('svcConfigModalTitle');
+  var descEl = document.getElementById('svcConfigModalDesc');
+  var tipoEl = document.getElementById('svcConfigTipo');
+  var listEl = document.getElementById('svcConfigList');
+  var discountFields = document.getElementById('svcConfigDiscountFields');
+  var billingFields = document.getElementById('svcConfigBillingFields');
+
+  tipoEl.value = tipo;
+  discountFields.style.display = 'none';
+  billingFields.style.display = 'none';
+
+  var titles = {
+    free: '<span style="color:#10b981;">🎁</span> Cliente Gratis',
+    nosuspend: '<span style="color:#f59e0b;">🛡️</span> No Suspender',
+    billing: '<span style="color:#2563eb;">📄</span> Facturación',
+    discount: '<span style="color:#8b5cf6;">🏷️</span> Descuentos'
+  };
+  var descs = {
+    free: 'Selecciona los servicios que serán gratis (no generan factura ni se suspenden).',
+    nosuspend: 'Selecciona los servicios protegidos contra suspensión automática.',
+    billing: 'Configura el ciclo de facturación para cada servicio.',
+    discount: 'Aplica un descuento fijo en RD$ a la factura de cada servicio.'
+  };
+
+  titleEl.innerHTML = titles[tipo] || 'Configurar';
+  descEl.textContent = descs[tipo] || '';
+
+  if (tipo === 'discount') {
+    discountFields.style.display = 'block';
+  }
+  if (tipo === 'billing') {
+    billingFields.style.display = 'block';
+    // Update the ciclo select with available cycles
+    var cicloSel = document.getElementById('svcBillingCiclo');
+    // Keep existing options from EJS rendering
+  }
+
+  // Fetch config to get services
+  fetch('/api/clientes/' + cid + '/config')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (!data.success) { listEl.innerHTML = '<div style="padding:20px;color:#ef4444;">Error al cargar servicios</div>'; return; }
+      var servicios = data.servicios || [];
+      if (servicios.length === 0) {
+        listEl.innerHTML = '<div style="padding:20px;text-align:center;color:#94a3b8;">Este cliente no tiene servicios</div>';
+        return;
+      }
+      var html = '';
+      servicios.forEach(function(s) {
+        var isActive = false;
+        var extraHtml = '';
+        if (tipo === 'free') {
+          isActive = s.es_gratis === 1;
+        } else if (tipo === 'nosuspend') {
+          isActive = s.no_suspender === 1;
+        } else if (tipo === 'discount') {
+          isActive = parseFloat(s.descuento_monto || 0) > 0;
+          extraHtml = isActive ? ' (' + parseFloat(s.descuento_monto).toFixed(2) + ')' : '';
+        } else if (tipo === 'billing') {
+          // Show cycle info
+          var cicloId = s.ciclo_id || '';
+          extraHtml = cicloId ? ' | Ciclo: #' + cicloId : '';
+        }
+        var statusBadge = s.estado === 'activo' ? '<span class="vc-badge vc-badge-ok">Activo</span>'
+          : s.estado === 'suspendido' ? '<span class="vc-badge vc-badge-err">Susp.</span>'
+          : '<span class="vc-badge vc-badge-warn">' + (s.estado || '—') + '</span>';
+        html += '<div class="cfg-svc-item" data-svc-id="' + s.id + '">';
+        html += '<div><div class="cfg-svc-name">' + (s.plan_nombre || 'Servicio #' + s.id) + '</div><div class="cfg-svc-status">' + statusBadge + extraHtml + '</div></div>';
+        if (tipo === 'discount') {
+          html += '<div><input type="number" class="cfg-input-discount" data-svc-id="' + s.id + '" value="' + (parseFloat(s.descuento_monto || 0).toFixed(2)) + '" min="0" step="0.01" placeholder="0.00"></div>';
+        } else if (tipo === 'billing') {
+          html += '<div><span style="font-size:0.78rem;color:#64748b;">Configura el ciclo en <strong>Editar Servicio</strong></span></div>';
+        } else {
+          html += '<label class="cfg-toggle"><input type="checkbox" class="svc-config-check" data-svc-id="' + s.id + '" ' + (isActive ? 'checked' : '') + '><span class="cfg-toggle-slider"></span></label>';
+        }
+        html += '</div>';
+      });
+      listEl.innerHTML = html;
+
+      // For billing, update the ciclo select info
+      if (tipo === 'billing') {
+        var cicloSel = document.getElementById('svcBillingCiclo');
+        if (cicloSel) {
+          cicloSel.onchange = function() {
+            var opt = cicloSel.options[cicloSel.selectedIndex];
+            var info = document.getElementById('svcBillingCicloInfo');
+            if (opt && opt.value) {
+              info.style.display = 'block';
+              info.innerHTML = '📄 Gen: Día ' + (opt.getAttribute('data-invoice') || '—') + ' | Corte: Día ' + (opt.getAttribute('data-suspend') || '—');
+            } else {
+              info.style.display = 'none';
+            }
+          };
+        }
+      }
+    })
+    .catch(function(e) {
+      listEl.innerHTML = '<div style="padding:20px;color:#ef4444;">Error: ' + e.message + '</div>';
+    });
+
+  openModal('modalSvcConfig');
+}
+
+function saveSvcConfigAction() {
+  var tipo = document.getElementById('svcConfigTipo').value;
+  var cid = <%= cliente.id %>;
+  var promises = [];
+
+  if (tipo === 'discount') {
+    // Collect discount amounts
+    var inputs = document.querySelectorAll('#svcConfigList .cfg-input-discount');
+    inputs.forEach(function(inp) {
+      var svcId = parseInt(inp.getAttribute('data-svc-id'));
+      var monto = parseFloat(inp.value) || 0;
+      promises.push(
+        fetch('/api/clientes/' + cid + '/config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tipo: 'discount', servicio_id: svcId, valor: monto })
+        }).then(function(r) { return r.json(); })
+      );
+    });
+  } else if (tipo === 'billing') {
+    // Use the current ciclo selection from the modal
+    var cicloSel = document.getElementById('svcBillingCiclo');
+    if (cicloSel && cicloSel.value) {
+      var cicloId = cicloSel.value;
+      var allSvcIds = [];
+      document.querySelectorAll('#svcConfigList .cfg-svc-item').forEach(function(item) {
+        allSvcIds.push(parseInt(item.getAttribute('data-svc-id')));
+      });
+      allSvcIds.forEach(function(svcId) {
+        promises.push(
+          fetch('/api/clientes/' + cid + '/config', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ tipo: 'billing', servicio_id: svcId, ciclo_id: cicloId })
+          }).then(function(r) { return r.json(); })
+        );
+      });
+    }
+  } else {
+    // Collect checkboxes
+    var checks = document.querySelectorAll('#svcConfigList .svc-config-check');
+    checks.forEach(function(chk) {
+      var svcId = parseInt(chk.getAttribute('data-svc-id'));
+      var valor = chk.checked ? 1 : 0;
+      promises.push(
+        fetch('/api/clientes/' + cid + '/config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tipo: tipo, servicio_id: svcId, valor: valor })
+        }).then(function(r) { return r.json(); })
+      );
+    });
+  }
+
+  // Also handle the global discount/billing fields in the modal
+  if (tipo === 'discount' && document.getElementById('svcConfigDiscountFields').style.display === 'block') {
+    var globalAmount = parseFloat(document.getElementById('svcDiscountAmount').value) || 0;
+    if (globalAmount > 0) {
+      // Apply to all services without individual discounts
+      document.querySelectorAll('#svcConfigList .cfg-input-discount').forEach(function(inp) {
+        var svcId = parseInt(inp.getAttribute('data-svc-id'));
+        var currentVal = parseFloat(inp.value) || 0;
+        if (currentVal === 0) {
+          promises.push(
+            fetch('/api/clientes/' + cid + '/config', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ tipo: 'discount', servicio_id: svcId, valor: globalAmount })
+            }).then(function(r) { return r.json(); })
+          );
+        }
+      });
+    }
+  }
+
+  Promise.all(promises).then(function() {
+    showToast('Configuración guardada');
+    closeModal('modalSvcConfig');
+    loadClientConfig();
+  }).catch(function(e) {
+    showToast('Error al guardar: ' + e.message, 'error');
+  });
+}
+
+function toggleClienteConfig(campo, valor) {
+  var cid = <%= cliente.id %>;
+  fetch('/api/clientes/' + cid + '/toggle', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ campo: campo, valor: valor })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    if (data.success) {
+      showToast('Configuración actualizada');
+    } else {
+      showToast('Error: ' + (data.message || 'desconocido'), 'error');
+    }
+  })
+  .catch(function(e) {
+    showToast('Error de conexión: ' + e.message, 'error');
+  });
+}
+
+function guardarConfigGlobal() {
+  // Gather all toggles state and save
+  var cid = <%= cliente.id %>;
+  var notif = document.getElementById('cfg-notificar-facturas').checked ? 1 : 0;
+  var consolidado = document.getElementById('cfg-facturar-consolidado').checked ? 1 : 0;
+  var comprobante = document.querySelector('input[name="cfg-comprobante"]:checked');
+  var cfVal = comprobante ? comprobante.value : 'ninguno';
+
+  var btn = document.querySelector('#vcTab-configuracion .vc-btn-primary');
+  btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+
+  var p1 = fetch('/api/clientes/' + cid + '/toggle', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ campo: 'notificar_facturas', valor: notif })
+  }).then(function(r) { return r.json(); });
+
+  var p2 = fetch('/api/clientes/' + cid + '/toggle', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ campo: 'facturar_consolidado', valor: consolidado })
+  }).then(function(r) { return r.json(); });
+
+  var p3 = fetch('/api/clientes/' + cid + '/toggle', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ campo: 'comprobante_fiscal', valor: cfVal })
+  }).then(function(r) { return r.json(); });
+
+  Promise.all([p1, p2, p3]).then(function() {
+    btn.disabled = false; btn.innerHTML = '<i class="fas fa-save"></i> Guardar Cambios';
+    var msg = document.getElementById('cfg-saved-msg');
+    msg.style.display = 'block';
+    setTimeout(function() { msg.style.display = 'none'; }, 2000);
+    showToast('✓ Configuración guardada');
+  }).catch(function(e) {
+    btn.disabled = false; btn.innerHTML = '<i class="fas fa-save"></i> Guardar Cambios';
+    showToast('Error: ' + e.message, 'error');
+  });
+}
+function selectTransferClient(id, nombre) {
+  if (typeof nombre === "undefined" && this && this.dataset) nombre = this.dataset.nombre;
+  tfSelectedClient = { id: id, nombre: nombre };
+  document.getElementById('tfConfirmBtn').disabled = false;
+  document.getElementById('tfResultMsg').innerHTML = '<div style="padding:8px;background:#f0fdf4;border-radius:6px;color:#166534;font-weight:600;">Cliente seleccionado: <strong>' + nombre + '</strong></div>';
+}
+
+function confirmTransfer() {
+  if (!tfSelectedClient) return;
+  const srvId = parseInt(document.getElementById('tfServicioId').value);
+  
+  fetch('/api/servicios/transferir', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ servicio_id: srvId, nuevo_cliente_id: tfSelectedClient.id })
+  })
+  .then(r => r.json())
+  .then(d => {
+    if (d.success) {
+      showToast('Servicio transferido a ' + tfSelectedClient.nombre);
+      closeModal('modalTransfer');
+      location.reload();
+    } else {
+      document.getElementById('tfResultMsg').innerHTML = '<div style="color:#ef4444;">' + (d.message || 'Error') + '</div>';
+    }
+  })
+  .catch(e => {
+    document.getElementById('tfResultMsg').innerHTML = '<div style="color:#ef4444;">Error: ' + e.message + '</div>';
+  });
+}
+
+// ===== CONFIGURACION DE SERVICIOS (como DomISP) =====
+var svcConfigData = [];
+var svcConfigMode = '';
+
+function loadSvcConfig() {
+  document.getElementById('svcConfigLoading').style.display = 'block';
+  document.getElementById('svcConfigContent').style.display = 'none';
+
+  var clienteId = '<%= cliente.id %>';
+  fetch('/api/servicios/config-data/' + clienteId)
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    if (d.success && d.data) {
+      svcConfigData = d.data;
+      renderSvcConfigCards();
+    } else {
+      document.getElementById('svcConfigLoading').innerHTML = '<div style="color:#ef4444;">Error al cargar configuración</div>';
+    }
+  })
+  .catch(function() {
+    document.getElementById('svcConfigLoading').innerHTML = '<div style="color:#ef4444;">Error de conexión</div>';
+  });
+}
+
+function renderSvcConfigCards() {
+  document.getElementById('svcConfigLoading').style.display = 'none';
+  var content = document.getElementById('svcConfigContent');
+  content.style.display = 'block';
+
+  var activeSvcs = svcConfigData.filter(function(s) { return s.estado === 'activo' || s.estado === 'suspendido'; });
+  var freeCount = svcConfigData.filter(function(s) { return s.free == 1; }).length;
+  var noSuspendCount = svcConfigData.filter(function(s) { return s.no_suspend == 1; }).length;
+  var totalDiscount = svcConfigData.reduce(function(sum, s) { return sum + (parseFloat(s.discount) || 0); }, 0);
+  var notifyChecked = activeSvcs.length > 0 && !activeSvcs.some(function(s) { return s.notify_invoices == 0; });
+  var consolidatedChecked = activeSvcs.length > 0 && !activeSvcs.some(function(s) { return s.consolidated == 0; });
+
+  var html = '';
+  html += '<div class="cfg-card" onclick="openSvcConfigModal(\'free\')"><div class="cfg-card-header">';
+  html += '<div><div class="cfg-card-title"><i class="fas fa-gift" style="color:#10b981;"></i> Cliente Gratis</div>';
+  html += '<div class="cfg-card-desc">Seleccionar servicios que no generan facturas ni se suspenden.</div></div>';
+  html += '<div style="display:flex;align-items:center;gap:8px;"><span style="font-size:0.8rem;color:#10b981;font-weight:600;">' + (freeCount > 0 ? freeCount + ' servicio(s)' : 'Ninguno') + '</span><i class="fas fa-chevron-right" style="color:#94a3b8;"></i></div></div></div>';
+
+  html += '<div class="cfg-card" onclick="openSvcConfigModal(\'nosuspend\')"><div class="cfg-card-header">';
+  html += '<div><div class="cfg-card-title"><i class="fas fa-shield-alt" style="color:#f59e0b;"></i> No Suspender</div>';
+  html += '<div class="cfg-card-desc">Seleccionar servicios que no se suspenden aunque tengan facturas vencidas.</div></div>';
+  html += '<div style="display:flex;align-items:center;gap:8px;"><span style="font-size:0.8rem;color:#f59e0b;font-weight:600;">' + (noSuspendCount > 0 ? noSuspendCount + ' servicio(s)' : 'Ninguno') + '</span><i class="fas fa-chevron-right" style="color:#94a3b8;"></i></div></div></div>';
+
+  html += '<div class="cfg-card" onclick="openSvcConfigModal(\'billing\')"><div class="cfg-card-header">';
+  html += '<div><div class="cfg-card-title"><i class="fas fa-file-invoice" style="color:#2563eb;"></i> Facturación</div>';
+  html += '<div class="cfg-card-desc">Configurar plantilla de facturación y día de corte por servicio.</div></div>';
+  html += '<div><i class="fas fa-chevron-right" style="color:#94a3b8;"></i></div></div></div>';
+
+  html += '<div class="cfg-card" onclick="openSvcConfigModal(\'discount\')"><div class="cfg-card-header">';
+  html += '<div><div class="cfg-card-title"><i class="fas fa-percentage" style="color:#8b5cf6;"></i> Descuentos</div>';
+  html += '<div class="cfg-card-desc">Aplicar un descuento fijo en pesos a la factura de cada servicio.</div></div>';
+  html += '<div style="display:flex;align-items:center;gap:8px;"><span style="font-size:0.8rem;color:#8b5cf6;font-weight:600;">' + (totalDiscount > 0 ? '$' + totalDiscount.toFixed(2) + ' descuento' : 'Ninguno') + '</span><i class="fas fa-chevron-right" style="color:#94a3b8;"></i></div></div></div>';
+
+  // Toggles
+  html += '<div class="cfg-card" onclick="toggleNotify()" style="cursor:pointer;"><div class="cfg-card-header">';
+  html += '<div><div class="cfg-card-title"><i class="fas fa-bell" style="color:#f59e0b;"></i> Notificar Facturas</div>';
+  html += '<div class="cfg-card-desc">Enviar notificaciones automáticas al cliente sobre facturas pendientes.</div></div>';
+  html += '<div id="cfgNotifyStatus" style="font-size:0.8rem;font-weight:600;padding:4px 12px;border-radius:12px;background:' + (notifyChecked ? '#dcfce7' : '#fef2f2') + ';color:' + (notifyChecked ? '#166534' : '#991b1b') + ';">' + (notifyChecked ? 'Activado' : 'Desactivado') + '</div></div></div>';
+
+  html += '<div class="cfg-card" onclick="toggleConsolidated()" style="cursor:pointer;"><div class="cfg-card-header">';
+  html += '<div><div class="cfg-card-title"><i class="fas fa-layer-group" style="color:#2563eb;"></i> Facturar Consolidado</div>';
+  html += '<div class="cfg-card-desc">Agrupar todos los servicios en una sola factura mensual.</div></div>';
+  html += '<div id="cfgConsolidatedStatus" style="font-size:0.8rem;font-weight:600;padding:4px 12px;border-radius:12px;background:' + (consolidatedChecked ? '#dcfce7' : '#fef2f2') + ';color:' + (consolidatedChecked ? '#166534' : '#991b1b') + ';">' + (consolidatedChecked ? 'Activado' : 'Desactivado') + '</div></div></div>';
+
+  content.innerHTML = html;
+}
+
+function openSvcConfigModal(mode) {
+  svcConfigMode = mode;
+  var title = document.getElementById('svcCfgTitle');
+  var body = document.getElementById('svcCfgBody');
+  var html = '';
+
+  if (mode === 'free' || mode === 'nosuspend') {
+    var label = mode === 'free' ? 'Cliente Gratis' : 'No Suspender';
+    var icon = mode === 'free' ? 'fa-gift' : 'fa-shield-alt';
+    var color = mode === 'free' ? '#10b981' : '#f59e0b';
+    var field = mode === 'free' ? 'free' : 'nosuspend';
+    title.innerHTML = '<i class="fas ' + icon + '" style="color:' + color + ';margin-right:6px;"></i>' + label;
+    html = '<p style="font-size:0.85rem;color:#64748b;margin:0 0 14px;">Seleccione los servicios:</p>';
+    svcConfigData.forEach(function(s) {
+      if (s.estado === 'retirado') return;
+      var checked = (mode === 'free' ? s.free : s.no_suspend) == 1;
+      html += '<label style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:#fff;border:1px solid #e2e8f0;border-radius:8px;margin-bottom:6px;cursor:pointer;">';
+      html += '<input type="checkbox" class="svcCfgChk" data-id="' + s.id + '" data-field="' + field + '" ' + (checked ? 'checked' : '') + '>';
+      html += '<div><div style="font-weight:600;font-size:0.88rem;">' + (s.plan || 'Sin plan') + '</div>';
+      html += '<div style="font-size:0.78rem;color:#94a3b8;">ID: ' + s.id + ' | $' + parseFloat(s.price).toFixed(2) + '</div></div></label>';
+    });
+
+  } else if (mode === 'billing') {
+    title.innerHTML = '<i class="fas fa-file-invoice" style="color:#2563eb;margin-right:6px;"></i>Facturación';
+    html = '<p style="font-size:0.85rem;color:#64748b;margin:0 0 14px;">Configure el ciclo de facturación y día de corte por servicio:</p>';
+
+    var ciclos = '<%= JSON.stringify(ciclos || []).replace(/</g,"\\u003C") %>';
+    try { ciclos = JSON.parse(ciclos); } catch(e) { ciclos = []; }
+    var ciclosOptions = '<option value="">-- Default --</option>';
+    ciclos.forEach(function(c) {
+      ciclosOptions += '<option value="' + c.id + '">' + (c.name || 'Ciclo #' + c.id) + '</option>';
+    });
+
+    svcConfigData.forEach(function(s) {
+      if (s.estado === 'retirado') return;
+      html += '<div style="padding:12px;border:1px solid #e2e8f0;border-radius:8px;margin-bottom:8px;">';
+      html += '<div style="font-weight:600;font-size:0.85rem;margin-bottom:8px;">' + (s.plan || 'Sin plan') + ' <span style="color:#94a3b8;font-weight:400;">#ID ' + s.id + '</span></div>';
+      html += '<div style="display:flex;gap:10px;">';
+      html += '<div style="flex:1;"><label style="font-size:0.78rem;color:#64748b;display:block;margin-bottom:4px;">Ciclo</label>';
+      html += '<select class="svcBillingCycle" data-id="' + s.id + '" style="width:100%;padding:8px;border:1px solid #e2e8f0;border-radius:6px;font-size:0.82rem;">' + ciclosOptions.replace('value="' + (s.billing_cycle_id || '') + '"', 'value="' + (s.billing_cycle_id || '') + '" selected') + '</select></div>';
+      html += '<div style="flex:1;"><label style="font-size:0.78rem;color:#64748b;display:block;margin-bottom:4px;">Día de Corte</label>';
+      html += '<input type="number" class="svcCutDay" data-id="' + s.id + '" value="' + (s.custom_suspend_day || '') + '" min="1" max="31" placeholder="Default" style="width:100%;padding:8px;border:1px solid #e2e8f0;border-radius:6px;font-size:0.82rem;"></div>';
+      html += '</div></div>';
+    });
+
+  } else if (mode === 'discount') {
+    title.innerHTML = '<i class="fas fa-percentage" style="color:#8b5cf6;margin-right:6px;"></i>Descuentos';
+    html = '<p style="font-size:0.85rem;color:#64748b;margin:0 0 14px;">Aplicar descuento fijo en pesos a cada servicio:</p>';
+    svcConfigData.forEach(function(s) {
+      if (s.estado === 'retirado') return;
+      var price = parseFloat(s.price) || 0;
+      var discount = parseFloat(s.discount) || 0;
+      var final = Math.max(0, price - discount);
+      html += '<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border:1px solid #e2e8f0;border-radius:8px;margin-bottom:6px;">';
+      html += '<div style="flex:1;"><div style="font-weight:600;font-size:0.85rem;">' + (s.plan || 'Sin plan') + '</div>';
+      html += '<div style="font-size:0.78rem;color:#94a3b8;">Precio: $' + price.toFixed(2) + '</div></div>';
+      html += '<div style="text-align:right;"><label style="font-size:0.75rem;color:#64748b;display:block;">Descuento</label>';
+      html += '<input type="number" class="svcDiscount" data-id="' + s.id + '" data-price="' + price + '" value="' + discount + '" min="0" max="' + price + '" step="50" onchange="updateDiscountPreview(this)" style="width:90px;padding:6px;border:1px solid #e2e8f0;border-radius:6px;font-size:0.85rem;text-align:right;"></div>';
+      html += '<div style="text-align:right;"><label style="font-size:0.75rem;color:#64748b;display:block;">Total</label>';
+      html += '<span class="svcDiscountPreview" data-id="' + s.id + '" style="font-weight:700;color:' + (discount > 0 ? '#8b5cf6' : '#16a34a') + ';">$' + final.toFixed(2) + '</span></div></div>';
+    });
+  }
+
+  body.innerHTML = html;
+  document.getElementById('modalSvcConfig').style.display = 'flex';
+}
+
+function closeSvcConfigModal() {
+  document.getElementById('modalSvcConfig').style.display = 'none';
+}
+
+function saveSvcConfig() {
+  var promises = [];
+  
+  if (svcConfigMode === 'free' || svcConfigMode === 'nosuspend') {
+    document.querySelectorAll('.svcCfgChk').forEach(function(chk) {
+      var fd = new FormData();
+      fd.append('service_id', chk.dataset.id);
+      var svc = svcConfigData.find(function(s) { return String(s.id) === chk.dataset.id; });
+      fd.append('free_service', chk.dataset.field === 'free' ? (chk.checked ? 1 : 0) : (svc ? svc.free : 0));
+      fd.append('no_suspend', chk.dataset.field === 'nosuspend' ? (chk.checked ? 1 : 0) : (svc ? svc.no_suspend : 0));
+      fd.append('billing_cycle_id', svc ? (svc.billing_cycle_id || '') : '');
+      fd.append('custom_suspend_day', svc ? (svc.custom_suspend_day || '') : '');
+      fd.append('discount', svc ? (svc.discount || 0) : 0);
+      promises.push(fetch('/api/servicios/config/save', { method: 'POST', body: fd }).then(function(r) { return r.json(); }));
+    });
+  } else if (svcConfigMode === 'billing') {
+    document.querySelectorAll('.svcBillingCycle').forEach(function(sel) {
+      var sid = sel.dataset.id;
+      var cutDay = document.querySelector('.svcCutDay[data-id="' + sid + '"]');
+      var svc = svcConfigData.find(function(s) { return String(s.id) === sid; });
+      var fd = new FormData();
+      fd.append('service_id', sid);
+      fd.append('free_service', svc ? svc.free : 0);
+      fd.append('no_suspend', svc ? svc.no_suspend : 0);
+      fd.append('billing_cycle_id', sel.value);
+      fd.append('custom_suspend_day', cutDay ? cutDay.value : '');
+      fd.append('discount', svc ? svc.discount : 0);
+      promises.push(fetch('/api/servicios/config/save', { method: 'POST', body: fd }).then(function(r) { return r.json(); }));
+    });
+  } else if (svcConfigMode === 'discount') {
+    document.querySelectorAll('.svcDiscount').forEach(function(inp) {
+      var svc = svcConfigData.find(function(s) { return String(s.id) === inp.dataset.id; });
+      var fd = new FormData();
+      fd.append('service_id', inp.dataset.id);
+      fd.append('free_service', svc ? svc.free : 0);
+      fd.append('no_suspend', svc ? svc.no_suspend : 0);
+      fd.append('billing_cycle_id', svc ? (svc.billing_cycle_id || '') : '');
+      fd.append('custom_suspend_day', svc ? (svc.custom_suspend_day || '') : '');
+      fd.append('discount', inp.value || 0);
+      promises.push(fetch('/api/servicios/config/save', { method: 'POST', body: fd }).then(function(r) { return r.json(); }));
+    });
+  }
+
+  var btn = document.getElementById('btnSvcCfgSave');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+
+  Promise.all(promises).then(function() {
+    btn.innerHTML = '<i class="fas fa-check"></i> Guardado';
+    showToast('Configuración guardada');
+    closeSvcConfigModal();
+    loadSvcConfig();
+    setTimeout(function() { btn.disabled = false; btn.innerHTML = 'Guardar'; }, 1000);
+  }).catch(function() {
+    btn.innerHTML = 'Guardar';
+    btn.disabled = false;
+    showToast('Error al guardar', 'error');
+  });
+}
+
+function updateDiscountPreview(input) {
+  var sid = input.dataset.id;
+  var price = parseFloat(input.dataset.price) || 0;
+  var discount = parseFloat(input.value) || 0;
+  if (discount > price) { discount = price; input.value = price; }
+  if (discount < 0) { discount = 0; input.value = 0; }
+  var final = Math.max(0, price - discount);
+  var preview = document.querySelector('.svcDiscountPreview[data-id="' + sid + '"]');
+  if (preview) {
+    preview.textContent = '$' + final.toFixed(2);
+    preview.style.color = discount > 0 ? '#8b5cf6' : '#16a34a';
+  }
+}
+
+// Toggles simplificados (aplican a todos los servicios activos)
+function toggleNotify() {
+  var active = svcConfigData.filter(function(s) { return s.estado !== 'retirado'; });
+  var currentVal = active.some(function(s) { return s.notify_invoices == 0; }) ? 0 : 1;
+  var newVal = currentVal ? 0 : 1;
+  var promises = [];
+  active.forEach(function(s) {
+    var fd = new FormData();
+    fd.append('service_id', s.id);
+    fd.append('notify_invoices', newVal);
+    promises.push(fetch('/api/servicios/config/save', { method: 'POST', body: fd }));
+  });
+  Promise.all(promises).then(function() {
+    showToast('Notificaciones ' + (newVal ? 'activadas' : 'desactivadas'));
+    loadSvcConfig();
+  });
+}
+
+function toggleConsolidated() {
+  var active = svcConfigData.filter(function(s) { return s.estado !== 'retirado'; });
+  var currentVal = active.some(function(s) { return s.consolidated == 0; }) ? 0 : 1;
+  var newVal = currentVal ? 0 : 1;
+  var promises = [];
+  active.forEach(function(s) {
+    var fd = new FormData();
+    fd.append('service_id', s.id);
+    fd.append('consolidated', newVal);
+    promises.push(fetch('/api/servicios/config/save', { method: 'POST', body: fd }));
+  });
+  Promise.all(promises).then(function() {
+    showToast('Facturación consolidada ' + (newVal ? 'activada' : 'desactivada'));
+    loadSvcConfig();
+  });
+}
+
 </script>

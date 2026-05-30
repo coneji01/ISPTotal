@@ -77,6 +77,14 @@ function createCompany(data) {
     
     tenantDb.close();
     
+    // Apply all migrations to the new tenant DB
+    try {
+      const { migrateTenantDb } = require('../scripts/migrate-tenant-db');
+      migrateTenantDb(dbPath);
+    } catch(e) {
+      console.log('[MultiTenant] Migration error:', e.message);
+    }
+    
     // Register in master DB
     master.prepare("INSERT INTO companies (company_name, owner_name, email, username, password, db_path, email_token) VALUES (?,?,?,?,?,?,?)").run(company_name, owner_name, email, username, hash, dbName, email_token);
     
@@ -141,7 +149,23 @@ function getTenantDb(dbName) {
   const db = new Database(dbPath);
   db.pragma('journal_mode = WAL');
   db.pragma('foreign_keys = ON');
-  return db;
+  
+  // Run migrations on the tenant DB
+  try {
+    var migrationPath = path.join(__dirname, '..', 'scripts', 'migrate-tenant-db.js');
+    if (fs.existsSync(migrationPath)) {
+      const { migrateTenantDb } = require(migrationPath);
+      migrateTenantDb(dbPath);
+    }
+  } catch(e) {
+    console.log('[MultiTenant] Migration error:', e.message);
+  }
+  
+  // Re-open since migrateTenantDb closes it
+  const db2 = new Database(dbPath);
+  db2.pragma('journal_mode = WAL');
+  db2.pragma('foreign_keys = ON');
+  return db2;
 }
 
 function countClients(dbName) {

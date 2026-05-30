@@ -1,0 +1,1260 @@
+<!DOCTYPE html>
+<!-- GPON Manager — SmartOLT Dashboard rework -->
+<html lang="en" class="">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<script>window.SMARTOLT_DB_THEME='system';</script>
+<!-- Paint-blocking: resolve theme before first paint. -->
+<script>try{var k='smartolt-night',lk='smartolt-theme-local',dbTheme=window.SMARTOLT_DB_THEME,local=null,pref,n;try{local=localStorage.getItem(lk);}catch(e){}if(local==='night'||local==='light'||local==='system'){pref=local;}else if(dbTheme==='night'||dbTheme==='light'||dbTheme==='system'){pref=dbTheme;}else{pref='system';}if(pref==='system'){n=!!(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);}else if(pref==='night'){n=true;}else{n=false;}try{localStorage.setItem(k,n?'1':'0');}catch(e){}if(n){document.documentElement.classList.add('smartolt-night');}else{document.documentElement.classList.remove('smartolt-night');}document.cookie=k+'='+(n?'1':'0')+'; path=/; max-age=31536000; SameSite=Lax'+(location.protocol==='https:'?'; Secure':'');}catch(e){}</script>
+<meta http-equiv="content-type" content="text/html; utf-8">
+<meta http-equiv="Content-Language" content="en">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>GPON Manager — Dashboard</title>
+
+<!-- Bootstrap 3.4.1 CDN -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/css/bootstrap.min.css">
+
+<!-- Font Awesome 4 via CDN -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
+
+<!-- INLINE: dashboard-smartolt-modern.css (key dashboard styles) -->
+<style>
+/* SmartOLT staging — dashboard rework v1.1 (covers both day and night themes) */
+body.smartolt-dashboard {
+  --dash-radius: 10px;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+body.smartolt-site {
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+html:not(.smartolt-night) body.smartolt-dashboard {
+  --dash-ink: #0f172a;
+  --dash-muted: #64748b;
+  --dash-line: #eef2f6;
+  --dash-surface: #ffffff;
+  --dash-page: #fafbfd;
+  --dash-shadow: 0 1px 2px rgba(15, 23, 42, 0.03), 0 4px 14px rgba(15, 23, 42, 0.04);
+  --smartolt-nav-offset: 68px;
+  background: var(--dash-page);
+}
+html:not(.smartolt-night) body.smartolt-dashboard #content-wrapper {
+  background: var(--dash-page);
+}
+html:not(.smartolt-night) body.smartolt-dashboard #content-wrapper > .container {
+  padding-bottom: 40px;
+  padding-top: var(--smartolt-nav-offset);
+}
+html:not(.smartolt-night) body.smartolt-dashboard .content-wrap {
+  margin: 0 auto;
+  padding: 0 15px 40px;
+}
+html:not(.smartolt-night) body.smartolt-dashboard .content-wrap > h2 {
+  display: none;
+}
+html:not(.smartolt-night) body.smartolt-dashboard .panel-default {
+  background: var(--dash-surface);
+  border: 1px solid var(--dash-line);
+  border-radius: var(--dash-radius);
+  box-shadow: var(--dash-shadow);
+  overflow: hidden;
+}
+html:not(.smartolt-night) body.smartolt-dashboard .panel-default > .panel-heading {
+  background: #4c4b4b !important;
+  border-bottom: none !important;
+  border-color: #4c4b4b !important;
+  border-top-left-radius: calc(var(--dash-radius) - 1px);
+  border-top-right-radius: calc(var(--dash-radius) - 1px);
+  color: #fff !important;
+}
+html:not(.smartolt-night) body.smartolt-dashboard .panel-default .panel-footer {
+  background: #fcfdfe !important;
+  border-top: 1px solid var(--dash-line) !important;
+  border-bottom-left-radius: calc(var(--dash-radius) - 1px);
+  border-bottom-right-radius: calc(var(--dash-radius) - 1px);
+  color: var(--dash-muted);
+}
+html:not(.smartolt-night) body.smartolt-dashboard .panel-default > .table-responsive:last-child,
+html:not(.smartolt-night) body.smartolt-dashboard .panel-default > .table-responsive {
+  border-bottom-left-radius: var(--dash-radius);
+  border-bottom-right-radius: var(--dash-radius);
+  overflow: hidden;
+}
+html:not(.smartolt-night) body.smartolt-dashboard .panel-olt { overflow: visible; }
+body.smartolt-dashboard .panel-default > .panel-heading { position: relative; }
+body.smartolt-dashboard .panel-default > .panel-heading > .panel-heading-button {
+  position: absolute; top: 0; bottom: 0; right: 15px; margin: 0;
+  display: flex; align-items: center;
+}
+body.smartolt-dashboard .panel-heading-dropdown-toggle .caret { margin-left: 3px; }
+body.smartolt-dashboard .smartolt-kpi-card {
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: var(--dash-radius);
+  overflow: hidden;
+}
+html:not(.smartolt-night) body.smartolt-dashboard .smartolt-kpi-card {
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 5px 14px rgba(15, 23, 42, 0.07) !important;
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+html.smartolt-night body.smartolt-dashboard .smartolt-kpi-card {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.28) !important;
+}
+body.smartolt-dashboard .smartolt-kpi-card .panel-heading,
+body.smartolt-dashboard .smartolt-kpi-card .panel-footer { border: 0 !important; }
+html:not(.smartolt-night) body.smartolt-dashboard .smartolt-kpi-card .panel-footer {
+  background: #fff !important;
+  border-bottom-left-radius: calc(var(--dash-radius) - 1px);
+  border-bottom-right-radius: calc(var(--dash-radius) - 1px);
+}
+html.smartolt-night body.smartolt-dashboard .smartolt-kpi-card .panel-footer {
+  background: rgba(255, 255, 255, 0.04) !important;
+  color: rgba(255, 255, 255, 0.65);
+}
+html:not(.smartolt-night) body.smartolt-dashboard .smartolt-kpi-card.panel-red .panel-footer a { color: inherit; text-decoration: none; }
+html:not(.smartolt-night) body.smartolt-dashboard .smartolt-kpi-card.panel-red .panel-footer .power-fail { color: #007AFF; }
+html:not(.smartolt-night) body.smartolt-dashboard .smartolt-kpi-card.panel-red .panel-footer .los { color: #FF3B30; }
+html:not(.smartolt-night) body.smartolt-dashboard .smartolt-kpi-card.panel-red .panel-footer .offline { color: #4c4b4b; }
+html.smartolt-night body.smartolt-dashboard .smartolt-kpi-card.panel-red .panel-footer a { color: inherit; text-decoration: none; }
+html.smartolt-night body.smartolt-dashboard .smartolt-kpi-card.panel-red .panel-footer .power-fail { color: #0A84FF; }
+html.smartolt-night body.smartolt-dashboard .smartolt-kpi-card.panel-red .panel-footer .los { color: #FF453A; }
+html.smartolt-night body.smartolt-dashboard .smartolt-kpi-card.panel-red .panel-footer .offline { color: #98989D; }
+html.smartolt-night body.smartolt-dashboard .smartolt-kpi-card.panel-red .panel-footer a:hover .power-fail { color: #409CFF; }
+html.smartolt-night body.smartolt-dashboard .smartolt-kpi-card.panel-red .panel-footer a:hover .los { color: #FF6961; }
+html.smartolt-night body.smartolt-dashboard .smartolt-kpi-card.panel-red .panel-footer a:hover .offline { color: #AEAEB2; }
+html:not(.smartolt-night) body.smartolt-dashboard .smartolt-kpi-card:hover {
+  box-shadow: 0 2px 4px rgba(15, 23, 42, 0.06), 0 10px 24px rgba(15, 23, 42, 0.08) !important;
+  transform: translateY(-1px);
+}
+body.smartolt-dashboard .content-wrap > .row:first-of-type {
+  display: flex; flex-wrap: wrap; margin-left: -15px; margin-right: -15px;
+}
+body.smartolt-dashboard .content-wrap > .row:first-of-type::before,
+body.smartolt-dashboard .content-wrap > .row:first-of-type::after { display: none; }
+body.smartolt-dashboard .content-wrap > .row:first-of-type > [class*="col-"] {
+  display: flex; float: none; padding-left: 4px; padding-right: 4px;
+}
+body.smartolt-dashboard .content-wrap > .row:first-of-type .panel-primary,
+body.smartolt-dashboard .content-wrap > .row:first-of-type .panel-green,
+body.smartolt-dashboard .content-wrap > .row:first-of-type .panel-red,
+body.smartolt-dashboard .content-wrap > .row:first-of-type .panel-yellow,
+body.smartolt-dashboard .smartolt-kpi-card {
+  display: flex; flex-direction: column; margin-bottom: 8px !important; width: 100%;
+}
+body.smartolt-dashboard .content-wrap > .row:first-of-type .panel-primary > a,
+body.smartolt-dashboard .content-wrap > .row:first-of-type .panel-green > a {
+  display: flex; flex: 1; flex-direction: column;
+}
+body.smartolt-dashboard .content-wrap > .row:first-of-type .panel-primary > a .panel-heading,
+body.smartolt-dashboard .content-wrap > .row:first-of-type .panel-green > a .panel-heading,
+body.smartolt-dashboard .content-wrap > .row:first-of-type .panel-red > a .panel-heading,
+body.smartolt-dashboard .content-wrap > .row:first-of-type .panel-yellow > a .panel-heading {
+  border-top-left-radius: calc(var(--dash-radius) - 1px);
+  border-top-right-radius: calc(var(--dash-radius) - 1px);
+  flex: 1;
+}
+body.smartolt-dashboard .content-wrap > .row + .row > .col-lg-8 > .panel-default:first-child,
+body.smartolt-dashboard .content-wrap > .row + .row > .col-lg-4 > .panel-olt {
+  display: flex; flex-direction: column; height: 325px; max-height: 325px;
+}
+body.smartolt-dashboard .content-wrap > .row + .row > .col-lg-8 > .panel-default:first-child { overflow: hidden; }
+body.smartolt-dashboard .content-wrap > .row + .row > .col-lg-4 > .panel-olt { overflow: visible; }
+body.smartolt-dashboard .content-wrap > .row + .row > .col-lg-8 > .panel-default:first-child > .panel-body {
+  display: flex; flex: 1 1 auto; flex-direction: column; min-height: 0; overflow: hidden;
+}
+body.smartolt-dashboard .content-wrap > .row + .row > .col-lg-4 > .panel-olt > .panel-body {
+  display: flex; flex: 1 1 auto; flex-direction: column; min-height: 0;
+}
+body.smartolt-dashboard .network-status-chart-wrap {
+  background: transparent !important; border: 0; border-radius: 0; box-shadow: none;
+  flex: 1 1 auto; height: auto; min-height: 0; padding: 0; position: relative;
+}
+body.smartolt-dashboard .panel-body.text-center#onusStatusesGraph {
+  background: transparent !important; padding: 10px 12px 8px;
+}
+body.smartolt-dashboard #onus-statuses-chart {
+  background: transparent !important; display: block; height: 240px !important; width: 100%;
+  max-height: 260px;
+}
+body.smartolt-dashboard .network-status-chart-loading {
+  align-items: center; color: #64748b; display: flex; inset: 0;
+  justify-content: center; position: absolute;
+}
+body.smartolt-dashboard .network-status-chart-empty {
+  color: #64748b; font-size: 13px; padding: 48px 0;
+}
+body.smartolt-dashboard #smartolt-night-toggle {
+  align-items: center; display: flex; justify-content: center;
+}
+body.smartolt-dashboard #smartolt-night-toggle i { line-height: 1; width: 20px; text-align: center; }
+body.smartolt-dashboard .updated-date { font-size: 90%; }
+body.smartolt-dashboard .panel-body .list-group-item .pull-right.small,
+body.smartolt-dashboard .panel-body .list-group-item .pull-right.small em { font-size: 90%; }
+@media (max-width: 991px) {
+  html:not(.smartolt-night) body.smartolt-dashboard { --smartolt-nav-offset: 62px; }
+  html:not(.smartolt-night) body.smartolt-dashboard .content-wrap { padding: 0 14px 28px; }
+}
+/* Theme toggle icon visibility */
+#smartolt-night-toggle .smartolt-theme-icon-light,
+#smartolt-night-toggle .smartolt-theme-icon-night,
+#smartolt-night-toggle .smartolt-theme-icon-system { display: none; }
+#smartolt-night-toggle.is-resolved.is-pref-light .smartolt-theme-icon-light,
+#smartolt-night-toggle.is-resolved.is-pref-night .smartolt-theme-icon-night { display: inline-block; }
+#smartolt-night-toggle.is-resolved.is-pref-system .smartolt-theme-icon-system { display: inline-block; opacity: 0.92; }
+html.smartolt-night #smartolt-night-toggle.is-pref-system .smartolt-theme-icon-system { color: #e2e8f0 !important; }
+html.smartolt-night #smartolt-night-toggle.is-pref-night { color: #fbbf24 !important; }
+</style>
+
+<!-- INLINE: dashboard-smartolt-night.css (night mode styles, compact) -->
+<style>
+/* SmartOLT night mode — core dashboard styles */
+html.smartolt-night body.smartolt-site {
+  --navy-950: #06162f;
+  --navy-900: #071b3d;
+  --smartolt-nav-offset: 68px;
+  --smartolt-topbar-height: 60px;
+  background: var(--navy-950);
+  color: #e2e8f0;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+html.smartolt-night body.smartolt-site #content-wrapper { background: transparent; position: relative; }
+html.smartolt-night body.smartolt-site #content-wrapper > .container,
+html.smartolt-night body.smartolt-site #content-wrapper > .container-fluid {
+  padding-bottom: 40px; padding-top: var(--smartolt-nav-offset);
+}
+html.smartolt-night body.smartolt-site .content-wrap > h2 { display: none; }
+html.smartolt-night body.smartolt-site .navbar-default {
+  background: rgba(6, 22, 47, 0.82) !important;
+  background-image: none !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+html.smartolt-night body.smartolt-site .navbar-default .navbar-brand,
+html.smartolt-night body.smartolt-site .navbar-default .nav > li > a {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+html.smartolt-night body.smartolt-site .navbar-default .nav > li > a:hover,
+html.smartolt-night body.smartolt-site .navbar-default .nav > li > a:focus,
+html.smartolt-night body.smartolt-site .navbar-default .nav > .open > a,
+html.smartolt-night body.smartolt-site .navbar-default .nav > .open > a:hover,
+html.smartolt-night body.smartolt-site .navbar-default .nav > .open > a:focus {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #fff !important;
+}
+html.smartolt-night body.smartolt-site .navbar-default .navbar-toggle .icon-bar { background-color: #fff; }
+html.smartolt-night .dropdown-menu {
+  background: #0b1528;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.28);
+}
+html.smartolt-night .dropdown-menu > li > a { color: #e2e8f0; }
+html.smartolt-night .dropdown-menu > li > a:hover,
+html.smartolt-night .dropdown-menu > li > a:focus {
+  background: rgba(29, 139, 255, 0.18);
+  color: #fff;
+}
+html.smartolt-night .dropdown-menu > .active > a,
+html.smartolt-night .dropdown-menu > .active > a:hover,
+html.smartolt-night .dropdown-menu > .active > a:focus {
+  background: rgba(29, 139, 255, 0.18);
+  color: #fff;
+}
+html.smartolt-night .dropdown-menu .divider { background-color: rgba(255, 255, 255, 0.1); }
+html.smartolt-night body.smartolt-site footer,
+html.smartolt-night body.smartolt-site footer .text-center { color: rgba(255, 255, 255, 0.45) !important; }
+html.smartolt-night body.smartolt-site footer a { color: #8cc8ff !important; }
+html.smartolt-night body.smartolt-site .panel {
+  background: rgba(15, 26, 46, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.25);
+  color: #e2e8f0;
+}
+html.smartolt-night body.smartolt-site .panel-default > .panel-heading,
+html.smartolt-night body.smartolt-site .panel-primary > .panel-heading,
+html.smartolt-night body.smartolt-site .panel-green > .panel-heading,
+html.smartolt-night body.smartolt-site .panel-red > .panel-heading,
+html.smartolt-night body.smartolt-site .panel-yellow > .panel-heading {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: #f1f5f9 !important;
+}
+html.smartolt-night body.smartolt-site .panel-body { background: transparent; color: #e2e8f0; }
+html.smartolt-night body.smartolt-site .panel-footer {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: rgba(255, 255, 255, 0.65);
+}
+html.smartolt-night body.smartolt-site .list-group-item { background: transparent; border-color: rgba(255, 255, 255, 0.08); color: #e2e8f0; }
+html.smartolt-night body.smartolt-site a.list-group-item:hover,
+html.smartolt-night body.smartolt-site a.list-group-item:focus { background: rgba(29, 139, 255, 0.12); color: #fff; }
+html.smartolt-night body.smartolt-site .btn-default { background: rgba(255, 255, 255, 0.08); border-color: rgba(255, 255, 255, 0.12); color: #e2e8f0; }
+html.smartolt-night body.smartolt-site .btn-default:hover,
+html.smartolt-night body.smartolt-site .btn-default:focus { background: rgba(255, 255, 255, 0.14); border-color: rgba(255, 255, 255, 0.18); color: #fff; }
+/* Dashboard-specific night mode tweaks */
+html.smartolt-night body.smartolt-dashboard .content-wrap { margin: 0 auto; padding: 0 15px 40px; }
+html.smartolt-night body.smartolt-dashboard .panel-default > .panel-heading,
+html.smartolt-night body.smartolt-dashboard .panel-olt > .panel-heading { position: relative; z-index: 2; }
+html.smartolt-night body.smartolt-dashboard .panel-heading .panel-heading-button {
+  position: absolute; top: 0; bottom: 0; right: 15px; margin: 0;
+  display: flex; align-items: center; z-index: 3;
+}
+html.smartolt-night body.smartolt-dashboard .panel-heading .btn-group.open { z-index: 4; }
+html.smartolt-night body.smartolt-dashboard .panel-heading-dropdown-toggle {
+  background: transparent !important; background-image: none !important;
+  border: 0 !important; border-radius: 4px !important; box-shadow: none !important;
+  color: rgba(255, 255, 255, 0.52) !important; font-weight: 500; padding: 2px 4px; text-shadow: none;
+}
+html.smartolt-night body.smartolt-dashboard .panel-heading-dropdown-toggle:hover,
+html.smartolt-night body.smartolt-dashboard .panel-heading .btn-group.open .panel-heading-dropdown-toggle {
+  background: rgba(255, 255, 255, 0.05) !important;
+  color: rgba(255, 255, 255, 0.78) !important;
+}
+html.smartolt-night body.smartolt-dashboard .panel-heading-dropdown-toggle .caret { border-top-color: rgba(255, 255, 255, 0.42); margin-left: 3px; }
+html.smartolt-night body.smartolt-dashboard .panel-heading .dropdown-menu { background: #0b1528; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 8px; box-shadow: 0 8px 18px rgba(0, 0, 0, 0.28); margin-top: 4px; max-height: 320px; overflow-y: auto; padding: 4px 0; z-index: 1060; }
+html.smartolt-night body.smartolt-dashboard .panel-heading .dropdown-menu > li > a { color: #e2e8f0; padding: 8px 14px; }
+html.smartolt-night body.smartolt-dashboard .panel-heading .dropdown-menu > li > a:hover,
+html.smartolt-night body.smartolt-dashboard .panel-heading .dropdown-menu > li > a:focus { background: rgba(29, 139, 255, 0.18); color: #fff; }
+html.smartolt-night body.smartolt-dashboard #selected_olt { color: rgba(255, 255, 255, 0.52); }
+html.smartolt-night body.smartolt-dashboard .badge-light { background: rgba(29, 139, 255, 0.22); color: #bfdbfe; font-weight: 500; }
+html:not(.smartolt-night) body.smartolt-dashboard .panel-yellow { margin-bottom: 10.5px !important; }
+html.smartolt-night body.smartolt-dashboard .network-status-chart-loading,
+html.smartolt-night body.smartolt-dashboard .network-status-chart-empty { color: #94a3b8; }
+html.smartolt-night body.smartolt-site .smartolt-landing-hero-bg {
+  background: radial-gradient(circle at 72% 18%, rgba(29, 139, 255, 0.24), transparent 28%),
+              radial-gradient(circle at 18% 84%, rgba(0, 108, 255, 0.18), transparent 28%),
+              linear-gradient(135deg, var(--navy-950), var(--navy-900) 55%, #031022);
+  display: block; inset: 0; overflow: hidden; pointer-events: none;
+  position: fixed; z-index: -1;
+}
+html.smartolt-night body.smartolt-site .smartolt-landing-hero-bg::before {
+  background-image: linear-gradient(115deg, transparent 0 32%, rgba(29, 139, 255, 0.18) 32.2%, transparent 32.6% 100%),
+                    linear-gradient(155deg, transparent 0 45%, rgba(29, 139, 255, 0.13) 45.2%, transparent 45.6% 100%),
+                    linear-gradient(25deg, transparent 0 62%, rgba(0, 108, 255, 0.14) 62.1%, transparent 62.5% 100%);
+  content: ""; inset: 0; opacity: 0.8; pointer-events: none; position: absolute;
+}
+.smartolt-landing-hero-bg { display: none; }
+html.smartolt-night body.smartolt-dashboard .panel-default,
+html.smartolt-night body.smartolt-dashboard .panel-olt { overflow: visible; }
+@media (max-width: 991px) {
+  html.smartolt-night body.smartolt-site { --smartolt-nav-offset: 62px; --smartolt-topbar-height: 60px; }
+  html.smartolt-night body.smartolt-site #content-wrapper > .container { padding-top: var(--smartolt-nav-offset); }
+  html.smartolt-night body.smartolt-dashboard .content-wrap { padding: 0 14px 28px; }
+}
+html.smartolt-night body.smartolt-dashboard .table td.date-switch { color: rgba(255, 255, 255, 0.55); cursor: pointer; }
+</style>
+
+<!-- INLINE: startmin.css (panel-colored classes, buttons, KPI helpers) -->
+<style>
+.huge { font-size: 40px; }
+.panel-default > .panel-heading { color: #ffffff; background-color: #4c4b4b; border-color: #4c4b4b; }
+.panel-green { border-color: #4db14b; }
+.panel-green .panel-heading { border-color: #4db14b; color: #fff; background-color: #4db14b; }
+.panel-green a { color: #4db14b; }
+.panel-green a:hover { color: #449842; }
+.panel-red { border-color: #4c4b4b; }
+.panel-red .panel-heading { border-color: #4c4b4b; color: #fff; background-color: #4c4b4b; }
+.panel-red a { color: #4c4b4b; }
+.panel-red a:hover { color: #09090a; }
+.panel-yellow { border-color: #f7a127; margin-bottom: 10.5px !important; }
+.panel-yellow .panel-heading { border-color: #f7a127; color: #fff; background-color: #f7a127; }
+.panel-yellow a { color: #f7a127; }
+.panel-yellow a:hover { color: #df8a13; }
+.list-group-item { white-space: nowrap; overflow: hidden; }
+.btn-default { background-color: #4c4b4b; border-color: #4c4b4b; }
+.btn-default:hover { background-color: #2d2d2d; border-color: #2d2d2d; }
+.panel-heading-dropdown-toggle { background-color: #4c4b4b !important; border-color: #4c4b4b !important; }
+.panel-primary a:hover { color: #0349bb; }
+</style>
+
+<style>
+.new-version-dot {
+  display: inline-block; width: 8px; height: 8px; background-color: #5cb85c;
+  border-radius: 50%; margin-left: 4px; animation: pulse-green 2s infinite;
+}
+@keyframes pulse-green {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(92, 184, 92, 0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(92, 184, 92, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(92, 184, 92, 0); }
+}
+.text-ellipsis { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.max-width-250 { max-width: 250px; }
+.font-size-20 { font-size: 20px; }
+.margin-left { margin-left: 8px; }
+</style>
+
+<!-- jQuery 3.7.1 from CDN -->
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+
+<!-- Bootstrap 3.4.1 JS from CDN -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/js/bootstrap.min.js"></script>
+
+<!-- Chart.js 4.x for Network status chart -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+
+<body class="smartolt-site smartolt-dashboard">
+
+<script type="text/javascript">
+$(document).ready(function() {
+  $.ajaxSetup({ cache: false });
+  window.jqxhrs = [];
+  window.registerJqxhr = function(jqxhr) { jqxhrs.push(jqxhr); };
+  window.abortJqxhr = function() {
+    for (var i = jqxhrs.length - 1; i >= 0; i--) { if (jqxhrs[i]) jqxhrs[i].abort(); }
+    window.jqxhrs = [];
+  };
+  $(window).bind("beforeunload", function(event) { abortJqxhr(); });
+  function unregisterJqxhr(event, jqxhr, settings) {
+    var idx = $.inArray(jqxhr, jqxhrs);
+    if (idx != -1) jqxhrs.splice(idx, 1);
+  }
+  $(document).ajaxComplete(unregisterJqxhr);
+});
+</script>
+
+<div class="smartolt-landing-hero-bg" aria-hidden="true"></div>
+
+<div id="content-wrapper">
+  <!-- Navbar -->
+  <div class="navbar navbar-default navbar-fixed-top default-menu">
+    <div class="container">
+      <div class="navbar-header">
+        <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#navbar-main" aria-expanded="false" aria-controls="navbar">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand text-ellipsis max-width-250" href="/modulo?pagina=GPONManager" title="GPON Manager">GPON Manager</a>
+      </div>
+      <div class="navbar-collapse collapse" id="navbar-main">
+        <ul class="nav navbar-nav">
+          <li><a href="/modulo?pagina=GPONManager">Dashboard</a></li>
+          <li><a href="/modulo?pagina=GPONManager&action=onu">ONUs</a></li>
+          <li><a href="/modulo?pagina=GPONManager&action=config">Config</a></li>
+          <li><a href="/modulo?pagina=GPONManager&action=diagnostics">Diagnostics</a></li>
+        </ul>
+        <ul class="nav navbar-nav navbar-right">
+          <li><a href="#" id="smartolt-night-toggle" class="is-pref-night is-resolved" title="Night mode" aria-label="Night mode" data-title-light="Light mode" data-title-night="Night mode" data-title-system="System"><i class="fa fa-sun-o font-size-20 smartolt-theme-icon-light" aria-hidden="true"></i><i class="fa fa-moon-o font-size-20 smartolt-theme-icon-night" aria-hidden="true"></i><i class="fa fa-adjust font-size-20 smartolt-theme-icon-system" aria-hidden="true"></i></a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Page Content -->
+  <div class="container">
+    <div class="container-fluid content-wrap">
+      <h2>GPON Dashboard</h2>
+
+      <!-- KPI Cards -->
+      <div class="row">
+        <!-- Pendientes por autorizar (panel-primary) -->
+        <div class="col-lg-3 col-md-6">
+          <div class="panel panel-primary smartolt-kpi-card">
+            <a href="/modulo?pagina=GPONManager&action=onu&state=pending">
+              <div class="panel-heading">
+                <div class="row">
+                  <div class="col-xs-3"><i class="fa fa-clock-o fa-4x"></i></div>
+                  <div class="col-xs-9 text-right">
+                    <div class="huge total-onus">0</div>
+                    <div>Pendientes por autorizar</div>
+                  </div>
+                </div>
+              </div>
+              <div class="panel-footer">
+                <span class="pull-left disabled-waiting-auth" title="ONUs en DB local">En DB: 0</span>
+                <span class="pull-left margin-left move-waiting-auth" title="Sin coincidencia en DB">Sin emparejar: 0</span>
+                <span class="pull-right auth-waiting-auth" title="No configuradas en OLT">Sin config: 0</span>
+                <div class="clearfix"></div>
+              </div>
+            </a>
+          </div>
+        </div>
+
+        <!-- Online (panel-green) -->
+        <div class="col-lg-3 col-md-6">
+          <div class="panel panel-green smartolt-kpi-card">
+            <a href="/modulo?pagina=GPONManager&action=onu&state=online">
+              <div class="panel-heading">
+                <div class="row">
+                  <div class="col-xs-3"><i class="fa fa-tasks fa-4x"></i></div>
+                  <div class="col-xs-9 text-right">
+                    <div class="huge online">0</div>
+                    <div>Online</div>
+                  </div>
+                </div>
+              </div>
+              <div class="panel-footer">
+                <span class="pull-left total-auth">Total authorized: 0</span>
+                <span class="pull-right"></span>
+                <div class="clearfix"></div>
+              </div>
+            </a>
+          </div>
+        </div>
+
+        <!-- Total offline (panel-red) -->
+        <div class="col-lg-3 col-md-6">
+          <div class="panel panel-red smartolt-kpi-card">
+            <a href="/modulo?pagina=GPONManager&action=onu&state=offline">
+              <div class="panel-heading">
+                <div class="row">
+                  <div class="col-xs-3"><i class="fa fa-close fa-4x"></i></div>
+                  <div class="col-xs-9 text-right">
+                    <div class="huge total-offline">0</div>
+                    <div>Total offline</div>
+                  </div>
+                </div>
+              </div>
+            </a>
+            <div class="panel-footer">
+              <a href="/modulo?pagina=GPONManager&action=onu&state=offline">
+                <span class="pull-left power-fail" title="ONUs with offline reason">PwrFail: 0</span>
+              </a>
+              <a href="/modulo?pagina=GPONManager&action=onu&state=los">
+                <span class="pull-left margin-left los" title="Loss of Signal">LoS: 0</span>
+              </a>
+              <a href="/modulo?pagina=GPONManager&action=onu&state=offline-na">
+                <span class="pull-right offline" title="Never been online">N/A: 0</span>
+              </a>
+              <div class="clearfix"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Low signals (panel-yellow) -->
+        <div class="col-lg-3 col-md-6" id="graphs">
+          <div class="panel panel-yellow smartolt-kpi-card">
+            <a href="/modulo?pagina=GPONManager&action=diagnostics&signal=low">
+              <div class="panel-heading">
+                <div class="row">
+                  <div class="col-xs-3"><i class="fa fa-exclamation-circle fa-4x"></i></div>
+                  <div class="col-xs-9 text-right">
+                    <div class="huge total-signal-low">0</div>
+                    <div>Low signals</div>
+                  </div>
+                </div>
+              </div>
+            </a>
+            <div class="panel-footer">
+              <a href="/modulo?pagina=GPONManager&action=diagnostics&signal=low">
+                <span class="pull-left signal-warning" title="ONUs with low signal">Low: 0</span>
+              </a>
+              <span class="pull-right signal-critical" title="ONUs with critical signal">Critical: 0</span>
+              <div class="clearfix"></div>
+            </div>
+          </div>
+          <p class="text-right updated-date">Loading...</p>
+        </div>
+      </div>
+
+      <!-- Main content row -->
+      <div class="row">
+        <!-- Left column: Network status + ONU chart -->
+        <div class="col-lg-8">
+          <!-- Network Status -->
+          <div class="panel panel-default">
+            <div class="panel-heading">
+              <i class="fa fa-bar-chart-o fa-fw"></i> Network status
+              <div class="pull-right panel-heading-button">
+                <div class="btn-group">
+                  <button type="button" class="btn btn-default btn-xs dropdown-toggle panel-heading-dropdown-toggle" data-toggle="dropdown">
+                    ONU status <span class="caret"></span>
+                  </button>
+                  <ul class="dropdown-menu pull-right" role="menu">
+                    <li><a href="#" class="filter-state" data-state="all">All ONUs</a></li>
+                    <li><a href="#" class="filter-state" data-state="working">Working</a></li>
+                    <li><a href="#" class="filter-state" data-state="offline">Offline</a></li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+            <div class="panel-body text-center" id="onusStatusesGraph">
+              <div class="network-status-chart-wrap">
+                <!-- Canvas para el gráfico donut -->
+                <canvas id="onus-statuses-chart" style="max-height:260px;"></canvas>
+                <!-- Tabla de resumen (se actualiza inline) -->
+                <div id="onus-status-list" class="text-left" style="padding:10px;display:none;">
+                  <div class="text-muted" style="font-size:13px;">Loading ONU status from OLT...</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ONU authorizations per day (ONU state distribution) -->
+          <div class="panel panel-default">
+            <div class="panel-heading">
+              <i class="fa fa-bar-chart-o fa-fw"></i> ONU state distribution
+            </div>
+            <div class="panel-body">
+              <div class="row">
+                <div class="col-lg-12">
+                  <div id="onu-state-bars" class="text-center" style="min-height:200px;padding:20px;">
+                    <div class="row" style="max-width:600px;margin:0 auto;">
+                      <div class="col-xs-4">
+                        <div style="background:#4db14b;border-radius:8px;padding:12px;color:#fff;">
+                          <div style="font-size:2rem;font-weight:800;" class="online-bar">0</div>
+                          <div style="font-size:0.8rem;opacity:0.85;">Online</div>
+                        </div>
+                      </div>
+                      <div class="col-xs-4">
+                        <div style="background:#4c4b4b;border-radius:8px;padding:12px;color:#fff;">
+                          <div style="font-size:2rem;font-weight:800;" class="offline-bar">0</div>
+                          <div style="font-size:0.8rem;opacity:0.85;">Offline</div>
+                        </div>
+                      </div>
+                      <div class="col-xs-4">
+                        <div style="background:#f7a127;border-radius:8px;padding:12px;color:#fff;">
+                          <div style="font-size:2rem;font-weight:800;" class="pending-bar">0</div>
+                          <div style="font-size:0.8rem;opacity:0.85;">Pending</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right column: OLT + Info -->
+        <div class="col-lg-4">
+          <!-- OLT panel -->
+          <div class="panel panel-default panel-olt">
+            <div class="panel-heading">
+              OLT ZTE-C300
+              <div class="pull-right panel-heading-button">
+                <div class="btn-group">
+                  <button type="button" class="btn btn-default btn-xs dropdown-toggle panel-heading-dropdown-toggle" data-toggle="dropdown">
+                    <span id="selected_olt">Connected OLT</span>
+                    <span class="caret"></span>
+                  </button>
+                  <ul class="dropdown-menu pull-right" role="menu" id="dropdownOlts">
+                    <li><a href="#" class="olt_option min-width-250">1 - GPON OLT</a></li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+            <div class="panel-body text-center">
+              <div class="list-group text-left margin-top-xlg">
+                <span class="list-group-item">
+                  <i class="fa fa-cogs fa-fw"></i> Connection
+                  <span class="pull-right"><em id="olt-up-time" class="small">Checking...</em></span>
+                </span>
+                <span class="list-group-item">
+                  <i class="fa fa-plug fa-fw"></i> Status
+                  <span class="pull-right"><em id="olt-status" class="small text-muted">Disconnected</em></span>
+                </span>
+                <span class="list-group-item">
+                  <i class="fa fa-database fa-fw"></i> ONUs in DB
+                  <span class="pull-right"><em id="olt-onu-count" class="small">0</em></span>
+                </span>
+              </div>
+              <div style="padding:8px 12px 12px;">
+                <button id="btn-sync-onus" class="btn btn-primary btn-sm btn-block" onclick="syncOnusFromSmartOLT()">
+                  <i class="fa fa-refresh"></i> Sync ONUs from SmartOLT
+                </button>
+                <small id="sync-status" class="text-muted" style="display:block;margin-top:4px;"></small>
+              </div>
+            </div>
+          </div>
+
+          <!-- Info panel -->
+          <div class="panel panel-default">
+            <div class="panel-heading">
+              <i class="fa fa-info-circle fa-fw"></i> Info
+            </div>
+            <div class="panel-body">
+              <div class="list-group" id="info-list">
+                <span class="list-group-item text-muted" style="border:none;">No recent events</span>
+              </div>
+              <a href="/modulo?pagina=GPONManager&action=info" class="btn btn-default btn-block">View All Info</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <br>
+
+  <!-- ONU Detail Modal (rediseñado) -->
+  <style>
+    #onuDetailModal .modal-dialog { width: 800px; max-width: 96%; }
+    #onuDetailModal .modal-content { border-radius: 10px; border: none; box-shadow: 0 8px 32px rgba(0,0,0,0.18); }
+    #onuDetailModal .modal-header { background: #4c4b4b; color: #fff; border-radius: 10px 10px 0 0; padding: 14px 20px; border: none; }
+    #onuDetailModal .modal-header .close { color: #fff; opacity: 0.8; }
+    #onuDetailModal .modal-header .close:hover { opacity: 1; }
+    #onuDetailModal .modal-title { font-size: 16px; font-weight: 700; letter-spacing: 0.3px; }
+    #onuDetailModal .modal-title .onu-sn-badge { font-size: 12px; font-weight: 400; background: rgba(255,255,255,0.15); padding: 2px 10px; border-radius: 12px; margin-left: 8px; }
+    #onuDetailModal .modal-body { padding: 0; }
+    #onuDetailModal .modal-footer { border: none; padding: 12px 20px; background: #f8f9fb; border-radius: 0 0 10px 10px; }
+    
+    .onu-detail-section { padding: 18px 20px 6px; }
+    .onu-detail-section + .onu-detail-section { border-top: 1px solid #eef2f6; }
+    .onu-detail-section h5 { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: #64748b; margin: 0 0 12px; }
+    
+    .onu-detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 24px; }
+    .onu-detail-grid .field { display: flex; flex-direction: column; }
+    .onu-detail-grid .field .label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; color: #94a3b8; margin-bottom: 1px; }
+    .onu-detail-grid .field .value { font-size: 14px; color: #0f172a; padding: 4px 0 8px; border-bottom: 1px solid #f1f5f9; }
+    .onu-detail-grid .field .value input { font-size: 14px; padding: 4px 8px; border: 1px solid #d1d5db; border-radius: 6px; width: 100%; background: #fff; transition: border-color 0.15s; }
+    .onu-detail-grid .field .value input:focus { outline: none; border-color: #4c4b4b; box-shadow: 0 0 0 2px rgba(76,75,75,0.12); }
+    .onu-detail-grid .field .value .signal-ok { color: #4db14b; }
+    .onu-detail-grid .field .value .signal-warn { color: #f7a127; }
+    .onu-detail-grid .field .value .signal-bad { color: #e74c3c; }
+    
+    .onu-detail-full { padding: 8px 20px 14px; }
+    .onu-detail-full .signal-table { width: 100%; font-size: 13px; border-collapse: collapse; }
+    .onu-detail-full .signal-table td { padding: 5px 8px; border-bottom: 1px solid #f1f5f9; }
+    .onu-detail-full .signal-table td:first-child { color: #64748b; width: 160px; font-weight: 500; }
+    
+    html.smartolt-night #onuDetailModal .modal-content { background: #1e293b; }
+    html.smartolt-night #onuDetailModal .modal-header { background: #0f172a; }
+    html.smartolt-night #onuDetailModal .modal-footer { background: #0f172a; border-color: #334155; }
+    html.smartolt-night .onu-detail-section + .onu-detail-section { border-color: #334155; }
+    html.smartolt-night .onu-detail-grid .field .value { color: #e2e8f0; border-color: #334155; }
+    html.smartolt-night .onu-detail-grid .field .value input { background: #0f172a; border-color: #475569; color: #e2e8f0; }
+    html.smartolt-night .onu-detail-grid .field .value input:focus { border-color: #60a5fa; box-shadow: 0 0 0 2px rgba(96,165,250,0.15); }
+    html.smartolt-night .onu-detail-full .signal-table td { border-color: #334155; }
+    html.smartolt-night .onu-detail-section h5 { color: #94a3b8; }
+    html.smartolt-night #onuDetailModal .btn-default { background: #334155; color: #e2e8f0; border: none; }
+    html.smartolt-night #onuDetailModal .btn-default:hover { background: #475569; }
+    html.smartolt-night #onuDetailModal .btn-primary { background: #3b82f6; border: none; }
+    html.smartolt-night #onuDetailModal .btn-primary:hover { background: #2563eb; }
+  </style>
+
+  <div class="modal fade" id="onuDetailModal" tabindex="-1" role="dialog" aria-labelledby="onuDetailLabel">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <div class="modal-title" id="onuDetailLabel">
+            ONU Details
+            <span class="onu-sn-badge" id="onuDetailSn">SN: --</span>
+          </div>
+        </div>
+        <div class="modal-body" id="onuDetailBody">
+          <div class="text-center text-muted" style="padding:40px;">
+            <i class="fa fa-spinner fa-spin fa-3x" style="color:#4c4b4b;"></i>
+            <p style="margin-top:12px;font-size:14px;">Loading ONU details...</p>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default btn-sm" data-dismiss="modal"><i class="fa fa-times"></i> Close</button>
+          <button type="button" class="btn btn-primary btn-sm" id="btnSaveOnu" onclick="saveOnuDetail()">
+            <i class="fa fa-save"></i> Save Changes
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="text-center row">GPON Manager v1.0 © 2026</div>
+  </footer>
+</div>
+
+<script type="text/javascript">
+// ===== NIGHT MODE TOGGLE (SmartOLT-style) =====
+(function() {
+  var STORAGE_KEY = 'smartolt-night';
+  var STORAGE_LOCAL = 'smartolt-theme-local';
+  var VALID = ['light', 'night', 'system'];
+
+  function normalizePref(p) { return VALID.indexOf(p) !== -1 ? p : 'system'; }
+
+  function getLocalOverride() {
+    try {
+      var stored = localStorage.getItem(STORAGE_LOCAL);
+      if (stored === 'night' || stored === 'light' || stored === 'system') return stored;
+    } catch(e) {}
+    return null;
+  }
+
+  function setLocalOverride(pref) {
+    pref = normalizePref(pref);
+    try { localStorage.setItem(STORAGE_LOCAL, pref); } catch(e) {}
+    applyTheme(pref);
+  }
+
+  function getDbTheme() {
+    try { return window.SMARTOLT_DB_THEME || 'system'; } catch(e) { return 'system'; }
+  }
+
+  function applyTheme(pref) {
+    var isNight;
+    if (pref === 'night') isNight = true;
+    else if (pref === 'light') isNight = false;
+    else isNight = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+    var html = document.documentElement;
+    if (isNight) html.classList.add('smartolt-night');
+    else html.classList.remove('smartolt-night');
+
+    try { localStorage.setItem(STORAGE_KEY, isNight ? '1' : '0'); } catch(e) {}
+
+    // Update toggle icon
+    var toggle = document.getElementById('smartolt-night-toggle');
+    if (toggle) {
+      toggle.classList.remove('is-pref-light', 'is-pref-night', 'is-pref-system');
+      toggle.classList.add('is-pref-' + pref);
+    }
+  }
+
+  // Init
+  var localPref = getLocalOverride();
+  if (localPref) {
+    applyTheme(localPref);
+  } else {
+    applyTheme(getDbTheme());
+  }
+
+  // Toggle handler
+  document.getElementById('smartolt-night-toggle').addEventListener('click', function(e) {
+    e.preventDefault();
+    var html = document.documentElement;
+    var isNight = html.classList.contains('smartolt-night');
+    var newPref = isNight ? 'light' : 'night';
+    setLocalOverride(newPref);
+  });
+})();
+
+// ===== DATA LOADING =====
+function loadGPONData() {
+  var $status = $('#onus-status-list');
+  var $online = $('.online');
+  var $offline = $('.total-offline');
+  var $totalOnus = $('.total-onus');
+  var $totalAuth = $('.total-auth');
+  var $lowSignal = $('.total-signal-low');
+  var $pending = $('.auth-waiting-auth');
+  var $pendingBadge = $('.disabled-waiting-auth');
+  var $updatedDate = $('.updated-date');
+  var $powerFail = $('.power-fail');
+  var $los = $('.los');
+  var $offlineNa = $('.offline');
+  var $signalWarn = $('.signal-warning');
+  var $signalCrit = $('.signal-critical');
+  var $onlineBar = $('.online-bar');
+  var $offlineBar = $('.offline-bar');
+  var $pendingBar = $('.pending-bar');
+  var $oltStatus = $('#olt-status');
+  var $oltUpTime = $('#olt-up-time');
+  var $oltOnuCount = $('#olt-onu-count');
+  var $infoList = $('#info-list');
+  var $moveWaitingAuth = $('.move-waiting-auth');
+
+  $.ajax({
+    type: 'GET',
+    url: '/api/gpon/onus',
+    timeout: 30000,
+    dataType: 'json',
+    success: function(data) {
+      var state = data.state || [];
+      var unconfigured = data.unconfigured || [];
+      var db_onus = data.db_onus || [];
+      var low_signal = data.low_signal || 0;
+
+      // KPIs
+      var total = state.length;
+      var online = state.filter(function(s) { return s.state === 'working' || s.state === 'online'; }).length;
+      var offline = total - online;
+      var pending = unconfigured.length;
+      
+      // ONUs en OLT pero no en DB local = "sin emparejar"
+      var unpaired = 0;
+      if (state.length > 0 && db_onus.length > 0) {
+        var db_sns = db_onus.map(function(d) { return d.sn; }).filter(function(s) { return s && s.length >= 8; });
+        unpaired = total; // fallback: total si no podemos cotejar por SN
+      }
+
+      // Blue box: pendientes por autorizar (no configuradas en OLT)
+      $totalOnus.text(pending);
+      $online.text(online);
+      $offline.text(offline);
+      $totalAuth.text('Total authorized: ' + total);
+      $pending.text('Sin config: ' + pending);
+      $pendingBadge.text('En DB: ' + db_onus.length);
+      $moveWaitingAuth.text('Sin emparejar: ' + unpaired);
+
+      // Low signal
+      $lowSignal.text(low_signal);
+      $signalWarn.text('Low: ' + low_signal);
+      $signalCrit.text('Critical: 0');
+
+      // Offline breakdown
+      $powerFail.text('PwrFail: ' + offline);
+      $los.text('LoS: 0');
+      $offlineNa.text('N/A: 0');
+
+      // State bars
+      $onlineBar.text(online);
+      $offlineBar.text(offline);
+      $pendingBar.text(pending);
+
+      // OLT info
+      $oltOnuCount.text(db_onus.length || total);
+      $oltStatus.html('<span class="text-success"><i class="fa fa-circle"></i> Connected</span>');
+      $oltUpTime.text(db_onus.length + ' ONUs cached');
+
+      // Info list
+      var infoHtml = '';
+      var now = new Date();
+      if (state.length > 0) {
+        var workingCount = online;
+        var offlineCount = offline;
+        if (infoHtml === '') {
+          infoHtml += '<a href="/modulo?pagina=GPONManager&action=onu" class="list-group-item">';
+          infoHtml += '<i class="fa fa-wifi fa-fw"></i> ' + workingCount + ' ONUs online';
+          infoHtml += ' <span class="pull-right small"><em>Now</em></span></a>';
+        }
+        if (offlineCount > 0) {
+          infoHtml += '<a href="/modulo?pagina=GPONManager&action=onu&state=offline" class="list-group-item">';
+          infoHtml += '<i class="fa fa-exclamation-triangle fa-fw"></i> ' + offlineCount + ' ONUs offline';
+          infoHtml += ' <span class="pull-right small"><em>Now</em></span></a>';
+        }
+        if (pending > 0) {
+          infoHtml += '<a href="/modulo?pagina=GPONManager&action=onu&state=pending" class="list-group-item">';
+          infoHtml += '<i class="fa fa-clock-o fa-fw"></i> ' + pending + ' ONUs pending authorization';
+          infoHtml += ' <span class="pull-right small"><em>Now</em></span></a>';
+        }
+        if (low_signal > 0) {
+          infoHtml += '<a href="/modulo?pagina=GPONManager&action=diagnostics&signal=low" class="list-group-item">';
+          infoHtml += '<i class="fa fa-exclamation-circle fa-fw"></i> ' + low_signal + ' ONUs with low signal';
+          infoHtml += ' <span class="pull-right small"><em>Now</em></span></a>';
+        }
+      }
+      if (infoHtml === '') {
+        infoHtml = '<span class="list-group-item text-muted" style="border:none;">No recent events</span>';
+      }
+      $infoList.html(infoHtml);
+
+      // Chart.js: donut chart con online / offline / pending
+      var chartCanvas = document.getElementById('onus-statuses-chart');
+      if (chartCanvas && typeof Chart !== 'undefined') {
+        if (window._onuChart) window._onuChart.destroy();
+        var ctx = chartCanvas.getContext('2d');
+        var isNight = document.documentElement.classList.contains('smartolt-night');
+        var textColor = isNight ? '#e2e8f0' : '#334155';
+        window._onuChart = new Chart(ctx, {
+          type: 'doughnut',
+          data: {
+            labels: ['Online (' + online + ')', 'Offline (' + offline + ')', 'Pendientes (' + pending + ')'],
+            datasets: [{
+              data: [online, offline, pending],
+              backgroundColor: ['#4db14b', '#4c4b4b', '#f7a127'],
+              borderColor: isNight ? '#1e293b' : '#ffffff',
+              borderWidth: 2
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '60%',
+            plugins: {
+              legend: {
+                position: 'bottom',
+                labels: { color: textColor, padding: 16, font: { size: 12 } }
+              },
+              tooltip: {
+                callbacks: {
+                  label: function(context) {
+                    var label = context.label || '';
+                    var value = context.parsed || 0;
+                    var totalAll = online + offline + pending;
+                    var pct = totalAll > 0 ? ((value / totalAll) * 100).toFixed(1) : 0;
+                    return label + ' (' + pct + '%)';
+                  }
+                }
+              }
+            }
+          }
+        });
+      }
+
+      // Timestamp
+      var ts = new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' });
+      $updatedDate.text('Information valid at ' + ts);
+    },
+    error: function() {
+      $status.html('<div class="text-danger text-center" style="padding:40px;font-size:13px;">Error connecting to OLT. Verify the connection.</div>');
+      $oltStatus.html('<span class="text-danger"><i class="fa fa-circle"></i> Disconnected</span>');
+      $updatedDate.text('Connection error');
+    }
+  });
+}
+
+// ===== SYNC ONUs FROM SMARTOLT =====
+function syncOnusFromSmartOLT() {
+  var $btn = $('#btn-sync-onus');
+  var $status = $('#sync-status');
+  if ($btn.prop('disabled')) return;
+  
+  $btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Syncing...');
+  $status.text('Connecting to SmartOLT...').css('color','');
+  
+  $.ajax({
+    type: 'POST',
+    url: '/api/gpon/sync',
+    timeout: 60000,
+    success: function(data) {
+      if (data.success) {
+        $status.text(data.msg).css('color','#4db14b');
+        // Refrescar datos del dashboard
+        if (typeof loadGPONData === 'function') loadGPONData();
+      } else {
+        $status.text(data.msg || 'Sync failed').css('color','#dc3545');
+      }
+    },
+    error: function() {
+      $status.text('Connection error').css('color','#dc3545');
+    },
+    complete: function() {
+      $btn.prop('disabled', false).html('<i class="fa fa-refresh"></i> Sync ONUs from SmartOLT');
+    }
+  });
+}
+
+// ===== ONU DETAIL MODAL =====
+var _currentOnuSn = '';
+
+function openOnuDetail(sn) {
+  if (!sn) return;
+  _currentOnuSn = sn;
+  
+  $('#onuDetailSn').text('SN: ' + sn);
+  $('#onuDetailBody').html('<div class="text-center text-muted" style="padding:40px;"><i class="fa fa-spinner fa-spin fa-3x" style="color:#4c4b4b;"></i><p style="margin-top:12px;font-size:14px;">Loading ONU details...</p></div>');
+  $('#onuDetailModal').modal('show');
+  
+  $.ajax({
+    type: 'GET',
+    url: '/api/gpon/onu/detail/' + encodeURIComponent(sn),
+    timeout: 30000,
+    dataType: 'json',
+    success: function(data) {
+      if (!data.success || !data.data) {
+        $('#onuDetailBody').html('<div class="text-center text-danger" style="padding:40px;"><i class="fa fa-exclamation-circle fa-3x" style="color:#e74c3c;"></i><p style="margin-top:12px;">Error loading ONU details</p></div>');
+        return;
+      }
+      
+      var d = data.data;
+      var smartolt = d.smartolt || {};
+      var local = d.local || {};
+      var signal = d.signal || {};
+      var detailedKey = signal && signal["ONU details"] ? signal["ONU details"] : {};
+      
+      var html = '';
+      
+      // === Section 1: Basic Information ===
+      html += '<div class="onu-detail-section">';
+      html += '<h5>Basic Information</h5>';
+      html += '<div class="onu-detail-grid">';
+      html += '<div class="field"><span class="label">Serial Number</span><div class="value"><strong>' + escapeHtml(d.sn || sn || '--') + '</strong></div></div>';
+      html += '<div class="field"><span class="label">ONU ID</span><div class="value"><code>' + escapeHtml(smartolt.description || d.onuId || '--') + '</code></div></div>';
+      html += '<div class="field"><span class="label">Name</span><div class="value"><input type="text" id="edit-nombre" value="' + escapeHtml(smartolt.name || local.nombre || '') + '" placeholder="Client name"/></div></div>';
+      html += '<div class="field"><span class="label">Client</span><div class="value">' + escapeHtml(local.cliente_nombre || smartolt.name || '--') + '</div></div>';
+      html += '<div class="field"><span class="label">ONU Type</span><div class="value"><input type="text" id="edit-onu-type" value="' + escapeHtml(smartolt.onu_type_name || local.onu_type || '') + '" placeholder="e.g. F679LV9.1"/></div></div>';
+      html += '<div class="field"><span class="label">Board / Port</span><div class="value">' + escapeHtml((smartolt.board || '') + '/' + (smartolt.port || '') + ':' + (smartolt.onu || '--')) + '</div></div>';
+      html += '<div class="field"><span class="label">Zone</span><div class="value"><input type="text" id="edit-zona" value="' + escapeHtml(smartolt.zone_name || local.zona || '') + '" placeholder="Zone name"/></div></div>';
+      html += '<div class="field"><span class="label">VLAN</span><div class="value"><input type="text" id="edit-vlan" value="' + escapeHtml(smartolt.vlan || local.vlan || '') + '" placeholder="e.g. 200"/></div></div>';
+      html += '<div class="field"><span class="label">Mode</span><div class="value">' + escapeHtml(smartolt.mode || '--') + '</div></div>';
+      html += '<div class="field"><span class="label">WAN Mode</span><div class="value">' + escapeHtml(smartolt.wan_mode || '--') + '</div></div>';
+      html += '</div></div>';
+      
+      // === Section 2: Status ===
+      html += '<div class="onu-detail-section">';
+      html += '<h5>Status</h5>';
+      html += '<div class="onu-detail-grid">';
+      html += '<div class="field"><span class="label">Phase State</span><div class="value"><span class="' + ((detailedKey["Phase state"] === 'working') ? 'signal-ok' : 'signal-bad') + '">' + escapeHtml(detailedKey["Phase state"] || '--') + '</span></div></div>';
+      html += '<div class="field"><span class="label">Admin State</span><div class="value">' + escapeHtml(detailedKey["Admin state"] || '--') + '</div></div>';
+      html += '<div class="field"><span class="label">Online Duration</span><div class="value">' + escapeHtml(detailedKey["Online Duration"] || '--') + '</div></div>';
+      html += '<div class="field"><span class="label">ONU Distance</span><div class="value">' + escapeHtml(detailedKey["ONU Distance"] || '--') + '</div></div>';
+      html += '<div class="field"><span class="label">HW Version</span><div class="value">' + escapeHtml(detailedKey["HW Version"] || '--') + '</div></div>';
+      html += '<div class="field"><span class="label">Vendor</span><div class="value">' + escapeHtml(detailedKey["Vendor ID"] || '--') + '</div></div>';
+      html += '</div></div>';
+      
+      // === Section 3: Optical Signal ===
+      html += '<div class="onu-detail-section">';
+      html += '<h5>Optical Signal</h5>';
+      if (signal && signal["Optical status"]) {
+        var opt = signal["Optical status"];
+        html += '<div class="onu-detail-grid">';
+        html += '<div class="field"><span class="label">OLT Rx (1310nm)</span><div class="value">' + escapeHtml(opt["OLT Rx"] || 'N/A') + '</div></div>';
+        html += '<div class="field"><span class="label">ONU Tx (1310nm)</span><div class="value">' + escapeHtml(opt["ONU Tx"] || 'N/A') + '</div></div>';
+        html += '<div class="field"><span class="label">OLT Tx (1490nm)</span><div class="value">' + escapeHtml(opt["OLT Tx"] || 'N/A') + '</div></div>';
+        html += '<div class="field"><span class="label">ONU Rx (1490nm)</span><div class="value">' + escapeHtml(opt["ONU Rx"] || 'N/A') + '</div></div>';
+        html += '<div class="field"><span class="label">Attenuation 1310nm</span><div class="value">' + escapeHtml(opt["1310nm Attenuation"] || 'N/A') + '</div></div>';
+        html += '<div class="field"><span class="label">Attenuation 1490nm</span><div class="value">' + escapeHtml(opt["1490nm Attenuation"] || 'N/A') + '</div></div>';
+        html += '</div>';
+      } else {
+        html += '<p style="color:#94a3b8;font-size:13px;margin:4px 0 12px;">Signal data not available for this ONU</p>';
+      }
+      html += '</div>';
+      
+      $('#onuDetailBody').html(html);
+    },
+    error: function() {
+      $('#onuDetailBody').html('<div class="text-center text-danger" style="padding:40px;"><i class="fa fa-exclamation-triangle fa-3x" style="color:#e74c3c;"></i><p style="margin-top:12px;">Connection error</p></div>');
+    }
+  });
+}
+
+function saveOnuDetail() {
+  var sn = _currentOnuSn;
+  if (!sn) return;
+  
+  var nombre = $('#edit-nombre').val() || "";
+  var zona = $('#edit-zona').val() || "";
+  var vlan = $('#edit-vlan').val() || "";
+  var onuType = $('#edit-onu-type').val() || "";
+  
+  var $btn = $('#btnSaveOnu');
+  $btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Saving...');
+  
+  $.ajax({
+    type: 'POST',
+    url: '/api/gpon/onu/save',
+    contentType: 'application/json',
+    data: JSON.stringify({ sn: sn, nombre: nombre, zona: zona, vlan: vlan, onu_type: onuType }),
+    timeout: 15000,
+    dataType: 'json',
+    success: function(data) {
+      if (data.success) {
+        $('#btnSaveOnu').html('<i class="fa fa-check"></i> Saved!');
+        setTimeout(function() {
+          $('#btnSaveOnu').prop('disabled', false).html('<i class="fa fa-save"></i> Save Changes');
+        }, 1500);
+      } else {
+        alert('Error: ' + (data.msg || 'Unknown'));
+        $('#btnSaveOnu').prop('disabled', false).html('<i class="fa fa-save"></i> Save Changes');
+      }
+    },
+    error: function() {
+      alert('Connection error saving ONU');
+      $('#btnSaveOnu').prop('disabled', false).html('<i class="fa fa-save"></i> Save Changes');
+    }
+  });
+}
+
+// ===== URL PARAMETER HANDLING =====
+function getUrlParam(name) {
+  var match = location.search.match(new RegExp('[?&]' + name + '=([^&]*)'));
+  return match ? decodeURIComponent(match[1]) : null;
+}
+
+// ===== ONU LIST VIEW (action=onu) =====
+function loadOnuListView(filterState) {
+  var $content = $('#content-wrapper .content-wrap');
+  
+  // Back button
+  var html = '<style>.onu-list-table,.onu-list-table>tbody>tr,.onu-list-table>tbody>tr>td,.onu-list-table>thead>tr>th{background:transparent!important;}.onu-list-table>tbody>tr:hover{background:rgba(76,75,75,0.06)!important;}html.smartolt-night .onu-list-table>tbody>tr:hover{background:rgba(255,255,255,0.06)!important;}</style>';
+  html += '<div style="margin-bottom:16px;">';
+  html += '<a href="/modulo?pagina=GPONManager" class="btn btn-default btn-sm"><i class="fa fa-arrow-left"></i> Back to Dashboard</a>';
+  html += '<span style="margin-left:12px;font-weight:600;font-size:18px;">';
+  if (filterState === 'online') html += '<i class="fa fa-wifi text-success"></i> ONUs Online';
+  else if (filterState === 'offline') html += '<i class="fa fa-exclamation-triangle text-danger"></i> ONUs Offline';
+  else if (filterState === 'pending') html += '<i class="fa fa-clock-o text-warning"></i> ONUs Pendientes';
+  else html += 'All ONUs';
+  html += '</span></div>';
+  
+  // Table
+  html += '<div class="table-responsive"><table class="onu-list-table table table-hover" style="font-size:12px;background:transparent;">';
+  html += '<thead><tr>';
+  html += '<th>Status</th><th>Name / SN / MAC</th><th>ONU</th><th>Zone</th><th>Type</th><th>Mode</th><th>VLAN</th><th>Estado</th>';
+  html += '</tr></thead><tbody id="onu-list-tbody">';
+  html += '<tr><td colspan="8" class="text-center text-muted">Loading ONU data from SmartOLT...</td></tr>';
+  html += '</tbody></table></div>';
+  
+  $content.html(html);
+  
+  // Fetch detailed data from SmartOLT API
+  $.ajax({
+    type: 'GET',
+    url: '/api/gpon/onus/detailed',
+    timeout: 30000,
+    dataType: 'json',
+    success: function(data) {
+      if (!data.success || !data.onus || data.onus.length === 0) {
+        $('#onu-list-tbody').html('<tr><td colspan="6" class="text-center text-danger">No data available from SmartOLT</td></tr>');
+        return;
+      }
+      
+      var onus = data.onus;
+      
+      // Filtrar por estado si se especificó
+      if (filterState === 'online') {
+        onus = onus.filter(function(o) { return o.state === 'working' || o.state === 'online'; });
+      } else if (filterState === 'offline') {
+        onus = onus.filter(function(o) { return o.state !== 'working' && o.state !== 'online' && o.state !== 'unknown' && o.state !== 'pending'; });
+      } else if (filterState === 'pending') {
+        onus = onus.filter(function(o) { return o.state === 'pending' || o.type === 'unconfigured'; });
+      }
+      
+      if (onus.length === 0) {
+        $('#onu-list-tbody').html('<tr><td colspan="8" class="text-center text-muted">No ONUs match this filter</td></tr>');
+        return;
+      }
+      
+      var rows = '';
+      onus.forEach(function(o) {
+        var isOnline = o.state === 'working' || o.state === 'online';
+        var isPending = o.state === 'pending' || o.type === 'unconfigured';
+        var stateIcon = isOnline ? '<i class="fa fa-circle text-success" style="font-size:10px;"></i>' : (isPending ? '<i class="fa fa-clock-o text-warning" style="font-size:10px;"></i>' : '<i class="fa fa-circle text-muted" style="font-size:10px;"></i>');
+        var stateLabel = isOnline ? 'Online' : (isPending ? 'Pending' : (o.state === 'unknown' ? 'Unknown' : 'Offline'));
+        var stateBadge = isOnline ? 'success' : (isPending ? 'warning' : (o.state === 'unknown' ? 'warning' : 'default'));
+        
+        var dataSn = (o.sn || o.onuId || "");
+        rows += '<tr style="cursor:pointer;" data-sn="' + escapeHtml(dataSn) + '" onclick="openOnuDetail(this.dataset.sn)">';
+        rows += '<td>' + stateIcon + '</td>';
+        rows += '<td><strong>' + escapeHtml(o.name || '--') + '</strong><br><small class="text-muted">' + escapeHtml(o.sn || '--') + '</small></td>';
+        rows += '<td><small>' + escapeHtml(o.description || '--') + '</small></td>';
+        rows += '<td><small>' + escapeHtml(o.zone_name || '--') + '</small></td>';
+        rows += '<td><small>' + escapeHtml(o.onu_type_name || '--') + '</small></td>';
+        rows += '<td><small>' + escapeHtml(o.wan_mode || o.mode || '--') + '</small></td>';
+        rows += '<td><small>' + escapeHtml(o.vlan || '--') + '</small></td>';
+        rows += '<td><span class="label label-' + stateBadge + '">' + stateLabel + '</span></td>';
+        rows += '</tr>';
+      });
+      
+      $('#onu-list-tbody').html(rows);
+    },
+    error: function() {
+      $('#onu-list-tbody').html('<tr><td colspan="8" class="text-center text-danger">Error fetching ONU data from SmartOLT</td></tr>');
+    }
+  });
+}
+
+// Escapado HTML para seguridad
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ===== INIT: Check URL params =====
+$(document).ready(function() {
+  var action = getUrlParam('action');
+  var stateFilter = getUrlParam('state');
+  
+  if (action === 'onu') {
+    // Mostrar lista detallada de ONUs
+    loadOnuListView(stateFilter);
+  } else if (action === 'config') {
+    // Mostrar configuración (placeholder)
+    $('#content-wrapper .content-wrap').html('<div class="text-center text-muted" style="padding:60px;"><i class="fa fa-cog fa-4x"></i><h3>Configuración</h3><p>Página de configuración próximamente.</p><a href="/modulo?pagina=GPONManager" class="btn btn-default">Volver</a></div>');
+  } else if (action === 'diagnostics') {
+    // Mostrar diagnóstico (placeholder)
+    $('#content-wrapper .content-wrap').html('<div class="text-center text-muted" style="padding:60px;"><i class="fa fa-stethoscope fa-4x"></i><h3>Diagnostics</h3><p>Página de diagnóstico próximamente.</p><a href="/modulo?pagina=GPONManager" class="btn btn-default">Volver</a></div>');
+  } else {
+    // Dashboard - iniciar auto-refresh
+    loadGPONData();
+    setInterval(loadGPONData, 30000);
+  }
+});
+</script>
+</body>
+</html>

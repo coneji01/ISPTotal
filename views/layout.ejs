@@ -73,6 +73,15 @@
 
     <!-- Main -->
     <main class="main-content">
+      <% if (typeof serverDate !== 'undefined' && serverDate && serverDate.overridden) { %>
+      <div class="server-date-banner">
+        <i class="fas fa-calendar-alt"></i>
+        <span><strong>Modo Pruebas</strong> — Fecha simulada: <span class="srv-date-value"><%= serverDate.current_date_only %></span></span>
+        <span class="srv-date-sep">|</span>
+        <span style="font-size:0.72rem;opacity:0.7;">Real: <%= serverDate.real_date_only %></span>
+        <a href="/modulo?pagina=Configuracion" class="srv-date-config-link" title="Configurar fecha"><i class="fas fa-cog"></i></a>
+      </div>
+      <% } %>
       <!-- Top Header Actions (buscador global + pago rápido) -->
       <div class="top-header-actions">
         <div class="global-search-container">

@@ -505,6 +505,43 @@ class MikroTikAPI {
     }
   }
 
+  // Remove PPPoE secret by name
+  static async removePPPSecret(host, port, username, password, secretName) {
+    if (!secretName) return { success: false, error: 'Nombre del secreto requerido' };
+    const api = new MikroTikAPI(host, port);
+    try {
+      await api.connect();
+      await api.login(username, password);
+      
+      // Find the secret first
+      const findResult = await api.exec('/ppp/secret/print', '?name=' + secretName);
+      var secretId = null;
+      for (const sentence of findResult) {
+        if (sentence[0] === '!re') {
+          for (const word of sentence) {
+            if (word.startsWith('=.id=')) {
+              secretId = word.split('=')[2];
+              break;
+            }
+          }
+        }
+      }
+      
+      if (!secretId) {
+        api.disconnect();
+        return { success: true, message: 'Secreto no encontrado (ya fue eliminado)' };
+      }
+      
+      // Remove the secret
+      await api.exec('/ppp/secret/remove', '=.id=' + secretName);
+      api.disconnect();
+      return { success: true, message: 'Secreto PPP eliminado' };
+    } catch (err) {
+      if (api) api.disconnect();
+      return { success: false, error: err.message };
+    }
+  }
+
   // Get available (unused) IP from a pool or IP range
   static async getAvailableIP(host, port, username, password, poolName) {
     const api = new MikroTikAPI(host, port);

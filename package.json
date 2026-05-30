@@ -17,8 +17,17 @@
     "express": "^5.2.1",
     "express-fileupload": "^1.5.2",
     "express-session": "^1.19.0",
+    "net-snmp": "^3.26.3",
+    "node-unrar-js": "^2.0.2",
     "nodemailer": "^8.0.7",
+    "playwright": "^1.60.0",
+    "playwright-core": "^1.60.0",
+    "puppeteer": "^25.0.4",
     "qrcode": "^1.5.4",
-    "whatsapp-web.js": "^1.34.7"
+    "ssh2": "^1.17.0",
+    "telnet-client": "^2.2.13",
+    "unrar": "^0.2.0",
+    "whatsapp-web.js": "^1.34.7",
+    "xlsx": "^0.18.5"
   }
 }

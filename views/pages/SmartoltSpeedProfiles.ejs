@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en" class="smartolt-night">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Perfiles de Velocidad - ISPTotal</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-primary: #1a1d23;
+  --bg-secondary: #22262e;
+  --bg-card: #2a2d35;
+  --bg-hover: #32363e;
+  --text-primary: #e8eaed;
+  --text-secondary: #9aa0a8;
+  --text-muted: #6b7280;
+  --border-color: #383c44;
+  --accent-blue: #3b82f6;
+  --accent-green: #22c55e;
+  --accent-red: #ef4444;
+  --accent-yellow: #eab308;
+  --accent-cyan: #06b6d4;
+  --shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+:root.smartolt-light {
+  --bg-primary: #f1f5f9;
+  --bg-secondary: #ffffff;
+  --bg-card: #ffffff;
+  --bg-hover: #f8fafc;
+  --text-primary: #1e293b;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+  --border-color: #e2e8f0;
+  --shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+[class=""] {
+  --bg-primary: #1a1d23;
+  --bg-secondary: #22262e;
+  --bg-card: #2a2d35;
+  --bg-hover: #32363e;
+  --text-primary: #e8eaed;
+  --text-secondary: #9aa0a8;
+  --text-muted: #6b7280;
+  --border-color: #383c44;
+  --accent-blue: #3b82f6;
+  --accent-green: #22c55e;
+  --accent-red: #ef4444;
+  --accent-yellow: #eab308;
+  --accent-cyan: #06b6d4;
+  --shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; background:var(--bg-primary); color:var(--text-primary); min-height:100vh; }
+.smartolt-site { position:relative; }
+.smartolt-landing-hero-bg { position:fixed; top:0; left:0; width:100%; height:100%; background:radial-gradient(ellipse at 50% 0%, rgba(59,130,246,0.08) 0%, transparent 60%); pointer-events:none; z-index:0; }
+#content-wrapper { position:relative; z-index:1; }
+.topbar { background:var(--bg-secondary); border-bottom:1px solid var(--border-color); padding:0 24px; height:56px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:100; backdrop-filter:blur(8px); }
+.topbar-brand { font-size:1.1rem; font-weight:700; color:var(--text-primary); text-decoration:none; display:flex; align-items:center; gap:10px; }
+.topbar-brand i { color:var(--accent-blue); }
+.topbar-actions { display:flex; align-items:center; gap:12px; }
+.night-toggle { background:none; border:none; color:var(--text-secondary); font-size:1.2rem; cursor:pointer; padding:8px; border-radius:8px; transition:all 0.2s; width:38px; height:38px; display:flex; align-items:center; justify-content:center; }
+.night-toggle:hover { background:var(--bg-hover); color:var(--text-primary); }
+.container { max-width:1400px; margin:0 auto; padding:20px 24px; }
+.content-wrap { padding:0; }
+h2 { font-size:1.4rem; font-weight:600; color:var(--text-primary); margin-bottom:20px; display:flex; align-items:center; gap:10px; }
+h2 i { color:var(--accent-blue); }
+/* Tabs */
+.nav-tabs { display:flex; gap:0; list-style:none; margin-bottom:0; border-bottom:2px solid var(--border-color); padding:0; }
+.nav-tabs li { margin-bottom:-2px; }
+.nav-tabs li a { display:block; padding:10px 20px; background:var(--bg-secondary); border:1px solid var(--border-color); border-bottom:none; border-radius:8px 8px 0 0; color:var(--text-secondary); text-decoration:none; font-size:0.85rem; font-weight:500; transition:all 0.2s; margin-right:4px; }
+.nav-tabs li.active a { background:var(--bg-card); color:var(--text-primary); border-color:var(--border-color); border-bottom:2px solid var(--bg-card); font-weight:600; }
+.nav-tabs li a:hover { background:var(--bg-hover); color:var(--text-primary); }
+.tab-content { background:var(--bg-card); border:1px solid var(--border-color); border-top:none; border-radius:0 0 10px 10px; padding:20px; }
+.tab-pane { display:none; }
+.tab-pane.active { display:block; }
+/* GPON Table */
+.gpon-table-wrap { overflow:hidden; }
+.gpon-table { width:100%; border-collapse:collapse; font-size:0.85rem; }
+.gpon-table thead { background:var(--bg-secondary); }
+.gpon-table th { padding:12px 14px; text-align:left; color:var(--text-secondary); font-size:0.75rem; font-weight:600; text-transform:uppercase; letter-spacing:0.5px; border-bottom:2px solid var(--border-color); white-space:nowrap; }
+.gpon-table td { padding:10px 14px; border-bottom:1px solid var(--border-color); vertical-align:middle; color:var(--text-primary); }
+.gpon-table tbody tr:hover { background:var(--bg-hover); }
+.gpon-table .text-center { text-align:center; }
+.gpon-table .sort-link { color:var(--text-secondary); text-decoration:none; display:inline-flex; align-items:center; gap:4px; }
+.gpon-table .sort-link:hover { color:var(--accent-blue); }
+.gpon-table .valign-center td { vertical-align:middle; }
+/* GPON Buttons */
+.gpon-btn { display:inline-flex; align-items:center; gap:6px; padding:7px 14px; border:none; border-radius:6px; font-family:'Inter',sans-serif; font-size:0.82rem; font-weight:500; cursor:pointer; transition:all 0.2s; text-decoration:none; white-space:nowrap; }
+.gpon-btn i { font-size:0.9rem; }
+.gpon-btn-primary { background:var(--accent-blue); color:#fff; }
+.gpon-btn-primary:hover { background:#2563eb; }
+.gpon-btn-success { background:var(--accent-green); color:#fff; }
+.gpon-btn-success:hover { background:#16a34a; }
+.gpon-btn-danger { background:var(--accent-red); color:#fff; }
+.gpon-btn-danger:hover { background:#dc2626; }
+.gpon-btn-warning { background:var(--accent-yellow); color:#000; }
+.gpon-btn-warning:hover { background:#d97706; }
+.gpon-btn-info { background:var(--accent-cyan); color:#fff; }
+.gpon-btn-info:hover { background:#0891b2; }
+.gpon-btn-secondary { background:var(--bg-hover); color:var(--text-primary); border:1px solid var(--border-color); }
+.gpon-btn-link { background:none; border:none; color:var(--accent-blue); padding:4px 8px; cursor:pointer; font-family:'Inter',sans-serif; font-size:0.85rem; text-decoration:none; }
+.gpon-btn-link:hover { text-decoration:underline; }
+.gpon-btn-sm { padding:5px 10px; font-size:0.78rem; }
+.margin-bottom { margin-bottom:10px; }
+.margin-top { margin-top:10px; }
+.text-center { text-align:center; }
+.text-muted { color:var(--text-muted); }
+.label { display:inline-block; padding:2px 8px; border-radius:4px; font-size:0.72rem; font-weight:600; }
+.label-default { background:rgba(107,114,128,0.15); color:var(--text-muted); }
+.label-yes { background:rgba(34,197,94,0.15); color:var(--accent-green); }
+input[type="checkbox"]:disabled { opacity:0.4; }
+.smartolt-topbar-network { position:absolute; top:0; left:0; width:100%; height:100px; pointer-events:none; overflow:hidden; z-index:0; }
+.smartolt-topbar-network-inner { position:relative; width:100%; height:100%; opacity:0.06; }
+.smartolt-topbar-network-lines { width:100%; height:100%; stroke:var(--accent-blue); stroke-width:0.5; fill:none; }
+@media(max-width:768px){
+  .container { padding:12px; }
+  .gpon-table-wrap { overflow-x:auto; }
+  .nav-tabs { flex-direction:column; }
+  .nav-tabs li a { border-radius:6px; margin-bottom:4px; }
+}
+</style>
+</head>
+<body class="smartolt-site">
+<div class="smartolt-landing-hero-bg"></div>
+<div id="content-wrapper">
+  <div class="smartolt-topbar-network" aria-hidden="true">
+    <div class="smartolt-topbar-network-inner">
+      <svg class="smartolt-topbar-network-lines" viewBox="0 0 100 100" preserveAspectRatio="none">
+        <line x1="8" y1="68" x2="23" y2="78"></line>
+        <line x1="23" y1="78" x2="37" y2="63"></line>
+        <line x1="8" y1="68" x2="37" y2="63"></line>
+        <line x1="37" y1="63" x2="65" y2="18"></line>
+        <line x1="65" y1="18" x2="89" y2="34"></line>
+        <line x1="23" y1="78" x2="65" y2="18"></line>
+        <line x1="37" y1="63" x2="89" y2="34"></line>
+      </svg>
+      <span class="smartolt-topbar-node smartolt-topbar-node-a"></span>
+      <span class="smartolt-topbar-node smartolt-topbar-node-b"></span>
+      <span class="smartolt-topbar-node smartolt-topbar-node-c"></span>
+    </div>
+  </div>
+
+  <div class="topbar">
+    <a href="/gpon" class="topbar-brand">
+      <i class="fas fa-tachometer-alt"></i> ISPTotal - GPON
+    </a>
+    <div class="topbar-actions">
+      <button class="night-toggle" id="nightToggle" title="Night mode">
+        <i class="fas fa-moon"></i>
+      </button>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="content-wrap">
+      <h2><i class="fas fa-tachometer-alt"></i> Perfiles de Velocidad</h2>
+
+      <!-- Tabs -->
+      <ul class="nav-tabs">
+        <li class="active"><a href="#downloadTab" data-tab="download">Descarga</a></li>
+        <li><a href="#uploadTab" data-tab="upload">Subida</a></li>
+      </ul>
+
+      <div class="tab-content">
+        <!-- Download tab -->
+        <div class="tab-pane active" id="downloadTab">
+          <div style="margin-bottom:12px;">
+            <button class="gpon-btn gpon-btn-success" onclick="addProfile('download')">
+              <i class="fas fa-plus"></i> Agregar perfil de descarga
+            </button>
+          </div>
+
+          <div class="gpon-table-wrap">
+            <table class="gpon-table">
+              <thead>
+                <tr>
+                  <th><a href="#" class="sort-link">Nombre <i class="fas fa-sort"></i></a></th>
+                  <th class="text-center">Para</th>
+                  <th class="text-center">Prefijo/Sufijo</th>
+                  <th>Velocidad</th>
+                  <th>Tipo</th>
+                  <th class="text-center">Default</th>
+                  <th class="text-center">ONUs</th>
+                  <th class="text-center">Acción</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% var dlProfiles = locals.profiles ? locals.profiles.filter(function(p){ return p.direction === 'download' || !p.direction; }) : []; %>
+                <% if(dlProfiles.length){ dlProfiles.forEach(function(p){ %>
+                <tr>
+                  <td><a href="#" class="gpon-btn-link" onclick="editProfile('<%= p.id %>')"><%= p.name %></a></td>
+                  <td class="text-center"><%= p.for || 'Cualquiera' %></td>
+                  <td class="text-center"><% if(p.usePrefixSuffix){ %><span class="label label-yes">Sí</span><% }else{ %>-<% } %></td>
+                  <td><%= p.speed %></td>
+                  <td><%= p.type || 'Internet' %></td>
+                  <td class="text-center"><input type="checkbox" disabled <%= p.isDefault ? 'checked' : '' %>></td>
+                  <td class="text-center"><a href="/gpon/configured?profile=<%= p.id %>" class="gpon-btn-link"><%= p.onuCount || 0 %></a></td>
+                  <td class="text-center">
+                    <button class="gpon-btn gpon-btn-warning gpon-btn-sm" onclick="editProfile('<%= p.id %>')" title="Editar">
+                      <i class="fas fa-pen"></i>
+                    </button>
+                    <button class="gpon-btn gpon-btn-danger gpon-btn-sm" onclick="deleteProfile('<%= p.id %>','<%= p.name %>')" title="Eliminar">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </td>
+                </tr>
+                <% }); }else{ %>
+                <tr><td colspan="8" style="text-align:center;padding:32px;color:var(--text-muted);">
+                  <i class="fas fa-tachometer-alt" style="font-size:2rem;opacity:0.3;display:block;margin-bottom:10px;"></i>
+                  No hay perfiles de descarga.
+                </td></tr>
+                <% } %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Upload tab -->
+        <div class="tab-pane" id="uploadTab">
+          <div style="margin-bottom:12px;">
+            <button class="gpon-btn gpon-btn-success" onclick="addProfile('upload')">
+              <i class="fas fa-plus"></i> Agregar perfil de subida
+            </button>
+          </div>
+
+          <div class="gpon-table-wrap">
+            <table class="gpon-table">
+              <thead>
+                <tr>
+                  <th><a href="#" class="sort-link">Nombre <i class="fas fa-sort"></i></a></th>
+                  <th class="text-center">Para</th>
+                  <th class="text-center">Prefijo/Sufijo</th>
+                  <th>Velocidad</th>
+                  <th>Tipo</th>
+                  <th class="text-center">Default</th>
+                  <th class="text-center">ONUs</th>
+                  <th class="text-center">Acción</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% var ulProfiles = locals.profiles ? locals.profiles.filter(function(p){ return p.direction === 'upload'; }) : []; %>
+                <% if(ulProfiles.length){ ulProfiles.forEach(function(p){ %>
+                <tr>
+                  <td><a href="#" class="gpon-btn-link" onclick="editProfile('<%= p.id %>')"><%= p.name %></a></td>
+                  <td class="text-center"><%= p.for || 'Cualquiera' %></td>
+                  <td class="text-center"><% if(p.usePrefixSuffix){ %><span class="label label-yes">Sí</span><% }else{ %>-<% } %></td>
+                  <td><%= p.speed %></td>
+                  <td><%= p.type || 'Internet' %></td>
+                  <td class="text-center"><input type="checkbox" disabled <%= p.isDefault ? 'checked' : '' %>></td>
+                  <td class="text-center"><a href="/gpon/configured?profile=<%= p.id %>" class="gpon-btn-link"><%= p.onuCount || 0 %></a></td>
+                  <td class="text-center">
+                    <button class="gpon-btn gpon-btn-warning gpon-btn-sm" onclick="editProfile('<%= p.id %>')" title="Editar">
+                      <i class="fas fa-pen"></i>
+                    </button>
+                    <button class="gpon-btn gpon-btn-danger gpon-btn-sm" onclick="deleteProfile('<%= p.id %>','<%= p.name %>')" title="Eliminar">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </td>
+                </tr>
+                <% }); }else{ %>
+                <tr><td colspan="8" style="text-align:center;padding:32px;color:var(--text-muted);">
+                  <i class="fas fa-tachometer-alt" style="font-size:2rem;opacity:0.3;display:block;margin-bottom:10px;"></i>
+                  No hay perfiles de subida.
+                </td></tr>
+                <% } %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  try{
+    if(localStorage.getItem('smartolt-night')==='1'){
+      document.documentElement.classList.add('smartolt-night');
+      document.documentElement.classList.remove('smartolt-light');
+    } else if(localStorage.getItem('smartolt-night')==='0'){
+      document.documentElement.classList.remove('smartolt-night');
+      document.documentElement.classList.add('smartolt-light');
+    }
+  }catch(e){}
+})();
+
+document.getElementById('nightToggle').addEventListener('click', function(){
+  var html = document.documentElement;
+  if(html.classList.contains('smartolt-night')){
+    html.classList.remove('smartolt-night'); html.classList.add('smartolt-light');
+    localStorage.setItem('smartolt-night','0');
+  } else {
+    html.classList.remove('smartolt-light'); html.classList.add('smartolt-night');
+    localStorage.setItem('smartolt-night','1');
+  }
+});
+
+// Tabs
+document.querySelectorAll('.nav-tabs a').forEach(function(el){
+  el.addEventListener('click', function(e){
+    e.preventDefault();
+    document.querySelectorAll('.nav-tabs li').forEach(function(l){ l.classList.remove('active'); });
+    this.parentElement.classList.add('active');
+    document.querySelectorAll('.tab-pane').forEach(function(p){ p.classList.remove('active'); });
+    document.querySelector(this.getAttribute('href')).classList.add('active');
+  });
+});
+
+function addProfile(dir){
+  alert('Agregar perfil de ' + dir);
+}
+function editProfile(id){
+  alert('Editar perfil ID: ' + id);
+}
+function deleteProfile(id, name){
+  if(confirm('¿Eliminar perfil "' + name + '"?')){
+    alert('Eliminando perfil ' + name);
+  }
+}
+</script>
+</body>
+</html>
