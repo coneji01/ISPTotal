@@ -232,14 +232,17 @@ td { padding:12px 10px; border-bottom:1px solid var(--border-color); color:var(-
 
 <!-- MODAL CERRAR ORDEN (DomISP exacto) -->
 <div class="modal-overlay" id="modalCerrar">
-  <div class="modal-content" style="width:450px;">
+  <div class="modal-content" style="width:500px;">
     <div class="modal-header">
-      <h3><i class="fas fa-clipboard-check" style="color:#10b981;"></i> Cerrar Orden</h3>
+      <h3><i class="fas fa-clipboard-check" style="color:#10b981;"></i> Cerrar Orden <span id="cerrarTipoLabel" style="font-size:0.8rem;color:var(--text-muted);"></span></h3>
       <button class="btn-modal-close" onclick="closeModal('modalCerrar')"><i class="fas fa-times"></i> Cerrar</button>
     </div>
     <div style="padding:16px 20px;">
       <form onsubmit="return confirmarCerrar(event)">
         <input type="hidden" name="id_orden" id="idCerrar">
+        <input type="hidden" id="idCerrarTipo" value="">
+        <input type="hidden" id="idCerrarServicioId" value="0">
+        
         <div class="form-group">
           <label id="lblCerrarPersona" class="form-label"><i class="fas fa-user-cog" style="color:#8b5cf6;"></i> Técnico</label>
           <div style="position:relative;">
@@ -248,6 +251,31 @@ td { padding:12px 10px; border-bottom:1px solid var(--border-color); color:var(-
             <div id="cerrar_tec_list" style="display:none; position:absolute; top:100%; left:0; right:0; background:white; border:1px solid #e2e8f0; border-radius:6px; max-height:180px; overflow-y:auto; z-index:100; box-shadow:0 4px 12px rgba(0,0,0,0.12);"></div>
           </div>
         </div>
+        
+        <!-- SECCION TRASLADO: solo visible cuando tipo=traslado -->
+        <div id="cerrarTrasladoSection" style="display:none; margin-bottom:12px; border:1px solid #bfdbfe; border-radius:8px; padding:12px; background:#f0f9ff;">
+          <h4 style="margin:0 0 10px;font-size:0.85rem;color:#0369a1;"><i class="fas fa-exchange-alt"></i> Gestión de ONU para Traslado</h4>
+          
+          <div id="cerrarOnuVieja" style="margin-bottom:8px;font-size:0.82rem;color:#334155;"></div>
+          
+          <div class="form-group" style="margin-bottom:8px;">
+            <label class="form-label" style="font-size:0.78rem;">OLT Destino</label>
+            <select id="cerrarOltSelect" class="form-select" onchange="onCerrarOltChange()">
+              <option value="">Seleccionar OLT...</option>
+            </select>
+          </div>
+          
+          <div id="cerrarOnuActions" style="display:none;">
+            <button type="button" class="btn btn-sm btn-primary" onclick="scanearOnusCerrar()" id="btnScanOnus" style="margin-bottom:8px;font-size:0.78rem;">
+              <i class="fas fa-search"></i> Scanear ONUs Disponibles
+            </button>
+            <div id="cerrarScanResults" style="max-height:150px;overflow-y:auto;border:1px solid #e2e8f0;border-radius:6px;background:white;display:none;"></div>
+            <input type="hidden" id="cerrarNewOnuSn" value="">
+            <input type="hidden" id="cerrarNewOnuModel" value="">
+            <div id="cerrarNewOnuSelected" style="display:none;padding:6px 10px;background:#dcfce7;border:1px solid #86efac;border-radius:6px;font-size:0.82rem;margin-top:4px;"></div>
+          </div>
+        </div>
+        
         <div class="form-group">
           <label class="form-label">Observaciones</label>
           <textarea id="cerrarObs" class="form-control" required placeholder="Observaciones..." rows="3"></textarea>
@@ -444,7 +472,7 @@ function tecSearchFilter(prefix) {
     if (q && name.toLowerCase().indexOf(q) === -1) return;
     var label = name + (showRole ? " (" + role + ")" : "");
     var data = JSON.stringify({prefix: prefix, id: t.id, name: name});
-    h += '<div class="tec-result-item" data-info="' + data.replace(/'/g,"&apos;") + '" style="padding:10px 12px;cursor:pointer;border-bottom:1px solid #f1f5f9;font-size:0.85rem;">';
+    h += '<div class="tec-result-item" data-info="' + data.replace(/"/g,'&quot;').replace(/'/g,"&apos;") + '" style="padding:10px 12px;cursor:pointer;border-bottom:1px solid #f1f5f9;font-size:0.85rem;">';
     h += '<i class="fas fa-user" style="color:#8b5cf6;margin-right:6px;"></i>' + label + '</div>';
   });
   if (!h) h = '<div style="padding:12px;text-align:center;color:#94a3b8;font-size:0.82rem;">Sin resultados</div>';
@@ -473,19 +501,147 @@ function abrirCerrar(id, dept) {
   document.getElementById('idCerrar').value = id;
   document.getElementById('cerrar_tecnico').value = '';
   document.getElementById('cerrar_tec_search').value = '';
+  document.getElementById('idCerrarTipo').value = '';
+  document.getElementById('idCerrarServicioId').value = '0';
+  document.getElementById('cerrarTipoLabel').textContent = '';
+  document.getElementById('cerrarTrasladoSection').style.display = 'none';
+  document.getElementById('cerrarOnuVieja').innerHTML = '';
+  document.getElementById('cerrarOltSelect').innerHTML = '<option value="">Seleccionar OLT...</option>';
+  document.getElementById('cerrarOnuActions').style.display = 'none';
+  document.getElementById('cerrarScanResults').style.display = 'none';
+  document.getElementById('cerrarNewOnuSn').value = '';
+  document.getElementById('cerrarNewOnuSelected').style.display = 'none';
   document.getElementById('modalCerrar').style.display = 'flex';
+  
+  // Fetch order details to check tipo
+  fetch('/api/ordenes/detalle/' + id)
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    if (d.status !== 'success' || !d.data) return;
+    var o = d.data;
+    document.getElementById('idCerrarTipo').value = o.tipo;
+    document.getElementById('cerrarTipoLabel').textContent = '(' + o.tipo + ')';
+    document.getElementById('idCerrarServicioId').value = o.servicio_id || 0;
+    
+    // If traslado, show ONU section
+    if (o.tipo === 'traslado') {
+      document.getElementById('cerrarTrasladoSection').style.display = 'block';
+      
+      // Show old ONU info
+      if (o.servicio_id) {
+        fetch('/api/ordenes/servicio-info/' + o.servicio_id)
+        .then(function(r2) { return r2.json(); })
+        .then(function(svc) {
+          if (svc.status === 'success' && svc.data) {
+            var html = '<div style="background:#f8fafc;border-radius:6px;padding:8px;font-size:0.8rem;">' +
+              '<b style="color:#64748b;">ONU Actual:</b> ' + (svc.data.onu_sn || 'Sin ONU') +
+              ' | IP: ' + (svc.data.ip || '—') + 
+              '</div>';
+            document.getElementById('cerrarOnuVieja').innerHTML = html;
+          }
+        })
+        .catch(function(e){});
+      }
+      
+      // Cargar lista de OLTs
+      fetch('/api/olts')
+      .then(function(r3) { return r3.json(); })
+      .then(function(olts) {
+        if (olts && olts.length) {
+          var sel = '<option value="">Seleccionar OLT...</option>';
+          olts.forEach(function(ol) { sel += '<option value="' + ol.id + '">' + ol.nombre + '</option>'; });
+          document.getElementById('cerrarOltSelect').innerHTML = sel;
+        }
+      })
+      .catch(function(e){});
+    }
+  })
+  .catch(function(e){});
+}
+
+function onCerrarOltChange() {
+  var oltId = document.getElementById('cerrarOltSelect').value;
+  document.getElementById('cerrarOnuActions').style.display = oltId ? 'block' : 'none';
+  document.getElementById('cerrarScanResults').style.display = 'none';
+  document.getElementById('cerrarNewOnuSn').value = '';
+  document.getElementById('cerrarNewOnuSelected').style.display = 'none';
+}
+
+function scanearOnusCerrar() {
+  var oltId = document.getElementById('cerrarOltSelect').value;
+  if (!oltId) { alert('Seleccione una OLT primero'); return; }
+  var resultsBox = document.getElementById('cerrarScanResults');
+  resultsBox.innerHTML = '<div style="padding:12px;text-align:center;color:#64748b;"><i class="fas fa-spinner fa-spin"></i> Escaneando...</div>';
+  resultsBox.style.display = 'block';
+  
+  fetch('/api/cambio-onu/scan-onus?olt_id=' + oltId + '&mode=smartolt')
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    if (!d.success || !d.onus || !d.onus.length) {
+      resultsBox.innerHTML = '<div style="padding:12px;text-align:center;color:#ef4444;">No se encontraron ONUs disponibles</div>';
+      return;
+    }
+    var html = '';
+    d.onus.forEach(function(onu) {
+      html += '<div class="onu-result-item" data-sn="' + (onu.sn || '') + '" data-model="' + (onu.model || '') + '" data-port="' + (onu.interface || '') + '" style="padding:8px 10px;cursor:pointer;border-bottom:1px solid #f1f5f9;font-size:0.8rem;" onclick="seleccionarOnuCerrar(this)" onmouseover="this.style.background=\'#eff6ff\'" onmouseout="this.style.background=\'white\'">' +
+        '<div><b>SN:</b> ' + (onu.sn || '—') + ' <span style="color:#64748b;">(' + (onu.model || 'desconocido') + ')</span></div>' +
+        '<div style="color:#64748b;font-size:0.75rem;">Interface: ' + (onu.interface || '—') + '</div></div>';
+    });
+    if (!html) html = '<div style="padding:12px;text-align:center;color:#ef4444;">No se encontraron ONUs disponibles</div>';
+    resultsBox.innerHTML = html;
+  })
+  .catch(function(e) {
+    resultsBox.innerHTML = '<div style="padding:12px;text-align:center;color:#ef4444;">Error: ' + e.message + '</div>';
+  });
+}
+
+function seleccionarOnuCerrar(el) {
+  var sn = el.getAttribute('data-sn');
+  var model = el.getAttribute('data-model');
+  document.getElementById('cerrarNewOnuSn').value = sn;
+  document.getElementById('cerrarNewOnuModel').value = model;
+  document.getElementById('cerrarNewOnuSelected').innerHTML = 
+    '<i class="fas fa-check-circle" style="color:#16a34a;"></i> ONU seleccionada: <b>' + sn + '</b> (' + model + ')';
+  document.getElementById('cerrarNewOnuSelected').style.display = 'block';
+  // Highlight selected
+  document.querySelectorAll('#cerrarScanResults .onu-result-item').forEach(function(i) { i.style.background = 'white'; });
+  el.style.background = '#dcfce7';
 }
 
 function confirmarCerrar(e) {
   e.preventDefault();
   var id = document.getElementById('idCerrar').value;
+  var tipo = document.getElementById('idCerrarTipo').value;
   var obs = document.getElementById('cerrarObs').value.trim();
   if (!obs) { alert('Las observaciones son obligatorias'); return; }
+  
   var btn = document.querySelector('#modalCerrar .btn-primary');
   btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+  
+  var body = { observaciones: obs };
+  
+  // If traslado with ONU swap
+  if (tipo === 'traslado') {
+    var newOnuSn = document.getElementById('cerrarNewOnuSn').value;
+    var servicioId = parseInt(document.getElementById('idCerrarServicioId').value);
+    var oltId = parseInt(document.getElementById('cerrarOltSelect').value) || 0;
+    
+    body.servicio_id = servicioId;
+    body.olt_id = oltId;
+    body.new_onu_sn = newOnuSn;
+    
+    // Only send swap data if an ONU was selected
+    if (newOnuSn) {
+      var clientId = 0;
+      // Get client id from the row's data attributes stored on open
+      body.desvincular_onu_vieja = true;
+      body.vincular_onu_nueva = true;
+    }
+  }
+  
   fetch('/api/ordenes/' + id + '/completar', {
     method: 'POST', headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({ observaciones: obs })
+    body: JSON.stringify(body)
   })
   .then(function(r) { return r.json(); })
   .then(function(d) {
@@ -523,12 +679,6 @@ function confirmarCancelar(e) {
   })
   .catch(function(e) { btn.disabled = false; btn.innerHTML = 'Confirmar Cancelacion'; alert('Error: ' + e.message); });
   return false;
-}
-
-// CANCELAR ORDEN (DomISP exacto)
-function abrirCancelar(id) {
-  document.getElementById('idCancel').value = id;
-  document.getElementById('modalCancelar').style.display = 'flex';
 }
 
 // ASIGNAR ORDEN (DomISP style)
@@ -600,7 +750,6 @@ function gpsOrden(orderId, coord) {
     }, 50);
     document.body.appendChild(div);
   }
-  }
   document.getElementById('modalGpsAdd').style.display = 'flex';
 }
 
@@ -662,7 +811,7 @@ function cerrarModal(id) {
 }
 
 document.addEventListener('click', function(e) {
-  ['co','asignar'].forEach(function(p) {
+  ['cerrar','asignar'].forEach(function(p) {
     var list = document.getElementById(p+'_tec_list');
     if (list && !e.target.closest('#'+p+'_tec_search') && !e.target.closest('#'+p+'_tec_list')) list.style.display = 'none';
   });

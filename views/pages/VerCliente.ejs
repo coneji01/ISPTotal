@@ -1373,7 +1373,7 @@
         var url = '/modulo?pagina=VerCliente&id=' + clientId + '&ajax=get_invoices';
         if (serviceId) url += '&service_id=' + serviceId;
 
-        fetch(url)
+        fetch(url, {credentials: 'same-origin'})
         .then(function(r) { return r.json(); })
         .then(function(d) {
             if (d.status !== 'success') {

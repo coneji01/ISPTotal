@@ -39,7 +39,7 @@ function trimStr(str, max) {
 }
 
 const app = express();
-const PORT = 3020;
+const PORT = process.env.PORT || 3020;
 
 // Config
 app.set('view engine', 'ejs');
@@ -2461,11 +2461,13 @@ app.all('/modulo', requireAuth, (req, res) => {
           `).all(`%${search}%`, `%${search}%`);
         } else {
           rows = db.prepare(`
-            SELECT p.id, p.nombre as name, p.rnc, p.telefono,
-            (SELECT COUNT(*) FROM facturas_compra WHERE proveedor_id=p.id AND pagado < monto) as pending_count,
-            (SELECT COALESCE(SUM(monto - pagado),0) FROM facturas_compra WHERE proveedor_id=p.id AND pagado < monto) as pending_debt
-            FROM proveedores p
-            HAVING pending_count > 0
+            SELECT * FROM (
+              SELECT p.id, p.nombre as name, p.rnc, p.telefono,
+              (SELECT COUNT(*) FROM facturas_compra WHERE proveedor_id=p.id AND pagado < monto) as pending_count,
+              (SELECT COALESCE(SUM(monto - pagado),0) FROM facturas_compra WHERE proveedor_id=p.id AND pagado < monto) as pending_debt
+              FROM proveedores p
+            ) sub
+            WHERE pending_count > 0
             ORDER BY pending_debt DESC
           `).all();
         }
@@ -2507,9 +2509,9 @@ app.all('/modulo', requireAuth, (req, res) => {
 
         // Register in gastos
         db.prepare(`
-          INSERT INTO gastos (concepto, monto, metodo, referencia, notas, tipo, reference_id, usuario_id, categoria, payment_date)
-          VALUES (?,?,?,?,?,'proveedor',?,?,'Proveedores',date('now'))
-        `).run('Pago a proveedor #' + invId + ' - ' + (inv.concept || ''), amount, method, reference, notes, invId, req.session.user.id);
+          INSERT INTO gastos (concepto, monto, metodo, referencia, notas, tipo, usuario_id, categoria, payment_date)
+          VALUES (?,?,?,?,?,'proveedor',?,'Proveedores',date('now'))
+        `).run('Pago a proveedor #' + invId + ' - ' + (inv.concept || ''), amount, method, reference, notes, req.session.user.id);
 
         return res.json({ status: 'success', msg: 'Pago registrado' });
       }
@@ -2663,7 +2665,8 @@ app.all('/modulo', requireAuth, (req, res) => {
     case 'Estadisticas': {
       const ajax = req.query.ajax;
       const zonas = db.prepare('SELECT * FROM zonas ORDER BY nombre').all();
-      data.periodos = db.prepare("SELECT DISTINCT strftime('%m',created_at) as mes, strftime('%Y',created_at) as anio FROM pagos ORDER BY anio DESC, mes DESC").all();
+      data.periodos = db.prepare("SELECT DISTINCT m, a FROM (SELECT strftime('%m',created_at) as m, strftime('%Y',created_at) as a FROM pagos UNION SELECT strftime('%m',created_at), strftime('%Y',created_at) FROM gastos UNION SELECT strftime('%m',fecha_activacion), strftime('%Y',fecha_activacion) FROM servicios WHERE fecha_activacion IS NOT NULL) ORDER BY a DESC, m DESC").all();
+      data.anios = [...new Set(data.periodos.map(function(p){return p.a;}))].sort().reverse();
       data.zonas = zonas;
 
       // ===================== get_stats =====================
@@ -2705,9 +2708,15 @@ app.all('/modulo', requireAuth, (req, res) => {
           var tw = 'WHERE 1=1' + fechaWhere + zonaWhere;
           var ap = fechaParams.concat(zonaParams);
           var cobradoTotal = db.prepare('SELECT COALESCE(SUM(p.monto),0) as t FROM pagos p LEFT JOIN servicios s ON s.id=p.servicio_id LEFT JOIN clientes c ON c.id=p.cliente_id ' + tw).get(...ap);
-          var pendienteTotal = db.prepare("SELECT COALESCE(SUM(f.monto - COALESCE((SELECT SUM(pg.monto) FROM pagos pg WHERE pg.factura_id=f.id),0)),0) as t FROM facturas f JOIN servicios s ON s.id=f.servicio_id WHERE f.estado='pendiente' AND f.monto > COALESCE((SELECT SUM(pg.monto) FROM pagos pg WHERE pg.factura_id=f.id),0)" + (zona>0?' AND s.zona_id=?':'')).get(...zona>0?[zona]:[]);
+          var pendienteFechaWhere = '';
+          var pendienteFechaParams = [];
+          if (mes > 0 && anio > 0) {
+            pendienteFechaWhere = " AND strftime('%Y-%m', f.fecha_emision)=?";
+            pendienteFechaParams.push(anio+'-'+String(mes).padStart(2,'0'));
+          }
+          var pendienteTotal = db.prepare("SELECT COALESCE(SUM(f.monto - COALESCE((SELECT SUM(pg.monto) FROM pagos pg WHERE pg.factura_id=f.id),0)),0) as t FROM facturas f JOIN servicios s ON s.id=f.servicio_id WHERE f.estado='pendiente' AND f.monto > COALESCE((SELECT SUM(pg.monto) FROM pagos pg WHERE pg.factura_id=f.id),0)" + pendienteFechaWhere + (zona>0?' AND s.zona_id=?':'')).get(...pendienteFechaParams.concat(zona>0?[zona]:[]));
           var gastosTotal = db.prepare('SELECT COALESCE(SUM(monto),0) as t FROM gastos WHERE strftime(?,created_at)=?').get('%Y-%m', anio+'-'+String(mes).padStart(2,'0'));
-          var cobradoPorMetodo = db.prepare("SELECT p.metodo as metodo, COALESCE(SUM(p.monto),0) as total, COUNT(*) as cantidad FROM pagos p LEFT JOIN servicios s ON s.id=p.servicio_id LEFT JOIN clientes c ON c.id=p.cliente_id " + tw + " GROUP BY p.metodo ORDER BY total DESC").all(...ap);
+          var cobradoPorMetodo = db.prepare("SELECT UPPER(p.metodo) as metodo, COALESCE(SUM(p.monto),0) as total, COUNT(*) as cantidad FROM pagos p LEFT JOIN servicios s ON s.id=p.servicio_id LEFT JOIN clientes c ON c.id=p.cliente_id " + tw + " GROUP BY UPPER(p.metodo) ORDER BY total DESC").all(...ap);
           var cobradoPorCobrador = db.prepare('SELECT u.nombre as cobrador, COALESCE(SUM(p.monto),0) as total, COUNT(*) as cantidad FROM pagos p LEFT JOIN servicios s ON s.id=p.servicio_id LEFT JOIN clientes c ON c.id=p.cliente_id LEFT JOIN usuarios u ON u.id=p.usuario_id ' + tw + (zona>0?' AND (s.zona_id=? OR c.zona_id=?)':'') + ' GROUP BY u.nombre ORDER BY total DESC').all(...ap.concat(zona>0?[zona,zona]:[]));
           var pagosPorMes = db.prepare('SELECT strftime(?,created_at) as mes, COALESCE(SUM(monto),0) as total FROM pagos WHERE strftime(?,created_at)=? GROUP BY strftime(?,created_at) ORDER BY mes').all('%Y-%m', '%Y-%m', String(anio), '%Y-%m');
           var cobradoHoy = db.prepare("SELECT COALESCE(SUM(monto),0) as t FROM pagos WHERE date(created_at)=date('now')").get().t;
@@ -2750,7 +2759,8 @@ app.all('/modulo', requireAuth, (req, res) => {
           var sinServicio = db.prepare('SELECT COUNT(*) as c FROM clientes c WHERE (SELECT COUNT(*) FROM servicios s WHERE s.cliente_id=c.id AND s.estado!=?) = 0' + (zona>0?' AND c.zona_id=?':'')).get(...['retirado'].concat(zona>0?[zona]:[]));
           var serviciosPorPlan = db.prepare("SELECT p.nombre as plan, p.precio, COUNT(*) as total, SUM(CASE WHEN s.estado='activo' THEN 1 ELSE 0 END) as activos, SUM(CASE WHEN s.estado='suspendido' THEN 1 ELSE 0 END) as suspendidos FROM servicios s LEFT JOIN planes p ON p.id=s.plan_id LEFT JOIN clientes c ON c.id=s.cliente_id WHERE s.plan_id IS NOT NULL" + (zona>0?' AND s.zona_id=?':'') + ' GROUP BY s.plan_id ORDER BY total DESC').all(...zona>0?[zona]:[]);
           var serviciosPorZona = db.prepare("SELECT z.nombre as zona, COUNT(*) as total, SUM(CASE WHEN s.estado='activo' THEN 1 ELSE 0 END) as activos, SUM(CASE WHEN s.estado='suspendido' THEN 1 ELSE 0 END) as suspendidos FROM servicios s LEFT JOIN zonas z ON z.id=s.zona_id LEFT JOIN clientes c ON c.id=s.cliente_id WHERE s.zona_id IS NOT NULL" + (zona>0?' AND s.zona_id=?':'') + ' GROUP BY s.zona_id ORDER BY total DESC').all(...zona>0?[zona]:[]);
-          var instaladosMes = db.prepare('SELECT strftime(?,fecha_activacion) as mes, COUNT(*) as total FROM servicios WHERE fecha_activacion IS NOT NULL AND strftime(?,fecha_activacion)=? GROUP BY strftime(?,fecha_activacion) ORDER BY mes').all('%Y-%m', '%Y-%m', String(anio)+'-'+String(mes).padStart(2,'0'), '%Y-%m');
+          var instaladosMes = db.prepare("SELECT strftime('%Y-%m',fecha_activacion) as mes, COUNT(*) as total FROM servicios WHERE fecha_activacion IS NOT NULL AND strftime('%Y',fecha_activacion)=? GROUP BY strftime('%Y-%m',fecha_activacion) ORDER BY mes").all(String(anio));
+          var instaladosAnio = db.prepare('SELECT COUNT(*) as total FROM servicios WHERE fecha_activacion IS NOT NULL AND strftime(?,fecha_activacion)=?').get('%Y', String(anio));
           var retiradosMes = db.prepare('SELECT COUNT(*) as total FROM servicios WHERE fecha_suspension IS NOT NULL AND strftime(?,fecha_suspension)=?').get('%Y-%m', String(anio)+'-'+String(mes).padStart(2,'0'));
           return res.json({
             status: 'success', modo: 'clientes',
@@ -2763,7 +2773,7 @@ app.all('/modulo', requireAuth, (req, res) => {
               activos: activos.c,
               suspendidos: suspendidos.c,
               suspendidos_largos: 0,
-              instalados_anio: 0,
+              instalados_anio: instaladosAnio ? instaladosAnio.total : 0,
               instalados_mes: instaladosMes.length > 0 ? instaladosMes[0].total : 0,
               suspendidos_mes: 0,
               reactivados_mes: 0,
@@ -2813,6 +2823,26 @@ app.all('/modulo', requireAuth, (req, res) => {
           r.restante = mt-pg;
         });
         return res.json({ success:true, data:rows, total:total, page:page, pages:Math.max(1,Math.ceil(total/limit)) });
+      }
+
+      // ===================== get_monthly_comparison =====================
+      if (ajax === 'get_monthly_comparison') {
+        const anio = req.query.anio || String(new Date().getFullYear());
+        var mesesData = [];
+        for (var mi = 1; mi <= 12; mi++) {
+          var ms = String(mi).padStart(2,'0');
+          var p = db.prepare("SELECT COALESCE(SUM(monto),0) as t FROM pagos WHERE strftime('%Y-%m', created_at)=?").get(anio+'-'+ms);
+          var v = db.prepare("SELECT COALESCE(SUM(total),0) as t FROM ventas WHERE strftime('%Y-%m', created_at)=?").get(anio+'-'+ms);
+          var g = db.prepare("SELECT COALESCE(SUM(monto),0) as t FROM gastos WHERE strftime('%Y-%m', created_at)=?").get(anio+'-'+ms);
+          mesesData.push({
+            mes: ms,
+            pagos_internet: p.t,
+            otros_ingresos: v.t,
+            gastos: g.t,
+            total: (p.t + v.t) - g.t
+          });
+        }
+        return res.json({ status: 'success', data: mesesData, anio: anio });
       }
 
       // ===================== get_services_detail =====================
@@ -3000,6 +3030,47 @@ var mesesEsp = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto
       data.empleados = db.prepare('SELECT * FROM empleados WHERE activo=1').all();
       data.cajasNap = db.prepare('SELECT * FROM cajas_nap').all();
       data.ciclos = db.prepare('SELECT * FROM billing_cycles ORDER BY id').all();
+
+      // AJAX: get_invoices for VerCliente
+      const ajax_vc = req.query.ajax;
+      if (ajax_vc === 'get_invoices') {
+        const clientId = parseInt(req.query.id) || 0;
+        const serviceId = parseInt(req.query.service_id) || 0;
+        if (!clientId) return res.json({ status: 'error', msg: 'Cliente requerido' });
+        
+        let sqlWhere = 'WHERE s.cliente_id=?';
+        let params = [clientId];
+        if (serviceId > 0) {
+          sqlWhere += ' AND f.servicio_id=?';
+          params.push(serviceId);
+        }
+        
+        const invoices = db.prepare(`
+          SELECT f.id, f.servicio_id, f.periodo, f.monto, f.estado, f.fecha_emision, f.fecha_vencimiento,
+            COALESCE((SELECT SUM(pg.monto) FROM pagos pg WHERE pg.factura_id=f.id),0) as pagado,
+            p.nombre as plan_name, s.direccion as svc_address
+          FROM facturas f
+          JOIN servicios s ON s.id=f.servicio_id
+          LEFT JOIN planes p ON p.id=s.plan_id
+          ${sqlWhere}
+          ORDER BY f.id DESC
+        `).all(...params);
+        
+        invoices.forEach(function(inv) {
+          var mt = parseFloat(inv.monto) || 0;
+          var pg = parseFloat(inv.pagado) || 0;
+          if (pg >= mt) inv.status = 'paid';
+          else if (pg > 0) inv.status = 'partial';
+          else if (inv.fecha_vencimiento && new Date(inv.fecha_vencimiento) < new Date()) inv.status = 'overdue';
+          else inv.status = 'pending';
+          inv.total = mt;
+          inv.paid_amount = pg;
+          inv.due_date = inv.fecha_vencimiento;
+        });
+        
+        return res.json({ status: 'success', data: invoices });
+      }
+
       break;
     }
     case 'Monitoreo': {
@@ -6116,7 +6187,7 @@ app.post('/api/smartolt/onu-types/save', requireAuth, (req, res) => {
     let typeId = parseInt(id) || 0;
     if (typeId <= 0) {
       // Get next ID
-      const existing = db.prepare('SELECT value FROM configuracion WHERE key LIKE "onu_type_%"').all();
+      const existing = db.prepare('SELECT value FROM configuracion WHERE key LIKE \'onu_type_%\'').all();
       let maxId = 0;
       existing.forEach(function(t) {
         try { const p = JSON.parse(t.value); if (p.id > maxId) maxId = p.id; } catch(e) {}
@@ -6247,9 +6318,85 @@ app.post('/api/ordenes/:id/completar', requireAuth, (req, res) => {
   try {
     const orden = db.prepare('SELECT * FROM ordenes WHERE id=?').get(id);
     if (!orden) return res.json({ status:'error', msg:'Orden no encontrada' });
+    
+    // Handle ONU swap for traslados
+    var newOnuSn = req.body.new_onu_sn || '';
+    var oltId = parseInt(req.body.olt_id) || 0;
+    var servicioId = parseInt(req.body.servicio_id) || 0;
+    
+    if (orden.tipo === 'traslado' && newOnuSn) {
+      // 1. Desvincular ONU vieja del servicio
+      if (servicioId) {
+        var oldOnu = db.prepare('SELECT id, sn, olt_id FROM onu WHERE servicio_id=?').get(servicioId);
+        if (oldOnu) {
+          db.prepare('UPDATE onu SET servicio_id=NULL, cliente_id=NULL WHERE id=?').run(oldOnu.id);
+        }
+      }
+      
+      // 2. Vincular ONU nueva al servicio
+      var newOnu = db.prepare('SELECT id FROM onu WHERE sn=?').get(newOnuSn);
+      if (newOnu) {
+        db.prepare('UPDATE onu SET servicio_id=?, cliente_id=? WHERE id=?').run(servicioId, orden.cliente_id, newOnu.id);
+      } else {
+        // Create new ONU record if SN not in system
+        var onuData = db.prepare('SELECT model FROM cambio_onu_swaps WHERE new_sn=? ORDER BY id DESC LIMIT 1').get(newOnuSn);
+        var modelName = req.body.new_onu_model || (onuData ? onuData.model : '');
+        db.prepare('INSERT INTO onu (sn, nombre, cliente_id, olt_id, servicio_id, estado) VALUES (?,?,?,?,?,\'activo\')').run(newOnuSn, modelName || 'ONU ' + newOnuSn, orden.cliente_id, oltId || null, servicioId);
+      }
+      
+      // 3. Registrar en cambio_onu_swaps
+      var oldSn = '';
+      if (oldOnu && oldOnu.sn) oldSn = oldOnu.sn;
+      try {
+        db.prepare(`INSERT INTO cambio_onu_swaps (cliente_id, servicio_id, old_sn, new_sn, old_olt_id, new_olt_id, change_reason, created_by, estado, completed_at) VALUES (?,?,?,?,?,?,?,'completado','completado',datetime('now'))`).run(
+          orden.cliente_id, servicioId, oldSn, newOnuSn, 
+          (oldOnu ? oldOnu.olt_id : null), oltId || null,
+          'Traslado - Orden #' + id, usuarioId
+        );
+      } catch(e) {}
+      
+            // 4. Autorizar ONU via API interna (mismo flujo que detalle de cliente)
+      try {
+        var http = require('http');
+        var authBody = JSON.stringify({
+          olt_id: oltId,
+          serial: newOnuSn,
+          model: req.body.new_onu_model || '',
+          servicio_id: servicioId,
+          cliente_nombre: orden.cliente_id ? (db.prepare('SELECT nombre FROM clientes WHERE id=?').get(orden.cliente_id) || {}).nombre || '' : '',
+          onu_mode: 'Routing'
+        });
+        var internalReq = http.request({
+          hostname: 'localhost', port: 3020, path: '/api/smartolt/onu/authorize',
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Content-Length': Buffer.byteLength(authBody),
+            'Cookie': req.headers.cookie || ''
+          }
+        }, function(internalRes) {
+          var d = '';
+          internalRes.on('data', function(c) { d += c; });
+          internalRes.on('end', function() {
+            require('fs').appendFileSync('/tmp/isptotal.log', new Date().toISOString() + ' [TRASLADO-AUTH] Result: ' + d.substring(0,200) + '\n');
+          });
+        });
+        internalReq.on('error', function(e) {
+          require('fs').appendFileSync('/tmp/isptotal.log', new Date().toISOString() + ' [TRASLADO-AUTH] Error: ' + e.message + '\n');
+        });
+        internalReq.write(authBody);
+        internalReq.end();
+      } catch(eAuth) {
+        require('fs').appendFileSync('/tmp/isptotal.log', new Date().toISOString() + ' [TRASLADO-AUTH] Init error: ' + eAuth.message + '\n');
+      }
+    
+    }
+    
+    // Complete the order
     db.prepare("UPDATE ordenes SET estado='completada', tecnico_id=?, direccion=?, detalle=?, fecha_completada=datetime('now'), completada_por=? WHERE id=?")
       .run(req.body.tecnico_id || orden.tecnico_id, req.body.direccion || orden.direccion || '', (orden.detalle || '') + (req.body.observaciones ? ' | Res: ' + req.body.observaciones : ''), usuarioId, id);
-    res.json({ status:'success', msg:'Orden completada' });
+    
+    res.json({ status:'success', msg:'Orden completada' + (newOnuSn ? ' con cambio de ONU' : '') });
   } catch(e) { res.json({ status:'error', msg:e.message }); }
 });
 
@@ -6692,8 +6839,9 @@ app.post('/api/smartolt/onu/authorize', requireAuth, async (req, res) => {
       });
       const searchData = await searchResp.json();
       let existingOnuId = null;
-      if (searchData.response && Array.isArray(searchData.response) && searchData.response.length > 0) {
-        existingOnuId = searchData.response[0].id || searchData.response[0].onu_id || searchData.response[0].external_id || null;
+      var existingOnuList = searchData.onus || searchData.response || [];
+      if (Array.isArray(existingOnuList) && existingOnuList.length > 0) {
+        existingOnuId = existingOnuList[0].id || existingOnuList[0].onu_id || existingOnuList[0].external_id || existingOnuList[0].unique_external_id || null;
       }
       if (existingOnuId) {
         await fetch(apiUrl + '/onu/delete/' + existingOnuId, {

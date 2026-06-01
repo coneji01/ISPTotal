@@ -90,7 +90,8 @@
             <label class="st-mode-opt active" id="stFilterModePeriodo" onclick="stSetFilterMode('periodo')"><input type="radio" name="stFilterMode" checked><span>Periodo</span></label>
             <label class="st-mode-opt" id="stFilterModeRango" onclick="stSetFilterMode('rango')"><input type="radio" name="stFilterMode"><span>Rango</span></label>
         </div>
-        <div id="stFilterPeriodo">
+        <div id="stFilterPeriodo" style="display:flex;gap:6px;align-items:center;">
+            <select class="st-select" id="stAnio" onchange="stRebuildPeriodos()"></select>
             <select class="st-select" id="stPeriodo" onchange="stLoad()"></select>
         </div>
         <div id="stFilterRango" style="display:none;gap:6px;align-items:center;">
@@ -152,20 +153,54 @@
 var stPeriodos = <%- JSON.stringify(periodos || []) %>;
 var mesesNombres = ['','Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 
-(function(){
-    var sel = document.getElementById('stPeriodo');
-    if (!stPeriodos.length) {
-        var now = new Date();
-        sel.innerHTML = '<option value="' + (now.getMonth()+1) + '-' + now.getFullYear() + '">' + mesesNombres[now.getMonth()+1] + ' ' + now.getFullYear() + '</option>';
-        return;
-    }
+function stRebuildPeriodos(){
+    var selAnio = document.getElementById('stAnio');
+    var selPer = document.getElementById('stPeriodo');
+    var selectedYear = selAnio.value;
+    var now = new Date();
+    var currentMonth = String(now.getMonth()+1).padStart(2,'0');
+    var currentYear = String(now.getFullYear());
     var html = '';
+    var foundCurrent = false;
     for (var i = 0; i < stPeriodos.length; i++) {
         var p = stPeriodos[i];
-        var sel2 = (i === 0) ? ' selected' : '';
-        html += '<option value="' + p.mes + '-' + p.anio + '"' + sel2 + '>' + mesesNombres[parseInt(p.mes)] + ' ' + p.anio + '</option>';
+        if (p.a !== selectedYear) continue;
+        var isCurrent = (p.m === currentMonth && p.a === currentYear);
+        var sel = isCurrent ? ' selected' : '';
+        if (isCurrent) foundCurrent = true;
+        html += '<option value="' + p.m + '-' + p.a + '"' + sel + '>' + mesesNombres[parseInt(p.m)] + ' ' + p.a + '</option>';
     }
-    sel.innerHTML = html;
+    if (!foundCurrent && html) {
+        html = html.replace('>', ' selected>');
+    }
+    if (!html) {
+        html = '<option value="01-' + selectedYear + '">Enero ' + selectedYear + '</option>';
+    }
+    selPer.innerHTML = html;
+    stLoad();
+}
+
+(function(){
+    // Build year selector
+    var anios = [...new Set(stPeriodos.map(function(p){return p.a;}))].sort().reverse();
+    var selAnio = document.getElementById('stAnio');
+    var now = new Date();
+    var currentYear = String(now.getFullYear());
+    var htmlAnios = '';
+    var foundYear = false;
+    for (var i = 0; i < anios.length; i++) {
+        var isCurrent = (anios[i] === currentYear);
+        if (isCurrent) foundYear = true;
+        htmlAnios += '<option value="' + anios[i] + '"' + (isCurrent ? ' selected' : '') + '>' + anios[i] + '</option>';
+    }
+    // Add current year if not in list
+    if (!foundYear) {
+        htmlAnios = '<option value="' + currentYear + '" selected>' + currentYear + '</option>' + htmlAnios;
+    }
+    selAnio.innerHTML = htmlAnios;
+    
+    // Build period selector filtered by initial year
+    stRebuildPeriodos();
 })();
 
 var stSavedSuspMonths = 3;
@@ -489,6 +524,55 @@ function stLoad() {
         }
 
         wrapF.innerHTML = hf;
+        
+        // ===== COMPARATIVA MENSUAL =====
+        var cmpAnios = [...new Set(stPeriodos.map(function(p){return p.a;}))].sort().reverse();
+        if (!cmpAnios.length) cmpAnios = [new Date().getFullYear()+''];
+        var cmpAnioOpts = '';
+        for (var ci = 0; ci < cmpAnios.length; ci++) {
+            cmpAnioOpts += '<option value="' + cmpAnios[ci] + '">' + cmpAnios[ci] + '</option>';
+        }
+        hf = '<div class="cmp-section" style="margin-top:24px;">';
+        hf += '<div class="cmp-header"><i class="fas fa-chart-simple" style="font-size:0.95rem;"></i> Comparativa Mensual';
+        hf += '<div class="cmp-tools">';
+        hf += '<select class="cmp-anio" id="cmpAnio" onchange="stLoadComparativa()">'+cmpAnioOpts+'</select>';
+        hf += '<button class="cmp-btn" onclick="stLoadComparativa()" title="Recargar"><i class="fas fa-rotate"></i></button>';
+        hf += '</div></div>';
+        hf += '<div id="stComparativaWrap" class="cmp-wrap"><div class="cmp-loading"><i class="fas fa-spinner fa-spin"></i> Cargando...</div></div>';
+        hf += '<style>';
+        hf += '.cmp-section{background:#fff;border-radius:14px;border:1px solid #e2e8f0;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.04)}';
+        hf += '.cmp-header{display:flex;align-items:center;gap:8px;padding:14px 18px;border-bottom:1px solid #e2e8f0;background:linear-gradient(135deg,#f8fafc,#f1f5f9);font-weight:700;font-size:0.92rem;color:#1e293b}';
+        hf += '.cmp-tools{margin-left:auto;display:flex;gap:6px;align-items:center}';
+        hf += '.cmp-anio{padding:5px 10px;border:1px solid #d1d5db;border-radius:7px;font-size:0.8rem;font-weight:600;color:#374151;background:#fff;cursor:pointer;outline:none}';
+        hf += '.cmp-anio:focus{border-color:#6366f1;box-shadow:0 0 0 3px rgba(99,102,241,.12)}';
+        hf += '.cmp-btn{padding:5px 11px;border:none;border-radius:7px;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-size:0.72rem;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:5px;transition:all .15s;box-shadow:0 2px 6px rgba(99,102,241,.25)}';
+        hf += '.cmp-btn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(99,102,241,.35)}';
+        hf += '.cmp-btn:active{transform:translateY(0)}';
+        hf += '.cmp-wrap{padding:4px 4px 0}';
+        hf += '.cmp-loading{padding:24px;text-align:center;color:#94a3b8;font-size:0.85rem}';
+        hf += '.cmp-table{width:100%;border-collapse:collapse;font-size:0.82rem}';
+        hf += '.cmp-table thead th{padding:10px 14px;text-align:right;font-weight:700;font-size:0.72rem;text-transform:uppercase;letter-spacing:.4px;color:#64748b;background:#f8fafc;border-bottom:2px solid #e2e8f0}';
+        hf += '.cmp-table thead th:first-child{text-align:left}';
+        hf += '.cmp-table tbody td{padding:9px 14px;border-bottom:1px solid #f1f5f9;color:#334155;text-align:right;font-size:0.82rem;font-weight:700}';
+        hf += '.cmp-table tbody td:first-child{text-align:left;font-weight:700;color:#1e293b}';
+        hf += '.cmp-table tbody tr:hover{background:#f1f5f9}';
+        hf += '.cmp-table tbody tr:last-child td{border-bottom:none}';
+        hf += '.cmp-table .cmp-total td{padding:10px 14px;border-top:2px solid #6366f1;background:#eef2ff!important;font-weight:700;font-size:0.85rem;color:#4338ca}';
+        hf += '.cmp-table .cmp-total td:first-child{font-size:0.82rem}';
+        hf += '.cmp-col-ingresos{color:#16a34a!important}';
+        hf += '.cmp-col-gastos{color:#dc2626!important}';
+        hf += '.cmp-col-total{color:#2563eb!important}';
+        hf += '.cmp-total .cmp-col-ingresos{color:#16a34a!important}';
+        hf += '.cmp-total .cmp-col-gastos{color:#dc2626!important}';
+        hf += '.cmp-total .cmp-col-total{color:#2563eb!important}';
+        hf += '.cmp-pos{color:#16a34a!important;font-weight:700!important}';
+        hf += '.cmp-neg{color:#dc2626!important;font-weight:700!important}';
+        hf += '.cmp-zero{color:#94a3b8!important}';
+        hf += '.cmp-sub{font-size:0.65rem;color:#94a3b8;font-weight:400;display:block;margin-top:-1px}';
+        hf += '</style>';
+        hf += '</div>';
+        wrapF.innerHTML += hf;
+        stLoadComparativa();
 
         // ===== TAB CLIENTES =====
         var hc = '';
@@ -509,7 +593,7 @@ function stLoad() {
 
         // Grafico 12 meses
         if (c.por_mes && c.por_mes.length) {
-            hc += '<div class="st-section"><div class="st-section-title"><i class="fas fa-chart-bar"></i> Instalaciones (12 meses)</div>';
+            hc += '<div class="st-section"><div class="st-section-title"><i class="fas fa-chart-bar"></i> Instalaciones ' + anio + '</div>';
             var maxM = Math.max.apply(null, c.por_mes.map(function(x){return parseInt(x.total)})) || 1;
             hc += '<div class="st-chart">';
             for (var i = 0; i < c.por_mes.length; i++) {
@@ -527,7 +611,7 @@ function stLoad() {
 
         // Nuevos por zona + Top planes
         hc += '<div class="st-row">';
-        hc += '<div class="st-panel"><div class="st-section-title"><i class="fas fa-map-marker-alt"></i> Nuevos por Zona</div>';
+        hc += '<div class="st-panel"><div class="st-section-title"><i class="fas fa-map-marker-alt"></i> Activos por Zona</div>';
         if (c.por_zona && c.por_zona.length) {
             var maxZ = Math.max.apply(null, c.por_zona.map(function(x){return parseInt(x.total)})) || 1;
             for (var i = 0; i < c.por_zona.length; i++) {
@@ -538,10 +622,10 @@ function stLoad() {
         } else hc += '<div style="color:#94a3b8;text-align:center;padding:20px;">Sin datos</div>';
         hc += '</div>';
         hc += '<div class="st-panel"><div class="st-section-title"><i class="fas fa-tachometer-alt"></i> Top Planes</div>';
-        if (f.planes_top && f.planes_top.length) {
-            var maxP = Math.max.apply(null, f.planes_top.map(function(x){return parseInt(x.total)})) || 1;
-            for (var i = 0; i < f.planes_top.length; i++) {
-                var p = f.planes_top[i];
+        if (c.top_planes && c.top_planes.length) {
+            var maxP = Math.max.apply(null, c.top_planes.map(function(x){return parseInt(x.total)})) || 1;
+            for (var i = 0; i < c.top_planes.length; i++) {
+                var p = c.top_planes[i];
                 var pctP = (parseInt(p.total)/maxP*100);
                 hc += '<div class="st-bar-wrap"><div class="st-bar-label"><span class="st-bar-name">' + (p.plan_nombre||'Sin plan') + '</span><span class="st-bar-val">' + p.total + '</span></div><div class="st-bar-track"><div class="st-bar-fill" style="width:'+pctP+'%;background:#0ea5e9;"></div></div></div>';
             }
@@ -556,5 +640,34 @@ function stLoad() {
     xhrC.send();
 }
 
-stLoad();
+function stLoadComparativa(){
+    var wrap = document.getElementById('stComparativaWrap');
+    var sel = document.getElementById('cmpAnio');
+    var anio = sel ? sel.value : new Date().getFullYear();
+    wrap.innerHTML = '<div class="cmp-loading"><i class="fas fa-spinner fa-spin"></i> Cargando...</div>';
+    fetch('/modulo?pagina=Estadisticas&ajax=get_monthly_comparison&anio=' + anio, {credentials: 'same-origin'})
+    .then(function(r){return r.json()})
+    .then(function(d){
+        if(d.status!=='success'||!d.data){wrap.innerHTML='<div style="padding:20px;text-align:center;color:#94a3b8;">Error al cargar</div>';return;}
+        var mesesNom = ['','Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+        var data = d.data;
+        var totP=0,totG=0,totT=0;
+        var h='<table class="cmp-table"><thead><tr><th>Mes</th><th style="text-align:right;">Pagos Internet</th><th style="text-align:right;">Gastos</th><th style="text-align:right;">Total</th></tr></thead><tbody>';
+        for(var i=0;i<data.length;i++){
+            var r=data[i];
+            var mi=parseInt(r.mes);
+            var p=parseFloat(r.pagos_internet)||0;
+            var g=parseFloat(r.gastos)||0;
+            var tt=parseFloat(r.total)||0;
+            totP+=p;totG+=g;totT+=tt;
+            var fmt = function(n){ return 'RD$' + (n||0).toLocaleString('es-DO',{minimumFractionDigits:2}); };
+            h+='<tr><td>'+mesesNom[mi]+'</td><td class="cmp-col-ingresos">'+fmt(p)+'</td><td class="cmp-col-gastos">'+fmt(g)+'</td><td class="cmp-col-total">'+(tt>0?'+':'')+fmt(tt)+'</td></tr>';
+        }
+        h+='<tr class="cmp-total"><td>Total</td><td class="cmp-col-ingresos">'+fmt(totP)+'</td><td class="cmp-col-gastos">'+fmt(totG)+'</td><td class="cmp-col-total">'+(totT>0?'+':'')+fmt(totT)+'</td></tr>';
+        h+='</tbody></table>';
+        wrap.innerHTML = h;
+    })
+    .catch(function(){wrap.innerHTML='<div style="padding:20px;text-align:center;color:#dc2626;">Error de conexi&oacute;n</div>';});
+}
+
 </script>

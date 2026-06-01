@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  isptotal-demo:
+    build: .
+    container_name: isptotal-demo
+    ports:
+      - "3021:3020"
+    environment:
+      - PORT=3020
+      - NODE_ENV=production
+    volumes:
+      - isptotal-demo-data:/app/data
+    restart: unless-stopped
+    # Para demo - no exponer a internet sin SSL/proxy
+    # Recomendación: usar Nginx Proxy Manager enfrente
+
+volumes:
+  isptotal-demo-data:
