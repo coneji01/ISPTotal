@@ -6230,20 +6230,30 @@ app.post('/api/backup/create', requireAuth, async (req, res) => {
     var backupDir = _ensureBackupDir();
     var dateStr = new Date().toISOString().slice(0, 10);
     var timestamp = Date.now();
-    var filename = 'isptotal-backup-' + dateStr.replace(/-/g, '-') + '-' + timestamp + '.zip';
+    var tenantPrefix = req.session.isTenant ? (req.session.user.username + '-') : 'admin-';
+    var filename = 'isptotal-backup-' + tenantPrefix + dateStr.replace(/-/g, '-') + '-' + timestamp + '.zip';
     var filepath = _br_path.join(backupDir, filename);
 
     var tables = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name").all();
     var output = _br_fs.createWriteStream(filepath);
     var archive = archiver('zip', { zlib: { level: 9 } });
 
+    // Determine the actual DB file path
+    var dbPath;
+    if (req.session.isTenant && req.session.db_path) {
+      dbPath = _br_path.isAbsolute(req.session.db_path)
+        ? req.session.db_path
+        : _br_path.join(__dirname, '..', 'data', req.session.db_path);
+    } else {
+      dbPath = _br_path.join(__dirname, '..', 'data', 'isptotal.db');
+    }
+
     await new Promise(function(resolve, reject) {
       output.on('close', resolve);
       archive.on('error', reject);
       archive.pipe(output);
 
-      // 1. Add current DB
-      var dbPath = _br_path.join(__dirname, '..', 'data', 'isptotal.db');
+      // 1. Add current DB - usa dbPath dinámico según tenant
       if (_br_fs.existsSync(dbPath)) archive.file(dbPath, { name: 'isptotal.db' });
 
       // 2. Add uploads folder
@@ -6316,7 +6326,14 @@ app.post('/api/backup/restore', requireAuth, async (req, res) => {
 
     var dbFile = _br_path.join(extractDir, 'isptotal.db');
     if (_br_fs.existsSync(dbFile)) {
-      var targetDb = _br_path.join(__dirname, '..', 'data', 'isptotal.db');
+      var targetDb;
+      if (req.session.isTenant && req.session.db_path) {
+        targetDb = _br_path.isAbsolute(req.session.db_path)
+          ? req.session.db_path
+          : _br_path.join(__dirname, '..', 'data', req.session.db_path);
+      } else {
+        targetDb = _br_path.join(__dirname, '..', 'data', 'isptotal.db');
+      }
       var safetyBackup = targetDb + '.before_restore';
       try {
         if (_br_fs.existsSync(targetDb)) {
