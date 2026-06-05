@@ -3790,105 +3790,22 @@ var mesesEsp = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto
           var bc = {};
           cfg.forEach(function(c){ bc[c.key.replace('backup_','')] = c.value; });
 
-          return res.json({
-            status: 'success',
-            html: '<div style="padding:10px 0;">' +
-              '<style>' +
-                '.bk-cards{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:18px}' +
-                '.bk-card{flex:1;min-width:150px;background:#f8fafc;border-radius:8px;padding:14px 16px;border:1px solid #eef2f6}' +
-                '.bk-card h4{margin:0;font-size:20px;font-weight:700;color:#1a2234}' +
-                '.bk-card p{margin:2px 0 0;font-size:12px;color:#64748b}' +
-                '.bk-section{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:18px;margin-bottom:16px}' +
-                '.bk-section h3{margin:0 0 12px;font-size:15px;font-weight:600}' +
-                '.bk-section h3 i{margin-right:6px;color:#1d8bff}' +
-                '.bk-table{width:100%;border-collapse:collapse}' +
-                '.bk-table th{background:#f8fafc;color:#475569;font-weight:600;font-size:12px;text-transform:uppercase;padding:8px;border-bottom:2px solid #e2e8f0;text-align:left}' +
-                '.bk-table td{padding:8px;font-size:13px;border-top:1px solid #f1f5f9}' +
-                '.bk-table tr:hover{background:#f8fafc}' +
-                '.bk-badge{display:inline-block;padding:2px 7px;border-radius:4px;font-size:11px;font-weight:600}' +
-                '.bk-badge-info{background:#dbeafe;color:#1e40af}' +
-                '.bk-badge-success{background:#d1fae5;color:#065f46}' +
-                '.bk-upload-zone{border:2px dashed #cbd5e1;border-radius:10px;padding:24px;text-align:center;cursor:pointer;transition:all 0.3s}' +
-                '.bk-upload-zone:hover{border-color:#1d8bff;background:#f0f7ff}' +
-                '.bk-upload-zone i{font-size:32px;color:#94a3b8;margin-bottom:8px}' +
-                '.bk-upload-zone h4{margin:0 0 4px;font-size:14px}' +
-                '.bk-upload-zone p{margin:0;font-size:12px;color:#64748b}' +
-                '.bk-btn{padding:6px 14px;border-radius:6px;border:none;font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:4px}' +
-                '.bk-btn-primary{background:#1d8bff;color:#fff}' +
-                '.bk-btn-primary:hover{background:#1674d6}' +
-                '.bk-btn-success{background:#10b981;color:#fff}' +
-                '.bk-btn-success:hover{background:#059669}' +
-                '.bk-btn-danger{background:#ef4444;color:#fff}' +
-                '.bk-btn-danger:hover{background:#dc2626}' +
-                '.bk-btn-sm{padding:4px 8px;font-size:12px}' +
-                '.bk-form-group{margin-bottom:12px}' +
-                '.bk-form-group label{display:block;font-weight:500;font-size:13px;color:#334155;margin-bottom:4px}' +
-                '.bk-form-group input,.bk-form-group select{width:100%;padding:7px 10px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px}' +
-                '.bk-form-group input:focus,.bk-form-group select:focus{border-color:#1d8bff;outline:none;box-shadow:0 0 0 2px rgba(29,139,255,0.15)}' +
-                '.bk-status{display:none;padding:10px 14px;border-radius:8px;margin-bottom:12px;font-size:13px}' +
-                '.bk-status.success{display:block;background:#d1fae5;color:#065f46;border:1px solid #a7f3d0}' +
-                '.bk-status.error{display:block;background:#fee2e2;color:#991b1b;border:1px solid #fecaca}' +
-                '.bk-status.info{display:block;background:#dbeafe;color:#1e40af;border:1px solid #bfdbfe}' +
-                '.bk-progress{display:none;margin-bottom:12px}' +
-                '.bk-progress.active{display:block}' +
-                '.bk-progress-bar{height:6px;border-radius:3px;background:#e2e8f0;overflow:hidden}' +
-                '.bk-progress-bar div{height:100%;width:0%;background:linear-gradient(90deg,#1d8bff,#06b6d4);border-radius:3px;transition:width 0.3s}' +
-                '.bk-progress-text{font-size:12px;color:#64748b;text-align:center;margin-top:4px}' +
-              '</style>' +
-              '<div id="bkStatus" class="bk-status"></div>' +
-              '<div id="bkProgress" class="bk-progress"><div class="bk-progress-bar"><div id="bkProgressBar"></div></div><div class="bk-progress-text" id="bkProgressText">Procesando...</div></div>' +
-              '<div class="bk-cards">' +
-                '<div class="bk-card"><h4>' + backups.length + '</h4><p>Backups disponibles</p></div>' +
-                '<div class="bk-card"><h4>' + (bc.frequency || 'Manual') + '</h4><p>Frecuencia</p></div>' +
-                '<div class="bk-card"><h4>' + ((bc.email||'').replace(/(.{3}).*@/,"$1***@") || 'No config') + '</h4><p>Correo destino</p></div>' +
-                '<div class="bk-card"><h4>' + (bc.next_run || '--') + '</h4><p>Próximo backup</p></div>' +
-              '</div>' +
-              '<div class="bk-section">' +
-                '<h3><i class="fas fa-play-circle"></i> Generar Backup Ahora</h3>' +
-                '<p style="font-size:13px;color:#64748b;margin-bottom:10px;">Crea copia completa de BD + uploads + configuración.</p>' +
-                '<button class="bk-btn bk-btn-success" onclick="bkCrear()"><i class="fas fa-database"></i> Generar Backup</button>' +
-              '</div>' +
-              '<div class="bk-section">' +
-                '<h3><i class="fas fa-cog"></i> Configuración Automática</h3>' +
-                '<div class="row"><div class="col-md-4"><div class="bk-form-group"><label><i class="fas fa-envelope"></i> Correo destino</label><input type="email" id="bkEmail" value="' + (bc.email||'') + '" placeholder="tu@correo.com"></div></div>' +
-                '<div class="col-md-4"><div class="bk-form-group"><label><i class="fas fa-calendar"></i> Frecuencia</label><select id="bkFreq"><option value="semanal"' + (bc.frequency==='semanal'?' selected':'') + '>Semanal (dom 3AM)</option><option value="cada3dias"' + (bc.frequency==='cada3dias'?' selected':'') + '>Cada 3 días (3AM)</option><option value="diario"' + (bc.frequency==='diario'?' selected':'') + '>Diario (3AM)</option><option value="manual"' + (!bc.frequency||bc.frequency==='manual'?' selected':'') + '>Solo manual</option></select></div></div>' +
-                '<div class="col-md-4"><div class="bk-form-group"><label><i class="fas fa-trash"></i> Conservar</label><select id="bkKeep"><option value="5"' + (bc.keep==='5'?' selected':'') + '>Últimos 5</option><option value="10"' + (bc.keep==='10'?' selected':'') + '>Últimos 10</option><option value="20"' + (bc.keep==='20'?' selected':'') + '>Últimos 20</option><option value="0"' + (bc.keep==='0'?' selected':'') + '>Todos</option></select></div></div></div>' +
-                '<button class="bk-btn bk-btn-primary" onclick="bkGuardarConfig()"><i class="fas fa-save"></i> Guardar</button>' +
-              '</div>' +
-              '<div class="bk-section">' +
-                '<h3><i class="fas fa-history"></i> Historial</h3>' +
-                (backups.length === 0 ? '<p class="text-muted" style="font-size:13px;padding:10px 0;">No hay backups aún. Genera uno ahora.</p>' :
-                '<table class="bk-table"><thead><tr><th>Fecha</th><th>Archivo</th><th>Tamaño</th><th>Acciones</th></tr></thead><tbody>' +
-                backups.map(function(b){ return '<tr><td>' + b.date + '</td><td><i class="fas fa-file-archive"></i> ' + b.filename + '</td><td><span class="bk-badge bk-badge-info">' + b.size + '</span></td><td>' +
-                  '<a href="/api/backup/download?file=' + encodeURIComponent(b.filename) + '" class="bk-btn bk-btn-primary bk-btn-sm" title="Descargar"><i class="fas fa-download"></i></a> ' +
-                  '<button class="bk-btn bk-btn-sm" style="background:#f59e0b;color:#fff" onclick="bkRestaurar(\'' + b.filename.replace(/\'/g,"\\'") + '\')" title="Restaurar"><i class="fas fa-undo"></i></button> ' +
-                  '<button class="bk-btn bk-btn-danger bk-btn-sm" onclick="bkEliminar(\'' + b.filename.replace(/\'/g,"\\'") + '\')" title="Eliminar"><i class="fas fa-trash"></i></button>' +
-                '</td></tr>'; }).join('') +
-                '</tbody></table>') +
-              '</div>' +
-              '<div class="bk-section">' +
-                '<h3><i class="fas fa-upload"></i> Restaurar desde archivo</h3>' +
-                '<p style="font-size:13px;color:#64748b;margin-bottom:10px;">Sube un backup .zip anterior para restaurar. <strong style="color:#dc2626;">¡Sobrescribirá datos actuales!</strong></p>' +
-                '<div class="bk-upload-zone" onclick="document.getElementById(\'bkFileInput\').click()" id="bkUploadZone">' +
-                  '<i class="fas fa-cloud-upload"></i><h4>Selecciona .zip</h4><p>o arrastra aquí</p>' +
-                  '<input type="file" id="bkFileInput" accept=".zip" style="display:none" onchange="bkSubir(this)">' +
-                '</div>' +
-              '</div>' +
-              '<script>' +
-                'var bkUploadZone=document.getElementById("bkUploadZone");' +
-                'bkUploadZone.addEventListener("dragover",function(e){e.preventDefault();bkUploadZone.classList.add("active");});' +
-                'bkUploadZone.addEventListener("dragleave",function(){bkUploadZone.classList.remove("active");});' +
-                'bkUploadZone.addEventListener("drop",function(e){e.preventDefault();bkUploadZone.classList.remove("active");if(e.dataTransfer.files.length){document.getElementById("bkFileInput").files=e.dataTransfer.files;bkSubir({files:e.dataTransfer.files});}});' +
-                'function bkMsg(t,m){var el=document.getElementById("bkStatus");el.className="bk-status "+t;el.innerHTML=\'<i class="fas fa-\'+(t==="success"?"check-circle":t==="error"?"times-circle":"info-circle")+\'"></i> \'+m;if(t==="success")setTimeout(function(){el.style.display="none";},4000);}' +
-                'function bkProgress(p,t){var w=document.getElementById("bkProgress");w.classList.add("active");document.getElementById("bkProgressBar").style.width=p+"%";document.getElementById("bkProgressText").textContent=t||"Procesando...";if(p>=100)setTimeout(function(){w.classList.remove("active");},2000);}' +
-                'function bkCrear(){if(!confirm("Generar backup ahora?"))return;bkMsg("info","Generando backup...");bkProgress(10,"Iniciando...");fetch("/api/backup/create",{method:"POST"}).then(function(r){return r.json();}).then(function(d){if(d.success){bkProgress(100,"Completado");bkMsg("success","Backup: "+d.filename+" ("+d.size+")");setTimeout(function(){openConfig("backup");},1500);}else{bkProgress(0,"");bkMsg("error","Error: "+(d.error||""));}}).catch(function(){bkProgress(0,"");bkMsg("error","Error del servidor");});}' +
-                'function bkGuardarConfig(){var e=document.getElementById("bkEmail").value.trim();var f=document.getElementById("bkFreq").value;var k=document.getElementById("bkKeep").value;if(f!=="manual"&&!e){bkMsg("error","Correo requerido para backup automático");return;}bkProgress(30,"Guardando...");fetch("/api/backup/config",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email:e,frequency:f,keep:k})}).then(function(r){return r.json();}).then(function(d){if(d.success){bkProgress(100,"Guardado");bkMsg("success","Configuración guardada");setTimeout(function(){openConfig("backup");},1500);}else{bkProgress(0,"");bkMsg("error","Error: "+(d.error||""));}}).catch(function(){bkProgress(0,"");bkMsg("error","Error del servidor");});}' +
-                'function bkRestaurar(fn){if(!confirm("\\u26a0\\ufe0f Restaurar "+fn+"? Esto borrar\\u00e1 TODOS los datos actuales."))return;bkMsg("info","Restaurando...");bkProgress(10,"Preparando...");fetch("/api/backup/restore",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({filename:fn})}).then(function(r){return r.json();}).then(function(d){if(d.success){bkProgress(100,"Restaurado");bkMsg("success","Restaurado exitosamente");setTimeout(function(){location.href="/";},2000);}else{bkProgress(0,"");bkMsg("error","Error: "+(d.error||""));}}).catch(function(){bkProgress(0,"");bkMsg("error","Error del servidor");});}' +
-                'function bkEliminar(fn){if(!confirm("Eliminar backup "+fn+"?"))return;fetch("/api/backup/delete",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({filename:fn})}).then(function(r){return r.json();}).then(function(d){if(d.success){bkMsg("success","Eliminado");setTimeout(function(){openConfig("backup");},1000);}else{bkMsg("error","Error: "+(d.error||""));}}).catch(function(){bkMsg("error","Error del servidor");});}' +
-                'function bkSubir(inp){var f=inp.files?inp.files[0]:null;if(!f)return;if(!f.name.endsWith(".zip")){bkMsg("error","Solo .zip");return;}if(!confirm("Restaurar desde "+f.name+"? Se sobrescribir\\u00e1n los datos."))return;bkMsg("info","Subiendo...");bkProgress(10,"Subiendo...");var fd=new FormData();fd.append("backup",f);fetch("/api/backup/restore/upload",{method:"POST",body:fd}).then(function(r){return r.json();}).then(function(d){if(d.success){bkProgress(100,"Restaurado");bkMsg("success","Restaurado exitosamente");setTimeout(function(){location.href="/";},2000);}else{bkProgress(0,"");bkMsg("error","Error: "+(d.error||""));}}).catch(function(){bkProgress(0,"");bkMsg("error","Error del servidor");});}' +
-              '<\/script>' +
-            '</div>'
-          });
+          // SMTP config existente
+          var smtp_host = (db.prepare("SELECT value FROM configuracion WHERE key='smtp_host'").get() || {}).value || '';
+          var smtp_port = (db.prepare("SELECT value FROM configuracion WHERE key='smtp_port'").get() || {}).value || '587';
+          var smtp_user = (db.prepare("SELECT value FROM configuracion WHERE key='smtp_user'").get() || {}).value || '';
+          var smtp_password = (db.prepare("SELECT value FROM configuracion WHERE key='smtp_password'").get() || {}).value || '';
+
+          require('ejs').renderFile(
+            _br_path.join(__dirname, '..', 'views', 'sections', 'backup.ejs'),
+            { backups: backups, bc: bc, smtp_host: smtp_host, smtp_port: smtp_port, smtp_user: smtp_user, smtp_password: smtp_password },
+            {},
+            function(err, str) {
+              if (err) { return res.json({ status: 'error', msg: err.message }); }
+              res.json({ status: 'success', html: str });
+            }
+          );
+          return; // stop further rendering
         } catch(e) { return res.json({ status: 'error', msg: e.message }); }
       }
       break;
@@ -6290,6 +6207,36 @@ app.post('/api/backup/create', requireAuth, async (req, res) => {
     var stats = _br_fs.statSync(filepath);
     var sizeMB = (stats.size / 1024 / 1024).toFixed(2);
 
+    // Enviar por correo si está configurado
+    try {
+      var bkEmail = (db.prepare("SELECT value FROM configuracion WHERE key='backup_email'").get() || {}).value;
+      var smtpHost = (db.prepare("SELECT value FROM configuracion WHERE key='smtp_host'").get() || {}).value;
+      var smtpUser = (db.prepare("SELECT value FROM configuracion WHERE key='smtp_user'").get() || {}).value;
+      var smtpPass = (db.prepare("SELECT value FROM configuracion WHERE key='smtp_password'").get() || {}).value;
+      var smtpPort = (db.prepare("SELECT value FROM configuracion WHERE key='smtp_port'").get() || {}).value;
+
+      if (bkEmail && smtpHost && smtpUser && smtpPass) {
+        var nm = require('nodemailer');
+        var tr = nm.createTransport({
+          host: smtpHost,
+          port: parseInt(smtpPort) || 587,
+          secure: parseInt(smtpPort) === 465,
+          auth: { user: smtpUser, pass: smtpPass }
+        });
+        var userName = req.session.user ? req.session.user.nombre || req.session.user.username : 'Usuario';
+        await tr.sendMail({
+          from: '"ISP Total Backup" <' + smtpUser + '>',
+          to: bkEmail,
+          subject: 'Backup ISPTotal - ' + new Date().toLocaleDateString('es-DO'),
+          text: 'Hola ' + userName + ',\n\nSe ha generado un backup de tu sistema ISPTotal.\n\nArchivo: ' + filename + '\nTamaño: ' + sizeMB + ' MB\nFecha: ' + new Date().toLocaleString('es-DO') + '\n\nPuedes descargarlo desde el módulo de Backup en tu sistema.\n\nSaludos,\nSistema ISPTotal',
+          attachments: [{ filename: filename, path: filepath }]
+        });
+        console.log('[Backup] Email enviado a', bkEmail);
+      }
+    } catch(emailErr) {
+      console.log('[Backup] Error al enviar email (no crítico):', emailErr.message);
+    }
+
     res.json({ success: true, filename: filename, size: sizeMB + ' MB', path: filepath });
   } catch(e) {
     res.json({ success: false, error: e.message });
@@ -6409,6 +6356,58 @@ app.get('/api/backup/list', requireAuth, (req, res) => {
     });
     res.json({ success: true, backups: backups });
   } catch(e) { res.json({ success: false, error: e.message }); }
+});
+
+// POST /api/backup/smtp-config - Save SMTP config
+app.post('/api/backup/smtp-config', requireAuth, (req, res) => {
+  try {
+    const { smtp_host, smtp_port, smtp_user, smtp_password } = req.body;
+    const txn = db.transaction(function() {
+      if (smtp_host) db.prepare("INSERT OR REPLACE INTO configuracion (key, value) VALUES ('smtp_host', ?)").run(smtp_host.trim());
+      if (smtp_port) db.prepare("INSERT OR REPLACE INTO configuracion (key, value) VALUES ('smtp_port', ?)").run(String(smtp_port));
+      if (smtp_user) db.prepare("INSERT OR REPLACE INTO configuracion (key, value) VALUES ('smtp_user', ?)").run(smtp_user.trim());
+      if (smtp_password) db.prepare("INSERT OR REPLACE INTO configuracion (key, value) VALUES ('smtp_password', ?)").run(smtp_password);
+    });
+    txn();
+    res.json({ success: true, message: 'Configuración SMTP guardada' });
+  } catch(e) { res.json({ success: false, error: e.message }); }
+});
+
+// POST /api/backup/test-email - Send a test email
+app.post('/api/backup/test-email', requireAuth, async (req, res) => {
+  try {
+    var smtpHost = (db.prepare("SELECT value FROM configuracion WHERE key='smtp_host'").get() || {}).value;
+    var smtpPort = (db.prepare("SELECT value FROM configuracion WHERE key='smtp_port'").get() || {}).value;
+    var smtpUser = (db.prepare("SELECT value FROM configuracion WHERE key='smtp_user'").get() || {}).value;
+    var smtpPass = (db.prepare("SELECT value FROM configuracion WHERE key='smtp_password'").get() || {}).value;
+    var bkEmail = (db.prepare("SELECT value FROM configuracion WHERE key='backup_email'").get() || {}).value;
+
+    if (!smtpHost || !smtpUser || !smtpPass) {
+      return res.json({ success: false, error: 'Configura SMTP primero (host, usuario, contraseña)' });
+    }
+    if (!bkEmail) {
+      return res.json({ success: false, error: 'Configura un correo destino en Backup primero' });
+    }
+
+    var nm = require('nodemailer');
+    var tr = nm.createTransport({
+      host: smtpHost,
+      port: parseInt(smtpPort) || 587,
+      secure: parseInt(smtpPort) === 465,
+      auth: { user: smtpUser, pass: smtpPass }
+    });
+
+    await tr.sendMail({
+      from: '"ISP Total Backup" <' + smtpUser + '>',
+      to: bkEmail,
+      subject: 'Prueba de email - ISPTotal Backup',
+      text: '¡Hola! Este es un correo de prueba desde tu sistema ISPTotal.\n\nLa configuración SMTP funciona correctamente.\n\nSaludos,\nSistema ISPTotal'
+    });
+
+    res.json({ success: true, message: 'Correo de prueba enviado a ' + bkEmail });
+  } catch(e) {
+    res.json({ success: false, error: e.message });
+  }
 });
 
 // GET /api/smartolt/speed-profiles - List speed profiles
