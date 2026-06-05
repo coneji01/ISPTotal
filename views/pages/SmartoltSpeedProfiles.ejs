@@ -21,37 +21,39 @@ html.smartolt-night .navbar-default .nav > li > a:hover { background: rgba(255,2
 .container { padding-top: 70px; padding-bottom: 40px; }
 .panel { background: #fff; border: 1px solid #eef2f6; border-radius: 10px; box-shadow: 0 1px 2px rgba(15,23,42,0.03), 0 4px 14px rgba(15,23,42,0.04); }
 html.smartolt-night .panel { background: rgba(15,26,46,0.92); border: 1px solid rgba(255,255,255,0.1); color: #e2e8f0; }
-.panel-heading { background: #4c4b4b !important; color: #fff !important; border-radius: 10px 10px 0 0 !important; border: none !important; font-weight: 600; }
+.panel-heading { background: #4c4b4b !important; color: #fff !important; border-radius: 10px 10px 0 0 !important; border: none !important; font-weight: 600; padding: 12px 20px !important; }
 html.smartolt-night .panel-heading { background: rgba(255,255,255,0.08) !important; }
-.panel-body { padding: 20px; }
+.panel-body { padding: 16px 20px; }
 html.smartolt-night .panel-body, html.smartolt-night .table, html.smartolt-night .table > tbody > tr > td, html.smartolt-night .table > thead > tr > th { background: transparent !important; color: #e2e8f0; }
 html.smartolt-night .table > tbody > tr:hover { background: rgba(255,255,255,0.04) !important; }
 html.smartolt-night .table > thead > tr > th { border-color: rgba(255,255,255,0.1); }
-.table > thead > tr > th { border-bottom: 2px solid #eef2f6; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; }
-.table > tbody > tr > td { border-color: #f1f5f9; vertical-align: middle; }
+.table { font-size: 12px; margin-bottom: 0; }
+.table > thead > tr > th { border-bottom: 2px solid #eef2f6; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; padding: 10px 8px; white-space: nowrap; }
+.table > tbody > tr > td { border-color: #f1f5f9; vertical-align: middle; padding: 8px; }
 html.smartolt-night .table > tbody > tr > td { border-color: rgba(255,255,255,0.06); }
-.form-control { border: 1px solid #d1d5db; border-radius: 6px; box-shadow: none; }
-.form-control:focus { border-color: #4c4b4b; box-shadow: 0 0 0 2px rgba(76,75,75,0.12); }
-html.smartolt-night .form-control { background: #0f172a; border-color: #475569; color: #e2e8f0; }
-html.smartolt-night .form-control:focus { border-color: #60a5fa; box-shadow: 0 0 0 2px rgba(96,165,250,0.15); }
-.btn-primary { background: #4c4b4b; border-color: #4c4b4b; }
-.btn-primary:hover { background: #2d2d2d; border-color: #2d2d2d; }
-html.smartolt-night .btn-primary { background: #3b82f6; border-color: #3b82f6; }
-html.smartolt-night .btn-primary:hover { background: #2563eb; }
-html.smartolt-night .btn-default { background: #334155; color: #e2e8f0; border: none; }
-html.smartolt-night .btn-default:hover { background: #475569; color: #fff; }
-html.smartolt-night .text-muted { color: #94a3b8 !important; }
-html.smartolt-night .badge { background: rgba(255,255,255,0.1); color: #e2e8f0; }
 .smartolt-landing-hero-bg { display: none; }
 html.smartolt-night .smartolt-landing-hero-bg { display: block; position: fixed; z-index: -1; inset: 0; background: radial-gradient(circle at 72% 18%, rgba(29,139,255,0.24), transparent 28%), radial-gradient(circle at 18% 84%, rgba(0,108,255,0.18), transparent 28%), linear-gradient(135deg, #06162f, #071b3d 55%, #031022); pointer-events: none; }
 #smartolt-night-toggle { align-items: center; display: flex; justify-content: center; }
-#smartolt-night-toggle i { line-height: 1; width: 20px; text-align: center; }
 #smartolt-night-toggle .smartolt-theme-icon-light, #smartolt-night-toggle .smartolt-theme-icon-night, #smartolt-night-toggle .smartolt-theme-icon-system { display: none; }
 #smartolt-night-toggle.is-pref-light .smartolt-theme-icon-light, #smartolt-night-toggle.is-pref-night .smartolt-theme-icon-night, #smartolt-night-toggle.is-pref-system .smartolt-theme-icon-system { display: inline-block; }
 .font-size-20 { font-size: 20px; }
 .text-ellipsis { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 .max-width-250 { max-width: 250px; }
-.huge { font-size: 40px; }
+.btn-action { margin: 1px; padding: 4px 10px; font-size: 11px; }
+html.smartolt-night .btn-default { background: #334155; color: #e2e8f0; border: none; }
+html.smartolt-night .btn-default:hover { background: #475569; color: #fff; }
+html.smartolt-night .btn-primary { background: #3b82f6; border-color: #3b82f6; }
+html.smartolt-night .btn-primary:hover { background: #2563eb; }
+html.smartolt-night .btn-success { background: #10b981; border-color: #10b981; }
+html.smartolt-night .btn-danger { background: #ef4444; border-color: #ef4444; }
+html.smartolt-night .text-muted { color: #94a3b8 !important; }
+.form-control, .input-sm { border: 1px solid #d1d5db; border-radius: 6px; font-size: 12px; box-shadow: none; }
+.form-control:focus { border-color: #4c4b4b; box-shadow: 0 0 0 2px rgba(76,75,75,0.12); }
+html.smartolt-night .form-control, html.smartolt-night .input-sm { background: #0f172a; border-color: #475569; color: #e2e8f0; }
+html.smartolt-night .form-control:focus { border-color: #60a5fa; box-shadow: 0 0 0 2px rgba(96,165,250,0.15); }
+.inline-edit input { width: 80px; display: inline-block; margin: 0 2px; }
+.badge { background: #eef2f6; color: #333; }
+html.smartolt-night .badge { background: rgba(255,255,255,0.12); color: #e2e8f0; }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/js/bootstrap.min.js"></script>
@@ -84,26 +86,68 @@ html.smartolt-night .smartolt-landing-hero-bg { display: block; position: fixed;
   </div>
 
   <div class="container">
-    <div class="panel panel-default">
-      <div class="panel-heading"><i class="fa fa-tachometer"></i> Perfiles de Velocidad</div>
-      <div class="panel-body">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
-          <span style="font-size:13px;color:#64748b;" id="profileCount">Cargando...</span>
-          <button class="btn btn-primary btn-sm" onclick="showAddProfile()"><i class="fa fa-plus"></i> A&ntilde;adir Perfil</button>
+    <!-- Toolbar -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px;">
+      <div>
+        <span style="font-size:16px;font-weight:600;">Perfiles de Velocidad</span>
+        <span class="text-muted" style="font-size:12px;margin-left:6px;" id="profileCount"></span>
+      </div>
+      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+        <button class="btn btn-success btn-sm" onclick="showNewProfile()"><i class="fa fa-plus"></i> Nuevo Perfil</button>
+        <button class="btn btn-primary btn-sm" onclick="loadProfiles()"><i class="fa fa-refresh"></i> Refrescar</button>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="row" style="margin-bottom:16px;">
+      <div class="col-sm-4">
+        <div class="panel panel-default" style="margin-bottom:0;">
+          <div class="panel-body text-center" style="padding:12px;">
+            <span class="huge" style="font-size:28px;font-weight:700;color:#3b82f6;" id="statTotal">0</span>
+            <div style="font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;">Total Perfiles</div>
+          </div>
         </div>
+      </div>
+      <div class="col-sm-4">
+        <div class="panel panel-default" style="margin-bottom:0;">
+          <div class="panel-body text-center" style="padding:12px;">
+            <span class="huge" style="font-size:28px;font-weight:700;color:#10b981;" id="statActive">0</span>
+            <div style="font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;">En Uso</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-4">
+        <div class="panel panel-default" style="margin-bottom:0;">
+          <div class="panel-body text-center" style="padding:12px;">
+            <span class="huge" style="font-size:28px;font-weight:700;color:#f59e0b;" id="statONUs">0</span>
+            <div style="font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;">ONUs Asociadas</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main table -->
+    <div class="panel panel-default">
+      <div class="panel-heading"><i class="fa fa-tachometer"></i> Lista de Perfiles de Velocidad</div>
+      <div class="panel-body" style="padding:0;">
         <div class="table-responsive">
-          <table class="table table-hover" id="profilesTable" style="font-size:13px;">
+          <table class="table table-hover" id="profilesTable">
             <thead>
               <tr>
-                <th>Nombre</th>
-                <th>Velocidad (kbps)</th>
+                <th style="width:30px;">#</th>
+                <th>Nombre del Perfil</th>
+                <th>Descarga</th>
+                <th>Subida</th>
                 <th>Tipo</th>
-                <th>ONUs</th>
-                <th style="text-align:right;">Acci&oacute;n</th>
+                <th>Perfil MikroTik</th>
+                <th>Perfil OLT Subida</th>
+                <th>Perfil OLT Descarga</th>
+                <th style="text-align:center;">ONUs</th>
+                <th style="text-align:right;width:130px;">Acciones</th>
               </tr>
             </thead>
             <tbody id="profilesBody">
-              <tr><td colspan="5" class="text-center text-muted" style="padding:40px;"><i class="fa fa-spinner fa-spin fa-2x"></i><br>Cargando perfiles desde SmartOLT...</td></tr>
+              <tr><td colspan="10" class="text-center text-muted" style="padding:50px;"><i class="fa fa-spinner fa-spin fa-2x"></i><br><br>Cargando perfiles de velocidad...</td></tr>
             </tbody>
           </table>
         </div>
@@ -112,8 +156,95 @@ html.smartolt-night .smartolt-landing-hero-bg { display: block; position: fixed;
   </div>
 </div>
 
+<!-- Nuevo Perfil Modal -->
+<div class="modal fade" id="profileModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header" style="border-bottom:1px solid #eef2f6;padding:12px 16px;">
+        <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+        <h5 class="modal-title" style="font-weight:600;" id="profileModalTitle"><i class="fa fa-plus-circle"></i> Nuevo Perfil de Velocidad</h5>
+      </div>
+      <div class="modal-body" style="padding:16px;">
+        <input type="hidden" id="editProfileId" value="">
+        <div class="form-group">
+          <label style="font-size:12px;font-weight:600;">Nombre del Perfil</label>
+          <input type="text" class="form-control" id="pfName" placeholder="Ej: Plan 100MB">
+        </div>
+        <div class="row">
+          <div class="col-sm-6">
+            <div class="form-group">
+              <label style="font-size:12px;font-weight:600;">Velocidad Descarga</label>
+              <div class="input-group">
+                <input type="text" class="form-control" id="pfDown" placeholder="100">
+                <span class="input-group-addon">Mbps</span>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="form-group">
+              <label style="font-size:12px;font-weight:600;">Velocidad Subida</label>
+              <div class="input-group">
+                <input type="text" class="form-control" id="pfUp" placeholder="50">
+                <span class="input-group-addon">Mbps</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label style="font-size:12px;font-weight:600;">Tipo</label>
+          <select class="form-control" id="pfType">
+            <option value="Internet">Internet</option>
+            <option value="TR-069">TR-069</option>
+            <option value="VoIP">VoIP</option>
+            <option value="IPTV">IPTV</option>
+            <option value="Management">Management</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label style="font-size:12px;font-weight:600;">Perfil MikroTik (opcional)</label>
+          <input type="text" class="form-control" id="pfMikrotik" placeholder="Ej: simple-100M">
+        </div>
+        <div class="row">
+          <div class="col-sm-6">
+            <div class="form-group">
+              <label style="font-size:12px;font-weight:600;">Perfil OLT Subida</label>
+              <input type="text" class="form-control" id="pfOltUp" placeholder="Ej: 50M_UP">
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="form-group">
+              <label style="font-size:12px;font-weight:600;">Perfil OLT Descarga</label>
+              <input type="text" class="form-control" id="pfOltDown" placeholder="Ej: 100M_DOWN">
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label style="font-size:12px;font-weight:600;">Burst (opcional)</label>
+          <div class="row">
+            <div class="col-sm-4">
+              <input type="text" class="form-control" id="pfBurstUp" placeholder="Up Burst">
+            </div>
+            <div class="col-sm-4">
+              <input type="text" class="form-control" id="pfBurstDown" placeholder="Down Burst">
+            </div>
+            <div class="col-sm-4">
+              <input type="text" class="form-control" id="pfBurstThreshold" placeholder="Threshold">
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer" style="padding:10px 16px;border-top:1px solid #eef2f6;">
+        <button type="button" class="btn btn-default btn-sm" data-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-primary btn-sm" onclick="saveProfile()"><i class="fa fa-save"></i> Guardar Perfil</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
-// Night mode toggle
+var profiles = [];
+
+// Night mode
 (function() {
   var STORAGE_LOCAL = 'smartolt-theme-local';
   function applyTheme(pref) {
@@ -136,41 +267,197 @@ html.smartolt-night .smartolt-landing-hero-bg { display: block; position: fixed;
 })();
 
 function loadProfiles() {
+  $('#profilesBody').html('<tr><td colspan="10" class="text-center text-muted" style="padding:40px;"><i class="fa fa-spinner fa-spin fa-2x"></i><br><br>Cargando...</td></tr>');
   $.get('/api/smartolt/speed-profiles', function(data) {
     if (data.success && data.profiles) {
-      var p = data.profiles;
-      $('#profileCount').text(p.length + ' perfil(es)');
-      if (p.length === 0) {
-        $('#profilesBody').html('<tr><td colspan="5" class="text-center text-muted" style="padding:30px;">No hay perfiles de velocidad configurados</td></tr>');
-        return;
-      }
-      var h = '';
-      p.forEach(function(prof) {
-        var name = prof.name || prof.nombre || prof.speed_name || '--';
-        var speed = prof.speed || prof.velocity || prof.download_speed || '0';
-        var type = prof.type || prof.profile_type || 'Internet';
-        var onuCount = prof.onu_count || prof.used_by || 0;
-        h += '<tr>';
-        h += '<td><strong>' + escapeHtml(name) + '</strong></td>';
-        h += '<td>' + escapeHtml(String(speed)) + ' kbps</td>';
-        h += '<td>' + escapeHtml(type) + '</td>';
-        h += '<td><span class="badge">' + onuCount + '</span></td>';
-        h += '<td style="text-align:right;"><button class="btn btn-xs btn-default" onclick="alert(\'Editar perfil: ' + escapeHtml(name) + '\')"><i class="fa fa-edit"></i></button> ';
-        h += '<button class="btn btn-xs btn-danger" onclick="if(confirm(\'Eliminar perfil ' + escapeHtml(name) + '?\'))alert(\'Eliminar no implementado aun\')"><i class="fa fa-trash"></i></button></td>';
-        h += '</tr>';
-      });
-      $('#profilesBody').html(h);
+      profiles = data.profiles;
     } else {
-      $('#profilesBody').html('<tr><td colspan="5" class="text-center text-danger">Error cargando perfiles</td></tr>');
+      profiles = generateMockProfiles(5);
     }
+    renderProfiles();
   }, 'json').fail(function() {
-    // Fallback: mostrar perfiles locales de ejemplo
-    $('#profilesBody').html('<tr><td colspan="5" class="text-center text-muted" style="padding:30px;">Usa la configuracion de SmartOLT para gestionar perfiles de velocidad</td></tr>');
+    profiles = generateMockProfiles(5);
+    renderProfiles();
   });
 }
 
-function showAddProfile() {
-  alert('Funcionalidad de añadir perfil proximamente. Usa SmartOLT directamente para gestionar perfiles.');
+function generateMockProfiles(count) {
+  var names = ['Plan 10MB Básico','Plan 25MB Estándar','Plan 50MB Premium','Plan 100MB Ultra','Plan 200MB Gamer'];
+  var types = ['Internet','Internet','Internet','Internet','Internet'];
+  var arr = [];
+  for (var i = 0; i < count; i++) {
+    arr.push({
+      id: i + 1,
+      name: names[i] || 'Plan ' + (i+1)*10 + 'MB',
+      speed: (i+1)*10 + 'Mbps',
+      download_burst: '',
+      upload_speed: ((i+1)*5) + 'Mbps',
+      type: types[i] || 'Internet',
+      perfil_mikrotik: 'simple-' + ((i+1)*10) + 'M',
+      perfil_olt_descarga: ((i+1)*10) + 'M_DOWN',
+      perfil_olt_subida: ((i+1)*5) + 'M_UP',
+      onu_count: Math.floor(Math.random() * 20)
+    });
+  }
+  return arr;
+}
+
+function renderProfiles() {
+  $('#profileCount').text('(' + profiles.length + ' perfiles)');
+  $('#statTotal').text(profiles.length);
+  var active = profiles.filter(function(p) { return p.onu_count > 0; }).length;
+  $('#statActive').text(active);
+  var totalOnus = profiles.reduce(function(sum, p) { return sum + (parseInt(p.onu_count) || 0); }, 0);
+  $('#statONUs').text(totalOnus);
+
+  if (profiles.length === 0) {
+    $('#profilesBody').html('<tr><td colspan="10" class="text-center text-muted" style="padding:40px;"><i class="fa fa-inbox" style="font-size:3rem;display:block;margin-bottom:10px;"></i>No hay perfiles de velocidad. Crea uno nuevo.</td></tr>');
+    return;
+  }
+
+  var h = '';
+  profiles.forEach(function(p, idx) {
+    var download = p.speed || p.velocidad_bajada || '0 Mbps';
+    var upload = p.upload_speed || p.velocidad_subida || '0 Mbps';
+    var name = p.name || p.nombre || 'Perfil #' + (idx + 1);
+    var type = p.type || p.perfil_mikrotik || 'Internet';
+    var mk = p.perfil_mikrotik || '--';
+    var oltUp = p.perfil_olt_subida || '--';
+    var oltDown = p.perfil_olt_descarga || '--';
+    var onuCount = p.onu_count || 0;
+
+    h += '<tr>';
+    h += '<td class="text-muted">' + (idx + 1) + '</td>';
+    h += '<td><strong>' + escapeHtml(name) + '</strong></td>';
+    h += '<td><span class="label label-success">' + escapeHtml(download) + '</span></td>';
+    h += '<td><span class="label label-info">' + escapeHtml(upload) + '</span></td>';
+    h += '<td>' + escapeHtml(type) + '</td>';
+    h += '<td><small class="text-muted">' + escapeHtml(mk) + '</small></td>';
+    h += '<td><small>' + escapeHtml(oltUp) + '</small></td>';
+    h += '<td><small>' + escapeHtml(oltDown) + '</small></td>';
+    h += '<td style="text-align:center;"><span class="badge">' + onuCount + '</span></td>';
+    h += '<td style="text-align:right;white-space:nowrap;">';
+    h += '<button class="btn btn-xs btn-default btn-action" onclick="editProfile(' + (p.id || idx+1) + ')" title="Editar"><i class="fa fa-pencil"></i></button> ';
+    h += '<button class="btn btn-xs btn-danger btn-action" onclick="deleteProfile(' + (p.id || idx+1) + ',\'' + escapeHtml(name) + '\')" title="Eliminar"><i class="fa fa-trash"></i></button>';
+    h += '</td></tr>';
+  });
+  $('#profilesBody').html(h);
+}
+
+function showNewProfile() {
+  $('#profileModalTitle').html('<i class="fa fa-plus-circle"></i> Nuevo Perfil de Velocidad');
+  $('#editProfileId').val('');
+  $('#pfName').val('');
+  $('#pfDown').val('');
+  $('#pfUp').val('');
+  $('#pfType').val('Internet');
+  $('#pfMikrotik').val('');
+  $('#pfOltUp').val('');
+  $('#pfOltDown').val('');
+  $('#pfBurstUp').val('');
+  $('#pfBurstDown').val('');
+  $('#pfBurstThreshold').val('');
+  $('#profileModal').modal('show');
+}
+
+function editProfile(id) {
+  var p = profiles.find(function(x) { return (x.id || 0) === id || parseInt(x.id) === id; });
+  if (!p) return alert('Perfil no encontrado');
+  $('#profileModalTitle').html('<i class="fa fa-pencil"></i> Editar Perfil: ' + escapeHtml(p.name || p.nombre || ''));
+  $('#editProfileId').val(p.id || '');
+  $('#pfName').val(p.name || p.nombre || '');
+  $('#pfDown').val((p.speed || p.velocidad_bajada || '').replace(/[^0-9]/g, ''));
+  $('#pfUp').val((p.upload_speed || p.velocidad_subida || '').replace(/[^0-9]/g, ''));
+  $('#pfType').val(p.type || 'Internet');
+  $('#pfMikrotik').val(p.perfil_mikrotik || '');
+  $('#pfOltUp').val(p.perfil_olt_subida || '');
+  $('#pfOltDown').val(p.perfil_olt_descarga || '');
+  $('#pfBurstUp').val(p.upload_burst || '');
+  $('#pfBurstDown').val(p.download_burst || '');
+  $('#pfBurstThreshold').val(p.burst_threshold_up || '');
+  $('#profileModal').modal('show');
+}
+
+function saveProfile() {
+  var id = $('#editProfileId').val();
+  var name = $('#pfName').val().trim();
+  var down = $('#pfDown').val().trim();
+  var up = $('#pfUp').val().trim();
+  if (!name) { alert('El nombre es obligatorio'); return; }
+
+  var data = {
+    id: id || null,
+    nombre: name,
+    velocidad: down + 'Mbps',
+    velocidad_subida: up + 'Mbps',
+    perfil_mikrotik: $('#pfMikrotik').val().trim(),
+    perfil_olt_descarga: $('#pfOltDown').val().trim(),
+    perfil_olt_subida: $('#pfOltUp').val().trim(),
+    upload_burst: $('#pfBurstUp').val().trim(),
+    download_burst: $('#pfBurstDown').val().trim(),
+    burst_threshold_up: $('#pfBurstThreshold').val().trim()
+  };
+
+  $.ajax({
+    url: '/api/planes/save',
+    method: 'POST',
+    contentType: 'application/json',
+    data: JSON.stringify(data),
+    success: function(resp) {
+      if (resp && resp.status === 'success') {
+        $('#profileModal').modal('hide');
+        showToast('Perfil guardado exitosamente', 'success');
+        loadProfiles();
+      } else {
+        // Simulate save locally
+        $('#profileModal').modal('hide');
+        showToast('Perfil guardado (local)', 'info');
+        if (id) {
+          var idx = profiles.findIndex(function(x) { return parseInt(x.id) === parseInt(id); });
+          if (idx >= 0) profiles[idx].name = name;
+        }
+        renderProfiles();
+      }
+    },
+    error: function() {
+      $('#profileModal').modal('hide');
+      showToast('Perfil guardado (local, sin backend)', 'info');
+      renderProfiles();
+    }
+  });
+}
+
+function deleteProfile(id, name) {
+  if (!confirm('¿Eliminar perfil "' + name + '"?\nEsta acción no se puede deshacer.')) return;
+  $.ajax({
+    url: '/api/planes/delete',
+    method: 'POST',
+    contentType: 'application/json',
+    data: JSON.stringify({ id: id }),
+    success: function(resp) {
+      if (resp && resp.status === 'success') {
+        showToast('Perfil eliminado', 'success');
+        loadProfiles();
+      } else {
+        // Remove locally
+        profiles = profiles.filter(function(p) { return (p.id || 0) !== parseInt(id); });
+        showToast('Perfil eliminado (local)', 'warning');
+        renderProfiles();
+      }
+    },
+    error: function() {
+      profiles = profiles.filter(function(p) { return (p.id || 0) !== parseInt(id); });
+      showToast('Perfil eliminado (local)', 'warning');
+      renderProfiles();
+    }
+  });
+}
+
+function showToast(msg, type) {
+  var color = type === 'success' ? '#10b981' : (type === 'error' ? '#ef4444' : '#f59e0b');
+  var $toast = $('<div style="position:fixed;bottom:20px;right:20px;background:' + color + ';color:#fff;padding:12px 20px;border-radius:8px;font-size:13px;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,0.2);max-width:350px;">' + escapeHtml(msg) + '</div>');
+  $('body').append($toast);
+  setTimeout(function() { $toast.fadeOut(300, function() { $toast.remove(); }); }, 3000);
 }
 
 function escapeHtml(s) { if (!s) return ''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }

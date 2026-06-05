@@ -6335,18 +6335,26 @@ app.post('/api/smartolt/onu/link', requireAuth, (req, res) => {
 // CRUD for ONU Types
 app.get('/api/smartolt/onu-types', requireAuth, (req, res) => {
   try {
-    let types = db.prepare("SELECT * FROM configuracion WHERE key LIKE 'onu_type_%' ORDER BY key").all();
+    let rows = db.prepare("SELECT * FROM configuracion WHERE key LIKE 'onu_type_%' ORDER BY key").all();
     let result = [];
-    types.forEach(function(t) {
+    rows.forEach(function(t) {
       try {
         const parsed = JSON.parse(t.value);
-        if (parsed && parsed.name) {
-          result.push({ id: parsed.id, ...parsed });
-        }
+        result.push({
+          key: t.key,
+          model: parsed.name || parsed.model || parsed.key || 'Unknown',
+          vendor: parsed.vendor || 'Other',
+          ports: parsed.ports || parsed.ethernet_ports || '4',
+          gpon_type: parsed.gpon_type || parsed.pon_type || 'HGU',
+          wifi: parsed.wifi || parsed.wifi_band || 'none',
+          wan: parsed.wan || parsed.mode || 'PPPoE',
+          vlan_default: parsed.vlan_default || '100',
+          onu_count: parsed.onu_count || 0,
+          avg_signal: parsed.avg_signal || '--'
+        });
       } catch(e) {}
     });
-    result.sort(function(a, b) { return a.id - b.id; });
-    res.json({ success: true, data: result });
+    res.json({ success: true, types: result });
   } catch (e) {
     res.json({ success: false, message: e.message });
   }
@@ -6381,6 +6389,44 @@ app.post('/api/smartolt/onu-types/save', requireAuth, (req, res) => {
       .run('onu_type_' + typeId, data);
 
     res.json({ success: true, message: 'Modelo de ONU guardado' });
+  } catch (e) {
+    res.json({ success: false, message: e.message });
+  }
+});
+
+// POST /api/smartolt/onu-type/save - Save ONU type (v2)
+app.post('/api/smartolt/onu-type/save', requireAuth, (req, res) => {
+  const { key, model, vendor, ports, gpon_type, wifi, wan, vlan_default } = req.body;
+  if (!model) return res.json({ success: false, message: 'Modelo requerido' });
+  try {
+    const typeKey = key || ('onu_type_' + Date.now());
+    const data = JSON.stringify({
+      name: model,
+      model: model,
+      vendor: vendor || 'Other',
+      ports: ports || '4',
+      gpon_type: gpon_type || 'HGU',
+      wifi: wifi || '--',
+      wan: wan || 'PPPoE',
+      vlan_default: vlan_default || '100',
+      ethernet_ports: parseInt(ports) || 4,
+      pon_type: gpon_type || 'HGU',
+      wifi_band: wifi || 'none'
+    });
+    db.prepare('INSERT OR REPLACE INTO configuracion (key, value) VALUES (?, ?)').run(typeKey, data);
+    res.json({ success: true, message: 'Modelo de ONU guardado' });
+  } catch (e) {
+    res.json({ success: false, message: e.message });
+  }
+});
+
+// POST /api/smartolt/onu-type/delete - Delete ONU type
+app.post('/api/smartolt/onu-type/delete', requireAuth, (req, res) => {
+  const { key } = req.body;
+  if (!key) return res.json({ success: false, message: 'Key requerida' });
+  try {
+    db.prepare('DELETE FROM configuracion WHERE key=?').run(key);
+    res.json({ success: true, message: 'Tipo de ONU eliminado' });
   } catch (e) {
     res.json({ success: false, message: e.message });
   }
