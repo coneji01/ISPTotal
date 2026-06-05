@@ -3770,7 +3770,129 @@ var mesesEsp = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto
 
       break;
     }
-    case 'Configuracion': break;
+    case 'Configuracion': {
+      // AJAX handler for inline config sections
+      if (req.query.ajax === 'config_section' && req.query.section === 'backup') {
+        try {
+          var _br_fs = require('fs');
+          var _br_path = require('path');
+          var backupDir = _br_path.join(__dirname, '..', 'backups');
+          var backups = [];
+          if (_br_fs.existsSync(backupDir)) {
+            var files = _br_fs.readdirSync(backupDir).filter(function(f){ return f.endsWith('.zip'); }).sort().reverse();
+            backups = files.map(function(f){
+              var stat = _br_fs.statSync(_br_path.join(backupDir, f));
+              var match = f.match(/isptotal-backup-(\d{4}-\d{2}-\d{2})/);
+              return { filename: f, size: (stat.size / 1024 / 1024).toFixed(2) + ' MB', date: match ? match[1] : f.replace('isptotal-backup-','').replace('.zip',''), created: stat.mtime, sizeBytes: stat.size };
+            });
+          }
+          var cfg = db.prepare("SELECT key, value FROM configuracion WHERE key LIKE 'backup_%'").all();
+          var bc = {};
+          cfg.forEach(function(c){ bc[c.key.replace('backup_','')] = c.value; });
+
+          return res.json({
+            status: 'success',
+            html: '<div style="padding:10px 0;">' +
+              '<style>' +
+                '.bk-cards{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:18px}' +
+                '.bk-card{flex:1;min-width:150px;background:#f8fafc;border-radius:8px;padding:14px 16px;border:1px solid #eef2f6}' +
+                '.bk-card h4{margin:0;font-size:20px;font-weight:700;color:#1a2234}' +
+                '.bk-card p{margin:2px 0 0;font-size:12px;color:#64748b}' +
+                '.bk-section{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:18px;margin-bottom:16px}' +
+                '.bk-section h3{margin:0 0 12px;font-size:15px;font-weight:600}' +
+                '.bk-section h3 i{margin-right:6px;color:#1d8bff}' +
+                '.bk-table{width:100%;border-collapse:collapse}' +
+                '.bk-table th{background:#f8fafc;color:#475569;font-weight:600;font-size:12px;text-transform:uppercase;padding:8px;border-bottom:2px solid #e2e8f0;text-align:left}' +
+                '.bk-table td{padding:8px;font-size:13px;border-top:1px solid #f1f5f9}' +
+                '.bk-table tr:hover{background:#f8fafc}' +
+                '.bk-badge{display:inline-block;padding:2px 7px;border-radius:4px;font-size:11px;font-weight:600}' +
+                '.bk-badge-info{background:#dbeafe;color:#1e40af}' +
+                '.bk-badge-success{background:#d1fae5;color:#065f46}' +
+                '.bk-upload-zone{border:2px dashed #cbd5e1;border-radius:10px;padding:24px;text-align:center;cursor:pointer;transition:all 0.3s}' +
+                '.bk-upload-zone:hover{border-color:#1d8bff;background:#f0f7ff}' +
+                '.bk-upload-zone i{font-size:32px;color:#94a3b8;margin-bottom:8px}' +
+                '.bk-upload-zone h4{margin:0 0 4px;font-size:14px}' +
+                '.bk-upload-zone p{margin:0;font-size:12px;color:#64748b}' +
+                '.bk-btn{padding:6px 14px;border-radius:6px;border:none;font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:4px}' +
+                '.bk-btn-primary{background:#1d8bff;color:#fff}' +
+                '.bk-btn-primary:hover{background:#1674d6}' +
+                '.bk-btn-success{background:#10b981;color:#fff}' +
+                '.bk-btn-success:hover{background:#059669}' +
+                '.bk-btn-danger{background:#ef4444;color:#fff}' +
+                '.bk-btn-danger:hover{background:#dc2626}' +
+                '.bk-btn-sm{padding:4px 8px;font-size:12px}' +
+                '.bk-form-group{margin-bottom:12px}' +
+                '.bk-form-group label{display:block;font-weight:500;font-size:13px;color:#334155;margin-bottom:4px}' +
+                '.bk-form-group input,.bk-form-group select{width:100%;padding:7px 10px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px}' +
+                '.bk-form-group input:focus,.bk-form-group select:focus{border-color:#1d8bff;outline:none;box-shadow:0 0 0 2px rgba(29,139,255,0.15)}' +
+                '.bk-status{display:none;padding:10px 14px;border-radius:8px;margin-bottom:12px;font-size:13px}' +
+                '.bk-status.success{display:block;background:#d1fae5;color:#065f46;border:1px solid #a7f3d0}' +
+                '.bk-status.error{display:block;background:#fee2e2;color:#991b1b;border:1px solid #fecaca}' +
+                '.bk-status.info{display:block;background:#dbeafe;color:#1e40af;border:1px solid #bfdbfe}' +
+                '.bk-progress{display:none;margin-bottom:12px}' +
+                '.bk-progress.active{display:block}' +
+                '.bk-progress-bar{height:6px;border-radius:3px;background:#e2e8f0;overflow:hidden}' +
+                '.bk-progress-bar div{height:100%;width:0%;background:linear-gradient(90deg,#1d8bff,#06b6d4);border-radius:3px;transition:width 0.3s}' +
+                '.bk-progress-text{font-size:12px;color:#64748b;text-align:center;margin-top:4px}' +
+              '</style>' +
+              '<div id="bkStatus" class="bk-status"></div>' +
+              '<div id="bkProgress" class="bk-progress"><div class="bk-progress-bar"><div id="bkProgressBar"></div></div><div class="bk-progress-text" id="bkProgressText">Procesando...</div></div>' +
+              '<div class="bk-cards">' +
+                '<div class="bk-card"><h4>' + backups.length + '</h4><p>Backups disponibles</p></div>' +
+                '<div class="bk-card"><h4>' + (bc.frequency || 'Manual') + '</h4><p>Frecuencia</p></div>' +
+                '<div class="bk-card"><h4>' + ((bc.email||'').replace(/(.{3}).*@/,"$1***@") || 'No config') + '</h4><p>Correo destino</p></div>' +
+                '<div class="bk-card"><h4>' + (bc.next_run || '--') + '</h4><p>Próximo backup</p></div>' +
+              '</div>' +
+              '<div class="bk-section">' +
+                '<h3><i class="fas fa-play-circle"></i> Generar Backup Ahora</h3>' +
+                '<p style="font-size:13px;color:#64748b;margin-bottom:10px;">Crea copia completa de BD + uploads + configuración.</p>' +
+                '<button class="bk-btn bk-btn-success" onclick="bkCrear()"><i class="fas fa-database"></i> Generar Backup</button>' +
+              '</div>' +
+              '<div class="bk-section">' +
+                '<h3><i class="fas fa-cog"></i> Configuración Automática</h3>' +
+                '<div class="row"><div class="col-md-4"><div class="bk-form-group"><label><i class="fas fa-envelope"></i> Correo destino</label><input type="email" id="bkEmail" value="' + (bc.email||'') + '" placeholder="tu@correo.com"></div></div>' +
+                '<div class="col-md-4"><div class="bk-form-group"><label><i class="fas fa-calendar"></i> Frecuencia</label><select id="bkFreq"><option value="semanal"' + (bc.frequency==='semanal'?' selected':'') + '>Semanal (dom 3AM)</option><option value="cada3dias"' + (bc.frequency==='cada3dias'?' selected':'') + '>Cada 3 días (3AM)</option><option value="diario"' + (bc.frequency==='diario'?' selected':'') + '>Diario (3AM)</option><option value="manual"' + (!bc.frequency||bc.frequency==='manual'?' selected':'') + '>Solo manual</option></select></div></div>' +
+                '<div class="col-md-4"><div class="bk-form-group"><label><i class="fas fa-trash"></i> Conservar</label><select id="bkKeep"><option value="5"' + (bc.keep==='5'?' selected':'') + '>Últimos 5</option><option value="10"' + (bc.keep==='10'?' selected':'') + '>Últimos 10</option><option value="20"' + (bc.keep==='20'?' selected':'') + '>Últimos 20</option><option value="0"' + (bc.keep==='0'?' selected':'') + '>Todos</option></select></div></div></div>' +
+                '<button class="bk-btn bk-btn-primary" onclick="bkGuardarConfig()"><i class="fas fa-save"></i> Guardar</button>' +
+              '</div>' +
+              '<div class="bk-section">' +
+                '<h3><i class="fas fa-history"></i> Historial</h3>' +
+                (backups.length === 0 ? '<p class="text-muted" style="font-size:13px;padding:10px 0;">No hay backups aún. Genera uno ahora.</p>' :
+                '<table class="bk-table"><thead><tr><th>Fecha</th><th>Archivo</th><th>Tamaño</th><th>Acciones</th></tr></thead><tbody>' +
+                backups.map(function(b){ return '<tr><td>' + b.date + '</td><td><i class="fas fa-file-archive"></i> ' + b.filename + '</td><td><span class="bk-badge bk-badge-info">' + b.size + '</span></td><td>' +
+                  '<a href="/api/backup/download?file=' + encodeURIComponent(b.filename) + '" class="bk-btn bk-btn-primary bk-btn-sm" title="Descargar"><i class="fas fa-download"></i></a> ' +
+                  '<button class="bk-btn bk-btn-sm" style="background:#f59e0b;color:#fff" onclick="bkRestaurar(\'' + b.filename.replace(/\'/g,"\\'") + '\')" title="Restaurar"><i class="fas fa-undo"></i></button> ' +
+                  '<button class="bk-btn bk-btn-danger bk-btn-sm" onclick="bkEliminar(\'' + b.filename.replace(/\'/g,"\\'") + '\')" title="Eliminar"><i class="fas fa-trash"></i></button>' +
+                '</td></tr>'; }).join('') +
+                '</tbody></table>') +
+              '</div>' +
+              '<div class="bk-section">' +
+                '<h3><i class="fas fa-upload"></i> Restaurar desde archivo</h3>' +
+                '<p style="font-size:13px;color:#64748b;margin-bottom:10px;">Sube un backup .zip anterior para restaurar. <strong style="color:#dc2626;">¡Sobrescribirá datos actuales!</strong></p>' +
+                '<div class="bk-upload-zone" onclick="document.getElementById(\'bkFileInput\').click()" id="bkUploadZone">' +
+                  '<i class="fas fa-cloud-upload"></i><h4>Selecciona .zip</h4><p>o arrastra aquí</p>' +
+                  '<input type="file" id="bkFileInput" accept=".zip" style="display:none" onchange="bkSubir(this)">' +
+                '</div>' +
+              '</div>' +
+              '<script>' +
+                'var bkUploadZone=document.getElementById("bkUploadZone");' +
+                'bkUploadZone.addEventListener("dragover",function(e){e.preventDefault();bkUploadZone.classList.add("active");});' +
+                'bkUploadZone.addEventListener("dragleave",function(){bkUploadZone.classList.remove("active");});' +
+                'bkUploadZone.addEventListener("drop",function(e){e.preventDefault();bkUploadZone.classList.remove("active");if(e.dataTransfer.files.length){document.getElementById("bkFileInput").files=e.dataTransfer.files;bkSubir({files:e.dataTransfer.files});}});' +
+                'function bkMsg(t,m){var el=document.getElementById("bkStatus");el.className="bk-status "+t;el.innerHTML=\'<i class="fas fa-\'+(t==="success"?"check-circle":t==="error"?"times-circle":"info-circle")+\'"></i> \'+m;if(t==="success")setTimeout(function(){el.style.display="none";},4000);}' +
+                'function bkProgress(p,t){var w=document.getElementById("bkProgress");w.classList.add("active");document.getElementById("bkProgressBar").style.width=p+"%";document.getElementById("bkProgressText").textContent=t||"Procesando...";if(p>=100)setTimeout(function(){w.classList.remove("active");},2000);}' +
+                'function bkCrear(){if(!confirm("Generar backup ahora?"))return;bkMsg("info","Generando backup...");bkProgress(10,"Iniciando...");fetch("/api/backup/create",{method:"POST"}).then(function(r){return r.json();}).then(function(d){if(d.success){bkProgress(100,"Completado");bkMsg("success","Backup: "+d.filename+" ("+d.size+")");setTimeout(function(){openConfig("backup");},1500);}else{bkProgress(0,"");bkMsg("error","Error: "+(d.error||""));}}).catch(function(){bkProgress(0,"");bkMsg("error","Error del servidor");});}' +
+                'function bkGuardarConfig(){var e=document.getElementById("bkEmail").value.trim();var f=document.getElementById("bkFreq").value;var k=document.getElementById("bkKeep").value;if(f!=="manual"&&!e){bkMsg("error","Correo requerido para backup automático");return;}bkProgress(30,"Guardando...");fetch("/api/backup/config",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email:e,frequency:f,keep:k})}).then(function(r){return r.json();}).then(function(d){if(d.success){bkProgress(100,"Guardado");bkMsg("success","Configuración guardada");setTimeout(function(){openConfig("backup");},1500);}else{bkProgress(0,"");bkMsg("error","Error: "+(d.error||""));}}).catch(function(){bkProgress(0,"");bkMsg("error","Error del servidor");});}' +
+                'function bkRestaurar(fn){if(!confirm("\\u26a0\\ufe0f Restaurar "+fn+"? Esto borrar\\u00e1 TODOS los datos actuales."))return;bkMsg("info","Restaurando...");bkProgress(10,"Preparando...");fetch("/api/backup/restore",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({filename:fn})}).then(function(r){return r.json();}).then(function(d){if(d.success){bkProgress(100,"Restaurado");bkMsg("success","Restaurado exitosamente");setTimeout(function(){location.href="/";},2000);}else{bkProgress(0,"");bkMsg("error","Error: "+(d.error||""));}}).catch(function(){bkProgress(0,"");bkMsg("error","Error del servidor");});}' +
+                'function bkEliminar(fn){if(!confirm("Eliminar backup "+fn+"?"))return;fetch("/api/backup/delete",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({filename:fn})}).then(function(r){return r.json();}).then(function(d){if(d.success){bkMsg("success","Eliminado");setTimeout(function(){openConfig("backup");},1000);}else{bkMsg("error","Error: "+(d.error||""));}}).catch(function(){bkMsg("error","Error del servidor");});}' +
+                'function bkSubir(inp){var f=inp.files?inp.files[0]:null;if(!f)return;if(!f.name.endsWith(".zip")){bkMsg("error","Solo .zip");return;}if(!confirm("Restaurar desde "+f.name+"? Se sobrescribir\\u00e1n los datos."))return;bkMsg("info","Subiendo...");bkProgress(10,"Subiendo...");var fd=new FormData();fd.append("backup",f);fetch("/api/backup/restore/upload",{method:"POST",body:fd}).then(function(r){return r.json();}).then(function(d){if(d.success){bkProgress(100,"Restaurado");bkMsg("success","Restaurado exitosamente");setTimeout(function(){location.href="/";},2000);}else{bkProgress(0,"");bkMsg("error","Error: "+(d.error||""));}}).catch(function(){bkProgress(0,"");bkMsg("error","Error del servidor");});}' +
+              '<\/script>' +
+            '</div>'
+          });
+        } catch(e) { return res.json({ status: 'error', msg: e.message }); }
+      }
+      break;
+    }
     case 'MiCuenta': {
       data.usuario = db.prepare('SELECT * FROM usuarios WHERE id=?').get(req.session.user.id) || {};
       break;
@@ -3829,6 +3951,33 @@ var mesesEsp = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto
       // Pasar versión actual a la vista
       const versionRow = db.prepare("SELECT value FROM configuracion WHERE key='version'").get();
       data.version = versionRow ? versionRow.value : '1.0.0';
+      break;
+    }
+    case 'BackupRestore': {
+      data.backups = [];
+      try {
+        const _br_fs = require('fs');
+        const _br_path = require('path');
+        const backupDir = _br_path.join(__dirname, '..', 'backups');
+        if (_br_fs.existsSync(backupDir)) {
+          const files = _br_fs.readdirSync(backupDir).filter(f => f.endsWith('.zip')).sort().reverse();
+          data.backups = files.map(f => {
+            const stat = _br_fs.statSync(_br_path.join(backupDir, f));
+            const match = f.match(/isptotal-backup-(\d{4}-\d{2}-\d{2})/);
+            return {
+              filename: f,
+              size: (stat.size / 1024 / 1024).toFixed(2) + ' MB',
+              date: match ? match[1] : f.replace('isptotal-backup-','').replace('.zip',''),
+              created: stat.mtime,
+              sizeBytes: stat.size
+            };
+          });
+        }
+      } catch(e) {}
+      // Get backup config
+      const cfg = db.prepare("SELECT key, value FROM configuracion WHERE key LIKE 'backup_%'").all();
+      data.backupConfig = {};
+      cfg.forEach(function(c) { data.backupConfig[c.key.replace('backup_','')] = c.value; });
       break;
     }
     case 'VerOnu': {
@@ -6018,6 +6167,232 @@ async function smartoltFetchOlt(oltObj, endpoint, method, body) {
     throw e;
   }
 }
+
+// ===== BACKUP & RESTORE API =====
+const _br_fs = require('fs');
+const _br_path = require('path');
+const archiver = require('archiver');
+const extract_zip = require('extract-zip');
+const multer = require('multer');
+const _br_upload = multer({ dest: _br_path.join(__dirname, '..', 'backups', 'upload_tmp') });
+
+function _ensureBackupDir() {
+  var dir = _br_path.join(__dirname, '..', 'backups');
+  if (!_br_fs.existsSync(dir)) _br_fs.mkdirSync(dir, { recursive: true });
+  return dir;
+}
+
+// GET /api/backup/config - Get backup config
+app.get('/api/backup/config', requireAuth, (req, res) => {
+  try {
+    const cfg = db.prepare("SELECT key, value FROM configuracion WHERE key LIKE 'backup_%'").all();
+    const config = {};
+    cfg.forEach(function(c) { config[c.key.replace('backup_','')] = c.value; });
+    res.json({ success: true, config: config });
+  } catch(e) { res.json({ success: false, error: e.message }); }
+});
+
+// POST /api/backup/config - Save backup config
+app.post('/api/backup/config', requireAuth, (req, res) => {
+  try {
+    const { email, frequency, keep } = req.body;
+    const txn = db.transaction(function() {
+      if (email) db.prepare("INSERT OR REPLACE INTO configuracion (key, value) VALUES ('backup_email', ?)").run(email.trim());
+      if (frequency) db.prepare("INSERT OR REPLACE INTO configuracion (key, value) VALUES ('backup_frequency', ?)").run(frequency);
+      if (keep) db.prepare("INSERT OR REPLACE INTO configuracion (key, value) VALUES ('backup_keep', ?)").run(String(keep));
+    });
+    txn();
+    var nextRun = '';
+    if (frequency && frequency !== 'manual') {
+      var schedule;
+      if (frequency === 'diario') schedule = '0 3 * * *';
+      else if (frequency === 'cada3dias') schedule = '0 3 */3 * *';
+      else schedule = '0 3 * * 0';
+      nextRun = frequency.charAt(0).toUpperCase() + frequency.slice(1) + ' (3:00 AM)';
+      db.prepare("INSERT OR REPLACE INTO configuracion (key, value) VALUES ('backup_next_run', ?)").run(nextRun);
+      var existing = db.prepare("SELECT id FROM cron_tasks WHERE task_name='backup_automatico'").get();
+      if (existing) {
+        db.prepare("UPDATE cron_tasks SET schedule=?, last_status='pending', last_output='Esperando ejecución' WHERE task_name='backup_automatico'").run(schedule);
+      } else {
+        db.prepare("INSERT INTO cron_tasks (task_name, schedule, enabled, last_status, last_output) VALUES ('backup_automatico', ?, 1, 'pending', 'Esperando ejecución')").run(schedule);
+      }
+    } else {
+      db.prepare("INSERT OR REPLACE INTO configuracion (key, value) VALUES ('backup_next_run', 'Solo manual')").run('');
+      db.prepare("UPDATE cron_tasks SET enabled=0 WHERE task_name='backup_automatico'").run();
+    }
+    res.json({ success: true, next_run: nextRun || 'Solo manual' });
+  } catch(e) { res.json({ success: false, error: e.message }); }
+});
+
+// POST /api/backup/create - Generate backup ZIP
+app.post('/api/backup/create', requireAuth, async (req, res) => {
+  try {
+    var backupDir = _ensureBackupDir();
+    var dateStr = new Date().toISOString().slice(0, 10);
+    var timestamp = Date.now();
+    var filename = 'isptotal-backup-' + dateStr.replace(/-/g, '-') + '-' + timestamp + '.zip';
+    var filepath = _br_path.join(backupDir, filename);
+
+    var tables = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name").all();
+    var output = _br_fs.createWriteStream(filepath);
+    var archive = archiver('zip', { zlib: { level: 9 } });
+
+    await new Promise(function(resolve, reject) {
+      output.on('close', resolve);
+      archive.on('error', reject);
+      archive.pipe(output);
+
+      // 1. Add current DB
+      var dbPath = _br_path.join(__dirname, '..', 'data', 'isptotal.db');
+      if (_br_fs.existsSync(dbPath)) archive.file(dbPath, { name: 'isptotal.db' });
+
+      // 2. Add uploads folder
+      var uploadsDir = _br_path.join(__dirname, '..', 'uploads');
+      if (_br_fs.existsSync(uploadsDir)) archive.directory(uploadsDir, 'uploads');
+
+      // 3. Add JSON export of all tables
+      var configExport = {};
+      tables.forEach(function(t) {
+        try { configExport[t.name] = db.prepare('SELECT * FROM "' + t.name + '"').all(); } catch(e) {}
+      });
+      archive.append(JSON.stringify(configExport, null, 2), { name: 'data-export.json' });
+
+      // 4. Add metadata
+      var meta = { created: new Date().toISOString(), version: '1.0.0', tables: tables.map(function(t){return t.name;}), records: {} };
+      tables.forEach(function(t) {
+        try { meta.records[t.name] = db.prepare('SELECT COUNT(*) as c FROM "' + t.name + '"').get().c; } catch(e) { meta.records[t.name] = 0; }
+      });
+      archive.append(JSON.stringify(meta, null, 2), { name: 'metadata.json' });
+      archive.finalize();
+    });
+
+    // Clean old backups
+    var keepCfg = db.prepare("SELECT value FROM configuracion WHERE key='backup_keep'").get();
+    var keepCount = keepCfg ? parseInt(keepCfg.value) : 10;
+    if (keepCount > 0) {
+      var allFiles = _br_fs.readdirSync(backupDir).filter(f => f.endsWith('.zip')).sort().reverse();
+      while (allFiles.length > keepCount) {
+        var oldFile = allFiles.pop();
+        try { _br_fs.unlinkSync(_br_path.join(backupDir, oldFile)); } catch(e) {}
+      }
+    }
+
+    var stats = _br_fs.statSync(filepath);
+    var sizeMB = (stats.size / 1024 / 1024).toFixed(2);
+
+    res.json({ success: true, filename: filename, size: sizeMB + ' MB', path: filepath });
+  } catch(e) {
+    res.json({ success: false, error: e.message });
+  }
+});
+
+// GET /api/backup/download - Download a backup file
+app.get('/api/backup/download', requireAuth, (req, res) => {
+  try {
+    var backupDir = _ensureBackupDir();
+    var file = req.query.file;
+    if (!file) return res.json({ success: false, error: 'Archivo no especificado' });
+    file = _br_path.basename(file);
+    var filepath = _br_path.join(backupDir, file);
+    if (!_br_fs.existsSync(filepath)) return res.json({ success: false, error: 'Archivo no encontrado' });
+    res.download(filepath);
+  } catch(e) { res.json({ success: false, error: e.message }); }
+});
+
+// POST /api/backup/restore - Restore from a backup
+app.post('/api/backup/restore', requireAuth, async (req, res) => {
+  try {
+    var backupDir = _ensureBackupDir();
+    var filename = req.body.filename;
+    if (!filename) return res.json({ success: false, error: 'Archivo no especificado' });
+    filename = _br_path.basename(filename);
+    var filepath = _br_path.join(backupDir, filename);
+    if (!_br_fs.existsSync(filepath)) return res.json({ success: false, error: 'Archivo no encontrado: ' + filename });
+
+    var extractDir = _br_path.join(backupDir, 'restore_' + Date.now());
+    if (!_br_fs.existsSync(extractDir)) _br_fs.mkdirSync(extractDir, { recursive: true });
+
+    await extract_zip(filepath, { dir: extractDir });
+
+    var dbFile = _br_path.join(extractDir, 'isptotal.db');
+    if (_br_fs.existsSync(dbFile)) {
+      var targetDb = _br_path.join(__dirname, '..', 'data', 'isptotal.db');
+      var safetyBackup = targetDb + '.before_restore';
+      try {
+        if (_br_fs.existsSync(targetDb)) {
+          if (_br_fs.existsSync(safetyBackup)) _br_fs.unlinkSync(safetyBackup);
+          _br_fs.copyFileSync(targetDb, safetyBackup);
+        }
+      } catch(e) {}
+      _br_fs.copyFileSync(dbFile, targetDb);
+      try { _br_fs.rmSync(extractDir, { recursive: true }); } catch(e) {}
+      res.json({ success: true, message: 'Base de datos restaurada exitosamente. Backup de seguridad creado.' });
+    } else {
+      try { _br_fs.rmSync(extractDir, { recursive: true }); } catch(e) {}
+      res.json({ success: false, error: 'No se encontró base de datos en el backup' });
+    }
+  } catch(e) { res.json({ success: false, error: e.message }); }
+});
+
+// POST /api/backup/restore/upload - Upload and restore
+app.post('/api/backup/restore/upload', requireAuth, _br_upload.single('backup'), async (req, res) => {
+  try {
+    if (!req.file) return res.json({ success: false, error: 'No se recibió archivo' });
+    var backupDir = _ensureBackupDir();
+    var destPath = _br_path.join(backupDir, 'uploaded_backup_' + Date.now() + '.zip');
+    _br_fs.renameSync(req.file.path, destPath);
+
+    var extractDir = _br_path.join(backupDir, 'restore_' + Date.now());
+    if (!_br_fs.existsSync(extractDir)) _br_fs.mkdirSync(extractDir, { recursive: true });
+    await extract_zip(destPath, { dir: extractDir });
+
+    var dbFile = _br_path.join(extractDir, 'isptotal.db');
+    if (_br_fs.existsSync(dbFile)) {
+      var targetDb = _br_path.join(__dirname, '..', 'data', 'isptotal.db');
+      var safetyBackup = targetDb + '.before_restore';
+      try {
+        if (_br_fs.existsSync(targetDb)) {
+          if (_br_fs.existsSync(safetyBackup)) _br_fs.unlinkSync(safetyBackup);
+          _br_fs.copyFileSync(targetDb, safetyBackup);
+        }
+      } catch(e) {}
+      _br_fs.copyFileSync(dbFile, targetDb);
+      try { _br_fs.rmSync(extractDir, { recursive: true }); } catch(e) {}
+      res.json({ success: true, message: 'Base de datos restaurada exitosamente' });
+    } else {
+      try { _br_fs.rmSync(extractDir, { recursive: true }); } catch(e) {}
+      _br_fs.unlinkSync(destPath);
+      res.json({ success: false, error: 'No se encontró base de datos en el archivo subido' });
+    }
+  } catch(e) { res.json({ success: false, error: e.message }); }
+});
+
+// POST /api/backup/delete - Delete a backup
+app.post('/api/backup/delete', requireAuth, (req, res) => {
+  try {
+    var backupDir = _ensureBackupDir();
+    var filename = req.body.filename;
+    if (!filename) return res.json({ success: false, error: 'Archivo no especificado' });
+    filename = _br_path.basename(filename);
+    var filepath = _br_path.join(backupDir, filename);
+    if (!_br_fs.existsSync(filepath)) return res.json({ success: false, error: 'Archivo no encontrado' });
+    _br_fs.unlinkSync(filepath);
+    res.json({ success: true });
+  } catch(e) { res.json({ success: false, error: e.message }); }
+});
+
+// GET /api/backup/list - List backups
+app.get('/api/backup/list', requireAuth, (req, res) => {
+  try {
+    var backupDir = _ensureBackupDir();
+    var files = _br_fs.readdirSync(backupDir).filter(f => f.endsWith('.zip')).sort().reverse();
+    var backups = files.map(function(f) {
+      var stat = _br_fs.statSync(_br_path.join(backupDir, f));
+      return { filename: f, size: (stat.size / 1024 / 1024).toFixed(2) + ' MB', date: f.replace('isptotal-backup-','').replace('.zip',''), created: stat.mtime, sizeBytes: stat.size };
+    });
+    res.json({ success: true, backups: backups });
+  } catch(e) { res.json({ success: false, error: e.message }); }
+});
 
 // GET /api/smartolt/speed-profiles - List speed profiles
 app.get('/api/smartolt/speed-profiles', requireAuth, async (req, res) => {
