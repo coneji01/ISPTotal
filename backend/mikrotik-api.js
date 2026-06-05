@@ -6,7 +6,7 @@ class MikroTikAPI {
   constructor(host, port = 8728, options = {}) {
     this.host = host;
     this.port = port;
-    this.timeout = options.timeout || 8000;
+    this.timeout = options.timeout || 15000;
     this.socket = null;
     this.buffer = Buffer.alloc(0);
     this._execResolve = null;
@@ -505,6 +505,43 @@ class MikroTikAPI {
     }
   }
 
+  // Add Simple Queue for bandwidth control
+  static async addSimpleQueue(host, port, username, password, params) {
+    const api = new MikroTikAPI(host, port);
+    try {
+      await api.connect();
+      await api.login(username, password);
+      
+      const words = ['/queue/simple/add'];
+      if (params.name) words.push('=name=' + params.name);
+      if (params.target) words.push('=target=' + params.target);
+      if (params.maxLimit) words.push('=max-limit=' + params.maxLimit);
+      if (params.burstLimit) words.push('=burst-limit=' + (params.burstLimit || params.maxLimit));
+      if (params.burstThreshold) words.push('=burst-threshold=' + (params.burstThreshold || '1M/1M'));
+      if (params.burstTime) words.push('=burst-time=' + (params.burstTime || '10s/10s'));
+      if (params.comment) words.push('=comment=' + params.comment);
+      if (params.disabled) words.push('=disabled=' + params.disabled);
+      if (params.parent) words.push('=parent=' + params.parent);
+      if (params.priority) words.push('=priority=' + (params.priority || '8'));
+      // queue type omitido intencionalmente (compatible ROS6/ROS7)
+      
+      const result = await api.exec(...words);
+      api.disconnect();
+      
+      for (const sentence of result) {
+        if (sentence[0] === '!trap') {
+          const msg = sentence.find(w => w.startsWith('=message='));
+          return { success: false, error: msg ? msg.split('=', 3).slice(2).join('=') : 'Error al crear cola' };
+        }
+      }
+      
+      return { success: true, message: 'Cola simple creada' };
+    } catch (err) {
+      if (api) api.disconnect();
+      return { success: false, error: err.message };
+    }
+  }
+
   // Remove PPPoE secret by name
   static async removePPPSecret(host, port, username, password, secretName) {
     if (!secretName) return { success: false, error: 'Nombre del secreto requerido' };
@@ -637,6 +674,206 @@ class MikroTikAPI {
     } catch (err) {
       if (api) api.disconnect();
       return { success: false, message: err.message };
+    }
+  }
+
+  // ============================================================
+  // IP ESTÁTICA - Full client setup on MikroTik
+  // ============================================================
+
+  // Add Static IP Client (DHCP lease + ARP + Queue + Address-List)
+  static async addStaticIPClient(host, port, username, password, params) {
+    const api = new MikroTikAPI(host, port);
+    try {
+      await api.connect();
+      await api.login(username, password);
+      
+      const errors = [];
+      const comment = params.comment || 'ISP_Total';
+      
+      // 1. Create DHCP lease (only if MAC address is provided)
+      if (params.ip && params['mac-address']) {
+        const leaseWords = ['/ip/dhcp-server/lease/add'];
+        leaseWords.push('=address=' + params.ip);
+        leaseWords.push('=mac-address=' + params['mac-address']);
+        leaseWords.push('=comment=' + comment);
+        leaseWords.push('=always-broadcast=no');
+        if (params.server) leaseWords.push('=server=' + params.server);
+        
+        const leaseResult = await api.exec(...leaseWords);
+        for (const s of leaseResult) {
+          if (s[0] === '!trap') {
+            const msg = s.find(w => w.startsWith('=message='));
+            errors.push('DHCP: ' + (msg ? msg.split('=', 3).slice(2).join('=') : 'error'));
+          }
+        }
+      }
+      
+      // 2. Add ARP entry (optional, depends on setup)
+      if (params.ip && params['mac-address']) {
+        try {
+          await api.exec('/ip/arp/add', '=address=' + params.ip, '=mac-address=' + params['mac-address'], '=interface=' + (params.interface || 'bridge'), '=comment=' + comment);
+        } catch(e) {
+          // ARP may already exist, ignore
+        }
+      }
+      
+      // 3. Add address-list entry
+      try {
+        const searchResult = await api.exec('/ip/firewall/address-list/print', '?address=' + params.ip, '?list=' + (params.list || 'clientes-estaticos'));
+        let found = false;
+        for (const s of searchResult) {
+          if (s[0] === '!re') {
+            for (const w of s) {
+              if (w === '=address=' + params.ip) { found = true; break; }
+            }
+          }
+          if (found) break;
+        }
+        if (!found) {
+          await api.exec('/ip/firewall/address-list/add', '=address=' + params.ip, '=list=' + (params.list || 'clientes-estaticos'), '=comment=' + comment);
+        }
+      } catch(e) { errors.push('AddressList: ' + e.message); }
+      
+      // 4. Create Simple Queue for bandwidth limiting
+      if (params.ip && (params.max_limit)) {
+        try {
+          const qWords = ['/queue/simple/add'];
+          qWords.push('=name=' + (params.name || 'CLI-' + params.ip));
+          qWords.push('=target=' + params.ip + '/32');
+          qWords.push('=max-limit=' + params.max_limit);
+          qWords.push('=comment=' + comment);
+          if (params.burst_limit) {
+            qWords.push('=burst-limit=' + params.burst_limit);
+            qWords.push('=burst-threshold=' + (params.burst_threshold || params.max_limit));
+            qWords.push('=burst-time=' + (params.burst_time || '10/10'));
+          }
+          if (params.priority) qWords.push('=priority=' + params.priority);
+          if (params.parent) qWords.push('=parent=' + params.parent);
+          
+          await api.exec(...qWords);
+        } catch(e) { errors.push('Queue: ' + e.message); }
+      }
+      
+      api.disconnect();
+      
+      if (errors.length > 0) {
+        return { success: true, warning: 'Configurado con errores: ' + errors.join(' | ') };
+      }
+      return { success: true, message: 'Cliente IP Estática configurado en MikroTik' };
+    } catch (err) {
+      if (api) api.disconnect();
+      return { success: false, error: err.message };
+    }
+  }
+
+  // Remove Static IP Client (clean up lease + queue + address-list)
+  static async removeStaticIPClient(host, port, username, password, ip, name) {
+    const api = new MikroTikAPI(host, port);
+    try {
+      await api.connect();
+      await api.login(username, password);
+      
+      // 1. Remove DHCP lease by IP
+      try {
+        const leaseSearch = await api.exec('/ip/dhcp-server/lease/print', '?address=' + ip);
+        for (const s of leaseSearch) {
+          if (s[0] === '!re') {
+            const idWord = s.find(w => w.startsWith('=.id='));
+            if (idWord) await api.exec('/ip/dhcp-server/lease/remove', '=.id=' + idWord.substring(5));
+          }
+        }
+      } catch(e) { /* maybe already removed */ }
+      
+      // 2. Remove ARP entry
+      try {
+        const arpSearch = await api.exec('/ip/arp/print', '?address=' + ip);
+        for (const s of arpSearch) {
+          if (s[0] === '!re') {
+            const idWord = s.find(w => w.startsWith('=.id='));
+            if (idWord) await api.exec('/ip/arp/remove', '=.id=' + idWord.substring(5));
+          }
+        }
+      } catch(e) { /* ignore */ }
+      
+      // 3. Remove from address-list
+      try {
+        const listSearch = await api.exec('/ip/firewall/address-list/print', '?address=' + ip);
+        for (const s of listSearch) {
+          if (s[0] === '!re') {
+            const idWord = s.find(w => w.startsWith('=.id='));
+            if (idWord) await api.exec('/ip/firewall/address-list/remove', '=.id=' + idWord.substring(5));
+          }
+        }
+      } catch(e) { /* ignore */ }
+      
+      // 4. Remove simple queue
+      if (name) {
+        try {
+          const qSearch = await api.exec('/queue/simple/print', '?name=' + name);
+          for (const s of qSearch) {
+            if (s[0] === '!re') {
+              const idWord = s.find(w => w.startsWith('=.id='));
+              if (idWord) await api.exec('/queue/simple/remove', '=.id=' + idWord.substring(5));
+            }
+          }
+        } catch(e) {
+          // Try to find by target IP
+          try {
+            const qSearch2 = await api.exec('/queue/simple/print', '?target=' + ip + '/32');
+            for (const s of qSearch2) {
+              if (s[0] === '!re') {
+                const idWord = s.find(w => w.startsWith('=.id='));
+                if (idWord) await api.exec('/queue/simple/remove', '=.id=' + idWord.substring(5));
+              }
+            }
+          } catch(e2) { /* ignore */ }
+        }
+      }
+      
+      api.disconnect();
+      return { success: true, message: 'Cliente IP Estática eliminado del MikroTik' };
+    } catch (err) {
+      if (api) api.disconnect();
+      return { success: false, error: err.message };
+    }
+  }
+
+  // Suspend/Enable Static IP Client (disable DHCP lease + queue)
+  static async setStaticIPClientStatus(host, port, username, password, ip, disabled) {
+    const api = new MikroTikAPI(host, port);
+    try {
+      await api.connect();
+      await api.login(username, password);
+      const val = disabled ? 'yes' : 'no';
+      
+      // Disable DHCP lease
+      try {
+        const leaseSearch = await api.exec('/ip/dhcp-server/lease/print', '?address=' + ip);
+        for (const s of leaseSearch) {
+          if (s[0] === '!re') {
+            const idWord = s.find(w => w.startsWith('=.id='));
+            if (idWord) await api.exec('/ip/dhcp-server/lease/set', '=.id=' + idWord.substring(5), '=disabled=' + val);
+          }
+        }
+      } catch(e) { /* ignore */ }
+      
+      // Disable queue
+      try {
+        const qSearch = await api.exec('/queue/simple/print', '?target=' + ip + '/32');
+        for (const s of qSearch) {
+          if (s[0] === '!re') {
+            const idWord = s.find(w => w.startsWith('=.id='));
+            if (idWord) await api.exec('/queue/simple/set', '=.id=' + idWord.substring(5), '=disabled=' + val);
+          }
+        }
+      } catch(e) { /* ignore */ }
+      
+      api.disconnect();
+      return { success: true, message: disabled ? 'Cliente suspendido' : 'Cliente activado' };
+    } catch (err) {
+      if (api) api.disconnect();
+      return { success: false, error: err.message };
     }
   }
 

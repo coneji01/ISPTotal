@@ -457,11 +457,11 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('routerSelector').value = pref.router_id;
       }
       setTimeout(cargarTraficoWAN, 500);
-      setInterval(cargarTraficoWAN, 2000);
+      setInterval(cargarTraficoWAN, 30000);
     })
     .catch(function() {
       setTimeout(cargarTraficoWAN, 500);
-      setInterval(cargarTraficoWAN, 2000);
+      setInterval(cargarTraficoWAN, 30000);
     });
 });
 

@@ -11,7 +11,7 @@
 
 <!-- Modal Crear/Editar Router -->
 <div id="modalRouter" class="modal" style="display:none">
-  <div class="modal-content" style="max-width:600px;">
+  <div class="modal-content" style="max-width:700px;">
     <div class="modal-header">
       <h3 id="modalTitle"><i class="fas fa-plus-circle" style="color:#10b981;"></i> Nuevo Router</h3>
       <span class="modal-close" onclick="cerrarModal()">&times;</span>
@@ -22,49 +22,114 @@
         <input type="hidden" name="id_router_edit" id="idRouterInput" value="">
         
         <div class="form-group">
-          <label>Nombre</label>
-          <input type="text" name="name" id="routerName" class="form-control" placeholder="Nombre del router" required>
+          <label>Nombre del Router</label>
+          <input type="text" name="name" id="routerName" class="form-control" placeholder="Ej: Router Cliente 001" required>
         </div>
-        <div class="row" style="display:flex;gap:10px;">
-          <div class="form-group" style="flex:3;">
-            <label>IP</label>
-            <input type="text" name="ip" id="routerIp" class="form-control" placeholder="IP del router" required>
-          </div>
-          <div class="form-group" style="flex:1;">
-            <label>Puerto API</label>
-            <input type="number" name="port" id="routerPort" class="form-control" value="8728">
-          </div>
-        </div>
-        <div class="row" style="display:flex;gap:10px;">
-          <div class="form-group" style="flex:1;">
-            <label>Usuario</label>
-            <input type="text" name="user" id="routerUser" class="form-control" placeholder="admin">
-          </div>
-          <div class="form-group" style="flex:1;">
-            <label>Password</label>
-            <input type="password" name="password" id="routerPass" class="form-control" placeholder="••••••••">
+
+        <!-- Selector de Tipo de Conexión -->
+        <div class="form-group">
+          <label>Tipo de Conexión</label>
+          <div style="display:flex;gap:15px;margin-top:6px;">
+            <label class="radio-card" onclick="seleccionarTipo('ip')" id="tipoIP" style="flex:1;padding:15px;border:2px solid #e2e8f0;border-radius:10px;cursor:pointer;text-align:center;transition:all .2s;background:#f0fdf4;border-color:#10b981;">
+              <input type="radio" name="connection_type" value="ip" checked style="display:none;">
+              <i class="fas fa-globe" style="font-size:1.5rem;color:#10b981;"></i>
+              <div style="font-weight:600;margin-top:6px;">IP Pública</div>
+              <div style="font-size:0.75rem;color:#64748b;">Conexión directa vía API</div>
+            </label>
+            <label class="radio-card" onclick="seleccionarTipo('vpn')" id="tipoVPN" style="flex:1;padding:15px;border:2px solid #e2e8f0;border-radius:10px;cursor:pointer;text-align:center;transition:all .2s;">
+              <input type="radio" name="connection_type" value="vpn" style="display:none;">
+              <i class="fas fa-lock" style="font-size:1.5rem;color:#6366f1;"></i>
+              <div style="font-weight:600;margin-top:6px;">VPN (SSTP)</div>
+              <div style="font-size:0.75rem;color:#64748b;">El router inicia el túnel</div>
+            </label>
           </div>
         </div>
 
-        <div class="row" style="display:flex;gap:10px;">
-          <div class="form-group" style="flex:1;">
-            <label>OS</label>
-            <select name="version" id="routerVersion" class="form-control">
-              <option value="RouterOS v7">RouterOS v7</option>
-              <option value="RouterOS v6">RouterOS v6</option>
-            </select>
+        <!-- Campos para IP Pública -->
+        <div id="camposIP">
+          <div class="row" style="display:flex;gap:10px;">
+            <div class="form-group" style="flex:3;">
+              <label>IP del Router</label>
+              <input type="text" name="ip" id="routerIp" class="form-control" placeholder="IP pública del router">
+            </div>
+            <div class="form-group" style="flex:1;">
+              <label>Puerto API</label>
+              <input type="number" name="port" id="routerPort" class="form-control" value="8728">
+            </div>
           </div>
-          <div class="form-group" style="flex:1;">
-            <label>Autenticación</label>
-            <select name="auth_type" id="routerAuth" class="form-control">
-              <option value="PPPoE">PPPoE</option>
-              <option value="IP Estática">IP Estática</option>
-              <option value="DHCP (IPoE)">DHCP (IPoE)</option>
-            </select>
+          <div class="row" style="display:flex;gap:10px;">
+            <div class="form-group" style="flex:1;">
+              <label>Usuario API</label>
+              <input type="text" name="user" id="routerUser" class="form-control" placeholder="admin">
+            </div>
+            <div class="form-group" style="flex:1;">
+              <label>Password API</label>
+              <input type="password" name="password" id="routerPass" class="form-control" placeholder="••••••••">
+            </div>
           </div>
         </div>
 
+        <!-- Campos para VPN -->
+        <div id="camposVPN" style="display:none;">
+          <div style="background:#eef2ff;border:1px solid #c7d2fe;border-radius:10px;padding:16px;margin-bottom:16px;">
+            <p style="font-size:0.85rem;color:#4338ca;margin:0 0 10px 0;">
+              <i class="fas fa-info-circle"></i> El router se conectará al servidor SSTP. 
+              Se generará un usuario y script para copiar en el router.
+            </p>
+            <div class="row" style="display:flex;gap:10px;">
+              <div class="form-group" style="flex:1;">
+                <label>Router ID (Cliente)</label>
+                <input type="text" id="vpnRouterId" class="form-control" placeholder="Ej: RTR-001" value="RTR-" style="font-family:monospace;">
+              </div>
+              <div class="form-group" style="flex:1;">
+                <label>IP Fija VPN (opcional)</label>
+                <input type="text" id="vpnFija" class="form-control" placeholder="10.50.x.x (dejar vacío = dinámica)" style="font-family:monospace;">
+              </div>
+            </div>
+            <button type="button" class="btn btn-primary" onclick="generarScriptVPN()" id="btnGenScript" style="width:100%;margin-top:10px;">
+              <i class="fas fa-file-code"></i> Generar Script
+            </button>
+          </div>
+
+          <!-- Script Preview -->
+          <div id="scriptPreview" style="display:none;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+              <label style="font-weight:600;font-size:0.9rem;">Script para el Router</label>
+              <div>
+                <button class="btn btn-sm btn-secondary" onclick="copiarScript()"><i class="fas fa-copy"></i> Copiar</button>
+                <button class="btn btn-sm btn-secondary" onclick="descargarScript()"><i class="fas fa-download"></i> Descargar</button>
+              </div>
+            </div>
+            <textarea id="scriptOutput" style="width:100%;height:350px;font-family:'Consolas','Monaco',monospace;font-size:0.78rem;background:#1e293b;color:#e2e8f0;border:none;border-radius:8px;padding:16px;resize:vertical;tab-size:2;" readonly></textarea>
+            <p style="font-size:0.8rem;color:#64748b;margin-top:6px;">
+              <i class="fas fa-info-circle"></i> Copia este script en la terminal del router MikroTik para conectarlo automáticamente.
+            </p>
+          </div>
+        </div>
+
+        <!-- Campos comunes -->
         <div style="border-top:1px solid #e2e8f0;padding-top:16px;margin-top:16px;">
+          <div class="row" style="display:flex;gap:10px;">
+            <div class="form-group" style="flex:1;">
+              <label>OS</label>
+              <select name="version" id="routerVersion" class="form-control">
+                <option value="RouterOS v7">RouterOS v7</option>
+                <option value="RouterOS v6">RouterOS v6</option>
+              </select>
+            </div>
+            <div class="form-group" style="flex:1;">
+              <label>Autenticación</label>
+              <select name="auth_type" id="routerAuth" class="form-control">
+                <option value="PPPoE">PPPoE</option>
+                <option value="IP Estática">IP Estática</option>
+                <option value="DHCP (IPoE)">DHCP (IPoE)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- WAN Interface (solo IP) -->
+        <div id="wanSection">
           <div style="display:flex;gap:10px;align-items:end;">
             <div class="form-group" style="flex:1;margin-bottom:0;">
               <label>Interfaz a monitorear (WAN)</label>
@@ -97,9 +162,6 @@
             <input type="checkbox" name="suspend_ips" id="suspendIps" value="1">
             <label for="suspendIps" style="margin:0;">¿Suspender ip's en este router?</label>
           </div>
-          <p style="font-size:0.8rem;color:var(--text-gray); margin-bottom:16px;">
-            <i class="fas fa-info-circle"></i> Al guardar se aplicará a todos los profiles PPPoE de este router
-          </p>
         </div>
 
         <div class="btn-group" style="justify-content:flex-end;margin-top:16px;">
@@ -185,8 +247,112 @@
 <script>
 let routerActualId = 0;
 let resyncId = null;
+let scriptGenerado = '';
+
+function seleccionarTipo(tipo) {
+  document.getElementById('tipoIP').style.background = tipo === 'ip' ? '#f0fdf4' : '#fff';
+  document.getElementById('tipoIP').style.borderColor = tipo === 'ip' ? '#10b981' : '#e2e8f0';
+  document.getElementById('tipoVPN').style.background = tipo === 'vpn' ? '#eef2ff' : '#fff';
+  document.getElementById('tipoVPN').style.borderColor = tipo === 'vpn' ? '#6366f1' : '#e2e8f0';
+  
+  document.getElementById('camposIP').style.display = tipo === 'ip' ? 'block' : 'none';
+  document.getElementById('camposVPN').style.display = tipo === 'vpn' ? 'block' : 'none';
+  document.getElementById('wanSection').style.display = tipo === 'ip' ? 'block' : 'none';
+  
+  // Ocultar boton Probar Conexion para VPN
+  var btnTest = document.getElementById('btnTestRouter');
+  if (btnTest) btnTest.style.display = tipo === 'ip' ? 'inline-block' : 'none';
+  
+  if (tipo === 'ip') {
+    document.getElementById('routerIp').required = true;
+  } else {
+    document.getElementById('routerIp').required = false;
+  }
+}
+
+function generarScriptVPN() {
+  var name = document.getElementById('routerName').value.trim();
+  var routerId = document.getElementById('vpnRouterId').value.trim();
+  var ipFija = document.getElementById('vpnFija').value.trim();
+  
+  if (!name) { showToast('Primero ingrese el nombre del router', 'error'); return; }
+  if (!routerId) { showToast('Ingrese un ID para el router', 'error'); return; }
+  
+  var btn = document.getElementById('btnGenScript');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generando...';
+  
+  fetch('/api/routers/generate-vpn-script', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name: name, router_id: routerId, ip_fija: ipFija })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(res) {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-file-code"></i> Generar Script';
+    
+    if (res.success) {
+      document.getElementById('scriptPreview').style.display = 'block';
+      document.getElementById('scriptOutput').value = res.script;
+      scriptGenerado = res.script;
+      
+      // Auto-llenar campos ocultos
+      document.getElementById('routerIp').value = res.vpn_ip || '';
+      document.getElementById('routerUser').value = res.vpn_user || '';
+      document.getElementById('routerPass').value = res.vpn_password || '';
+      document.getElementById('vpnRouterId').value = res.vpn_user || '';
+      document.getElementById('vpnFija').value = res.vpn_ip || '';
+      
+      // Seleccionar modo VPN
+      document.querySelector('input[name="connection_type"][value="vpn"]').checked = true;
+      seleccionarTipo('vpn');
+      
+      showToast('✅ Script generado exitosamente');
+    } else {
+      showToast('❌ Error: ' + (res.error || 'No se pudo generar'), 'error');
+    }
+  })
+  .catch(function(e) {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-file-code"></i> Generar Script';
+    showToast('Error de conexión: ' + e.message, 'error');
+  });
+}
+
+function copiarScript() {
+  var textarea = document.getElementById('scriptOutput');
+  textarea.select();
+  
+  // Intentar con clipboard API (requiere HTTPS)
+  if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+    navigator.clipboard.writeText(textarea.value).then(function() {
+      showToast('✅ Script copiado al portapapeles');
+    }).catch(function() {
+      document.execCommand('copy');
+      showToast('✅ Script copiado');
+    });
+  } else {
+    // Fallback para HTTP
+    document.execCommand('copy');
+    showToast('✅ Script copiado');
+  }
+}
+
+function descargarScript() {
+  var name = document.getElementById('routerName').value.trim() || 'router';
+  var blob = new Blob([scriptGenerado], { type: 'text/plain' });
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = name.replace(/[^a-zA-Z0-9]/g, '_') + '_script.rsc';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
 
 function cargarRouters() {
+  // Sincronizar estado de routers VPN primero
+  fetch('/api/routers/sync-vpn-status', { method: 'POST' }).catch(function(){});
+  
   fetch('/api/routers')
     .then(r => {
       if (!r.ok) throw new Error('HTTP ' + r.status);
@@ -197,11 +363,16 @@ function cargarRouters() {
         document.getElementById('routersList').innerHTML = '<p style="text-align:center;padding:40px;color:var(--text-gray);"><i class="fas fa-server" style="font-size:2rem;display:block;margin-bottom:10px;"></i>No hay routers registrados<br><button class="btn btn-primary btn-sm mt-20" onclick="abrirModalCrear()"><i class="fas fa-plus"></i> Nuevo Router</button></p>';
         return;
       }
-      let html = '<div class="table-container"><table><thead><tr><th>#</th><th>Nombre</th><th>IP / Puerto</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>';
+      let html = '<div class="table-container"><table><thead><tr><th>#</th><th>Nombre</th><th>Tipo</th><th>IP / Puerto</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>';
       data.forEach((r, i) => {
+        const tipo = r.connection_type === 'vpn' ? '<span style="color:#6366f1;"><i class="fas fa-lock"></i> VPN</span>' : '<span style="color:#10b981;"><i class="fas fa-globe"></i> IP</span>';
         const status = r.connected ? '<span class="badge badge-success">Online</span>' : '<span class="badge badge-danger">Offline</span>';
-        html += '<tr><td>' + (i+1) + '</td><td><strong>' + r.name + '</strong></td><td>' + r.ip + '<br><span style="font-size:0.8rem;color:#94a3b8;">:' + (r.port || 8728) + '</span></td><td>' + status + '</td><td>';
+        const ipInfo = r.connection_type === 'vpn' ? (r.vpn_ip || '—') : (r.ip + ':' + (r.port || 8728));
+        html += '<tr><td>' + (i+1) + '</td><td><strong>' + r.name + '</strong></td><td>' + tipo + '</td><td style="font-family:monospace;font-size:0.85rem;">' + ipInfo + '</td><td>' + status + '</td><td>';
         html += '<div class="btn-group">';
+        if (r.connection_type === 'vpn') {
+          html += '<button class="btn btn-sm btn-primary" onclick="verScript(' + r.id + ')" title="Ver script"><i class="fas fa-file-code"></i></button>';
+        }
         html += '<button class="btn btn-sm btn-primary" onclick="abrirModalResync(' + r.id + ')"><i class="fas fa-sync"></i></button>';
         html += '<button class="btn btn-sm btn-secondary" onclick="abrirModalEditar(' + r.id + ')"><i class="fas fa-edit"></i></button>';
         html += '<button class="btn btn-sm btn-danger" onclick="confirmarEliminar(' + r.id + ',\'' + r.name.replace(/'/g, "\\'") + '\')"><i class="fas fa-trash"></i></button>';
@@ -221,6 +392,17 @@ function abrirModalCrear() {
   document.getElementById('idRouterInput').value = '';
   document.getElementById('modalTitle').innerHTML = '<i class="fas fa-plus-circle" style="color:#10b981;"></i> Nuevo Router';
   document.getElementById('poolList').innerHTML = '<div style="color:var(--text-gray);text-align:center;padding:10px;">Guarde el router primero</div>';
+  document.getElementById('scriptPreview').style.display = 'none';
+  document.getElementById('camposIP').style.display = 'block';
+  document.getElementById('camposVPN').style.display = 'none';
+  document.getElementById('wanSection').style.display = 'block';
+  document.getElementById('tipoIP').style.background = '#f0fdf4';
+  document.getElementById('tipoIP').style.borderColor = '#10b981';
+  document.getElementById('tipoVPN').style.background = '#fff';
+  document.getElementById('tipoVPN').style.borderColor = '#e2e8f0';
+  document.getElementById('vpnRouterId').value = 'RTR-';
+  document.getElementById('vpnFija').value = '';
+  document.getElementById('routerIp').required = true;
   document.getElementById('modalRouter').style.display = 'flex';
 }
 
@@ -240,47 +422,74 @@ function abrirModalEditar(id) {
       document.getElementById('routerPass').value = r.password || '';
       document.getElementById('modalTitle').innerHTML = '<i class="fas fa-edit" style="color:#f59e0b;"></i> Editar Router';
       routerActualId = r.id;
+      
+      // Set connection type
+      var tipo = r.connection_type || 'ip';
+      seleccionarTipo(tipo);
+      document.querySelector('input[name="connection_type"][value="' + tipo + '"]').checked = true;
+      document.getElementById('vpnRouterId').value = r.vpn_user || '';
+      document.getElementById('vpnFija').value = r.vpn_ip || '';
+      
       try { cargarPools(r.id); } catch(e) {}
       document.getElementById('modalRouter').style.display = 'flex';
-      // Detectar interfaces y luego seleccionar la guardada
-      setTimeout(function() {
-        var host = r.ip;
-        var port = parseInt(r.port) || 8728;
-        var username = r.user || '';
-        var password = r.password || '';
-        if (host && username) {
-          fetch('/api/routers/interfaces', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ host: host, port: port, username: username, password: password })
-          })
-          .then(function(resp) { return resp.json(); })
-          .then(function(res) {
-            var sel = document.getElementById('routerWan');
-            sel.innerHTML = '';
-            if (res.success && res.interfaces && res.interfaces.length > 0) {
-              res.interfaces.forEach(function(iface) {
-                var opt = document.createElement('option');
-                opt.value = iface.name;
-                opt.textContent = iface.name + ' (' + (iface.type || '') + ') ' + (iface.running === 'true' ? '🟢' : '🔴');
-                sel.appendChild(opt);
-              });
-            } else {
+      
+      // Detectar interfaces
+      if (tipo === 'ip') {
+        setTimeout(function() {
+          var host = r.ip;
+          var port = parseInt(r.port) || 8728;
+          var username = r.user || '';
+          var password = r.password || '';
+          if (host && username) {
+            fetch('/api/routers/interfaces', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ host: host, port: port, username: username, password: password })
+            })
+            .then(function(resp) { return resp.json(); })
+            .then(function(res) {
+              var sel = document.getElementById('routerWan');
+              sel.innerHTML = '';
+              if (res.success && res.interfaces && res.interfaces.length > 0) {
+                res.interfaces.forEach(function(iface) {
+                  var opt = document.createElement('option');
+                  opt.value = iface.name;
+                  opt.textContent = iface.name + ' (' + (iface.type || '') + ') ' + (iface.running === 'true' ? '🟢' : '🔴');
+                  sel.appendChild(opt);
+                });
+              } else {
+                sel.innerHTML = '<option value="ether1">ether1 (por defecto)</option><option value="">-- Detectar interfaces --</option>';
+              }
+              sel.value = r.interface_wan || 'ether1';
+            })
+            .catch(function() {
+              var sel = document.getElementById('routerWan');
               sel.innerHTML = '<option value="ether1">ether1 (por defecto)</option><option value="">-- Detectar interfaces --</option>';
-            }
-            sel.value = r.interface_wan || 'ether1';
-          })
-          .catch(function() {
-            // Si falla la detección, dejamos opciones por defecto
-            var sel = document.getElementById('routerWan');
-            sel.innerHTML = '<option value="ether1">ether1 (por defecto)</option><option value="">-- Detectar interfaces --</option>';
-            sel.value = r.interface_wan || 'ether1';
-          });
-        }
-      }, 100);
+              sel.value = r.interface_wan || 'ether1';
+            });
+          }
+        }, 100);
+      }
     })
     .catch(function(e) {
       showToast('Error al cargar router: ' + e.message, 'error');
+    });
+}
+
+function verScript(id) {
+  fetch('/api/routers/' + id)
+    .then(function(r) { return r.json(); })
+    .then(function(r) {
+      if (r.connection_type === 'vpn' && r.vpn_user) {
+        document.getElementById('routerName').value = r.name;
+        document.getElementById('vpnRouterId').value = r.vpn_user || '';
+        document.getElementById('vpnFija').value = r.vpn_ip || '';
+        seleccionarTipo('vpn');
+        generarScriptVPN();
+        document.getElementById('modalRouter').style.display = 'flex';
+      } else {
+        showToast('Este router no tiene script VPN', 'error');
+      }
     });
 }
 
@@ -291,8 +500,6 @@ function testConexion() {
   var port = parseInt(document.getElementById('routerPort').value) || 8728;
   var username = document.getElementById('routerUser').value.trim();
   var password = document.getElementById('routerPass').value;
-  
-  console.log('[TEST] Probando conexión a ' + host + ':' + port + ' user=' + username);
   
   if (!host) { showToast('Ingrese la IP del router', 'error'); return; }
   if (!username) { showToast('Ingrese el usuario', 'error'); return; }
@@ -306,12 +513,8 @@ function testConexion() {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ host: host, port: port, username: username, password: password })
   })
-  .then(function(r) {
-    console.log('[TEST] Response status:', r.status);
-    return r.json();
-  })
+  .then(function(r) { return r.json(); })
   .then(function(res) {
-    console.log('[TEST] Resultado:', JSON.stringify(res));
     btn.disabled = false;
     btn.innerHTML = '<i class="fas fa-plug"></i> Probar Conexión';
     if (res.success) {
@@ -321,7 +524,6 @@ function testConexion() {
     }
   })
   .catch(function(e) {
-    console.log('[TEST] Error de red:', e.message);
     btn.disabled = false;
     btn.innerHTML = '<i class="fas fa-plug"></i> Probar Conexión';
     showToast('Error de conexión con el servidor', 'error');
@@ -353,7 +555,7 @@ function detectarInterfaces() {
     sel.innerHTML = '';
     if (res.success && res.interfaces && res.interfaces.length > 0) {
       res.interfaces.forEach(function(iface) {
-        var opt = document.createElement('option');
+        var opt = document.createElement('opt ion');
         opt.value = iface.name;
         opt.textContent = iface.name + ' (' + (iface.type || '') + ') ' + (iface.running === 'true' ? '🟢' : '🔴');
         sel.appendChild(opt);
@@ -373,11 +575,13 @@ function detectarInterfaces() {
 
 function guardarRouter(e) {
   e.preventDefault();
+  var tipo = document.querySelector('input[name="connection_type"]:checked').value;
   const data = {
     accion: document.getElementById('accionInput').value,
     id_router_edit: document.getElementById('idRouterInput').value,
     name: document.getElementById('routerName').value,
-    ip: document.getElementById('routerIp').value,
+    connection_type: tipo,
+    ip: tipo === 'vpn' ? (document.getElementById('vpnFija').value || document.getElementById('vpnRouterId').value) : document.getElementById('routerIp').value,
     port: document.getElementById('routerPort').value,
     user: document.getElementById('routerUser').value,
     password: document.getElementById('routerPass').value,
@@ -386,7 +590,10 @@ function guardarRouter(e) {
     ip_blocks: '[]',
     ipv6_pd: document.getElementById('routerIpv6').value,
     suspend_ips: document.getElementById('suspendIps').checked ? 1 : 0,
-    interface_wan: document.getElementById('routerWan').value || 'ether1'
+    interface_wan: document.getElementById('routerWan').value || 'ether1',
+    vpn_user: document.getElementById('vpnRouterId').value,
+    vpn_password: document.getElementById('routerPass').value,
+    vpn_ip: document.getElementById('vpnFija').value
   };
   fetch('/api/routers/save', {
     method: 'POST',

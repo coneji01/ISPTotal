@@ -62,3 +62,6 @@ logs/
 # Dev simulation scripts
 backend/simulate-data.js
 backend/simulate-gastos.js
+
+# Dev/test DBs
+demo*.db

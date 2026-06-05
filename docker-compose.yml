@@ -1,19 +1,22 @@
-version: '3.8'
-
 services:
   isptotal-demo:
     build: .
     container_name: isptotal-demo
     ports:
-      - "3021:3020"
+      - "80:3020"
     environment:
       - PORT=3020
       - NODE_ENV=production
     volumes:
-      - isptotal-demo-data:/app/data
+      # Código fuente (bind mounts - sincronización automática)
+      - ./backend:/app/backend
+      - ./views:/app/views
+      - ./frontend:/app/frontend
+      - ./scripts:/app/scripts
+      - ./package.json:/app/package.json
+      # Base de datos UNIFICADA (mismo archivo que desarrollo)
+      - ./isptotal.db:/app/isptotal.db
+      - ./data:/app/data
+      # node_modules interno del contenedor (no del host)
+      - /app/node_modules
     restart: unless-stopped
-    # Para demo - no exponer a internet sin SSL/proxy
-    # Recomendación: usar Nginx Proxy Manager enfrente
-
-volumes:
-  isptotal-demo-data:

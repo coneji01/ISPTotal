@@ -2960,6 +2960,7 @@ var mesesEsp = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto
       const counts = db.prepare('SELECT plan_id, COUNT(*) as c FROM servicios GROUP BY plan_id').all();
       data.planCounts = {};
       counts.forEach(function(r) { data.planCounts[r.plan_id] = r.c; });
+      data.olts = db.prepare('SELECT * FROM olts').all();
       break;
     }
     case 'Smartolt': {
@@ -5131,50 +5132,106 @@ app.get("/api/routers/:id", requireAuth, (req, res) => {
 });
 
 app.post("/api/routers/save", requireAuth, async (req, res) => {
-  const { accion, id_router, id_router_edit, name, ip, port, user, password, ip_blocks, interface_wan } = req.body;
-  console.log('[SAVE-ROUTER] Request:', JSON.stringify({accion, id_router, id_router_edit, name, ip, interface_wan}));
+  const { accion, id_router, id_router_edit, name, ip, port, user, password, ip_blocks, interface_wan, connection_type, vpn_user, vpn_password, vpn_ip } = req.body;
+  console.log('[SAVE-ROUTER] Request:', JSON.stringify({accion, id_router, id_router_edit, name, ip, interface_wan, connection_type}));
+  
+  const connType = connection_type || 'ip';
 
   let routerId = id_router || id_router_edit;
   console.log('[SAVE-ROUTER] routerId:', routerId);
 
   if (accion === "editar" && (id_router || id_router_edit)) {
     const editId = parseInt(id_router || id_router_edit);
-    console.log('[SAVE-ROUTER] EDIT mode, editId:', editId);
-    if (password) {
-      db.prepare("UPDATE routers SET name=?, ip=?, port=?, user=?, password=?, ip_blocks=?, interface_wan=? WHERE id=?")
-        .run(name, ip, port || 8728, user, password, ip_blocks || "[]", interface_wan || "ether1", editId);
+    if (password || connType === 'vpn') {
+      db.prepare("UPDATE routers SET name=?, ip=?, port=?, user=?, password=?, ip_blocks=?, interface_wan=?, connection_type=?, vpn_user=?, vpn_password=?, vpn_ip=? WHERE id=?")
+        .run(name, ip, port || 8728, user, password || (vpn_password || ''), ip_blocks || "[]", interface_wan || "ether1", connType, vpn_user || '', vpn_password || (password || ''), vpn_ip || '', editId);
     } else {
-      db.prepare("UPDATE routers SET name=?, ip=?, port=?, user=?, ip_blocks=?, interface_wan=? WHERE id=?")
-        .run(name, ip, port || 8728, user, ip_blocks || "[]", interface_wan || "ether1", editId);
+      db.prepare("UPDATE routers SET name=?, ip=?, port=?, user=?, ip_blocks=?, interface_wan=?, connection_type=?, vpn_user=?, vpn_password=?, vpn_ip=? WHERE id=?")
+        .run(name, ip, port || 8728, user, ip_blocks || "[]", interface_wan || "ether1", connType, vpn_user || '', '', vpn_ip || '', editId);
     }
     routerId = editId;
   } else {
     console.log('[SAVE-ROUTER] NEW/CREATE mode');
-    // Avoid duplicates by IP
     const existing = db.prepare('SELECT id FROM routers WHERE ip=?').get(ip);
     if (existing) {
-      db.prepare("UPDATE routers SET name=?, port=?, user=?, password=?, ip_blocks=?, interface_wan=? WHERE id=?")
-        .run(name, port || 8728, user, password || "", ip_blocks || "[]", interface_wan || "ether1", existing.id);
+      db.prepare("UPDATE routers SET name=?, port=?, user=?, password=?, ip_blocks=?, interface_wan=?, connection_type=?, vpn_user=?, vpn_password=?, vpn_ip=? WHERE id=?")
+        .run(name, port || 8728, user, password || (vpn_password || ""), ip_blocks || "[]", interface_wan || "ether1", connType, vpn_user || '', vpn_password || (password || ''), vpn_ip || '', existing.id);
       routerId = existing.id;
     } else {
-      const r = db.prepare("INSERT INTO routers (name, ip, port, user, password, ip_blocks, interface_wan) VALUES (?,?,?,?,?,?,?)")
-        .run(name, ip, port || 8728, user, password || "", ip_blocks || "[]", interface_wan || "ether1");
+      const r = db.prepare("INSERT INTO routers (name, ip, port, user, password, ip_blocks, interface_wan, connection_type, vpn_user, vpn_password, vpn_ip) VALUES (?,?,?,?,?,?,?,?,?,?,?)")
+        .run(name, ip, port || 8728, user, password || (vpn_password || ""), ip_blocks || "[]", interface_wan || "ether1", connType, vpn_user || '', vpn_password || (password || ''), vpn_ip || '');
       routerId = r.lastInsertRowid;
     }
   }
-  // ⭐ Test connection after save (use saved password if not provided)
-  var testPass = password || (id_router ? db.prepare("SELECT password FROM routers WHERE id=?").get(id_router)?.password : "");
-  try {
-    const result = await MikroTikAPI.testConnection(ip, port || 8728, user, testPass);
-    if (result.success) {
-      db.prepare("UPDATE routers SET connected=1, last_sync=datetime('now') WHERE id=?").run(routerId);
-    } else {
+  
+  // Test connection solo para IP publica
+  if (connType === 'ip' && ip && user) {
+    var testPass = password || (id_router ? db.prepare("SELECT password FROM routers WHERE id=?").get(id_router)?.password : "");
+    try {
+      const result = await MikroTikAPI.testConnection(ip, port || 8728, user, testPass);
+      if (result.success) {
+        db.prepare("UPDATE routers SET connected=1, last_sync=datetime('now') WHERE id=?").run(routerId);
+      } else {
+        db.prepare("UPDATE routers SET connected=0 WHERE id=?").run(routerId);
+      }
+    } catch(e) {
       db.prepare("UPDATE routers SET connected=0 WHERE id=?").run(routerId);
     }
-  } catch(e) {
-    db.prepare("UPDATE routers SET connected=0 WHERE id=?").run(routerId);
+  } else if (connType === 'vpn') {
+    // Para VPN: configurar API via SSH para permitir nuestro servidor
+    try {
+      const { execSync } = require('child_process');
+      var ccrPass = 'F1tfdrsx132022';
+      var sshKey = vpn_ip || ip;
+      if (sshKey) {
+        var cmd = 'sshpass -p \"' + ccrPass + '\" ssh -o StrictHostKeyChecking=no -o ConnectTimeout=8 admin@' + sshKey + ' \"/ip service set api address=10.50.0.0/16,192.168.100.40,192.168.101.40,127.0.0.0/8\" 2>/dev/null';
+        execSync(cmd, { timeout: 10000, shell: '/bin/bash' });
+        db.prepare("UPDATE routers SET connected=1 WHERE id=?").run(routerId);
+      }
+    } catch(e) {
+      db.prepare("UPDATE routers SET connected=0 WHERE id=?").run(routerId);
+    }
   }
   res.json({ success: true, id: parseInt(routerId) });
+});
+
+const vpnScript = require('./vpn-script');
+const { execSync } = require('child_process');
+
+app.post("/api/routers/generate-vpn-script", requireAuth, function(req, res) { return vpnScript(req, res); });
+
+// Sincronizar estado de routers VPN desde el CCR
+app.post("/api/routers/sync-vpn-status", requireAuth, async (req, res) => {
+  try {
+    const ccrHost = '192.168.101.1';
+    const ccrUser = 'admin';
+    const ccrPass = 'F1tfdrsx132022';
+    const routers = db.prepare("SELECT id, name, vpn_user FROM routers WHERE connection_type='vpn'").all();
+    if (routers.length === 0) return res.json({ success: true, updated: 0, message: 'No hay routers VPN' });
+    
+    var cmd = 'sshpass -p \"' + ccrPass + '\" ssh -o StrictHostKeyChecking=no ' + ccrUser + '@' + ccrHost + ' \"/ppp active print detail\" 2>/dev/null';
+    var output;
+    try { output = execSync(cmd, { timeout: 10000, shell: '/bin/bash' }).toString(); } catch(e) { output = ''; }
+    
+    var actualizados = 0;
+    routers.forEach(function(r) {
+      var vpnUser = r.vpn_user || '';
+      if (!vpnUser) return;
+      var escaped = vpnUser.replace(/[.*+?^=!:\${}()|\[\]\/\\]/g, '\\$&');
+      var re = new RegExp('name=\"' + escaped + '\"[^]*?address=([0-9.]+)', 'i');
+      var match = output.match(re);
+      if (match && match[1]) {
+        var tunIP = match[1];
+        db.prepare("UPDATE routers SET connected=1, vpn_ip=?, ip=?, last_sync=datetime('now') WHERE id=? AND connection_type='vpn'").run(tunIP, tunIP, r.id);
+        actualizados++;
+      } else {
+        db.prepare("UPDATE routers SET connected=0 WHERE id=? AND connection_type='vpn'").run(r.id);
+      }
+    });
+    res.json({ success: true, updated: actualizados, total: routers.length });
+  } catch(e) {
+    res.json({ success: false, error: e.message });
+  }
 });
 
 app.post("/api/routers/:id/delete", requireAuth, (req, res) => {
@@ -5442,6 +5499,44 @@ app.post('/api/servicios/crear', requireAuth, async (req, res) => {
         }
       } catch(e) {
         return res.json({ success: true, warning: 'Servicio creado pero error al conectar con router: ' + e.message });
+      }
+    }
+    
+    // If IP estatica, create Simple Queue for bandwidth control
+    if (auth_type === 'static' && ip && router_ip && router_user && router_pass) {
+      try {
+        const MikroTikAPI = require('./mikrotik-api');
+        // Obtener velocidad del plan
+        var planSpeed = '';
+        try {
+          var p = db.prepare('SELECT velocidad FROM planes WHERE id=?').get(planValido);
+          if (p && p.velocidad) planSpeed = p.velocidad;
+        } catch(e) {}
+        // Convertir velocidad a formato MikroTik (ej: '50Mbps' -> '50M/50M')
+        var speedVal = '10M';
+        if (planSpeed) {
+          var match = planSpeed.match(/([\d.]+)\s*([kKmMgG]?)/);
+          if (match) speedVal = match[1] + (match[2] || 'M').toUpperCase();
+        }
+        var maxLimit = speedVal + '/' + speedVal;
+        
+        var clienteNombre = '';
+        try {
+          var c = db.prepare('SELECT nombre FROM clientes WHERE id=?').get(cliente_id);
+          if (c) clienteNombre = c.nombre;
+        } catch(e) {}
+        
+        var queueResult = await MikroTikAPI.addSimpleQueue(router_ip, router_port || 8728, router_user, router_pass, {
+          name: clienteNombre || ('Cliente #' + cliente_id),
+          target: ip + '/32',
+          maxLimit: maxLimit,
+          comment: 'Servicio #' + servicioId + ' - ' + (clienteNombre || '') + ' - IP Fija'
+        });
+        if (!queueResult.success) {
+          console.log('[Queue] Error creando cola:', queueResult.error);
+        }
+      } catch(e) {
+        console.log('[Queue] Error:', e.message);
       }
     }
 
@@ -5890,6 +5985,12 @@ async function smartoltFetchOlt(oltObj, endpoint, method, body) {
 }
 
 // GET /api/smartolt/config - Get SmartOLT configuration
+app.post('/api/smartolt/speed-profiles', requireAuth, async (req, res) => {
+  // SmartOLT no expone endpoint público para listar perfiles.
+  // Los perfiles se ingresan manualmente en el plan.
+  res.json({ status: 'error', message: 'Los perfiles se configuran manualmente en cada plan. Seleccione una OLT y escriba el nombre del perfil.' });
+});
+
 app.get('/api/smartolt/config', requireAuth, (req, res) => {
   const cfg = db.prepare("SELECT key, value FROM configuracion WHERE key LIKE 'smartolt_%' OR key = 'smartolt_name'").all();
   const config = { name: 'SmartOLT' };
@@ -6458,6 +6559,26 @@ app.post("/api/clientes/save", requireAuth, (req, res) => {
   const { nombre, cedula, telefono, direccion, zona_id, apodo } = req.body;
   if (!nombre) return res.json({ success: false, message: "Nombre requerido" });
   db.prepare("INSERT INTO clientes (nombre, cedula, telefono, direccion, zona_id, apodo) VALUES (?,?,?,?,?,?)").run(nombre, cedula, telefono, direccion, zona_id || null, apodo || null);
+  res.json({ success: true });
+});
+
+app.post("/api/zonas/save", requireAuth, (req, res) => {
+  const { id, nombre, router_id, vlan_onu, smartolt_profile_id, smartolt_zone } = req.body;
+  if (!nombre) return res.json({ success: false, message: "Nombre requerido" });
+  if (id) {
+    db.prepare("UPDATE zonas SET nombre=?, router_id=?, vlan_onu=?, smartolt_profile_id=?, smartolt_zone=? WHERE id=?").run(nombre, router_id || null, vlan_onu || null, smartolt_profile_id || null, smartolt_zone || '', id);
+    return res.json({ success: true, message: "Zona actualizada" });
+  } else {
+    const r = db.prepare("INSERT INTO zonas (nombre, router_id, vlan_onu, smartolt_profile_id, smartolt_zone) VALUES (?,?,?,?,?)").run(nombre, router_id || null, vlan_onu || null, smartolt_profile_id || null, smartolt_zone || '');
+    return res.json({ success: true, id: r.lastInsertRowid, message: "Zona creada" });
+  }
+});
+
+app.post("/api/zonas/delete", requireAuth, (req, res) => {
+  const id = parseInt(req.body.id) || 0;
+  if (!id) return res.json({ success: false, message: "ID requerido" });
+  db.prepare("UPDATE servicios SET zona_id=NULL WHERE zona_id=?").run(id);
+  db.prepare("DELETE FROM zonas WHERE id=?").run(id);
   res.json({ success: true });
 });
 

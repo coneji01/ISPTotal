@@ -81,7 +81,7 @@
             <h3 style="margin:0;" id="zonModalTitle">Nueva Zona</h3>
             <button onclick="zonCerrarModal()" style="background:none; border:none; font-size:1.5rem; cursor:pointer; color:#94a3b8;">&times;</button>
         </div>
-        <form method="POST" action="/modulo?pagina=Zonas" id="zonForm">
+        <form method="POST" action="/modulo?pagina=Zonas" id="zonForm" onsubmit="return guardarZona(event)">
             <input type="hidden" name="accion" value="guardar_zona">
             <input type="hidden" name="id_zona" id="zonId" value="">
             <div class="form-group">
@@ -100,7 +100,7 @@
             </div>
             <div class="form-group">
                 <label class="form-label">OLT (Opcional)</label>
-                <select name="smartolt_profile_id" id="zonProfile" class="form-control" onchange="zonOnProfileChange()">
+                <select name="smartolt_profile_id" id="zonProfile" class="form-control" onchange="">
                     <option value="">-- Ninguno --</option>
                     <% (olts || []).forEach(function(o) { %>
                         <option value="<%= o.id %>"><%= o.nombre %></option>
@@ -111,12 +111,9 @@
             <div class="form-group" id="zonZoneGroup" style="display:none;">
                 <label class="form-label">Zona en OLT <span style="color:#ef4444;">*</span></label>
                 <div style="position:relative;">
-                    <select name="smartolt_zone" id="zonZone" class="form-control">
-                        <option value="">-- Seleccione zona --</option>
-                    </select>
-                    <span id="zonZoneSpinner" style="display:none; position:absolute; right:30px; top:50%; transform:translateY(-50%); color:#94a3b8;"><i class="fas fa-spinner fa-spin"></i></span>
+                    <input type="text" name="smartolt_zone" id="zonZone" class="form-control" placeholder="Nombre de la zona en la OLT (opcional)">
                 </div>
-                <small style="color:#64748b; font-size:0.75rem;"><strong>Obligatorio.</strong> Zona configurada en OLT.</small>
+                <small style="color:#64748b; font-size:0.75rem;">Nombre de la zona configurada en la OLT (opcional).</small>
             </div>
             <div class="form-group">
                 <label class="form-label">VLAN ONU <span style="color:#94a3b8; font-size:0.75rem;">(Opcional)</span></label>
@@ -196,16 +193,56 @@ function zonConfirmarEliminar(id, nombre, total) {
         if (!confirm('Eliminar zona "' + nombre + '"?')) return;
     }
     
-    var form = document.createElement('form');
-    form.method = 'POST';
-    form.action = '/modulo?pagina=Zonas';
-    var inp1 = document.createElement('input');
-    inp1.type = 'hidden'; inp1.name = 'accion'; inp1.value = 'eliminar_zona';
-    var inp2 = document.createElement('input');
-    inp2.type = 'hidden'; inp2.name = 'id_zona'; inp2.value = id;
-    form.appendChild(inp1); form.appendChild(inp2);
-    document.body.appendChild(form);
-    form.submit();
+    fetch('/api/zonas/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: id })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(res) {
+        if (res.success) {
+            showToast('Zona eliminada');
+            location.reload();
+        } else {
+            showToast('Error al eliminar', 'error');
+        }
+    })
+    .catch(function() {
+        showToast('Error de conexión', 'error');
+    });
+}
+
+// Guardar zona via API (fetch en lugar de form POST tradicional)
+function guardarZona(event) {
+  event.preventDefault();
+  var id = document.getElementById('zonId').value;
+  var nombre = document.getElementById('zonNombre').value.trim();
+  var router_id = document.getElementById('zonRouter').value;
+  var vlan_onu = document.getElementById('zonVlan').value;
+  var smartolt_profile_id = document.getElementById('zonProfile').value;
+  var smartolt_zone = document.getElementById('zonZone').value;
+  
+  if (!nombre) { showToast('Ingrese el nombre de la zona', 'error'); return false; }
+  
+  fetch('/api/zonas/save', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id: id || null, nombre: nombre, router_id: router_id || null, vlan_onu: vlan_onu || null, smartolt_profile_id: smartolt_profile_id || null, smartolt_zone: smartolt_zone || '' })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(res) {
+    if (res.success) {
+      showToast('Zona guardada');
+      zonCerrarModal();
+      location.reload();
+    } else {
+      showToast('Error: ' + (res.message || 'No se pudo guardar'), 'error');
+    }
+  })
+  .catch(function(e) {
+    showToast('Error de conexión', 'error');
+  });
+  return false;
 }
 
 // Close modal on overlay click

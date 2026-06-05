@@ -47,6 +47,11 @@ function createCompany(data) {
     
     // Create additional tables needed for full app functionality
     tenantDb.exec("CREATE TABLE IF NOT EXISTS routers (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, ip TEXT NOT NULL, port INTEGER DEFAULT 8728, user TEXT, password TEXT, ip_blocks TEXT DEFAULT '[]', connected INTEGER DEFAULT 0, last_sync TEXT, created_at DATETIME DEFAULT CURRENT_TIMESTAMP, interface_wan TEXT DEFAULT 'ether1', auth_type TEXT DEFAULT 'dhcp')");
+    // Migracion: agregar columnas VPN si no existen
+    try { tenantDb.exec("ALTER TABLE routers ADD COLUMN connection_type TEXT DEFAULT 'ip'"); } catch(e) {}
+    try { tenantDb.exec("ALTER TABLE routers ADD COLUMN vpn_user TEXT"); } catch(e) {}
+    try { tenantDb.exec("ALTER TABLE routers ADD COLUMN vpn_password TEXT"); } catch(e) {}
+    try { tenantDb.exec("ALTER TABLE routers ADD COLUMN vpn_ip TEXT"); } catch(e) {}
     tenantDb.exec("CREATE TABLE IF NOT EXISTS ip_pools (id INTEGER PRIMARY KEY AUTOINCREMENT, router_id INTEGER NOT NULL, red TEXT NOT NULL, gateway TEXT, tipo TEXT DEFAULT 'privada', total INTEGER DEFAULT 0, disponibles INTEGER DEFAULT 0, created_at DATETIME DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (router_id) REFERENCES routers(id) ON DELETE CASCADE)");
     tenantDb.exec("CREATE TABLE IF NOT EXISTS ips_asignadas (id INTEGER PRIMARY KEY AUTOINCREMENT, pool_id INTEGER, ip TEXT, servicio_id INTEGER, cliente_id INTEGER, created_at DATETIME DEFAULT CURRENT_TIMESTAMP)");
     tenantDb.exec("CREATE TABLE IF NOT EXISTS logs (id INTEGER PRIMARY KEY AUTOINCREMENT, usuario_nombre TEXT DEFAULT '', usuario_id INTEGER, accion TEXT NOT NULL, modulo TEXT NOT NULL, cliente_id INTEGER, cliente_nombre TEXT DEFAULT '', servicio_id INTEGER, detalle TEXT DEFAULT '', ip_address TEXT DEFAULT '', created_at DATETIME DEFAULT CURRENT_TIMESTAMP)");
@@ -74,6 +79,25 @@ function createCompany(data) {
     tenantDb.exec("INSERT OR IGNORE INTO cron_tasks (task_name, enabled, hour, minute) VALUES ('backup', 1, 23, 0)");
     tenantDb.exec("INSERT OR IGNORE INTO cron_tasks (task_name, enabled, hour, minute) VALUES ('monitoreo', 0, 0, 30)");
     tenantDb.exec("INSERT OR IGNORE INTO cron_tasks (task_name, enabled, hour, minute) VALUES ('expirar_promesas', 0, 6, 0)");
+    
+    // Copiar plantillas por defecto desde el admin
+    try {
+      var adminDbPath = path.join(DATA_DIR, 'isptotal.db');
+      if (fs.existsSync(adminDbPath)) {
+        var adminDb = new Database(adminDbPath);
+        var adminTemplates = adminDb.prepare('SELECT * FROM templates').all();
+        adminDb.close();
+        adminTemplates.forEach(function(t) {
+          var exists = tenantDb.prepare('SELECT id FROM templates WHERE template_key=?').get(t.template_key);
+          if (!exists) {
+            tenantDb.prepare('INSERT INTO templates (template_key, template_name, content, updated_at) VALUES (?,?,?,?)').run(t.template_key, t.template_name || t.template_key, t.content || '', t.updated_at);
+          }
+        });
+        console.log('[MultiTenant] Plantillas copiadas al tenant:', adminTemplates.length);
+      }
+    } catch(e) {
+      console.log('[MultiTenant] Error copiando plantillas:', e.message);
+    }
     
     tenantDb.close();
     

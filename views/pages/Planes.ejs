@@ -143,14 +143,12 @@
                     <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;">
                         <div>
                             <label style="font-size:0.85rem;font-weight:600;color:#6b21a8;"><i class="fas fa-arrow-down" style="font-size:0.75rem;"></i> Descarga (Download)</label>
-                            <select name="olt_download_profile" id="olt_download_profile" class="form-control" style="border-color:#d8b4fe;">
-                                <option value="">-- Sin perfil --</option>
+                            <input type="text" name="olt_download_profile" id="olt_download_profile" class="form-control" placeholder="Ej: 50M_Profile" style="border-color:#d8b4fe;">
                             </select>
                         </div>
                         <div>
                             <label style="font-size:0.85rem;font-weight:600;color:#6b21a8;"><i class="fas fa-arrow-up" style="font-size:0.75rem;"></i> Subida (Upload)</label>
-                            <select name="olt_upload_profile" id="olt_upload_profile" class="form-control" style="border-color:#d8b4fe;">
-                                <option value="">-- Sin perfil --</option>
+                            <input type="text" name="olt_upload_profile" id="olt_upload_profile" class="form-control" placeholder="Ej: 10M_Profile" style="border-color:#d8b4fe;">
                             </select>
                         </div>
                     </div>
@@ -489,8 +487,6 @@ function abrirModalNuevo() {
   if (oltSel) oltSel.value = '';
   document.getElementById('speedProfilesContainer').style.display = 'none';
   // Reset profile selects
-  document.getElementById('olt_download_profile').innerHTML = '<option value="">-- Sin perfil --</option>';
-  document.getElementById('olt_upload_profile').innerHTML = '<option value="">-- Sin perfil --</option>';
   document.getElementById('speedProfileError').style.display = 'none';
   limpiarImpuestos();
   modal.style.display = 'flex';
@@ -520,8 +516,6 @@ function abrirModalEditar(planId) {
       if (_pendingDownProfile || _pendingUpProfile) {
         document.getElementById('speedProfilesContainer').style.display = 'block';
         // Don't load from OLT on edit, just show what's saved
-        document.getElementById('olt_download_profile').innerHTML = '<option value="">-- Sin perfil --</option><option value="' + _pendingDownProfile.replace(/"/g,'&quot;') + '" selected>' + _pendingDownProfile + '</option>';
-        document.getElementById('olt_upload_profile').innerHTML = '<option value="">-- Sin perfil --</option><option value="' + _pendingUpProfile.replace(/"/g,'&quot;') + '" selected>' + _pendingUpProfile + '</option>';
       }
       
       document.getElementById('upload_burst').value = plan.upload_burst || '';
@@ -645,71 +639,13 @@ function onSpeedOltChange() {
 }
 
 function loadSpeedProfiles(callback) {
-  var downSel = document.getElementById('olt_download_profile');
-  var upSel = document.getElementById('olt_upload_profile');
-  var spinner = document.getElementById('speedProfileSpinner');
-  var errDiv = document.getElementById('speedProfileError');
-  errDiv.style.display = 'none';
-  
-  if (_speedProfilesCache !== null) {
-    renderSpeedOptions(_speedProfilesCache);
-    if (callback) callback();
-    return;
-  }
-  
-  if (!_speedOltId) {
-    errDiv.textContent = 'Seleccione una OLT primero';
-    errDiv.style.display = 'block';
-    return;
-  }
-  
-  spinner.style.display = 'inline';
-  downSel.innerHTML = '<option value="">-- Cargando... --</option>';
-  upSel.innerHTML = '<option value="">-- Cargando... --</option>';
-  downSel.disabled = true;
-  upSel.disabled = true;
-  
-  fetch('/api/smartolt/speed-profiles', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ olt_id: parseInt(_speedOltId) })
-  })
-    .then(function(r) {
-      var ct = r.headers.get('content-type') || '';
-      if (ct.indexOf('json') === -1) return r.text().then(function(t) { throw new Error('No JSON: ' + t.substring(0,200)); });
-      return r.json();
-    })
-    .then(function(d) {
-      spinner.style.display = 'none';
-      downSel.disabled = false;
-      upSel.disabled = false;
-      if (d.status === 'success') {
-        _speedProfilesCache = d.data;
-        renderSpeedOptions(d.data);
-        if (callback) callback();
-      } else {
-        errDiv.textContent = d.message || 'Error al cargar perfiles';
-        errDiv.style.display = 'block';
-        downSel.innerHTML = '<option value="">-- Error --</option>';
-        upSel.innerHTML = '<option value="">-- Error --</option>';
-      }
-    })
-    .catch(function(e) {
-      spinner.style.display = 'none';
-      downSel.disabled = false;
-      upSel.disabled = false;
-      errDiv.textContent = 'Error: ' + e.message;
-      errDiv.style.display = 'block';
-      downSel.innerHTML = '<option value="">-- Error --</option>';
-      upSel.innerHTML = '<option value="">-- Error --</option>';
-    });
+  // Perfiles se ingresan manualmente (inputs de texto)
+  if (callback) callback();
 }
 
 function renderSpeedOptions(profiles) {
   var downSel = document.getElementById('olt_download_profile');
   var upSel = document.getElementById('olt_upload_profile');
-  var hDown = '<option value="">-- Sin perfil --</option>';
-  var hUp = '<option value="">-- Sin perfil --</option>';
   
   if (Array.isArray(profiles)) {
     for (var i = 0; i < profiles.length; i++) {
