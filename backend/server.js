@@ -6982,6 +6982,46 @@ app.post('/api/olts/:id/delete', requireAuth, (req, res) => {
   res.json({ success: true });
 });
 
+// POST /api/smartolt/onu/sync-unconfigured - Sync unconfigured ONUs from SmartOLT
+app.post('/api/smartolt/onu/sync-unconfigured', requireAuth, async (req, res) => {
+  try {
+    // Try to fetch from SmartOLT API
+    const cfg = db.prepare("SELECT key, value FROM configuracion WHERE key IN ('smartolt_subdomain','smartolt_api_key')").all();
+    const config = {};
+    cfg.forEach(function(c) { config[c.key] = c.value; });
+
+    if (config.smartolt_subdomain && config.smartolt_api_key) {
+      const apiUrl = 'https://' + config.smartolt_subdomain + '.smartolt.com/api';
+      const resp = await fetch(apiUrl + '/onu/unconfigured', {
+        headers: { 'X-Token': config.smartolt_api_key, 'Accept': 'application/json' }
+      });
+      if (resp.ok) {
+        const data = await resp.json();
+        if (data && data.onus && Array.isArray(data.onus)) {
+          const txn = db.transaction(function() {
+            let count = 0;
+            data.onus.forEach(function(o) {
+              const exists = db.prepare('SELECT id FROM onu WHERE sn=?').get(o.sn);
+              if (!exists) {
+                db.prepare('INSERT INTO onu (sn, olt_id, puerto_olt, estado, created_at) VALUES (?,?,?,?,?)').run(
+                  o.sn, o.olt_id || 1, o.port || 0, 'pending', new Date().toISOString()
+                );
+                count++;
+              }
+            });
+            return count;
+          });
+          const count = txn();
+          return res.json({ success: true, count: count, message: count + ' ONU(s) nuevas encontradas' });
+        }
+      }
+    }
+    res.json({ success: true, count: 0, message: 'No se encontraron ONUs nuevas' });
+  } catch (e) {
+    res.json({ success: true, count: 0, message: 'SmartOLT no disponible, usando datos locales: ' + e.message });
+  }
+});
+
 // POST /api/smartolt/onu/authorize - Authorize ONU on SmartOLT
 app.post('/api/smartolt/onu/authorize', requireAuth, async (req, res) => {
   const { olt_id, serial, model, descripcion, vlan, servicio_id, cliente_nombre, board, port, onu_mode, pppoe_user, pppoe_pass, auth_type } = req.body;

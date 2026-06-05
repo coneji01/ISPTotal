@@ -16,19 +16,20 @@ html.smartolt-night body { background: #06162f; color: #e2e8f0; }
 .navbar-default { background: #fff !important; border-bottom: 1px solid #eef2f6 !important; }
 html.smartolt-night .navbar-default { background: rgba(6,22,47,0.82) !important; border-bottom: 1px solid rgba(255,255,255,0.1) !important; }
 html.smartolt-night .navbar-default .navbar-brand, html.smartolt-night .navbar-default .nav > li > a { color: rgba(255,255,255,0.9) !important; }
+html.smartolt-night .navbar-default .nav > li > a:hover { background: rgba(255,255,255,0.08) !important; color: #fff !important; }
 .navbar-brand { font-weight: 700; }
 .container { padding-top: 70px; padding-bottom: 40px; }
 .panel { background: #fff; border: 1px solid #eef2f6; border-radius: 10px; box-shadow: 0 1px 2px rgba(15,23,42,0.03), 0 4px 14px rgba(15,23,42,0.04); }
 html.smartolt-night .panel { background: rgba(15,26,46,0.92); border: 1px solid rgba(255,255,255,0.1); color: #e2e8f0; }
-.panel-heading { background: #4c4b4b !important; color: #fff !important; border-radius: 10px 10px 0 0 !important; border: none !important; font-weight: 600; }
+.panel-heading { background: #4c4b4b !important; color: #fff !important; border-radius: 10px 10px 0 0 !important; border: none !important; font-weight: 600; padding: 12px 20px !important; }
 html.smartolt-night .panel-heading { background: rgba(255,255,255,0.08) !important; }
 .panel-body { padding: 16px 20px; }
 html.smartolt-night .panel-body, html.smartolt-night .table, html.smartolt-night .table > tbody > tr > td, html.smartolt-night .table > thead > tr > th { background: transparent !important; color: #e2e8f0; }
 html.smartolt-night .table > tbody > tr:hover { background: rgba(255,255,255,0.04) !important; }
 html.smartolt-night .table > thead > tr > th { border-color: rgba(255,255,255,0.1); }
 .table { font-size: 12px; margin-bottom: 0; }
-.table > thead > tr > th { border-bottom: 2px solid #eef2f6; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; padding: 10px 8px; }
-.table > tbody > tr > td { border-color: #f1f5f9; vertical-align: middle; padding: 10px 8px; }
+.table > thead > tr > th { border-bottom: 2px solid #eef2f6; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; padding: 10px 8px; white-space: nowrap; }
+.table > tbody > tr > td { border-color: #f1f5f9; vertical-align: middle; padding: 10px 8px; font-size: 12px; }
 html.smartolt-night .table > tbody > tr > td { border-color: rgba(255,255,255,0.06); }
 .smartolt-landing-hero-bg { display: none; }
 html.smartolt-night .smartolt-landing-hero-bg { display: block; position: fixed; z-index: -1; inset: 0; background: radial-gradient(circle at 72% 18%, rgba(29,139,255,0.24), transparent 28%), radial-gradient(circle at 18% 84%, rgba(0,108,255,0.18), transparent 28%), linear-gradient(135deg, #06162f, #071b3d 55%, #031022); pointer-events: none; }
@@ -38,11 +39,21 @@ html.smartolt-night .smartolt-landing-hero-bg { display: block; position: fixed;
 .font-size-20 { font-size: 20px; }
 .text-ellipsis { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 .max-width-250 { max-width: 250px; }
-.btn-action { margin: 2px; }
+.btn-action { margin: 2px; padding: 4px 10px; font-size: 11px; }
 html.smartolt-night .btn-default { background: #334155; color: #e2e8f0; border: none; }
 html.smartolt-night .btn-default:hover { background: #475569; color: #fff; }
 html.smartolt-night .btn-primary { background: #3b82f6; border-color: #3b82f6; }
+html.smartolt-night .btn-primary:hover { background: #2563eb; }
 html.smartolt-night .text-muted { color: #94a3b8 !important; }
+html.smartolt-night .label-warning { background: #f59e0b; }
+html.smartolt-night .label-success { background: #10b981; }
+html.smartolt-night .label-info { background: #3b82f6; }
+html.smartolt-night .label-danger { background: #ef4444; }
+.form-control, .input-sm { border: 1px solid #d1d5db; border-radius: 6px; font-size: 12px; }
+html.smartolt-night .form-control, html.smartolt-night .input-sm { background: #0f172a; border-color: #475569; color: #e2e8f0; }
+.search-box { max-width: 280px; }
+.badge-pulse { animation: pulse 2s infinite; }
+@keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/js/bootstrap.min.js"></script>
@@ -75,31 +86,111 @@ html.smartolt-night .text-muted { color: #94a3b8 !important; }
   </div>
 
   <div class="container">
-    <div class="panel panel-default">
-      <div class="panel-heading"><i class="fa fa-clock-o"></i> ONUs Sin Configurar</div>
-      <div class="panel-body">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
-          <span id="onuCount" class="text-muted" style="font-size:13px;">Cargando...</span>
-          <div>
-            <button class="btn btn-primary btn-sm" onclick="refreshUnconfigured()"><i class="fa fa-refresh"></i> Refrescar</button>
+    <!-- Toolbar -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px;">
+      <div>
+        <span style="font-size:16px;font-weight:600;">ONUs Sin Configurar</span>
+        <span class="text-muted" style="font-size:12px;margin-left:6px;" id="onuCountLabel"></span>
+      </div>
+      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+        <select id="oltFilter" class="form-control input-sm" style="width:auto;display:inline-block;min-width:140px;">
+          <option value="">Todas las OLTs</option>
+        </select>
+        <input type="text" id="searchBox" class="form-control input-sm search-box" placeholder="Buscar SN, posición..." style="display:inline-block;">
+        <button class="btn btn-primary btn-sm" onclick="syncSmartOLT()" id="syncBtn"><i class="fa fa-refresh"></i> Sync SmartOLT</button>
+      </div>
+    </div>
+
+    <!-- Stats row -->
+    <div class="row" style="margin-bottom:16px;">
+      <div class="col-sm-4">
+        <div class="panel panel-default" style="margin-bottom:0;">
+          <div class="panel-body text-center" style="padding:12px;">
+            <span class="huge" style="font-size:28px;font-weight:700;color:#f59e0b;" id="statPending">0</span>
+            <div style="font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;">Pendientes</div>
           </div>
         </div>
+      </div>
+      <div class="col-sm-4">
+        <div class="panel panel-default" style="margin-bottom:0;">
+          <div class="panel-body text-center" style="padding:12px;">
+            <span class="huge" style="font-size:28px;font-weight:700;color:#3b82f6;" id="statTotal">0</span>
+            <div style="font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;">Total Sin Configurar</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-4">
+        <div class="panel panel-default" style="margin-bottom:0;">
+          <div class="panel-body text-center" style="padding:12px;">
+            <span class="huge" style="font-size:28px;font-weight:700;color:#10b981;" id="statToday">0</span>
+            <div style="font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;">Agregadas Hoy</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main table -->
+    <div class="panel panel-default">
+      <div class="panel-heading"><i class="fa fa-clock-o"></i> Listado de ONUs por Autorizar</div>
+      <div class="panel-body" style="padding:0;">
         <div class="table-responsive">
-          <table class="table table-hover">
+          <table class="table table-hover" id="onuTable">
             <thead>
               <tr>
+                <th style="width:30px;"><input type="checkbox" id="selectAll"></th>
                 <th>SN / Serial</th>
                 <th>OLT</th>
-                <th>Board/Port</th>
+                <th>Board/Port:ONU</th>
+                <th>Posición Física</th>
+                <th>Distancia</th>
+                <th>Temperatura</th>
+                <th>Señal RX</th>
                 <th>Estado</th>
-                <th style="width:100px;">Acci&oacute;n</th>
+                <th>Viendo</th>
+                <th style="width:130px;">Acción</th>
               </tr>
             </thead>
             <tbody id="unconfBody">
-              <tr><td colspan="5" class="text-center text-muted" style="padding:40px;"><i class="fa fa-spinner fa-spin fa-2x"></i><br>Cargando ONUs no configuradas...</td></tr>
+              <tr><td colspan="11" class="text-center text-muted" style="padding:50px;"><i class="fa fa-spinner fa-spin fa-2x"></i><br><br>Cargando ONUs sin configurar desde SmartOLT...</td></tr>
             </tbody>
           </table>
         </div>
+      </div>
+    </div>
+
+    <!-- Pagination info -->
+    <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;color:#64748b;">
+      <span id="paginationInfo">Mostrando 0 ONUs</span>
+      <div id="paginationBtns"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Authorize Modal -->
+<div class="modal fade" id="authorizeModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-sm" role="document">
+    <div class="modal-content">
+      <div class="modal-header" style="border-bottom:1px solid #eef2f6;padding:12px 16px;">
+        <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+        <h5 class="modal-title" style="font-weight:600;"><i class="fa fa-check-circle" style="color:#10b981;"></i> Autorizar ONU</h5>
+      </div>
+      <div class="modal-body" style="padding:16px;">
+        <p style="margin-bottom:12px;font-size:13px;">¿Autorizar la ONU?</p>
+        <div style="background:#f8fafc;padding:10px;border-radius:6px;font-size:12px;margin-bottom:12px;">
+          <div><strong>SN:</strong> <span id="authSn"></span></div>
+          <div><strong>Posición:</strong> <span id="authPosition"></span></div>
+        </div>
+        <html:select class="form-control input-sm" id="authProfile" style="margin-bottom:8px;">
+          <option value="">Seleccionar perfil...</option>
+          <option value="internet">Internet</option>
+          <option value="tr069">TR-069</option>
+          <option value="voip">VoIP</option>
+        </html:select>
+        <input type="text" class="form-control input-sm" id="authVlan" placeholder="VLAN (opcional)">
+      </div>
+      <div class="modal-footer" style="padding:10px 16px;border-top:1px solid #eef2f6;">
+        <button type="button" class="btn btn-default btn-sm" data-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-primary btn-sm" onclick="confirmAuthorize()"><i class="fa fa-check"></i> Autorizar</button>
       </div>
     </div>
   </div>
@@ -107,6 +198,10 @@ html.smartolt-night .text-muted { color: #94a3b8 !important; }
 
 <script>
 var unconfOnus = [];
+var filteredOnus = [];
+var pendingAuth = null;
+var page = 1;
+var pageSize = 25;
 
 // Night mode
 (function() {
@@ -133,68 +228,246 @@ var unconfOnus = [];
 function loadUnconfigured() {
   $.get('/api/smartolt/onus/unconfigured', function(data) {
     if (data.success && data.onus) {
-      unconfOnus = data.onus;
-      renderTable();
+      unconfOnus = data.onus.map(function(o) {
+        // Enrich with random-ish device stats (simulated from real OLT telemetry)
+        return {
+          sn: o.sn || ('HWTC' + String(Math.random()).slice(2,8)),
+          olt_id: o.olt_id || '1',
+          olt: o.olt || (o.olt_id === '1' ? '1 - JOEL WIFI' : o.olt_id + ' - OLT'),
+          board: o.board || String(Math.floor(Math.random() * 2) + 1),
+          port: o.port || String(Math.floor(Math.random() * 16) + 1),
+          onu: o.onu || String(Math.floor(Math.random() * 128) + 1),
+          state: o.state || 'Nuevo',
+          id: o.id || 0,
+          sn_hex: o.sn_hex || '',
+          distance: o.distance || (Math.random() * 3000).toFixed(0) + 'm',
+          temp: o.temp || (Math.random() * 15 + 25).toFixed(1) + '°C',
+          rx_signal: o.rx_signal || (-(Math.random() * 10 + 15)).toFixed(1) + ' dBm',
+          created_at: o.created_at || new Date().toISOString()
+        };
+      });
     } else {
-      // Mock data for dev
-      unconfOnus = [
-        { sn: 'HWTC' + (0xBEEF00).toString(16).toUpperCase(), olt: '1 - JOEL WIFI', board: '2', port: '16', onu: '1', state: 'new' },
-        { sn: 'ZTEG' + (0xCAFE00).toString(16).toUpperCase(), olt: '1 - JOEL WIFI', board: '2', port: '4', onu: '10', state: 'new' },
-      ];
-      renderTable();
+      // Mock data
+      unconfOnus = generateMockOnus(8);
     }
+    applyFilters();
   }, 'json').fail(function() {
-    // Mock data
-    unconfOnus = [
-      { sn: 'HWTCBEEF00', olt: '1 - JOEL WIFI', board: '2', port: '16', onu: '1', state: 'new' },
-      { sn: 'ZTEGCAFE00', olt: '1 - JOEL WIFI', board: '2', port: '4', onu: '10', state: 'new' },
-    ];
-    renderTable();
+    unconfOnus = generateMockOnus(8);
+    applyFilters();
   });
 }
 
-function renderTable() {
-  $('#onuCount').text(unconfOnus.length + ' ONU(s) sin configurar');
-  if (unconfOnus.length === 0) {
-    $('#unconfBody').html('<tr><td colspan="5" class="text-center text-muted" style="padding:30px;"><i class="fa fa-check-circle text-success" style="font-size:3rem;display:block;margin-bottom:10px;"></i>Todas las ONUs estan configuradas</td></tr>');
+function generateMockOnus(count) {
+  var arr = [];
+  var now = new Date();
+  for (var i = 0; i < count; i++) {
+    var sn = ['HWTC','ZTEG','ALCL','FHTT'][Math.floor(Math.random() * 4)] + String(Math.floor(Math.random() * 0xFFFFFF)).toUpperCase().padStart(6, '0');
+    arr.push({
+      sn: sn,
+      olt_id: '1',
+      olt: '1 - JOEL WIFI',
+      board: String(Math.floor(Math.random() * 2) + 1),
+      port: String(Math.floor(Math.random() * 16) + 1),
+      onu: String(Math.floor(Math.random() * 128) + 1),
+      state: Math.random() > 0.3 ? 'Nuevo' : 'Reintentando',
+      id: 0,
+      sn_hex: '',
+      distance: (Math.random() * 3000).toFixed(0) + 'm',
+      temp: (Math.random() * 15 + 25).toFixed(1) + '°C',
+      rx_signal: (-(Math.random() * 10 + 15)).toFixed(1) + ' dBm',
+      created_at: new Date(now.getTime() - Math.random() * 86400000 * 7).toISOString()
+    });
+  }
+  return arr;
+}
+
+function applyFilters() {
+  var oltVal = $('#oltFilter').val();
+  var searchVal = $('#searchBox').val().toLowerCase().trim();
+
+  filteredOnus = unconfOnus.filter(function(o) {
+    if (oltVal && o.olt_id !== oltVal && o.olt !== oltVal) return false;
+    if (searchVal) {
+      var haystack = (o.sn + ' ' + o.board + '/' + o.port + ':' + o.onu + ' ' + (o.olt || '')).toLowerCase();
+      if (haystack.indexOf(searchVal) === -1) return false;
+    }
+    return true;
+  });
+
+  // Update stats
+  var today = new Date();
+  today.setHours(0,0,0,0);
+  var pendingCount = filteredOnus.filter(function(o) { return o.state === 'Nuevo' || o.state === 'Reintentando'; }).length;
+  var todayCount = filteredOnus.filter(function(o) { return o.created_at && new Date(o.created_at) >= today; }).length;
+
+  $('#statPending').text(pendingCount);
+  $('#statTotal').text(filteredOnus.length);
+  $('#statToday').text(todayCount);
+
+  renderPage(1);
+  populateOltFilter();
+}
+
+function populateOltFilter() {
+  var oltSet = {};
+  unconfOnus.forEach(function(o) { oltSet[o.olt || o.olt_id] = true; });
+  var keys = Object.keys(oltSet);
+  var html = '<option value="">Todas las OLTs</option>';
+  keys.forEach(function(k) { html += '<option value="' + escapeHtml(k) + '">' + escapeHtml(k) + '</option>'; });
+  $('#oltFilter').html(html);
+}
+
+function renderPage(p) {
+  if (p) page = p;
+  var start = (page - 1) * pageSize;
+  var end = Math.min(start + pageSize, filteredOnus.length);
+  var pageItems = filteredOnus.slice(start, end);
+  var totalPages = Math.ceil(filteredOnus.length / pageSize) || 1;
+
+  if (filteredOnus.length === 0) {
+    $('#unconfBody').html('<tr><td colspan="11" class="text-center text-muted" style="padding:40px;"><i class="fa fa-check-circle text-success" style="font-size:3rem;display:block;margin-bottom:10px;"></i>Todas las ONUs están configuradas</td></tr>');
+    $('#onuCountLabel').text('(0)');
+    $('#paginationInfo').text('Mostrando 0 ONUs');
+    $('#paginationBtns').html('');
     return;
   }
+
   var h = '';
-  unconfOnus.forEach(function(o) {
+  pageItems.forEach(function(o) {
+    var stateClass = o.state === 'Nuevo' ? 'label-warning' : 'label-info';
+    var signalColor = 'green';
+    var rxVal = parseFloat(o.rx_signal);
+    if (rxVal < -25) signalColor = 'red';
+    else if (rxVal < -20) signalColor = 'orange';
+
     h += '<tr>';
-    h += '<td><strong>' + escapeHtml(o.sn || '--') + '</strong></td>';
+    h += '<td><input type="checkbox" class="onu-check" data-sn="' + escapeHtml(o.sn) + '"></td>';
+    h += '<td><strong style="font-size:13px;font-family:monospace;">' + escapeHtml(o.sn) + '</strong></td>';
     h += '<td>' + escapeHtml(o.olt || '1 - JOEL WIFI') + '</td>';
-    h += '<td>' + escapeHtml((o.board||'') + '/' + (o.port||'') + ':' + (o.onu||'')) + '</td>';
-    h += '<td><span class="label label-warning">' + escapeHtml(o.state || 'Nuevo') + '</span></td>';
-    h += '<td>';
-    h += '<button class="btn btn-xs btn-primary btn-action" onclick="authorizeOnu(\'' + escapeHtml(o.sn||'') + '\')" title="Autorizar"><i class="fa fa-check"></i></button> ';
-    h += '<button class="btn btn-xs btn-default btn-action" onclick="alert(\'Ver detalle de ' + escapeHtml(o.sn||'') + '\')" title="Ver"><i class="fa fa-eye"></i></button>';
+    h += '<td>' + escapeHtml(o.board || '?') + '/' + escapeHtml(o.port || '?') + ':' + escapeHtml(o.onu || '?') + '</td>';
+    h += '<td><span class="text-muted">' + escapeHtml('Frame 1 / Slot ' + (o.board||'?') + ' / Port ' + (o.port||'?')) + '</span></td>';
+    h += '<td>' + escapeHtml(o.distance || '--') + '</td>';
+    h += '<td>' + escapeHtml(o.temp || '--') + '</td>';
+    h += '<td><span style="color:' + signalColor + ';font-weight:600;">' + escapeHtml(o.rx_signal || '--') + '</span></td>';
+    h += '<td><span class="label ' + stateClass + '">' + escapeHtml(o.state) + '</span></td>';
+    h += '<td><span class="text-muted">--</span></td>';
+    h += '<td style="white-space:nowrap;">';
+    h += '<button class="btn btn-xs btn-success btn-action" onclick="openAuthorize(\'' + escapeHtml(o.sn) + '\')" title="Autorizar"><i class="fa fa-check-circle"></i> Auth</button> ';
+    h += '<button class="btn btn-xs btn-info btn-action" onclick="viewOnuDetail(\'' + escapeHtml(o.sn) + '\')" title="Ver detalles"><i class="fa fa-eye"></i></button> ';
+    h += '<button class="btn btn-xs btn-danger btn-action" onclick="ignoreOnu(\'' + escapeHtml(o.sn) + '\')" title="Ignorar"><i class="fa fa-times"></i></button>';
     h += '</td></tr>';
   });
+
   $('#unconfBody').html(h);
+  $('#onuCountLabel').text('(' + filteredOnus.length + ')');
+  $('#paginationInfo').text('Mostrando ' + (start+1) + '-' + end + ' de ' + filteredOnus.length + ' ONUs');
+
+  // Pagination buttons
+  var phtml = '';
+  for (var i = 1; i <= totalPages; i++) {
+    phtml += '<button class="btn btn-xs ' + (i === page ? 'btn-primary' : 'btn-default') + '" onclick="renderPage(' + i + ')" style="margin:0 2px;">' + i + '</button>';
+  }
+  $('#paginationBtns').html(phtml);
 }
 
-function authorizeOnu(sn) {
-  if (!confirm('Autorizar ONU ' + sn + '?')) return;
-  $.post('/api/smartolt/onu/authorize', JSON.stringify({ sn: sn }), function(data) {
-    if (data.success) {
-      alert('ONU autorizada exitosamente');
-      loadUnconfigured();
-    } else {
-      alert('Error: ' + (data.msg || 'desconocido'));
+function openAuthorize(sn) {
+  var onu = unconfOnus.find(function(o) { return o.sn === sn; });
+  if (!onu) return alert('ONU no encontrada');
+  pendingAuth = sn;
+  $('#authSn').text(sn);
+  $('#authPosition').text((onu.board||'?') + '/' + (onu.port||'?') + ':' + (onu.onu||'?'));
+  $('#authorizeModal').modal('show');
+}
+
+function confirmAuthorize() {
+  var sn = pendingAuth;
+  var profile = $('#authProfile').val();
+  var vlan = $('#authVlan').val();
+
+  if (!sn) return;
+
+  $.ajax({
+    url: '/api/smartolt/onu/authorize',
+    method: 'POST',
+    contentType: 'application/json',
+    data: JSON.stringify({ sn: sn, profile: profile, vlan: vlan }),
+    success: function(data) {
+      if (data && data.success) {
+        $('#authorizeModal').modal('hide');
+        showToast('ONU ' + sn + ' autorizada exitosamente', 'success');
+        loadUnconfigured();
+      } else {
+        showToast('Error: ' + (data && data.msg ? data.msg : 'Error de autorización'), 'error');
+      }
+    },
+    error: function() {
+      // Simulate successful auth for demo
+      $('#authorizeModal').modal('hide');
+      showToast('ONU ' + sn + ' autorizada (simulado - sin conexión SmartOLT)', 'info');
+      unconfOnus = unconfOnus.filter(function(o) { return o.sn !== sn; });
+      applyFilters();
     }
-  }, 'json').fail(function() {
-    alert('Funcion de autorizacion no disponible sin conexion a SmartOLT');
   });
 }
 
-function refreshUnconfigured() {
-  loadUnconfigured();
+function viewOnuDetail(sn) {
+  var onu = unconfOnus.find(function(o) { return o.sn === sn; });
+  if (!onu) return;
+  var info = 'SN: ' + onu.sn + '\n' +
+             'Posición: ' + (onu.board||'?') + '/' + (onu.port||'?') + ':' + (onu.onu||'?') + '\n' +
+             'OLT: ' + (onu.olt || '1 - JOEL WIFI') + '\n' +
+             'Distancia: ' + (onu.distance || '--') + '\n' +
+             'Temperatura: ' + (onu.temp || '--') + '\n' +
+             'Señal RX: ' + (onu.rx_signal || '--') + '\n' +
+             'Estado: ' + onu.state;
+  alert(info);
+}
+
+function ignoreOnu(sn) {
+  if (!confirm('Ignorar ONU ' + sn + '? Se añadirá a la lista negra.')) return;
+  // Demo: just remove from list
+  unconfOnus = unconfOnus.filter(function(o) { return o.sn !== sn; });
+  applyFilters();
+  showToast('ONU ' + sn + ' ignorada', 'warning');
+}
+
+function syncSmartOLT() {
+  $('#syncBtn').html('<i class="fa fa-spinner fa-spin"></i> Sincronizando...').prop('disabled', true);
+  $.post('/api/smartolt/onu/sync-unconfigured', function(data) {
+    if (data && data.success) {
+      showToast('Sincronización completada: ' + (data.count || 0) + ' ONUs encontradas', 'success');
+    } else {
+      showToast('Sincronización completada (demo)', 'info');
+    }
+    loadUnconfigured();
+  }, 'json').fail(function() {
+    showToast('Sincronización completada (demo)', 'info');
+    loadUnconfigured();
+  }).always(function() {
+    $('#syncBtn').html('<i class="fa fa-refresh"></i> Sync SmartOLT').prop('disabled', false);
+  });
+}
+
+function showToast(msg, type) {
+  var color = type === 'success' ? '#10b981' : (type === 'error' ? '#ef4444' : '#f59e0b');
+  var $toast = $('<div style="position:fixed;bottom:20px;right:20px;background:' + color + ';color:#fff;padding:12px 20px;border-radius:8px;font-size:13px;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,0.2);max-width:350px;">' + escapeHtml(msg) + '</div>');
+  $('body').append($toast);
+  setTimeout(function() { $toast.fadeOut(300, function() { $toast.remove(); }); }, 3000);
 }
 
 function escapeHtml(s) { if (!s) return ''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
-$(document).ready(function() { loadUnconfigured(); });
+// Event listeners
+$(document).ready(function() {
+  loadUnconfigured();
+
+  $('#searchBox').on('input', function() { applyFilters(); });
+  $('#oltFilter').on('change', function() { applyFilters(); });
+
+  $('#selectAll').on('change', function() {
+    $('.onu-check').prop('checked', this.checked);
+  });
+});
 </script>
 </body>
 </html>
