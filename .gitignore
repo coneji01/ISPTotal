@@ -1,67 +1,14 @@
-isptotal.db
-isptotal.db-wal
-isptotal.db-shm
-database.sqlite
 node_modules/
-/tmp/
-
-# managed by open-wa
-**.data.json
-**.node-persist**
-**_IGNORE_**
-# end managed by open-wa
-
-# OpenWa
-openwa-sessions/
-openwa-qr.png
-qr-capture.png
-qr-check.png
-qr-from-page.png
-qr-from-puppeteer.png
-openwa.log
-backend/.wwebjs_cache/
-backend/.node-persist/
-
-# Backups
+data/*.db
 backups/
-
-# Postman collections (may contain secrets)
-*.sw_col.json
-*.postman_collection.json
-
-# Stale dev files
-wa-*.png
-wa-*.html
-
-# Multi-tenant data
-data/
-.wwebjs_cache/
-backend/isp.db
-backend/openwa-service.js.bak
-graphify-out/
-*.bak
-*.bak.*
-*.newbak
-
-# Graphify generated files
-.graphify/
-
-# Tracked files removed from index (DB + logs)
-backend/database.sqlite
-backend/database.sqlite-wal
-backend/database.sqlite-shm
-logs/
+uploads/
+.env
 *.log
-
-# Backups
-*.backup
-*.backup*
-*.bak
-*.bak*
-
-# Dev simulation scripts
-backend/simulate-data.js
-backend/simulate-gastos.js
-
-# Dev/test DBs
-demo*.db
+test_backup*.zip
+smartolt-clone/
+ISPTotal-ARCHITECTURE.html
+PROJECT-MAP.md
+*.ps1
+*.db
+*.db-shm
+*.db-wal
