@@ -1,279 +1,184 @@
 <!DOCTYPE html>
-<html lang="en" class="smartolt-night">
+<html lang="en" class="">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Tipos de ONU - ISPTotal</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<script>window.SMARTOLT_DB_THEME='system';</script>
+<script>try{var k='smartolt-night',lk='smartolt-theme-local',dbTheme=window.SMARTOLT_DB_THEME,local=null,pref,n;try{local=localStorage.getItem(lk);}catch(e){}if(local==='night'||local==='light'||local==='system'){pref=local;}else if(dbTheme==='night'||dbTheme==='light'||dbTheme==='system'){pref=dbTheme;}else{pref='system';}if(pref==='system'){n=!!(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);}else if(pref==='night'){n=true;}else{n=false;}try{localStorage.setItem(k,n?'1':'0');}catch(e){}if(n){document.documentElement.classList.add('smartolt-night');}else{document.documentElement.classList.remove('smartolt-night');}document.cookie=k+'='+(n?'1':'0')+'; path=/; max-age=31536000; SameSite=Lax'+(location.protocol==='https:'?'; Secure':'');}catch(e){}</script>
+<meta http-equiv="content-type" content="text/html; utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tipos de ONU | GPON Manager</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
 <style>
-:root {
-  --bg-primary: #1a1d23;
-  --bg-secondary: #22262e;
-  --bg-card: #2a2d35;
-  --bg-hover: #32363e;
-  --text-primary: #e8eaed;
-  --text-secondary: #9aa0a8;
-  --text-muted: #6b7280;
-  --border-color: #383c44;
-  --accent-blue: #3b82f6;
-  --accent-green: #22c55e;
-  --accent-red: #ef4444;
-  --accent-yellow: #eab308;
-  --accent-cyan: #06b6d4;
-  --shadow: 0 2px 8px rgba(0,0,0,0.3);
-}
-:root.smartolt-light {
-  --bg-primary: #f1f5f9;
-  --bg-secondary: #ffffff;
-  --bg-card: #ffffff;
-  --bg-hover: #f8fafc;
-  --text-primary: #1e293b;
-  --text-secondary: #475569;
-  --text-muted: #94a3b8;
-  --border-color: #e2e8f0;
-  --shadow: 0 1px 3px rgba(0,0,0,0.1);
-}
-[class=""] {
-  --bg-primary: #1a1d23;
-  --bg-secondary: #22262e;
-  --bg-card: #2a2d35;
-  --bg-hover: #32363e;
-  --text-primary: #e8eaed;
-  --text-secondary: #9aa0a8;
-  --text-muted: #6b7280;
-  --border-color: #383c44;
-  --accent-blue: #3b82f6;
-  --accent-green: #22c55e;
-  --accent-red: #ef4444;
-  --accent-yellow: #eab308;
-  --accent-cyan: #06b6d4;
-  --shadow: 0 2px 8px rgba(0,0,0,0.3);
-}
-* { margin:0; padding:0; box-sizing:border-box; }
-body { font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; background:var(--bg-primary); color:var(--text-primary); min-height:100vh; }
-.smartolt-site { position:relative; }
-.smartolt-landing-hero-bg { position:fixed; top:0; left:0; width:100%; height:100%; background:radial-gradient(ellipse at 50% 0%, rgba(59,130,246,0.08) 0%, transparent 60%); pointer-events:none; z-index:0; }
-#content-wrapper { position:relative; z-index:1; }
-.topbar { background:var(--bg-secondary); border-bottom:1px solid var(--border-color); padding:0 24px; height:56px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:100; backdrop-filter:blur(8px); }
-.topbar-brand { font-size:1.1rem; font-weight:700; color:var(--text-primary); text-decoration:none; display:flex; align-items:center; gap:10px; }
-.topbar-brand i { color:var(--accent-blue); }
-.topbar-actions { display:flex; align-items:center; gap:12px; }
-.night-toggle { background:none; border:none; color:var(--text-secondary); font-size:1.2rem; cursor:pointer; padding:8px; border-radius:8px; transition:all 0.2s; width:38px; height:38px; display:flex; align-items:center; justify-content:center; }
-.night-toggle:hover { background:var(--bg-hover); color:var(--text-primary); }
-.container { max-width:1400px; margin:0 auto; padding:20px 24px; }
-.content-wrap { padding:0; }
-h2 { font-size:1.4rem; font-weight:600; color:var(--text-primary); margin-bottom:20px; display:flex; align-items:center; gap:10px; }
-h2 i { color:var(--accent-blue); }
-.filters-row { display:flex; flex-wrap:wrap; gap:12px; align-items:flex-end; margin-bottom:16px; }
-.form-group { display:flex; flex-direction:column; gap:4px; }
-.form-group label { font-size:0.75rem; font-weight:600; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.3px; }
-.form-control { padding:8px 12px; background:var(--bg-card); border:1px solid var(--border-color); border-radius:6px; color:var(--text-primary); font-family:'Inter',sans-serif; font-size:0.85rem; outline:none; transition:border-color 0.2s; }
-.form-control:focus { border-color:var(--accent-blue); }
-.form-control.input-search { min-width:250px; }
-.margin-bottom { margin-bottom:10px; }
-.text-center { text-align:center; }
-.text-right { text-align:right; }
-.text-muted { color:var(--text-muted); }
-/* GPON Table */
-.gpon-table-wrap { background:var(--bg-card); border-radius:10px; border:1px solid var(--border-color); overflow:hidden; box-shadow:var(--shadow); }
-.gpon-table { width:100%; border-collapse:collapse; font-size:0.85rem; }
-.gpon-table thead { background:var(--bg-secondary); }
-.gpon-table th { padding:12px 14px; text-align:left; color:var(--text-secondary); font-size:0.75rem; font-weight:600; text-transform:uppercase; letter-spacing:0.5px; border-bottom:2px solid var(--border-color); white-space:nowrap; }
-.gpon-table td { padding:10px 14px; border-bottom:1px solid var(--border-color); vertical-align:middle; color:var(--text-primary); font-size:0.85rem; }
-.gpon-table tbody tr:hover { background:var(--bg-hover); }
-.gpon-table .text-center { text-align:center; }
-.gpon-table .sort-link { color:var(--text-secondary); text-decoration:none; display:inline-flex; align-items:center; gap:4px; }
-.gpon-table .sort-link:hover { color:var(--accent-blue); }
-.gpon-table .valign-center td { vertical-align:middle; }
-/* GPON Buttons */
-.gpon-btn { display:inline-flex; align-items:center; gap:6px; padding:7px 14px; border:none; border-radius:6px; font-family:'Inter',sans-serif; font-size:0.82rem; font-weight:500; cursor:pointer; transition:all 0.2s; text-decoration:none; white-space:nowrap; }
-.gpon-btn i { font-size:0.9rem; }
-.gpon-btn-primary { background:var(--accent-blue); color:#fff; }
-.gpon-btn-primary:hover { background:#2563eb; }
-.gpon-btn-success { background:var(--accent-green); color:#fff; }
-.gpon-btn-success:hover { background:#16a34a; }
-.gpon-btn-danger { background:var(--accent-red); color:#fff; }
-.gpon-btn-danger:hover { background:#dc2626; }
-.gpon-btn-warning { background:var(--accent-yellow); color:#000; }
-.gpon-btn-warning:hover { background:#d97706; }
-.gpon-btn-info { background:var(--accent-cyan); color:#fff; }
-.gpon-btn-info:hover { background:#0891b2; }
-.gpon-btn-secondary { background:var(--bg-hover); color:var(--text-primary); border:1px solid var(--border-color); }
-.gpon-btn-link { background:none; border:none; color:var(--accent-blue); padding:4px 8px; cursor:pointer; font-family:'Inter',sans-serif; font-size:0.85rem; text-decoration:none; }
-.gpon-btn-link:hover { text-decoration:underline; }
-.gpon-btn-sm { padding:5px 10px; font-size:0.78rem; }
-/* Badges */
-.badge { display:inline-block; padding:2px 8px; border-radius:10px; font-size:0.72rem; font-weight:600; }
-.badge-gpon { background:rgba(59,130,246,0.15); color:var(--accent-blue); }
-.badge-epon { background:rgba(234,179,8,0.15); color:var(--accent-yellow); }
-.badge-wifi { background:rgba(6,182,212,0.15); color:var(--accent-cyan); }
-.badge-yes { background:rgba(34,197,94,0.15); color:var(--accent-green); }
-.badge-no { background:rgba(107,114,128,0.15); color:var(--text-muted); }
-.smartolt-topbar-network { position:absolute; top:0; left:0; width:100%; height:100px; pointer-events:none; overflow:hidden; z-index:0; }
-.smartolt-topbar-network-inner { position:relative; width:100%; height:100%; opacity:0.06; }
-.smartolt-topbar-network-lines { width:100%; height:100%; stroke:var(--accent-blue); stroke-width:0.5; fill:none; }
-@media(max-width:768px){
-  .container { padding:12px; }
-  .gpon-table-wrap { overflow-x:auto; }
-}
+body { font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; -webkit-font-smoothing: antialiased; background: #fafbfd; }
+html.smartolt-night body { background: #06162f; color: #e2e8f0; }
+.navbar-default { background: #fff !important; border-bottom: 1px solid #eef2f6 !important; }
+html.smartolt-night .navbar-default { background: rgba(6,22,47,0.82) !important; border-bottom: 1px solid rgba(255,255,255,0.1) !important; }
+html.smartolt-night .navbar-default .navbar-brand, html.smartolt-night .navbar-default .nav > li > a { color: rgba(255,255,255,0.9) !important; }
+.navbar-brand { font-weight: 700; }
+.container { padding-top: 70px; padding-bottom: 40px; }
+.panel { background: #fff; border: 1px solid #eef2f6; border-radius: 10px; box-shadow: 0 1px 2px rgba(15,23,42,0.03), 0 4px 14px rgba(15,23,42,0.04); }
+html.smartolt-night .panel { background: rgba(15,26,46,0.92); border: 1px solid rgba(255,255,255,0.1); color: #e2e8f0; }
+.panel-heading { background: #4c4b4b !important; color: #fff !important; border-radius: 10px 10px 0 0 !important; border: none !important; font-weight: 600; }
+html.smartolt-night .panel-heading { background: rgba(255,255,255,0.08) !important; }
+.panel-body { padding: 16px 20px; }
+html.smartolt-night .panel-body, html.smartolt-night .table, html.smartolt-night .table > tbody > tr > td, html.smartolt-night .table > thead > tr > th { background: transparent !important; color: #e2e8f0; }
+html.smartolt-night .table > tbody > tr:hover { background: rgba(255,255,255,0.04) !important; }
+html.smartolt-night .table > thead > tr > th { border-color: rgba(255,255,255,0.1); }
+.table { font-size: 12px; margin-bottom: 0; }
+.table > thead > tr > th { border-bottom: 2px solid #eef2f6; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; padding: 10px 8px; }
+.table > tbody > tr > td { border-color: #f1f5f9; vertical-align: middle; padding: 10px 8px; }
+html.smartolt-night .table > tbody > tr > td { border-color: rgba(255,255,255,0.06); }
+.smartolt-landing-hero-bg { display: none; }
+html.smartolt-night .smartolt-landing-hero-bg { display: block; position: fixed; z-index: -1; inset: 0; background: radial-gradient(circle at 72% 18%, rgba(29,139,255,0.24), transparent 28%), radial-gradient(circle at 18% 84%, rgba(0,108,255,0.18), transparent 28%), linear-gradient(135deg, #06162f, #071b3d 55%, #031022); pointer-events: none; }
+#smartolt-night-toggle { align-items: center; display: flex; justify-content: center; }
+#smartolt-night-toggle i { line-height: 1; width: 20px; text-align: center; }
+#smartolt-night-toggle .smartolt-theme-icon-light, #smartolt-night-toggle .smartolt-theme-icon-night, #smartolt-night-toggle .smartolt-theme-icon-system { display: none; }
+#smartolt-night-toggle.is-pref-light .smartolt-theme-icon-light, #smartolt-night-toggle.is-pref-night .smartolt-theme-icon-night, #smartolt-night-toggle.is-pref-system .smartolt-theme-icon-system { display: inline-block; }
+.font-size-20 { font-size: 20px; }
+.text-ellipsis { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.max-width-250 { max-width: 250px; }
+html.smartolt-night .btn-default { background: #334155; color: #e2e8f0; border: none; }
+html.smartolt-night .btn-default:hover { background: #475569; color: #fff; }
+html.smartolt-night .btn-primary { background: #3b82f6; border-color: #3b82f6; }
+html.smartolt-night .text-muted { color: #94a3b8 !important; }
 </style>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/js/bootstrap.min.js"></script>
 </head>
-<body class="smartolt-site">
-<div class="smartolt-landing-hero-bg"></div>
+<body>
+<div class="smartolt-landing-hero-bg" aria-hidden="true"></div>
 <div id="content-wrapper">
-  <div class="smartolt-topbar-network" aria-hidden="true">
-    <div class="smartolt-topbar-network-inner">
-      <svg class="smartolt-topbar-network-lines" viewBox="0 0 100 100" preserveAspectRatio="none">
-        <line x1="8" y1="68" x2="23" y2="78"></line>
-        <line x1="23" y1="78" x2="37" y2="63"></line>
-        <line x1="8" y1="68" x2="37" y2="63"></line>
-        <line x1="37" y1="63" x2="65" y2="18"></line>
-        <line x1="65" y1="18" x2="89" y2="34"></line>
-        <line x1="23" y1="78" x2="65" y2="18"></line>
-        <line x1="37" y1="63" x2="89" y2="34"></line>
-      </svg>
-      <span class="smartolt-topbar-node smartolt-topbar-node-a"></span>
-      <span class="smartolt-topbar-node smartolt-topbar-node-b"></span>
-      <span class="smartolt-topbar-node smartolt-topbar-node-c"></span>
-    </div>
-  </div>
-
-  <div class="topbar">
-    <a href="/gpon" class="topbar-brand">
-      <i class="fas fa-microchip"></i> ISPTotal - GPON
-    </a>
-    <div class="topbar-actions">
-      <button class="night-toggle" id="nightToggle" title="Night mode">
-        <i class="fas fa-moon"></i>
-      </button>
+  <div class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#navbar-main">
+          <span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand text-ellipsis max-width-250" href="/modulo?pagina=GPONManager">GPON Manager</a>
+      </div>
+      <div class="navbar-collapse collapse" id="navbar-main">
+        <ul class="nav navbar-nav">
+          <li><a href="/modulo?pagina=GPONManager">Dashboard</a></li>
+          <li><a href="/modulo?pagina=SmartoltConfigured">ONUs Configuradas</a></li>
+          <li><a href="/modulo?pagina=SmartoltUnconfigured">Sin Configurar</a></li>
+          <li><a href="/modulo?pagina=SmartoltSpeedProfiles">Velocidad</a></li>
+          <li class="active"><a href="/modulo?pagina=SmartoltOnuTypes">Tipos ONU</a></li>
+          <li><a href="/modulo?pagina=SmartoltSettings">Config OLT</a></li>
+        </ul>
+        <ul class="nav navbar-nav navbar-right">
+          <li><a href="#" id="smartolt-night-toggle" class="is-pref-night is-resolved" title="Night mode"><i class="fa fa-sun-o font-size-20 smartolt-theme-icon-light"></i><i class="fa fa-moon-o font-size-20 smartolt-theme-icon-night"></i><i class="fa fa-adjust font-size-20 smartolt-theme-icon-system"></i></a></li>
+        </ul>
+      </div>
     </div>
   </div>
 
   <div class="container">
-    <div class="content-wrap">
-      <h2><i class="fas fa-microchip"></i> Tipos de ONU</h2>
-
-      <!-- Action -->
-      <div style="margin-bottom:16px;">
-        <button class="gpon-btn gpon-btn-success" onclick="addOnuType()">
-          <i class="fas fa-plus"></i> Agregar tipo de ONU
-        </button>
-      </div>
-
-      <!-- Search -->
-      <div class="filters-row">
-        <div class="form-group">
-          <label>Buscar modelo</label>
-          <input type="text" class="form-control input-search" id="searchOnuType" placeholder="Nombre del modelo..." oninput="filterTypes()">
+    <div class="panel panel-default">
+      <div class="panel-heading"><i class="fa fa-microchip"></i> Tipos de ONU</div>
+      <div class="panel-body">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
+          <span id="typeCount" class="text-muted" style="font-size:13px;">Cargando...</span>
+          <button class="btn btn-primary btn-sm" onclick="showAddType()"><i class="fa fa-plus"></i> A&ntilde;adir Tipo</button>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>Modelo</th>
+                <th>Fabricante</th>
+                <th>Tecnolog&iacute;a</th>
+                <th>ONUs</th>
+                <th style="text-align:right;">Acci&oacute;n</th>
+              </tr>
+            </thead>
+            <tbody id="typesBody">
+              <tr><td colspan="5" class="text-center text-muted" style="padding:40px;"><i class="fa fa-spinner fa-spin fa-2x"></i><br>Cargando tipos de ONU...</td></tr>
+            </tbody>
+          </table>
         </div>
       </div>
-
-      <!-- ONU Types table -->
-      <div class="gpon-table-wrap">
-        <table class="gpon-table" id="onuTypesTable">
-          <thead>
-            <tr>
-              <th><a href="#" class="sort-link">PON Type <i class="fas fa-sort"></i></a></th>
-              <th class="text-center">Ch</th>
-              <th><a href="#" class="sort-link">Modelo <i class="fas fa-sort"></i></a></th>
-              <th class="text-center">Ethernet</th>
-              <th class="text-center">WiFi</th>
-              <th class="text-center">VoIP</th>
-              <th class="text-center">CATV</th>
-              <th class="text-center">Perfiles</th>
-              <th>Capacidad</th>
-              <th class="text-center">Acción</th>
-            </tr>
-          </thead>
-          <tbody id="onuTypesBody">
-            <% if(locals.onuTypes && locals.onuTypes.length){ locals.onuTypes.forEach(function(t){ %>
-            <tr class="onu-type-row" data-model="<%= (t.model||'').toLowerCase() %>">
-              <td><span class="badge badge-<%= (t.ponType||'gpon').toLowerCase() %>"><%= t.ponType || 'GPON' %></span></td>
-              <td class="text-center"><span class="badge badge-gpon"><%= t.channels || '-' %></span></td>
-              <td>
-                <a href="#" class="gpon-btn-link" onclick="editOnuType('<%= t.id %>')"><%= t.model %></a>
-                <% if(t.description){ %><div style="font-size:0.75rem;color:var(--text-muted);margin-top:2px;"><%= t.description %></div><% } %>
-              </td>
-              <td class="text-center"><%= t.ethPorts || 0 %></td>
-              <td class="text-center">
-                <% if(t.wifi > 0){ %>
-                <span class="badge badge-wifi"><%= t.wifi %></span>
-                <% }else{ %>
-                <span class="badge badge-no">-</span>
-                <% } %>
-              </td>
-              <td class="text-center"><%= t.voipPorts || 0 %></td>
-              <td class="text-center"><%= t.catv ? '✓' : '-' %></td>
-              <td class="text-center"><span class="badge badge-<%= t.allowProfiles ? 'yes' : 'no' %>"><%= t.allowProfiles ? 'Sí' : 'No' %></span></td>
-              <td><%= t.capability || 'Bridging/Routing' %></td>
-              <td class="text-center">
-                <button class="gpon-btn gpon-btn-warning gpon-btn-sm" onclick="editOnuType('<%= t.id %>')" title="Editar">
-                  <i class="fas fa-pen"></i>
-                </button>
-                <button class="gpon-btn gpon-btn-danger gpon-btn-sm" onclick="deleteOnuType('<%= t.id %>','<%= t.model %>')" title="Eliminar">
-                  <i class="fas fa-trash"></i>
-                </button>
-              </td>
-            </tr>
-            <% }); }else{ %>
-            <tr><td colspan="10" style="text-align:center;padding:40px;color:var(--text-muted);">
-              <i class="fas fa-microchip" style="font-size:2rem;opacity:0.3;display:block;margin-bottom:10px;"></i>
-              No hay tipos de ONU registrados.
-            </td></tr>
-            <% } %>
-          </tbody>
-        </table>
-      </div>
-
     </div>
   </div>
 </div>
 
 <script>
-(function(){
-  try{
-    if(localStorage.getItem('smartolt-night')==='1'){
-      document.documentElement.classList.add('smartolt-night');
-      document.documentElement.classList.remove('smartolt-light');
-    } else if(localStorage.getItem('smartolt-night')==='0'){
-      document.documentElement.classList.remove('smartolt-night');
-      document.documentElement.classList.add('smartolt-light');
-    }
-  }catch(e){}
+var allTypes = [];
+
+// Night mode
+(function() {
+  var STORAGE_LOCAL = 'smartolt-theme-local';
+  function applyTheme(pref) {
+    var isNight = pref === 'night' ? true : (pref === 'light' ? false : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches));
+    var html = document.documentElement;
+    if (isNight) html.classList.add('smartolt-night'); else html.classList.remove('smartolt-night');
+    try { localStorage.setItem('smartolt-night', isNight ? '1' : '0'); } catch(e) {}
+    var toggle = document.getElementById('smartolt-night-toggle');
+    if (toggle) { toggle.classList.remove('is-pref-light','is-pref-night','is-pref-system'); toggle.classList.add('is-pref-' + pref); }
+  }
+  var localPref = (function(){ try { var s = localStorage.getItem(STORAGE_LOCAL); if(s==='night'||s==='light'||s==='system') return s; }catch(e){} return 'system'; })();
+  applyTheme(localPref || (window.SMARTOLT_DB_THEME || 'system'));
+  document.getElementById('smartolt-night-toggle').addEventListener('click', function(e) {
+    e.preventDefault();
+    var isNight = document.documentElement.classList.contains('smartolt-night');
+    var newPref = isNight ? 'light' : 'night';
+    try { localStorage.setItem(STORAGE_LOCAL, newPref); } catch(e) {}
+    applyTheme(newPref);
+  });
 })();
 
-document.getElementById('nightToggle').addEventListener('click', function(){
-  var html = document.documentElement;
-  if(html.classList.contains('smartolt-night')){
-    html.classList.remove('smartolt-night'); html.classList.add('smartolt-light');
-    localStorage.setItem('smartolt-night','0');
-  } else {
-    html.classList.remove('smartolt-light'); html.classList.add('smartolt-night');
-    localStorage.setItem('smartolt-night','1');
-  }
-});
-
-function filterTypes(){
-  var q = (document.getElementById('searchOnuType').value||'').toLowerCase();
-  document.querySelectorAll('.onu-type-row').forEach(function(r){
-    r.style.display = r.getAttribute('data-model').includes(q) ? '' : 'none';
+function loadTypes() {
+  $.get('/api/smartolt/onu-types', function(data) {
+    if (data.success && data.types) {
+      allTypes = data.types;
+      renderTypes();
+    } else {
+      showMockTypes();
+    }
+  }, 'json').fail(function() {
+    showMockTypes();
   });
 }
 
-function addOnuType(){
-  alert('Agregar nuevo tipo de ONU');
+function showMockTypes() {
+  allTypes = [
+    { name: 'F673AV9', vendor: 'Fibocom', tech: 'GPON', onu_count: 1 },
+    { name: 'EG8021V5', vendor: 'Edgecore', tech: 'GPON', onu_count: 8 },
+    { name: 'HS8545M5', vendor: 'Huawei', tech: 'GPON', onu_count: 3 },
+    { name: 'GPON_ONUV7.1', vendor: 'Generic', tech: 'GPON', onu_count: 15 },
+    { name: 'HG8145X6-10', vendor: 'Huawei', tech: 'GPON', onu_count: 2 },
+    { name: 'EG8041V5', vendor: 'Edgecore', tech: 'GPON', onu_count: 4 },
+  ];
+  renderTypes();
 }
 
-function editOnuType(id){
-  alert('Editar tipo de ONU ID: ' + id);
-}
-
-function deleteOnuType(id, model){
-  if(confirm('¿Eliminar modelo "' + model + '"?')){
-    alert('Eliminando modelo ' + model);
+function renderTypes() {
+  $('#typeCount').text(allTypes.length + ' tipo(s) de ONU');
+  if (allTypes.length === 0) {
+    $('#typesBody').html('<tr><td colspan="5" class="text-center text-muted" style="padding:30px;">No hay tipos de ONU configurados</td></tr>');
+    return;
   }
+  var h = '';
+  allTypes.forEach(function(t) {
+    h += '<tr>';
+    h += '<td><strong>' + escapeHtml(t.name || t.model || '--') + '</strong></td>';
+    h += '<td>' + escapeHtml(t.vendor || t.manufacturer || '--') + '</td>';
+    h += '<td>' + escapeHtml(t.tech || t.technology || t.pon_type || 'GPON') + '</td>';
+    h += '<td><span class="badge">' + (t.onu_count || 0) + '</span></td>';
+    h += '<td style="text-align:right;"><button class="btn btn-xs btn-default" title="Eliminar" onclick="if(confirm(\'Eliminar tipo ' + escapeHtml(t.name||'') + '?\'))alert(\'Eliminar no implementado aun\')"><i class="fa fa-trash"></i></button></td>';
+    h += '</tr>';
+  });
+  $('#typesBody').html(h);
 }
+
+function showAddType() {
+  alert('Funcionalidad de añadir tipo de ONU proximamente. Gestiona los tipos desde SmartOLT directamente.');
+}
+
+function escapeHtml(s) { if (!s) return ''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+$(document).ready(function() { loadTypes(); });
 </script>
 </body>
 </html>

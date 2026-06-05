@@ -1,130 +1,67 @@
+<!DOCTYPE html>
+<html lang="en" class="">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<script>window.SMARTOLT_DB_THEME='system';</script>
+<script>try{var k='smartolt-night',lk='smartolt-theme-local',dbTheme=window.SMARTOLT_DB_THEME,local=null,pref,n;try{local=localStorage.getItem(lk);}catch(e){}if(local==='night'||local==='light'||local==='system'){pref=local;}else if(dbTheme==='night'||dbTheme==='light'||dbTheme==='system'){pref=dbTheme;}else{pref='system';}if(pref==='system'){n=!!(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);}else if(pref==='night'){n=true;}else{n=false;}try{localStorage.setItem(k,n?'1':'0');}catch(e){}if(n){document.documentElement.classList.add('smartolt-night');}else{document.documentElement.classList.remove('smartolt-night');}document.cookie=k+'='+(n?'1':'0')+'; path=/; max-age=31536000; SameSite=Lax'+(location.protocol==='https:'?'; Secure':'');}catch(e){}</script>
+<meta http-equiv="content-type" content="text/html; utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SmartOLT App | GPON Manager</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
 <style>
-.smartolt-landing {
-  max-width: 700px;
-  margin: 40px auto;
-  padding: 0 16px;
-  text-align: center;
-}
-
-.smartolt-logo {
-  font-size: 3rem;
-  color: #018FFB;
-  margin-bottom: 16px;
-}
-
-.smartolt-landing h2 {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #1e293b;
-  margin-bottom: 8px;
-}
-
-.smartolt-landing p {
-  color: #64748b;
-  font-size: 0.95rem;
-  margin-bottom: 28px;
-  line-height: 1.5;
-}
-
-.smartolt-btn-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  justify-content: center;
-}
-
-.smartolt-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 14px 24px;
-  border-radius: 10px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  text-decoration: none;
-  transition: all 0.2s;
-  border: none;
-  cursor: pointer;
-  min-width: 200px;
-  justify-content: center;
-}
-
-.smartolt-btn-primary {
-  background: #018FFB;
-  color: #fff;
-}
-.smartolt-btn-primary:hover {
-  background: #0175cc;
-  color: #fff;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(1, 143, 251, 0.25);
-  text-decoration: none;
-}
-
-.smartolt-btn-secondary {
-  background: #f1f5f9;
-  color: #475569;
-  border: 1px solid #e2e8f0;
-}
-.smartolt-btn-secondary:hover {
-  background: #e2e8f0;
-  color: #1e293b;
-  text-decoration: none;
-}
-
-.smartolt-info-box {
-  margin-top: 32px;
-  padding: 18px 22px;
-  background: #f0f9ff;
-  border: 1px solid #bae6fd;
-  border-radius: 10px;
-  text-align: left;
-  font-size: 0.85rem;
-  color: #334155;
-  line-height: 1.5;
-}
-
-.smartolt-info-box strong {
-  color: #0369a1;
-}
+body { font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; margin:0; padding:0; background: #fafbfd; }
+html.smartolt-night body { background: #06162f; color: #e2e8f0; }
+.smartolt-landing-hero-bg { display: none; }
+html.smartolt-night .smartolt-landing-hero-bg { display: block; position: fixed; z-index: -1; inset: 0; background: radial-gradient(circle at 72% 18%, rgba(29,139,255,0.24), transparent 28%), radial-gradient(circle at 18% 84%, rgba(0,108,255,0.18), transparent 28%), linear-gradient(135deg, #06162f, #071b3d 55%, #031022); pointer-events: none; }
+.navbar { background: #fff; border-bottom: 1px solid #eef2f6; padding: 8px 16px; display: flex; align-items: center; justify-content: space-between; }
+html.smartolt-night .navbar { background: rgba(6,22,47,0.82); border-color: rgba(255,255,255,0.1); }
+.navbar a { color: #0f172a; text-decoration: none; font-weight: 600; }
+html.smartolt-night .navbar a { color: rgba(255,255,255,0.9); }
+.navbar a:hover { opacity: 0.8; }
+.navbar .nav-right { display: flex; align-items: center; gap: 16px; }
+#smartolt-night-toggle i { line-height: 1; width: 20px; text-align: center; }
+#smartolt-night-toggle .smartolt-theme-icon-light, #smartolt-night-toggle .smartolt-theme-icon-night, #smartolt-night-toggle .smartolt-theme-icon-system { display: none; }
+#smartolt-night-toggle.is-pref-light .smartolt-theme-icon-light, #smartolt-night-toggle.is-pref-night .smartolt-theme-icon-night, #smartolt-night-toggle.is-pref-system .smartolt-theme-icon-system { display: inline-block; }
+.font-size-20 { font-size: 20px; }
+iframe { width: 100%; border: none; }
 </style>
-
-<div class="smartolt-landing">
-  <div class="smartolt-logo"><i class="fas fa-satellite-dish"></i></div>
-  <h2>SmartOLT</h2>
-  <p>
-    SmartOLT no permite ser embebido dentro de otras páginas por seguridad.
-    Accede directamente haciendo clic abajo.
-  </p>
-
-  <div class="smartolt-btn-grid">
-    <a href="https://joelwifi.smartolt.com" target="_blank" rel="noopener" class="smartolt-btn smartolt-btn-primary">
-      <i class="fas fa-external-link-alt"></i> Abrir SmartOLT
-    </a>
-    <a href="/modulo?pagina=GPONManager" class="smartolt-btn smartolt-btn-secondary">
-      <i class="fas fa-tachometer-alt"></i> Dashboard OLT
-    </a>
+</head>
+<body>
+<div class="smartolt-landing-hero-bg" aria-hidden="true"></div>
+<div class="navbar">
+  <div>
+    <a href="/modulo?pagina=GPONManager"><i class="fa fa-arrow-left"></i> GPON Manager</a>
+    <span style="margin-left:10px;font-size:14px;color:#64748b;">SmartOLT App (iframe)</span>
   </div>
-
-  <div class="smartolt-btn-grid" style="margin-top:10px;">
-    <a href="/modulo?pagina=SmartoltConfigured" class="smartolt-btn smartolt-btn-secondary" style="min-width:160px;padding:10px 16px;font-size:0.82rem;">
-      <i class="fas fa-check-circle"></i> ONUs Configuradas
-    </a>
-    <a href="/modulo?pagina=SmartoltUnconfigured" class="smartolt-btn smartolt-btn-secondary" style="min-width:160px;padding:10px 16px;font-size:0.82rem;">
-      <i class="fas fa-clock"></i> ONUs No configuradas
-    </a>
-  </div>
-
-  <div class="smartolt-info-box">
-    <strong><i class="fas fa-info-circle"></i> ¿Por qué no se puede embeker?</strong>
-    <br><br>
-    SmartOLT bloquea la visualización dentro de iframes por seguridad (<code>X-Frame-Options</code>).
-    <br><br>
-    Pero todos los datos de SmartOLT <strong>ya están disponibles</strong> en los módulos de tu sistema vía API:
-    <ul style="margin:8px 0 0 16px;padding:0;">
-      <li><strong>Dashboard OLT</strong> — KPIs, lista de ONUs, estados</li>
-      <li><strong>ONUs Configuradas</strong> — Detalle de cada ONU</li>
-      <li><strong>ONUs No configuradas</strong> — ONUs detectadas sin autorizar</li>
-    </ul>
+  <div class="nav-right">
+    <a href="https://joelwifi.smartolt.com" target="_blank" rel="noopener"><i class="fa fa-external-link"></i> Abrir en pesta&ntilde;a nueva</a>
+    <a href="#" id="smartolt-night-toggle" class="is-pref-night is-resolved" title="Night mode"><i class="fa fa-sun-o font-size-20 smartolt-theme-icon-light"></i><i class="fa fa-moon-o font-size-20 smartolt-theme-icon-night"></i><i class="fa fa-adjust font-size-20 smartolt-theme-icon-system"></i></a>
   </div>
 </div>
+<iframe id="smartoltIframe" src="https://joelwifi.smartolt.com/" height="100%" style="height:calc(100vh - 52px);"></iframe>
+
+<script>
+(function() {
+  var STORAGE_LOCAL = 'smartolt-theme-local';
+  function applyTheme(pref) {
+    var isNight = pref === 'night' ? true : (pref === 'light' ? false : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches));
+    var html = document.documentElement;
+    if (isNight) html.classList.add('smartolt-night'); else html.classList.remove('smartolt-night');
+    try { localStorage.setItem('smartolt-night', isNight ? '1' : '0'); } catch(e) {}
+    var toggle = document.getElementById('smartolt-night-toggle');
+    if (toggle) { toggle.classList.remove('is-pref-light','is-pref-night','is-pref-system'); toggle.classList.add('is-pref-' + pref); }
+  }
+  var localPref = (function(){ try { var s = localStorage.getItem(STORAGE_LOCAL); if(s==='night'||s==='light'||s==='system') return s; }catch(e){} return 'system'; })();
+  applyTheme(localPref || 'system');
+  document.getElementById('smartolt-night-toggle').addEventListener('click', function(e) {
+    e.preventDefault();
+    var isNight = document.documentElement.classList.contains('smartolt-night');
+    var newPref = isNight ? 'light' : 'night';
+    try { localStorage.setItem(STORAGE_LOCAL, newPref); } catch(e) {}
+    applyTheme(newPref);
+  });
+})();
+</script>
+</body>
+</html>

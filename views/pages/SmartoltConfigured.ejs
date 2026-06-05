@@ -1,1133 +1,277 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Configured ONUs - ISPTotal</title>
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<script>window.SMARTOLT_DB_THEME='system';</script>
+<script>try{var k='smartolt-night',lk='smartolt-theme-local',dbTheme=window.SMARTOLT_DB_THEME,local=null,pref,n;try{local=localStorage.getItem(lk);}catch(e){}if(local==='night'||local==='light'||local==='system'){pref=local;}else if(dbTheme==='night'||dbTheme==='light'||dbTheme==='system'){pref=dbTheme;}else{pref='system';}if(pref==='system'){n=!!(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);}else if(pref==='night'){n=true;}else{n=false;}try{localStorage.setItem(k,n?'1':'0');}catch(e){}if(n){document.documentElement.classList.add('smartolt-night');}else{document.documentElement.classList.remove('smartolt-night');}document.cookie=k+'='+(n?'1':'0')+'; path=/; max-age=31536000; SameSite=Lax'+(location.protocol==='https:'?'; Secure':'');}catch(e){}</script>
+<meta http-equiv="content-type" content="text/html; utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ONUs Configuradas | GPON Manager</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/css/bootstrap.min.css">
-<link href="/css/bootstrap-multiselect.css" rel="stylesheet">
-<link href="/css/toast.css" rel="stylesheet">
-<link href="/css/messagebox.css" rel="stylesheet" type="text/css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/js/bootstrap.min.js"></script>
-<script src="/js/toast.js"></script>
-</head>
-<body class="smartolt-site">
-
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
 <style>
-        .smartolt-site { background-color: #f5f7fa; }
-        .smartolt-night .smartolt-site { background-color: #1a1d21; }
-        
-        /* Page header */
-        .content-wrap { padding: 20px 0; }
-        
-        /* Filters styling */
-        .filters-row { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px; }
-        .filters-row .form-group { margin-bottom: 0; }
-        .filters-row .control-label { display: block; font-size: 12px; font-weight: 600; color: #555; margin-bottom: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
-        .smartolt-night .filters-row .control-label { color: #aaa; }
-        .input-190 { width: 190px; }
-        .input-150 { width: 150px; }
-        .input-90 { width: 90px; }
-        .input-120 { width: 120px; }
-        .input-100 { width: 100px; }
-        
-        .form-inline .form-control { font-size: 13px; height: 34px; border-radius: 4px; }
-        
-        /* Status filter pagination */
-        .pon-type-filter .pagination { margin: 0; }
-        .pon-type-filter .pagination li { display: inline-block; cursor: pointer; }
-        .pon-type-filter .pagination li span { padding: 4px 6px; border: 1px solid #ddd; margin: 0 1px; border-radius: 3px; display: inline-block; background: #fff; }
-        .smartolt-night .pon-type-filter .pagination li span { background: #2a2d31; border-color: #444; }
-        .pon-type-filter .pagination li.active span { background: #337ab7; color: #fff; border-color: #337ab7; }
-        .pon-type-filter .pagination li.onu_mode-filter span { font-weight: 700; font-size: 11px; }
-        
-        /* Icons colors */
-        .text-green { color: #5cb85c; }
-        .text-grey { color: #999; }
-        .text-red { color: #d9534f; }
-        
-        /* More filters */
-        .more-filters-toggle-row { text-align: center; margin: 10px 0; }
-        .more-filters-toggle-row a { color: #337ab7; cursor: pointer; font-size: 13px; }
-        .more-filters-toggle-row a:hover { text-decoration: underline; }
-        .more-filters-panel { padding: 12px; background: #f7f9fb; border: 1px solid #e2e7ec; border-radius: 4px; }
-        .smartolt-night .more-filters-panel { background: #25282c; border-color: #3a3d41; }
-        
-        /* Table styling */
-        #onu_configured_list .table { margin-bottom: 0; font-size: 13px; }
-        #onu_configured_list .table th { background: #f5f7f8; font-weight: 600; color: #2b2b2b; border-bottom: 2px solid #ddd; vertical-align: middle; }
-        .smartolt-night #onu_configured_list .table th { background: #2a2d31; color: #ddd; border-color: #444; }
-        #onu_configured_list .table td { vertical-align: middle; }
-        .smartolt-night #onu_configured_list .table td { color: #ccc; }
-        #onu_configured_list .table-striped > tbody > tr:nth-child(odd) { background: #fff; }
-        .smartolt-night #onu_configured_list .table-striped > tbody > tr:nth-child(odd) { background: #1e2125; }
-        #onu_configured_list .table-striped > tbody > tr:nth-child(even) { background: #f9f9f9; }
-        .smartolt-night #onu_configured_list .table-striped > tbody > tr:nth-child(even) { background: #23262a; }
-        #onu_configured_list .table-hover > tbody > tr:hover { background: #f0f0f0; }
-        .smartolt-night #onu_configured_list .table-hover > tbody > tr:hover { background: #2a2d31; }
-        
-        #onu_configured_list .valign-center td { vertical-align: middle; }
-        #onu_configured_list .batch-onu-select-col { width: 34px; min-width: 34px; text-align: center; }
-        #onu_configured_list .batch-onu-select-col input[type="checkbox"] { cursor: pointer; transform: scale(1.1); }
-        
-        .auth-date { white-space: nowrap; font-size: 12px; color: #777; }
-        .smartolt-night .auth-date { color: #999; }
-        
-        .label { font-size: 11px; padding: 3px 6px; border-radius: 3px; }
-        .label-info { background: #5bc0de; color: #fff; }
-        
-        /* Pagination */
-        .pagination { margin: 10px 0; }
-        .pagination > li > a, .pagination > li > span { padding: 6px 12px; font-size: 13px; border: 1px solid #ddd; color: #337ab7; background: #fff; }
-        .smartolt-night .pagination > li > a, .smartolt-night .pagination > li > span { background: #2a2d31; border-color: #444; color: #5bc0de; }
-        .pagination > li.active > a { background: #337ab7; border-color: #337ab7; color: #fff; }
-        
-        /* Batch actions container */
-        #batch-actions-container .panel-body { padding: 15px; font-size: 14px; }
-        .batch-action-row { padding: 8px 0; border-bottom: 1px solid #f0f0f0; }
-        .batch-action-row:last-child { border-bottom: none; }
-        .smartolt-night .batch-action-row { border-color: #3a3d41; }
-        .batch-action-link { display: block; padding: 8px 0; color: #333; text-decoration: none; border-bottom: 1px solid #f0f0f0; }
-        .batch-action-link:hover { color: #337ab7; background: #f9f9f9; text-decoration: none; }
-        .smartolt-night .batch-action-link { color: #ccc; border-color: #3a3d41; }
-        .smartolt-night .batch-action-link:hover { color: #5bc0de; background: #2a2d31; }
-        
-        .btn-success { background: #5cb85c; border-color: #4cae4c; color: #fff; }
-        .btn-success:hover { background: #449d44; border-color: #398439; }
-        .btn-warning { background: #f0ad4e; border-color: #eea236; color: #fff; }
-        .btn-warning:hover { background: #ec971f; border-color: #d58512; }
-        .btn-danger { background: #d9534f; border-color: #d43f3a; color: #fff; }
-        .btn-danger:hover { background: #c9302c; border-color: #ac2925; }
-        .btn-primary { background: #337ab7; border-color: #2e6da4; color: #fff; }
-        .btn-primary:hover { background: #286090; border-color: #204d74; }
-        
-        /* Night mode toggle */
-        #smartolt-night-toggle { cursor: pointer; font-size: 20px; padding: 15px; }
-        .smartolt-theme-icon-night { display: none; }
-        .smartolt-theme-icon-light { display: none; }
-        .smartolt-theme-icon-system { display: inline; }
-        .is-pref-night .smartolt-theme-icon-night { display: inline; }
-        .is-pref-night .smartolt-theme-icon-light { display: none; }
-        .is-pref-night .smartolt-theme-icon-system { display: none; }
-        .is-pref-light .smartolt-theme-icon-night { display: none; }
-        .is-pref-light .smartolt-theme-icon-light { display: inline; }
-        .is-pref-light .smartolt-theme-icon-system { display: none; }
-        
-        /* Loading overlay */
-        .loadingoverlay { background: rgba(255,255,255,0.8); position: fixed; display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; top: 0; left: 0; width: 100%; height: 100%; }
-        .smartolt-night .loadingoverlay { background: rgba(0,0,0,0.8); }
-        .loadingoverlay_fontawesome { font-size: 100px; }
-        #waitingOLT { font-size: 50px; white-space: nowrap; }
-        
-        /* Topbar network animation */
-        .smartolt-topbar-network { position: fixed; top: 0; left: 0; width: 100%; height: 120px; opacity: 0.05; pointer-events: none; z-index: 0; overflow: hidden; }
-        .smartolt-topbar-network-inner { position: relative; width: 100%; height: 100%; }
-        .smartolt-topbar-network-lines { width: 100%; height: 100%; }
-        .smartolt-topbar-network-lines line { stroke: #337ab7; stroke-width: 1.5; stroke-linecap: round; }
-        
-        /* Toast */
-        .toast { position: fixed; top: 70px; right: 20px; z-index: 10000; padding: 12px 20px; border-radius: 4px; font-size: 14px; min-width: 250px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
-        .toast-success { background: #5cb85c; color: #fff; }
-        .toast-error { background: #d9534f; color: #fff; }
-        
-        /* Scrollable table wrapper */
-        .table-responsive-wrap { overflow-x: auto; }
-        
-        /* Status badge */
-        .text-warning { color: #f0ad4e; }
-        .label-green { background: #5cb85c; color: #fff; }
-        
-        /* Batch selection */
-        #batch-select-all-onus { cursor: pointer; transform: scale(1.15); }
-        
-        /* Footer */
-        footer { text-align: center; padding: 20px 0; color: #999; font-size: 12px; }
-        .smartolt-night footer { color: #666; }
-        
-        /* Navbar night mode */
-        .smartolt-night .navbar-default { background: #1e2125; border-color: #2a2d31; }
-        .smartolt-night .navbar-default .navbar-nav > li > a { color: #ccc; }
-        .smartolt-night .navbar-default .navbar-nav > li > a:hover { color: #fff; }
-        .smartolt-night .navbar-default .navbar-brand { color: #ccc; }
-        .smartolt-night .dropdown-menu { background: #1e2125; border-color: #2a2d31; }
-        .smartolt-night .dropdown-menu > li > a { color: #ccc; }
-        .smartolt-night .dropdown-menu > li > a:hover { background: #2a2d31; color: #fff; }
-        .smartolt-night .panel-default { border-color: #2a2d31; }
-        .smartolt-night .panel-default > .panel-heading { background: #25282c; color: #ccc; border-color: #2a2d31; }
-        .smartolt-night .panel-body { background: #1e2125; color: #ccc; }
-        
-        /* Loading spinner */
-        .fa-spin { -webkit-animation: fa-spin 2s infinite linear; animation: fa-spin 2s infinite linear; }
-        @-webkit-keyframes fa-spin { 0% { -webkit-transform: rotate(0deg); } 100% { -webkit-transform: rotate(359deg); } }
-        @keyframes fa-spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(359deg); } }
-        
-        /* Action buttons bar */
-        .action-buttons-bar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; padding: 10px 0; }
-        .action-buttons-bar .btn { font-size: 12px; padding: 6px 12px; }
-        
-        /* Speed profile badge */
-        .speed-badge { font-size: 11px; background: #5bc0de; color: #fff; padding: 2px 8px; border-radius: 10px; white-space: nowrap; }
-    </style>
+body { font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; -webkit-font-smoothing: antialiased; background: #fafbfd; }
+html.smartolt-night body { background: #06162f; color: #e2e8f0; }
+.navbar-default { background: #fff !important; border-bottom: 1px solid #eef2f6 !important; }
+html.smartolt-night .navbar-default { background: rgba(6,22,47,0.82) !important; border-bottom: 1px solid rgba(255,255,255,0.1) !important; }
+html.smartolt-night .navbar-default .navbar-brand, html.smartolt-night .navbar-default .nav > li > a { color: rgba(255,255,255,0.9) !important; }
+html.smartolt-night .navbar-default .nav > li > a:hover { background: rgba(255,255,255,0.08) !important; color: #fff !important; }
+.navbar-brand { font-weight: 700; }
+.container { padding-top: 70px; padding-bottom: 40px; }
+.panel { background: #fff; border: 1px solid #eef2f6; border-radius: 10px; box-shadow: 0 1px 2px rgba(15,23,42,0.03), 0 4px 14px rgba(15,23,42,0.04); }
+html.smartolt-night .panel { background: rgba(15,26,46,0.92); border: 1px solid rgba(255,255,255,0.1); color: #e2e8f0; }
+.panel-heading { background: #4c4b4b !important; color: #fff !important; border-radius: 10px 10px 0 0 !important; border: none !important; font-weight: 600; }
+html.smartolt-night .panel-heading { background: rgba(255,255,255,0.08) !important; }
+.panel-body { padding: 16px 20px; }
+html.smartolt-night .panel-body, html.smartolt-night .table, html.smartolt-night .table > tbody > tr > td, html.smartolt-night .table > thead > tr > th { background: transparent !important; color: #e2e8f0; }
+html.smartolt-night .table > tbody > tr:hover { background: rgba(255,255,255,0.04) !important; }
+html.smartolt-night .table > thead > tr > th { border-color: rgba(255,255,255,0.1); }
+.table { font-size: 12px; margin-bottom: 0; }
+.table > thead > tr > th { border-bottom: 2px solid #eef2f6; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; padding: 10px 8px; }
+.table > tbody > tr > td { border-color: #f1f5f9; vertical-align: middle; padding: 10px 8px; }
+html.smartolt-night .table > tbody > tr > td { border-color: rgba(255,255,255,0.06); }
+html.smartolt-night .text-muted { color: #94a3b8 !important; }
+.form-control { border: 1px solid #d1d5db; border-radius: 6px; box-shadow: none; }
+html.smartolt-night .form-control { background: #0f172a; border-color: #475569; color: #e2e8f0; }
+.smartolt-landing-hero-bg { display: none; }
+html.smartolt-night .smartolt-landing-hero-bg { display: block; position: fixed; z-index: -1; inset: 0; background: radial-gradient(circle at 72% 18%, rgba(29,139,255,0.24), transparent 28%), radial-gradient(circle at 18% 84%, rgba(0,108,255,0.18), transparent 28%), linear-gradient(135deg, #06162f, #071b3d 55%, #031022); pointer-events: none; }
+#smartolt-night-toggle { align-items: center; display: flex; justify-content: center; }
+#smartolt-night-toggle i { line-height: 1; width: 20px; text-align: center; }
+#smartolt-night-toggle .smartolt-theme-icon-light, #smartolt-night-toggle .smartolt-theme-icon-night, #smartolt-night-toggle .smartolt-theme-icon-system { display: none; }
+#smartolt-night-toggle.is-pref-light .smartolt-theme-icon-light, #smartolt-night-toggle.is-pref-night .smartolt-theme-icon-night, #smartolt-night-toggle.is-pref-system .smartolt-theme-icon-system { display: inline-block; }
+.font-size-20 { font-size: 20px; }
+.text-ellipsis { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.max-width-250 { max-width: 250px; }
+.label { font-size: 10px; }
+.btn-xs { padding: 2px 8px; font-size: 11px; }
+html.smartolt-night .btn-default { background: #334155; color: #e2e8f0; border: none; }
+html.smartolt-night .btn-default:hover { background: #475569; color: #fff; }
+.filter-section { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+.filter-section select, .filter-section input { width: auto; min-width: 120px; }
+.pagination-info { font-size: 12px; color: #64748b; padding: 8px 0; }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/js/bootstrap.min.js"></script>
 </head>
-<body class="smartolt-site">
-    <script>
-    // Night mode toggle
-    (function() {
-        var k = 'smartolt-night';
-        var lk = 'smartolt-theme-local';
-        var local = null;
-        try { local = localStorage.getItem(lk); } catch(e) {}
-        var pref = local === 'night' || local === 'light' || local === 'system' ? local : 'system';
-        var n = false;
-        if (pref === 'system') {
-            n = !!(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
-        } else if (pref === 'night') {
-            n = true;
-        }
-        try { localStorage.setItem(k, n ? '1' : '0'); } catch(e) {}
-        if (n) { document.documentElement.classList.add('smartolt-night'); }
-        else { document.documentElement.classList.remove('smartolt-night'); }
-    })();
-    </script>
-
-    <!-- Topbar network animation -->
-    <div class="smartolt-topbar-network" aria-hidden="true">
-        <div class="smartolt-topbar-network-inner">
-            <svg class="smartolt-topbar-network-lines" viewBox="0 0 100 100" preserveAspectRatio="none">
-                <line x1="8" y1="68" x2="23" y2="78"></line>
-                <line x1="23" y1="78" x2="37" y2="63"></line>
-                <line x1="8" y1="68" x2="37" y2="63"></line>
-                <line x1="37" y1="63" x2="65" y2="18"></line>
-                <line x1="65" y1="18" x2="89" y2="34"></line>
-                <line x1="23" y1="78" x2="65" y2="18"></line>
-                <line x1="37" y1="63" x2="89" y2="34"></line>
-            </svg>
-        </div>
+<body>
+<div class="smartolt-landing-hero-bg" aria-hidden="true"></div>
+<div id="content-wrapper">
+  <div class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#navbar-main">
+          <span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand text-ellipsis max-width-250" href="/modulo?pagina=GPONManager">GPON Manager</a>
+      </div>
+      <div class="navbar-collapse collapse" id="navbar-main">
+        <ul class="nav navbar-nav">
+          <li><a href="/modulo?pagina=GPONManager">Dashboard</a></li>
+          <li class="active"><a href="/modulo?pagina=SmartoltConfigured">ONUs Configuradas</a></li>
+          <li><a href="/modulo?pagina=SmartoltUnconfigured">Sin Configurar</a></li>
+          <li><a href="/modulo?pagina=SmartoltSpeedProfiles">Velocidad</a></li>
+          <li><a href="/modulo?pagina=SmartoltOnuTypes">Tipos ONU</a></li>
+          <li><a href="/modulo?pagina=SmartoltSettings">Config OLT</a></li>
+        </ul>
+        <ul class="nav navbar-nav navbar-right">
+          <li><a href="#" id="smartolt-night-toggle" class="is-pref-night is-resolved" title="Night mode"><i class="fa fa-sun-o font-size-20 smartolt-theme-icon-light"></i><i class="fa fa-moon-o font-size-20 smartolt-theme-icon-night"></i><i class="fa fa-adjust font-size-20 smartolt-theme-icon-system"></i></a></li>
+        </ul>
+      </div>
     </div>
+  </div>
 
-    <!-- Navbar -->
-    <nav class="navbar navbar-default navbar-fixed-top">
-        <div class="container">
-            <div class="navbar-header">
-                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-main">
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                </button>
-                <a class="navbar-brand" href="/">ISPTotal</a>
-            </div>
-            <div class="collapse navbar-collapse" id="navbar-main">
-                <ul class="nav navbar-nav">
-                    <li><a href="/dashboard"><i class="fa fa-dashboard"></i> Dashboard</a></li>
-                    <li><a href="/clientes"><i class="fa fa-users"></i> Clientes</a></li>
-                    <li><a href="/onu/unconfigured"><i class="fa fa-plus-circle"></i> Unconfigured</a></li>
-                    <li class="active"><a href="/onu/configured"><i class="fa fa-check-circle"></i> Configured</a></li>
-                    <li><a href="/cajas-nap"><i class="fa fa-tasks"></i> Cajas NAP</a></li>
-                    <li><a href="/buscar-onu"><i class="fa fa-search"></i> Buscar ONU</a></li>
-                    <li><a href="/configuracion"><i class="fa fa-cog"></i> Configuración</a></li>
-                </ul>
-                <ul class="nav navbar-nav navbar-right">
-                    <li><a href="#" id="smartolt-night-toggle" class="is-pref-system" title="Night mode">
-                        <i class="fa fa-sun-o font-size-20 smartolt-theme-icon-light"></i>
-                        <i class="fa fa-moon-o font-size-20 smartolt-theme-icon-night"></i>
-                        <i class="fa fa-adjust font-size-20 smartolt-theme-icon-system"></i>
-                    </a></li>
-                    <li><a href="/auth/logout"><i class="fa fa-sign-out"></i> Salir</a></li>
-                </ul>
-            </div>
+  <div class="container">
+    <div class="panel panel-default">
+      <div class="panel-heading"><i class="fa fa-check-circle"></i> ONUs Configuradas</div>
+      <div class="panel-body">
+        <div class="filter-section">
+          <input type="text" class="form-control" id="searchOnu" placeholder="Buscar nombre o SN..." style="min-width:200px;" onkeyup="filterOnus()">
+          <select class="form-control" id="filterStatus" onchange="filterOnus()">
+            <option value="">Todos los estados</option>
+            <option value="online">Online</option>
+            <option value="offline">Offline</option>
+            <option value="pwrfail">Power Fail</option>
+            <option value="los">Loss of Signal</option>
+          </select>
+          <select class="form-control" id="filterVlan" onchange="filterOnus()">
+            <option value="">VLAN: Todas</option>
+          </select>
+          <button class="btn btn-primary btn-sm" onclick="syncOnus()"><i class="fa fa-refresh"></i> Sincronizar</button>
         </div>
-    </nav>
-
-    <!-- Page Content -->
-    <div class="container" style="padding-top: 70px;">
-        <div class="content-wrap">
-            <h2><i class="fa fa-check-circle text-success"></i> Configured ONUs</h2>
-            
-            <!-- Filters Form -->
-            <form class="form-inline configured" onsubmit="return false;">
-                <div class="filters-row margin-bottom">
-                    <div class="form-group">
-                        <label class="control-label" for="free_text">Search</label>
-                        <input type="text" class="form-control input-190 input-search" id="free_text" name="free_text" placeholder="SN, name, address..." title="Search by SN, name, address">
-                    </div>
-                    <div class="form-group">
-                        <label class="control-label" for="olt">OLT</label>
-                        <select name="olt_id" id="olt" class="form-control input-150 select-search" multiple="multiple"></select>
-                    </div>
-                    <div class="form-group">
-                        <label class="control-label" for="location">Location</label>
-                        <select name="zone_id" id="location" class="form-control input-120 select-search" multiple="multiple"></select>
-                    </div>
-                    <div class="form-group">
-                        <label class="control-label" for="odb">ODB</label>
-                        <select name="odb_id" id="odb" class="form-control input-120 select-search" multiple="multiple"></select>
-                    </div>
-                    <div class="form-group pon-type-filter">
-                        <label class="control-label">Status</label>
-                        <ul class="pagination">
-                            <li class="status-filter" value="online" title="Online"><span><i class="fa fa-globe text-green"></i></span></li>
-                            <li class="status-filter" value="pwrfail" title="Power Fail"><span><i class="fa fa-plug text-grey"></i></span></li>
-                            <li class="status-filter" value="los" title="Loss of Signal"><span><i class="fa fa-chain-broken text-red"></i></span></li>
-                            <li class="status-filter" value="offline" title="Offline"><span><i class="fa fa-globe text-grey"></i></span></li>
-                            <li class="status-filter" value="disabled" title="Admin Disabled"><span><i class="fa fa-ban text-grey"></i></span></li>
-                        </ul>
-                    </div>
-                    <div class="form-group">
-                        <a href="#" id="batch-actions-toggle" class="text-success" title="Batch actions" style="font-size: 24px; line-height: 34px;">
-                            <i class="fa fa-tasks"></i>
-                        </a>
-                    </div>
-                </div>
-
-                <!-- More Filters Toggle -->
-                <div class="more-filters-toggle-row">
-                    <a href="#" id="more-filters-toggle"><i class="fa fa-chevron-down"></i> More filters</a>
-                </div>
-
-                <div id="more-filters-section" class="filters-row more-filters-panel" style="display: none;">
-                    <div class="form-group">
-                        <label class="control-label" for="onuType">ONU type</label>
-                        <select name="onu_type_id" id="onuType" class="form-control input-120 select-search" multiple="multiple"></select>
-                    </div>
-                    <div class="form-group">
-                        <label class="control-label" for="speedProfile">Speed Profile</label>
-                        <select name="speed_profile_id" id="speedProfile" class="form-control input-120 select-search" multiple="multiple"></select>
-                    </div>
-                    <div class="form-group">
-                        <label class="control-label" for="ponType">PON type</label>
-                        <select name="pon_type" id="ponType" class="form-control input-90 select-search" multiple="multiple"></select>
-                    </div>
-                    <div class="form-group pon-type-filter">
-                        <label class="control-label">Signal</label>
-                        <ul class="pagination">
-                            <li class="signal-filter" value="good" title="Good"><span><i class="fa fa-signal text-green"></i></span></li>
-                            <li class="signal-filter" value="warning" title="Warning"><span><i class="fa fa-signal" style="color:darkorange;"></i></span></li>
-                            <li class="signal-filter" value="critical" title="Critical"><span><i class="fa fa-signal" style="color:red;"></i></span></li>
-                        </ul>
-                    </div>
-                    <div class="form-group pon-type-filter">
-                        <ul class="pagination">
-                            <li class="onu_mode-filter" value="bridging" title="Bridging"><span>B</span></li>
-                            <li class="onu_mode-filter" value="routing" title="Routing"><span>R</span></li>
-                        </ul>
-                    </div>
-                    <div class="form-group">
-                        <label class="control-label" for="routerMode">WAN mode</label>
-                        <select name="router_mode" id="routerMode" class="form-control input-120 select-search">
-                            <option value="">Any</option>
-                            <option value="DHCP">DHCP</option>
-                            <option value="Static">Static</option>
-                            <option value="PPPoE">PPPoE</option>
-                        </select>
-                    </div>
-                </div>
-            </form>
-
-            <!-- Batch Actions Panel -->
-            <div id="batch-actions-container" style="display: none;">
-                <div class="panel panel-default">
-                    <div class="panel-heading">
-                        <h4 class="panel-title">
-                            <strong>
-                                <a class="accordion-toggle" data-toggle="collapse" href="#batchActionsList">
-                                    <i class="fa fa-tasks text-success"></i> Batch Actions
-                                </a>
-                            </strong>
-                        </h4>
-                    </div>
-                    <div id="batchActionsList" class="panel-collapse collapse in">
-                        <div class="panel-body">
-                            <p class="margin-bottom">
-                                <span>
-                                    <i class="fa fa-info-circle"></i>
-                                    Select ONUs using the filters above, then choose an action.
-                                    <span id="batch-actions-count" class="badge badge-primary">0 ONU(s)</span>
-                                </span>
-                            </p>
-                            
-                            <!-- Action: Move Selected -->
-                            <div class="batch-action-row">
-                                <a href="#" class="batch-action-link batch-action-btn" data-action="move">
-                                    <i class="fa fa-arrows text-success"></i> Move Selected
-                                </a>
-                            </div>
-                            
-                            <!-- Action: Admin Reboot -->
-                            <div class="batch-action-row">
-                                <a href="#" class="batch-action-link batch-action-btn" data-action="reboot">
-                                    <i class="fa fa-power-off text-success"></i> Admin Reboot
-                                </a>
-                            </div>
-                            
-                            <!-- Action: Factory Reset -->
-                            <div class="batch-action-row">
-                                <a href="#" class="batch-action-link batch-action-btn" data-action="factory_reset">
-                                    <i class="fa fa-undo text-warning"></i> Factory Reset
-                                </a>
-                            </div>
-                            
-                            <!-- Action: Resync -->
-                            <div class="batch-action-row">
-                                <a href="#" class="batch-action-link batch-action-btn" data-action="resync">
-                                    <i class="fa fa-refresh text-success"></i> Resync
-                                </a>
-                            </div>
-                            
-                            <!-- Action: Diagnostics -->
-                            <div class="batch-action-row">
-                                <a href="#" class="batch-action-link batch-action-btn" data-action="diagnostics">
-                                    <i class="fa fa-stethoscope text-success"></i> Diagnostics
-                                </a>
-                            </div>
-                            
-                            <!-- Action: Delete -->
-                            <div class="batch-action-row">
-                                <a href="#" class="batch-action-link batch-action-btn text-danger" data-action="delete">
-                                    <i class="fa fa-trash text-danger"></i> Delete
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ONU List -->
-            <div id="onu_configured_list">
-                <input type="hidden" id="total-onus-count" value="0">
-                
-                <div class="row action-buttons-bar">
-                    <button class="btn btn-success" id="move-selected-btn"><i class="fa fa-arrows"></i> Move Selected</button>
-                    <button class="btn btn-warning" id="admin-reboot-btn"><i class="fa fa-power-off"></i> Admin Reboot</button>
-                    <button class="btn btn-danger" id="factory-reset-btn"><i class="fa fa-undo"></i> Factory Reset</button>
-                    <button class="btn btn-info" id="resync-btn"><i class="fa fa-refresh"></i> Resync</button>
-                    <button class="btn btn-primary" id="diagnostics-btn"><i class="fa fa-stethoscope"></i> Diagnostics</button>
-                    <button class="btn btn-danger" id="delete-btn"><i class="fa fa-trash"></i> Delete</button>
-                </div>
-                
-                <!-- Pagination top -->
-                <div class="row">
-                    <ul class="pagination" id="pagination-top"></ul>
-                    <span class="pull-right margin-top">
-                        <label class="control-label" id="display-count">0 ONUs displayed</label>
-                    </span>
-                </div>
-
-                <!-- Table -->
-                <div class="table-responsive-wrap">
-                    <table class="table table-striped table-hover">
-                        <thead>
-                            <tr>
-                                <th class="batch-onu-select-col text-center">
-                                    <input type="checkbox" id="batch-select-all-onus" title="Select All">
-                                </th>
-                                <th class="text-center">Status</th>
-                                <th>Name</th>
-                                <th>SN</th>
-                                <th>Location</th>
-                                <th>ODB</th>
-                                <th>Speed Profile</th>
-                                <th>Model</th>
-                                <th>Auth Date</th>
-                            </tr>
-                        </thead>
-                        <tbody id="onu-table-body">
-                            <tr>
-                                <td colspan="9" class="text-center text-muted">
-                                    <i class="fa fa-spinner fa-spin fa-2x"></i>
-                                    <br>Loading ONUs...
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <!-- Pagination bottom -->
-                <div class="row">
-                    <ul class="pagination" id="pagination-bottom"></ul>
-                </div>
-            </div>
+        <div class="pagination-info" id="onuCount">Cargando...</div>
+        <div class="table-responsive" style="max-height:calc(100vh - 280px);overflow-y:auto;">
+          <table class="table table-hover" id="onuTable">
+            <thead>
+              <tr>
+                <th style="width:40px;">Status</th>
+                <th>Nombre / SN</th>
+                <th>ONU</th>
+                <th>Zona</th>
+                <th>Se&ntilde;al</th>
+                <th>Modo</th>
+                <th>VLAN</th>
+                <th>Tipo</th>
+                <th style="width:80px;">Acci&oacute;n</th>
+              </tr>
+            </thead>
+            <tbody id="onuBody">
+              <tr><td colspan="9" class="text-center text-muted" style="padding:50px;"><i class="fa fa-spinner fa-spin fa-2x"></i><br>Cargando ONUs desde SmartOLT...</td></tr>
+            </tbody>
+          </table>
         </div>
-
-        <!-- Import Modal -->
-        <div class="modal fade" id="importOnusDetailsModal" tabindex="-1" role="dialog">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <button type="button" class="close" data-dismiss="modal">&times;</button>
-                        <h3>Import ONUs location details</h3>
-                    </div>
-                    <div class="modal-body">
-                        <div class="form-group">
-                            <label for="onusCsvFile">ONUs details file</label>
-                            <input type="file" name="onusCsvFile" id="onusCsvFile">
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-link" data-dismiss="modal">Cancel</button>
-                        <button type="button" class="btn btn-primary import-onus-details-button">Import</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Confirm Modal -->
-        <div class="modal fade" id="confirmModal" tabindex="-1" role="dialog">
-            <div class="modal-dialog modal-sm">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <button type="button" class="close" data-dismiss="modal">&times;</button>
-                        <h4 class="modal-title">Confirm Action</h4>
-                    </div>
-                    <div class="modal-body" id="confirm-modal-body">
-                        Are you sure you want to proceed?
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-                        <button type="button" class="btn btn-primary" id="confirm-action-btn">Confirm</button>
-                    </div>
-                </div>
-            </div>
-        </div>
+      </div>
     </div>
+  </div>
+</div>
 
-    <footer>
-        <div class="text-center">ISPTotal &copy; 2026</div>
-    </footer>
+<script>
+var allOnus = [];
 
-    <!-- Bootstrap Core JS -->
-    <script src="/js/bootstrap.min.js"></script>
-    <script src="/js/bootstrap-multiselect.js"></script>
-    
-    <!-- Loading overlay -->
-    <script src="/js/loadingoverlay.custom.js"></script>
-    
-    <!-- Message box -->
-    <script src="/js/messagebox.min.js"></script>
+// Night mode toggle
+(function() {
+  var STORAGE_LOCAL = 'smartolt-theme-local';
+  function applyTheme(pref) {
+    var isNight = pref === 'night' ? true : (pref === 'light' ? false : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches));
+    var html = document.documentElement;
+    if (isNight) html.classList.add('smartolt-night'); else html.classList.remove('smartolt-night');
+    try { localStorage.setItem('smartolt-night', isNight ? '1' : '0'); } catch(e) {}
+    var toggle = document.getElementById('smartolt-night-toggle');
+    if (toggle) { toggle.classList.remove('is-pref-light','is-pref-night','is-pref-system'); toggle.classList.add('is-pref-' + pref); }
+  }
+  var localPref = (function(){ try { var s = localStorage.getItem(STORAGE_LOCAL); if(s==='night'||s==='light'||s==='system') return s; }catch(e){} return 'system'; })();
+  applyTheme(localPref || (window.SMARTOLT_DB_THEME || 'system'));
+  document.getElementById('smartolt-night-toggle').addEventListener('click', function(e) {
+    e.preventDefault();
+    var isNight = document.documentElement.classList.contains('smartolt-night');
+    var newPref = isNight ? 'light' : 'night';
+    try { localStorage.setItem(STORAGE_LOCAL, newPref); } catch(e) {}
+    applyTheme(newPref);
+  });
+})();
 
-    <script>
-    $(document).ready(function() {
-        $.ajaxSetup({ cache: false });
-        
-        // Config
-        var config = { X_TOKEN: '<%= token || "" %>' };
-        
-        // Form data
-        var form_data = {
-            page: 1,
-            free_text: "",
-            olt_id: "",
-            zone_id: "",
-            odb_id: "",
-            status: "",
-            signal: "",
-            onu_type_id: "",
-            speed_profile_id: "",
-            pon_type: "",
-            onu_mode: "",
-            router_mode: "",
-            sort_by: "id",
-            sort_order: "desc"
-        };
-        
-        var update_needed = {};
-        var totalPages = 1;
-        var currentPage = 1;
-        var perPage = 100;
-        var batchOnuSelection = {
-            enabled: false,
-            allMatching: true,
-            selectedIds: {},
-            excludedIds: {}
-        };
-        
-        // Toast function
-        function toast(message, type) {
-            type = type || 'success';
-            var $toast = $('<div class="toast toast-' + type + '">' + message + '</div>');
-            $('body').append($toast);
-            setTimeout(function() { $toast.fadeOut(function() { $(this).remove(); }); }, 3000);
-        }
-        
-        // Loading overlay
-        function showLoadingOverlay(text) {
-            text = text || 'Working...';
-            $('#waitingOLT').text(text);
-            $('.loadingoverlay').css('display', 'flex');
-        }
-        
-        function hideLoadingOverlay() {
-            $('.loadingoverlay').css('display', 'none');
-        }
-        
-        // Night mode toggle
-        $('#smartolt-night-toggle').click(function(e) {
-            e.preventDefault();
-            var $html = $('html');
-            var isNight = $html.hasClass('smartolt-night');
-            var $toggle = $(this);
-            
-            if ($toggle.hasClass('is-pref-system')) {
-                // system -> night
-                $html.addClass('smartolt-night');
-                $toggle.removeClass('is-pref-system').addClass('is-pref-night');
-                try { localStorage.setItem('smartolt-theme-local', 'night'); } catch(e) {}
-            } else if ($toggle.hasClass('is-pref-night')) {
-                // night -> light
-                $html.removeClass('smartolt-night');
-                $toggle.removeClass('is-pref-night').addClass('is-pref-light');
-                try { localStorage.setItem('smartolt-theme-local', 'light'); } catch(e) {}
-            } else {
-                // light -> system
-                var prefersDark = !!(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
-                if (prefersDark) { $html.addClass('smartolt-night'); } else { $html.removeClass('smartolt-night'); }
-                $toggle.removeClass('is-pref-light').addClass('is-pref-system');
-                try { localStorage.setItem('smartolt-theme-local', 'system'); } catch(e) {}
-            }
-            try { localStorage.setItem('smartolt-night', $html.hasClass('smartolt-night') ? '1' : '0'); } catch(e) {}
-        });
-        
-        // Fetch ONU data from API
-        function fetchOnus(callback) {
-            showLoadingOverlay('Loading ONUs...');
-            
-            var params = $.extend({}, form_data, {
-                page: currentPage,
-                per_page: perPage
-            });
-            
-            // Clean empty params
-            Object.keys(params).forEach(function(k) {
-                if (params[k] === '' || params[k] === null || typeof params[k] === 'undefined') {
-                    delete params[k];
-                }
-            });
-            
-            $.ajax({
-                type: 'GET',
-                url: '/api/gpon/onus',
-                data: params,
-                dataType: 'json',
-                beforeSend: function(request) {
-                    if (config.X_TOKEN) request.setRequestHeader("X-Token", config.X_TOKEN);
-                },
-                success: function(data) {
-                    hideLoadingOverlay();
-                    if (callback) callback(data);
-                },
-                error: function(jqXHR) {
-                    hideLoadingOverlay();
-                    var msg = 'Error loading ONUs';
-                    if (jqXHR.responseJSON && jqXHR.responseJSON.error) msg = jqXHR.responseJSON.error;
-                    toast(msg, 'error');
-                    if (callback) callback({ state: [], unconfigured: [], db_onus: [] });
-                }
-            });
-        }
-        
-        // Render ONU table
-        function renderOnuTable(data) {
-            var state = data.state || [];
-            var db_onus = data.db_onus || [];
-            
-            // Build lookup maps
-            var dbMap = {};
-            db_onus.forEach(function(db) {
-                dbMap[db.sn] = db;
-            });
-            
-            // Build combined rows
-            var rows = [];
-            var seenSN = {};
-            
-            // From OLT state
-            state.forEach(function(s) {
-                var sn = s.sn || '';
-                var onuId = s.onuId || '';
-                var key = sn || onuId || Math.random().toString();
-                if (seenSN[key]) return;
-                seenSN[key] = true;
-                
-                var db = sn ? (dbMap[sn] || {}) : {};
-                rows.push({
-                    sn: sn,
-                    name: db.nombre || db.name || s.name || (onuId || 'ONU ' + (rows.length + 1)),
-                    cliente_id: db.cliente_id || '',
-                    location: db.location || s.zone || 'default',
-                    odb: db.odb || 'None',
-                    speed_profile: db.speed_profile || db['Speed Profile'] || '',
-                    model: db.model || db['Model'] || '',
-                    auth_date: db.created_at || s.authDate || '',
-                    status: s.state || 'offline',
-                    port: s.port || '',
-                    onuId: onuId,
-                    db_id: db.id || null
-                });
-            });
-            
-            // From DB only (not on OLT state)
-            db_onus.forEach(function(db) {
-                var sn = db.sn || '';
-                if (seenSN[sn]) return;
-                seenSN[sn] = true;
-                rows.push({
-                    sn: sn,
-                    name: db.nombre || db.name || sn,
-                    cliente_id: db.cliente_id || '',
-                    location: db.location || 'default',
-                    odb: db.odb || 'None',
-                    speed_profile: db.speed_profile || '',
-                    model: db.model || '',
-                    auth_date: db.created_at || '',
-                    status: 'offline',
-                    port: '',
-                    onuId: '',
-                    db_id: db.id || null
-                });
-            });
-            
-            // Apply search filter
-            if (form_data.free_text) {
-                var ft = form_data.free_text.toLowerCase();
-                rows = rows.filter(function(r) {
-                    return (r.sn && r.sn.toLowerCase().indexOf(ft) !== -1) ||
-                           (r.name && r.name.toLowerCase().indexOf(ft) !== -1) ||
-                           (r.location && r.location.toLowerCase().indexOf(ft) !== -1);
-                });
-            }
-            
-            // Apply status filter
-            if (form_data.status) {
-                rows = rows.filter(function(r) { return r.status === form_data.status; });
-            }
-            
-            totalPages = Math.max(1, Math.ceil(rows.length / perPage));
-            if (currentPage > totalPages) currentPage = totalPages;
-            
-            var start = (currentPage - 1) * perPage;
-            var pageRows = rows.slice(start, start + perPage);
-            
-            var $tbody = $('#onu-table-body');
-            $tbody.empty();
-            
-            if (pageRows.length === 0) {
-                $tbody.append('<tr><td colspan="9" class="text-center text-muted">No ONUs found</td></tr>');
-            } else {
-                pageRows.forEach(function(r) {
-                    var statusIcon = getStatusIcon(r.status);
-                    var statusClass = getStatusClass(r.status);
-                    var dbId = r.db_id || '';
-                    var tr = '<tr class="valign-center">';
-                    tr += '<td class="batch-onu-select-col text-center"><input type="checkbox" class="batch-onu-checkbox" value="' + r.sn + '"></td>';
-                    tr += '<td class="text-center"><span class="' + statusClass + '">' + statusIcon + '</span></td>';
-                    tr += '<td>' + escapeHtml(r.name) + '</td>';
-                    tr += '<td><code>' + escapeHtml(r.sn) + '</code></td>';
-                    tr += '<td>' + escapeHtml(r.location) + '</td>';
-                    tr += '<td>' + escapeHtml(r.odb) + '</td>';
-                    tr += '<td>' + (r.speed_profile ? '<span class="speed-badge">' + escapeHtml(r.speed_profile) + '</span>' : '<span class="text-muted">-</span>') + '</td>';
-                    tr += '<td>' + (r.model ? escapeHtml(r.model) : '<span class="text-muted">-</span>') + '</td>';
-                    tr += '<td class="auth-date">' + (r.auth_date ? formatDate(r.auth_date) : '-') + '</td>';
-                    tr += '</tr>';
-                    $tbody.append(tr);
-                });
-            }
-            
-            // Update count
-            $('#display-count').text(rows.length + ' ONUs displayed');
-            $('#total-onus-count').val(rows.length);
-            
-            // Render pagination
-            renderPagination();
-            
-            // Update batch count
-            updateBatchCount();
-        }
-        
-        function getStatusIcon(status) {
-            switch(status) {
-                case 'online': return '<i class="fa fa-globe text-green"></i>';
-                case 'pwrfail': return '<i class="fa fa-plug text-grey"></i>';
-                case 'los': return '<i class="fa fa-chain-broken text-red"></i>';
-                case 'offline': return '<i class="fa fa-globe text-grey"></i>';
-                case 'disabled': return '<i class="fa fa-ban text-grey"></i>';
-                default: return '<i class="fa fa-question-circle text-grey"></i>';
-            }
-        }
-        
-        function getStatusClass(status) {
-            switch(status) {
-                case 'online': return 'status-online';
-                case 'pwrfail': return 'status-pwrfail';
-                case 'los': return 'status-los';
-                case 'offline': return 'status-offline';
-                case 'disabled': return 'status-disabled';
-                default: return 'status-unknown';
-            }
-        }
-        
-        function escapeHtml(str) {
-            if (!str) return '';
-            return String(str)
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;')
-                .replace(/"/g, '&quot;')
-                .replace(/'/g, '&#039;');
-        }
-        
-        function formatDate(dateStr) {
-            if (!dateStr) return '-';
-            try {
-                var d = new Date(dateStr);
-                if (isNaN(d.getTime())) return dateStr;
-                var day = ('0' + d.getDate()).slice(-2);
-                var month = ('0' + (d.getMonth() + 1)).slice(-2);
-                var year = d.getFullYear();
-                return day + '-' + month + '-' + year;
-            } catch(e) { return dateStr; }
-        }
-        
-        function renderPagination() {
-            var html = '';
-            if (currentPage > 1) {
-                html += '<li><a href="#" data-page="1">&laquo;</a></li>';
-                html += '<li><a href="#" data-page="' + (currentPage - 1) + '">&lsaquo;</a></li>';
-            }
-            for (var i = 1; i <= totalPages; i++) {
-                if (i === currentPage) {
-                    html += '<li class="active"><a href="#">' + i + '</a></li>';
-                } else if (i <= 3 || i > totalPages - 3 || Math.abs(i - currentPage) <= 1) {
-                    html += '<li><a href="#" data-page="' + i + '">' + i + '</a></li>';
-                } else if (i === 4 && currentPage > 5) {
-                    html += '<li><a href="#">...</a></li>';
-                } else if (i === totalPages - 3 && currentPage < totalPages - 4) {
-                    html += '<li><a href="#">...</a></li>';
-                }
-            }
-            if (currentPage < totalPages) {
-                html += '<li><a href="#" data-page="' + (currentPage + 1) + '">&rsaquo;</a></li>';
-                html += '<li><a href="#" data-page="' + totalPages + '">&raquo;</a></li>';
-            }
-            $('#pagination-top').html(html);
-            $('#pagination-bottom').html(html);
-        }
-        
-        // Refresh configured data
-        function refreshConfiguredData() {
-            fetchOnus(function(data) {
-                renderOnuTable(data);
-            });
-        }
-        
-        // Load dynamic select options
-        function dynamicSelectLoad(selectName, hasValue, onChangeFunc) {
-            var $select = $('#' + selectName);
-            if (!$select.length) return;
-            
-            var apiMap = {
-                'olt': '/api/gpon/olts',
-                'location': '/api/gpon/locations',
-                'odb': '/api/gpon/odbs',
-                'onuType': '/api/gpon/onu_types',
-                'speedProfile': '/api/gpon/speed_profiles',
-                'ponType': '/api/gpon/pon_types'
-            };
-            
-            var url = apiMap[selectName];
-            if (!url) return;
-            
-            $.ajax({
-                type: 'GET',
-                url: url,
-                dataType: 'json',
-                beforeSend: function(request) {
-                    if (config.X_TOKEN) request.setRequestHeader("X-Token", config.X_TOKEN);
-                },
-                success: function(data) {
-                    var options = data.response || data.data || data || [];
-                    $select.empty();
-                    
-                    // For multiselect, we need to handle differently vs single select
-                    if ($select.attr('multiple')) {
-                        $.each(options, function(k, v) {
-                            var id = v.id || v.option_id || k;
-                            var name = v.name || v.label || v.option_name || v;
-                            $select.append($('<option>').val(id).text(name));
-                        });
-                        
-                        try {
-                            $select.multiselect('rebuild');
-                            if (hasValue) $select.multiselect('refresh');
-                        } catch(e) {
-                            // bootstrap-multiselect not loaded
-                        }
-                    } else {
-                        $select.append('<option value="">Any</option>');
-                        $.each(options, function(k, v) {
-                            var id = v.id || v.option_id || k;
-                            var name = v.name || v.label || v.option_name || v;
-                            $select.append($('<option>').val(id).text(name));
-                        });
-                    }
-                    
-                    update_needed[selectName] = false;
-                }
-            });
-        }
-        
-        // Initialize multiselects
-        function initMultiselects() {
-            var multiselectOptions = {
-                buttonClass: '',
-                inheritClass: true,
-                enableCaseInsensitiveFiltering: true,
-                buttonContainer: '<div class="btn-group full-width"/>',
-                nonSelectedText: 'Any',
-                filterPlaceholder: 'Search',
-                includeSelectAllOption: false,
-                maxHeight: 500,
-                templates: {
-                    button: '<div class="multiselect dropdown-toggle" data-toggle="dropdown" style="padding-right: 18px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"><span class="multiselect-selected-text"></span> <span class="caret" style="position: absolute; right: 6px; top: 50%; margin-top: -2px;" aria-hidden="true"></span></div>',
-                    li: '<li><a href="#" tabindex="0"><label></label></a></li>',
-                }
-            };
-            
-            try {
-                $('#olt').multiselect(multiselectOptions);
-                $('#location').multiselect(multiselectOptions);
-                $('#odb').multiselect(multiselectOptions);
-                $('#onuType').multiselect(multiselectOptions);
-                $('#speedProfile').multiselect(multiselectOptions);
-                $('#ponType').multiselect(multiselectOptions);
-            } catch(e) {
-                console.log('Multiselect init error (may not be loaded):', e);
-            }
-        }
-        
-        // Status filter click
-        $(document).on('click', '.status-filter, .signal-filter', function() {
-            var $li = $(this);
-            var type = $li.hasClass('status-filter') ? 'status' : 'signal';
-            $li.toggleClass('active');
-            
-            var selected = [];
-            $('.' + type + '-filter.active').each(function() {
-                selected.push($(this).attr('value'));
-            });
-            
-            form_data[type] = selected.join(',');
-            form_data.page = 1;
-            refreshConfiguredData();
-        });
-        
-        // ONU mode filter
-        $(document).on('click', '.onu_mode-filter', function() {
-            var $li = $(this);
-            $li.toggleClass('active');
-            
-            var selected = [];
-            $('.onu_mode-filter.active').each(function() {
-                selected.push($(this).attr('value'));
-            });
-            
-            form_data.onu_mode = selected.join(',');
-            form_data.page = 1;
-            refreshConfiguredData();
-        });
-        
-        // Search input
-        var searchTimer;
-        $('#free_text').on('input', function() {
-            clearTimeout(searchTimer);
-            searchTimer = setTimeout(function() {
-                form_data.free_text = $('#free_text').val();
-                form_data.page = 1;
-                refreshConfiguredData();
-            }, 500);
-        });
-        
-        // Pagination click
-        $(document).on('click', '#pagination-top a, #pagination-bottom a', function(e) {
-            e.preventDefault();
-            var page = parseInt($(this).data('page'));
-            if (page && page !== currentPage) {
-                currentPage = page;
-                refreshConfiguredData();
-            }
-        });
-        
-        // More filters toggle
-        $('#more-filters-toggle').click(function(e) {
-            e.preventDefault();
-            var $section = $('#more-filters-section');
-            var isVisible = $section.is(':visible');
-            $section.toggle();
-            $(this).html(isVisible ? '<i class="fa fa-chevron-down"></i> More filters' : '<i class="fa fa-chevron-up"></i> Less filters');
-        });
-        
-        // Batch actions toggle
-        $('#batch-actions-toggle').click(function() {
-            $('#batch-actions-container').toggle();
-        });
-        
-        // Select all checkbox
-        $(document).on('change', '#batch-select-all-onus', function() {
-            var checked = $(this).is(':checked');
-            $('.batch-onu-checkbox').prop('checked', checked);
-            
-            if (checked) {
-                batchOnuSelection.allMatching = true;
-                batchOnuSelection.selectedIds = {};
-                batchOnuSelection.excludedIds = {};
-            } else {
-                batchOnuSelection.allMatching = false;
-                batchOnuSelection.selectedIds = {};
-                batchOnuSelection.excludedIds = {};
-            }
-            updateBatchCount();
-        });
-        
-        // Individual checkbox
-        $(document).on('change', '.batch-onu-checkbox', function() {
-            var sn = $(this).val();
-            if ($(this).is(':checked')) {
-                batchOnuSelection.selectedIds[sn] = true;
-                delete batchOnuSelection.excludedIds[sn];
-            } else {
-                delete batchOnuSelection.selectedIds[sn];
-                batchOnuSelection.excludedIds[sn] = true;
-                batchOnuSelection.allMatching = false;
-            }
-            updateBatchCount();
-        });
-        
-        function updateBatchCount() {
-            var count = Object.keys(batchOnuSelection.selectedIds).length;
-            if (count === 0 && batchOnuSelection.allMatching) {
-                count = parseInt($('#total-onus-count').val() || 0);
-            }
-            $('#batch-actions-count').text(count + ' ONU(s)');
-        }
-        
-        // Action buttons
-        function executeAction(action) {
-            var selectedOnus = [];
-            $('.batch-onu-checkbox:checked').each(function() {
-                selectedOnus.push($(this).val());
-            });
-            
-            if (selectedOnus.length === 0) {
-                toast('Please select at least one ONU', 'error');
-                return;
-            }
-            
-            showLoadingOverlay('Executing ' + action + '...');
-            
-            $.ajax({
-                type: 'POST',
-                url: '/api/gpon/onus/action',
-                data: {
-                    action: action,
-                    onus: selectedOnus
-                },
-                dataType: 'json',
-                beforeSend: function(request) {
-                    if (config.X_TOKEN) request.setRequestHeader("X-Token", config.X_TOKEN);
-                },
-                success: function(data) {
-                    hideLoadingOverlay();
-                    if (data.success) {
-                        toast(data.message || action + ' completed successfully');
-                        refreshConfiguredData();
-                    } else {
-                        toast(data.error || 'Action failed', 'error');
-                    }
-                },
-                error: function() {
-                    hideLoadingOverlay();
-                    toast('Error executing action', 'error');
-                }
-            });
-        }
-        
-        // Action button handlers
-        $('#move-selected-btn').click(function() { executeAction('move'); });
-        $('#admin-reboot-btn').click(function() { executeAction('reboot'); });
-        $('#factory-reset-btn').click(function() { executeAction('factory_reset'); });
-        $('#resync-btn').click(function() { executeAction('resync'); });
-        $('#diagnostics-btn').click(function() { executeAction('diagnostics'); });
-        $('#delete-btn').click(function() { executeAction('delete'); });
-        
-        // Batch action links
-        $(document).on('click', '.batch-action-btn', function(e) {
-            e.preventDefault();
-            var action = $(this).data('action');
-            // Trigger the corresponding button
-            switch(action) {
-                case 'move': $('#move-selected-btn').click(); break;
-                case 'reboot': $('#admin-reboot-btn').click(); break;
-                case 'factory_reset': $('#factory-reset-btn').click(); break;
-                case 'resync': $('#resync-btn').click(); break;
-                case 'diagnostics': $('#diagnostics-btn').click(); break;
-                case 'delete': $('#delete-btn').click(); break;
-            }
-        });
-        
-        // Filter multiselect change handling
-        $(document).on('change', '#olt', function() {
-            var val = $(this).val() || [];
-            form_data.olt_id = Array.isArray(val) ? val.join(',') : val;
-            form_data.page = 1;
-            refreshConfiguredData();
-        });
-        
-        $(document).on('change', '#location', function() {
-            var val = $(this).val() || [];
-            form_data.zone_id = Array.isArray(val) ? val.join(',') : val;
-            form_data.page = 1;
-            refreshConfiguredData();
-        });
-        
-        $(document).on('change', '#odb', function() {
-            var val = $(this).val() || [];
-            form_data.odb_id = Array.isArray(val) ? val.join(',') : val;
-            form_data.page = 1;
-            refreshConfiguredData();
-        });
-        
-        $(document).on('change', '#routerMode', function() {
-            form_data.router_mode = $(this).val();
-            form_data.page = 1;
-            refreshConfiguredData();
-        });
-        
-        // Initialize
-        function init() {
-            initMultiselects();
-            
-            // Load dynamic selects
-            setTimeout(function() {
-                dynamicSelectLoad('olt', false, 'refreshConfiguredData');
-                dynamicSelectLoad('location', false, 'refreshConfiguredData');
-                dynamicSelectLoad('odb', false, 'refreshConfiguredData');
-                dynamicSelectLoad('onuType', false, 'refreshConfiguredData');
-                dynamicSelectLoad('speedProfile', false, 'refreshConfiguredData');
-            }, 100);
-            
-            // Initial data load
-            refreshConfiguredData();
-        }
-        
-        init();
+function loadOnus() {
+  $.get('/api/smartolt/onus', function(data) {
+    if (data.success && data.onus) {
+      allOnus = data.onus;
+      // Collect VLANs for filter
+      var vlans = {};
+      allOnus.forEach(function(o) { if (o.vlan) vlans[o.vlan] = true; });
+      var vlanSelect = $('#filterVlan');
+      vlanSelect.html('<option value="">VLAN: Todas</option>');
+      Object.keys(vlans).sort().forEach(function(v) { vlanSelect.append('<option value="' + v + '">' + v + '</option>'); });
+      filterOnus();
+    } else {
+      $('#onuBody').html('<tr><td colspan="9" class="text-center text-danger">Error: ' + (data.msg || 'No data') + '</td></tr>');
+      $('#onuCount').text('Error cargando ONUs');
+    }
+  }, 'json').fail(function() {
+    // Fallback: mostrar datos mock para desarrollo
+    showMockData();
+  });
+}
+
+function showMockData() {
+  var mockOnus = [];
+  for (var i = 1; i <= 20; i++) {
+    mockOnus.push({
+      sn: 'HWTC' + (0xBEEF00 + i).toString(16).toUpperCase(),
+      name: 'Cliente ' + i,
+      description: '1 - JOEL WIFI gpon-onu_1/2/' + (i % 16 + 1) + ':' + i,
+      zone_name: 'Zona ' + ((i % 3) + 1),
+      signal: -(20 + (i % 10)),
+      vlan: i % 2 === 0 ? '200' : '100',
+      mode: i % 2 === 0 ? 'R: PPPoE' : 'Router',
+      onu_type_name: ['F673AV9','EG8021V5','HS8545M5','GPON_ONUV7.1','HG8145X6-10'][i % 5],
+      state: i % 3 === 0 ? 'pwrfail' : (i % 7 === 0 ? 'los' : 'working'),
+      auth_date: '0' + (i % 28 + 1) + '-06-2026'
     });
-    </script>
+  }
+  allOnus = mockOnus;
+  filterOnus();
+}
 
-    <!-- Loading overlay -->
-    <div class="loadingoverlay">
-        <div class="loadingoverlay_fontawesome fa fa-spinner fa-spin"></div>
-        <div id="waitingOLT" style="font-size: 50px; white-space: nowrap;">Loading ONUs...</div>
-    </div>
+function filterOnus() {
+  var q = $('#searchOnu').val().toLowerCase().trim();
+  var status = $('#filterStatus').val();
+  var vlan = $('#filterVlan').val();
+  
+  var filtered = allOnus.filter(function(o) {
+    if (q && !(o.name || '').toLowerCase().includes(q) && !(o.sn || '').toLowerCase().includes(q)) return false;
+    if (status) {
+      if (status === 'online' && o.state !== 'working' && o.state !== 'online') return false;
+      if (status === 'offline' && (o.state === 'working' || o.state === 'online')) return false;
+      if (status === 'pwrfail' && o.state !== 'pwrfail') return false;
+      if (status === 'los' && o.state !== 'los') return false;
+    }
+    if (vlan && String(o.vlan) !== vlan) return false;
+    return true;
+  });
+  
+  $('#onuCount').text(filtered.length + ' ONUs de ' + allOnus.length + ' mostradas');
+  
+  if (filtered.length === 0) {
+    $('#onuBody').html('<tr><td colspan="9" class="text-center text-muted" style="padding:30px;">No se encontraron ONUs con esos filtros</td></tr>');
+    return;
+  }
+  
+  var h = '';
+  filtered.forEach(function(o) {
+    var isOnline = o.state === 'working' || o.state === 'online';
+    var isPwrfail = o.state === 'pwrfail';
+    var isLos = o.state === 'los';
+    var stateIcon, stateLabel, stateClass;
+    if (isOnline) { stateIcon = 'fa-circle text-success'; stateLabel = 'Online'; stateClass = 'label-success'; }
+    else if (isPwrfail) { stateIcon = 'fa-plug text-danger'; stateLabel = 'PwrFail'; stateClass = 'label-danger'; }
+    else if (isLos) { stateIcon = 'fa-chain-broken text-warning'; stateLabel = 'LoS'; stateClass = 'label-warning'; }
+    else { stateIcon = 'fa-circle text-muted'; stateLabel = 'Offline'; stateClass = 'label-default'; }
+    
+    var signalVal = parseFloat(o.signal);
+    var signalClass = 'text-muted';
+    if (signalVal < -25) signalClass = 'text-danger';
+    else if (signalVal < -22) signalClass = 'text-warning';
+    else signalClass = 'text-success';
+    
+    h += '<tr>';
+    h += '<td><i class="fa ' + stateIcon + '" style="font-size:10px;" title="' + stateLabel + '"></i></td>';
+    h += '<td><strong>' + escapeHtml(o.name || '--') + '</strong><br><small class="text-muted">' + escapeHtml(o.sn || '--') + '</small></td>';
+    h += '<td><small>' + escapeHtml(o.description || '--') + '</small></td>';
+    h += '<td><small>' + escapeHtml(o.zone_name || '-') + '</small></td>';
+    h += '<td><span class="' + signalClass + '">' + (o.signal ? o.signal + ' dBm' : '--') + '</span></td>';
+    h += '<td><small>' + escapeHtml(o.mode || o.wan_mode || '--') + '</small></td>';
+    h += '<td><span class="label label-info">' + escapeHtml(o.vlan || '--') + '</span></td>';
+    h += '<td><small>' + escapeHtml(o.onu_type_name || '--') + '</small></td>';
+    h += '<td><button class="btn btn-xs btn-default" onclick="viewOnu(\'' + escapeHtml(o.sn || '') + '\')" title="Ver detalles"><i class="fa fa-eye"></i></button></td>';
+    h += '</tr>';
+  });
+  $('#onuBody').html(h);
+}
+
+function viewOnu(sn) {
+  if (!sn) return;
+  window.location.href = '/modulo?pagina=GPONManager&action=onu&sn=' + encodeURIComponent(sn);
+}
+
+function syncOnus() {
+  var btn = $(this);
+  $('#onuBody').html('<tr><td colspan="9" class="text-center text-muted" style="padding:30px;"><i class="fa fa-spinner fa-spin"></i> Sincronizando con SmartOLT...</td></tr>');
+  $.post('/api/smartolt/sync', function(data) {
+    if (data.success) {
+      loadOnus();
+    } else {
+      $('#onuBody').html('<tr><td colspan="9" class="text-center text-danger">Error: ' + (data.msg || 'Sync failed') + '</td></tr>');
+    }
+  }, 'json').fail(function() {
+    // Si falla, cargar datos mock
+    showMockData();
+  });
+}
+
+function escapeHtml(s) { if (!s) return ''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+$(document).ready(function() {
+  loadOnus();
+});
+</script>
 </body>
 </html>

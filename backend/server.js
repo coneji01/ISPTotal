@@ -1179,7 +1179,11 @@ app.all('/modulo', requireAuth, (req, res) => {
     }
     case 'GPONManager': {
       data.clientes = db.prepare("SELECT id, nombre, cedula, telefono FROM clientes WHERE estado='activo' ORDER BY nombre ASC").all();
-      data.olts = db.prepare('SELECT id, nombre, olt_ip, olt_port, olt_username, socks_host FROM olts ORDER BY id').all();
+      try {
+        data.olts = db.prepare("SELECT id, nombre, COALESCE(ip,'') as olt_ip, COALESCE(CAST(puertos AS TEXT),'') as olt_port, COALESCE(modelo,'') as olt_username, '' as socks_host FROM olts ORDER BY id").all();
+      } catch(e) {
+        data.olts = db.prepare("SELECT id, nombre, '' as olt_ip, '' as olt_port, '' as olt_username, '' as socks_host FROM olts ORDER BY id").all();
+      }
       break;
     }
     case 'SmartoltConfigured': {
@@ -3539,7 +3543,7 @@ var mesesEsp = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto
     case 'Zonas': {
       data.zonas = db.prepare(`
         SELECT z.*, r.name as router_nombre,
-          o.nombre as olt_nombre, o.smartolt_subdomain,
+          o.nombre as olt_nombre, '' as smartolt_subdomain,
           (SELECT COUNT(*) FROM servicios s WHERE s.zona_id=z.id AND s.estado='activo') as activos,
           (SELECT COUNT(*) FROM servicios s WHERE s.zona_id=z.id AND s.estado='suspendido') as suspendidos,
           (SELECT COUNT(*) FROM servicios s WHERE s.zona_id=z.id) as total
@@ -3549,7 +3553,7 @@ var mesesEsp = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto
         ORDER BY z.nombre
       `).all();
       data.routers = db.prepare('SELECT id, name FROM routers ORDER BY name').all();
-      data.olts = db.prepare('SELECT id, nombre, smartolt_subdomain FROM olts WHERE smartolt_subdomain IS NOT NULL ORDER BY nombre').all();
+      data.olts = db.prepare("SELECT id, nombre, '' as smartolt_subdomain FROM olts ORDER BY nombre").all();
       break;
     }
     case 'CuadreCaja': {
@@ -3595,7 +3599,7 @@ var mesesEsp = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto
         const limit = parseInt(req.query.limit) || 30;
         const offset = parseInt(req.query.offset) || 0;
         const history = db.prepare(`
-          SELECT cc.*, u.nombre as usuario_nombre
+          SELECT cc.*, CASE WHEN u.nombre IS NOT NULL THEN u.nombre ELSE cc.usuario_nombre END as usuario_nombre
           FROM cuadre_caja cc
           LEFT JOIN usuarios u ON u.id=cc.usuario_id
           ORDER BY cc.created_at DESC LIMIT ? OFFSET ?
@@ -3676,6 +3680,8 @@ var mesesEsp = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto
         // Encontrar el último cuadre de este usuario
         var ultimo = db.prepare("SELECT MAX(fecha_hasta) as ultima_fecha FROM cuadre_caja WHERE usuario_nombre=? AND fecha_hasta IS NOT NULL").get(usuario);
         var fechaDesde = ultimo && ultimo.ultima_fecha ? ultimo.ultima_fecha : '1970-01-01';
+        // Normalizar formato ISO → SQLite datetime para comparacion correcta
+        fechaDesde = fechaDesde.replace('T', ' ').replace('Z', '').substring(0, 19);
 
         // Obtener pagos NO cuadrados de este usuario (cobrador)
         // Usamos el nombre del empleado/sistema que coincide con el usuario del cuadre
@@ -3718,6 +3724,8 @@ var mesesEsp = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto
         // Get pending payments
         var ultimo = db.prepare("SELECT MAX(fecha_hasta) as ultima_fecha FROM cuadre_caja WHERE usuario_nombre=? AND fecha_hasta IS NOT NULL").get(usuario);
         var fechaDesde = ultimo && ultimo.ultima_fecha ? ultimo.ultima_fecha : '1970-01-01';
+        // Normalizar formato ISO → SQLite datetime para comparacion correcta
+        fechaDesde = fechaDesde.replace('T', ' ').replace('Z', '').substring(0, 19);
         var ahora = new Date().toISOString();
 
         var pagos = db.prepare("SELECT p.*, c.nombre as cliente_nombre FROM pagos p LEFT JOIN clientes c ON c.id=p.cliente_id WHERE p.cuadrado=0 AND p.created_at > ? ORDER BY p.created_at ASC").all(fechaDesde);
@@ -3739,7 +3747,7 @@ var mesesEsp = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto
           metodos[met].total += m;
         });
 
-        var r = db.prepare("INSERT INTO cuadre_caja (usuario_nombre, fecha, fecha_desde, fecha_hasta, total_pagos, pagos_count, detalles_json, total_metodos_json) VALUES (?,?,?,?,?,?,?,?)").run(usuario, ahora.slice(0,10), fechaDesde, ahora, total, pagos.length, JSON.stringify(detalles), JSON.stringify(metodos));
+        var r = db.prepare("INSERT INTO cuadre_caja (usuario_nombre, fecha, fecha_desde, fecha_hasta, total_pagos, pagos_count, detalles_json, total_metodos_json, conteo_billetes_json) VALUES (?,?,?,?,?,?,?,?,?)").run(usuario, ahora.slice(0,10), fechaDesde, ahora.replace('T', ' ').replace('Z', '').substring(0, 19), total, pagos.length, JSON.stringify(detalles), JSON.stringify(metodos), req.body.conteo_billetes || '{}');
         var cuadreId = r.lastInsertRowid;
 
         // Mark payments as cuadrado
@@ -3763,6 +3771,33 @@ var mesesEsp = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto
       break;
     }
     case 'Configuracion': break;
+    case 'MiCuenta': {
+      data.usuario = db.prepare('SELECT * FROM usuarios WHERE id=?').get(req.session.user.id) || {};
+      break;
+    }
+    case 'Empresa': {
+      data.empresa_nombre = (db.prepare("SELECT value FROM configuracion WHERE key='empresa_nombre'").get() || {}).value || '';
+      data.empresa_telefono = (db.prepare("SELECT value FROM configuracion WHERE key='empresa_telefono'").get() || {}).value || '';
+      data.empresa_direccion = (db.prepare("SELECT value FROM configuracion WHERE key='empresa_direccion'").get() || {}).value || '';
+      data.empresa_logo = (db.prepare("SELECT value FROM configuracion WHERE key='empresa_logo'").get() || {}).value || '';
+      data.empresa_logo_reportes = (db.prepare("SELECT value FROM configuracion WHERE key='empresa_logo_reportes'").get() || {}).value || '';
+      data.empresa_logo_portal = (db.prepare("SELECT value FROM configuracion WHERE key='empresa_logo_portal'").get() || {}).value || '';
+      break;
+    }
+    case 'Personal': {
+      data.empleados = db.prepare("SELECT * FROM empleados WHERE activo=1 ORDER BY nombre").all();
+      data.tipos_empleado = db.prepare("SELECT value FROM configuracion WHERE key='tipos_empleado'").get();
+      data.tipos_empleado = data.tipos_empleado ? JSON.parse(data.tipos_empleado.value) : ['Técnico', 'Vendedor', 'Administrativo'];
+      break;
+    }
+    case 'Routers': {
+      data.routers = db.prepare('SELECT * FROM routers ORDER BY name').all();
+      break;
+    }
+    case 'VPN': {
+      data.vpnServers = db.prepare('SELECT * FROM vpn_servers ORDER BY name').all();
+      break;
+    }
     case 'Actualizaciones': {
       const ajax = req.query.ajax;
 
@@ -3799,12 +3834,12 @@ var mesesEsp = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto
     case 'VerOnu': {
       data.onuSN = req.query.sn || '';
       data.onuOltId = parseInt(req.query.olt_id) || 0;
-      data.olts = db.prepare('SELECT * FROM olts WHERE activo=1').all();
+      data.olts = db.prepare('SELECT o.*, 1 as activo FROM olts o').all();
       data.onu = db.prepare('SELECT o.*, ol.nombre as olt_nombre FROM onu o LEFT JOIN olts ol ON ol.id=o.olt_id WHERE o.sn=?').get(data.onuSN);
       break;
     }
     case 'TR069': {
-      data.olts = db.prepare('SELECT * FROM olts WHERE activo=1').all();
+      data.olts = db.prepare('SELECT o.*, 1 as activo FROM olts o').all();
       data.onuTypes = db.prepare("SELECT key, value FROM configuracion WHERE key LIKE 'onu_type_%' ORDER BY key").all();
       break;
     }
@@ -5984,10 +6019,18 @@ async function smartoltFetchOlt(oltObj, endpoint, method, body) {
   }
 }
 
-// GET /api/smartolt/config - Get SmartOLT configuration
+// GET /api/smartolt/speed-profiles - List speed profiles
+app.get('/api/smartolt/speed-profiles', requireAuth, async (req, res) => {
+  try {
+    const profiles = db.prepare("SELECT id, nombre as name, COALESCE(velocidad, '0') as speed, COALESCE(perfil_mikrotik, 'Internet') as type, CAST((SELECT COUNT(*) FROM servicios WHERE plan_id = planes.id) AS INTEGER) as onu_count FROM planes ORDER BY velocidad ASC").all();
+    res.json({ success: true, profiles: profiles });
+  } catch (e) {
+    res.json({ success: false, message: e.message });
+  }
+});
+
+// POST /api/smartolt/speed-profiles - Old endpoint (backward compat)
 app.post('/api/smartolt/speed-profiles', requireAuth, async (req, res) => {
-  // SmartOLT no expone endpoint público para listar perfiles.
-  // Los perfiles se ingresan manualmente en el plan.
   res.json({ status: 'error', message: 'Los perfiles se configuran manualmente en cada plan. Seleccione una OLT y escriba el nombre del perfil.' });
 });
 
@@ -6118,7 +6161,37 @@ app.get('/api/smartolt/onus', requireAuth, (req, res) => {
       LEFT JOIN olts ol ON ol.id = o.olt_id
       ORDER BY o.created_at DESC
     `).all();
-    res.json({ success: true, data: onus });
+    // Transform to match frontend format
+    const formatted = onus.map(function(o) {
+      return {
+        id: o.id,
+        sn: o.sn,
+        name: o.nombre || o.cliente_nombre || '--',
+        description: (o.olt_nombre || 'OLT') + ' gpon-onu_1/2/1:?',
+        zone_name: o.zona || '',
+        signal: o.senal || null,
+        vlan: o.vlan || '',
+        mode: o.modo || '',
+        wan_mode: o.wan_mode || '',
+        onu_type_name: o.onu_type || '',
+        state: o.estado || 'unknown',
+        auth_date: o.created_at || '',
+        cliente_nombre: o.cliente_nombre || '',
+      };
+    });
+    res.json({ success: true, onus: formatted, data: onus });
+  } catch (e) {
+    res.json({ success: false, message: e.message });
+  }
+});
+
+// GET /api/smartolt/onus/unconfigured - List unconfigured ONUs
+app.get('/api/smartolt/onus/unconfigured', requireAuth, (req, res) => {
+  try {
+    const onus = db.prepare("SELECT id, sn, COALESCE(olt_id,'1') as olt_id, COALESCE(CAST(puerto_olt AS TEXT),'0') as port, '0' as board, id as onu, COALESCE(estado,'Nuevo') as state, created_at FROM onu WHERE (estado IS NULL OR estado = 'pending' OR estado = '') ORDER BY created_at DESC").all();
+    // Transform to expected format
+    const transformed = onus.map(function(o) { return { sn: o.sn, olt: o.olt_id, board: o.board, port: o.port, onu: String(o.onu), state: o.state, id: o.id }; });
+    res.json({ success: true, onus: transformed });
   } catch (e) {
     res.json({ success: false, message: e.message });
   }

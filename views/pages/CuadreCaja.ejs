@@ -124,7 +124,7 @@
                         <div id="ccDesglose" style="margin-top:10px; display:flex; gap:6px; flex-wrap:wrap;"></div>
                     </div>
                 </div>
-                <button class="btn-cuadrar" id="ccBtnCuadrar" onclick="ccRealizarCuadre()" disabled>
+                <button class="btn-cuadrar" id="ccBtnCuadrar" onclick="ccAbrirModalBilletes()" disabled>
                     <i class="fas fa-check-circle"></i> Realizar Cuadre
                 </button>
             </div>
@@ -184,6 +184,341 @@
                     <tr><td colspan="7" class="empty-state"><i class="fas fa-spinner fa-spin"></i><br>Cargando...</td></tr>
                 </tbody>
             </table>
+        </div>
+    </div>
+</div>
+
+<style>
+/* ===== MODAL CONTEO BILLETES - ESTILO CRISTAL MEJORADO ===== */
+.cc-modal-overlay {
+    display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+    background:rgba(0,0,0,0.55);
+    z-index:99999; align-items:center; justify-content:center;
+    backdrop-filter:blur(3px);
+    animation:ccModalFadeIn 0.2s ease-out;
+}
+@keyframes ccModalFadeIn {
+    from { opacity:0; } to { opacity:1; }
+}
+@keyframes ccModalSlideUp {
+    from { opacity:0; transform:translateY(30px) scale(0.97); }
+    to { opacity:1; transform:translateY(0) scale(1); }
+}
+.cc-modal-glass {
+    width:540px; max-width:94%; max-height:92vh;
+    background:rgba(255,255,255,0.75);
+    backdrop-filter:blur(20px);
+    -webkit-backdrop-filter:blur(20px);
+    border-radius:18px;
+    border:1px solid rgba(255,255,255,0.5);
+    box-shadow:
+        0 25px 80px rgba(0,0,0,0.25),
+        inset 0 1px 0 rgba(255,255,255,0.6);
+    overflow:hidden;
+    animation:ccModalSlideUp 0.3s ease-out;
+}
+.cc-modal-glass.dark {
+    background:rgba(30,41,59,0.85);
+    backdrop-filter:blur(20px);
+    border:1px solid rgba(255,255,255,0.08);
+    box-shadow:0 25px 80px rgba(0,0,0,0.4);
+}
+
+/* Header */
+.cc-modal-header {
+    padding:20px 26px 16px;
+    display:flex; align-items:flex-start; justify-content:space-between;
+}
+.cc-modal-header-left {
+    display:flex; flex-direction:column; gap:2px;
+}
+.cc-modal-header-title {
+    font-size:1.15rem; font-weight:700; color:var(--text-main);
+    display:flex; align-items:center; gap:10px;
+}
+.cc-modal-header-title i {
+    color:var(--cc-green);
+    font-size:1.2rem;
+    filter:drop-shadow(0 2px 4px rgba(16,185,129,0.3));
+}
+.cc-modal-header-badge {
+    font-size:0.75rem; color:var(--text-gray);
+    display:flex; align-items:center; gap:5px;
+    margin-top:2px;
+}
+
+/* Pendiente pill */
+.cc-modal-pendiente-box {
+    text-align:right;
+    background:rgba(16,185,129,0.08);
+    border:1px solid rgba(16,185,129,0.15);
+    border-radius:10px;
+    padding:6px 14px;
+}
+.cc-modal-pendiente-label {
+    font-size:0.7rem; font-weight:600; text-transform:uppercase;
+    letter-spacing:0.4px; color:var(--text-gray);
+}
+.cc-modal-pendiente-monto {
+    font-size:1.15rem; font-weight:800; color:var(--cc-green-dark);
+}
+
+/* Body */
+.cc-modal-body {
+    padding:0 26px 8px;
+    overflow-y:auto;
+    max-height:calc(92vh - 250px);
+}
+.cc-modal-body::-webkit-scrollbar {
+    width:5px;
+}
+.cc-modal-body::-webkit-scrollbar-track {
+    background:transparent;
+}
+.cc-modal-body::-webkit-scrollbar-thumb {
+    background:rgba(0,0,0,0.12);
+    border-radius:3px;
+}
+
+/* Divider con Monedas label */
+.cc-divider {
+    display:flex; align-items:center; gap:12px;
+    margin:14px 0 10px;
+    padding:0 2px;
+}
+.cc-divider::before,
+.cc-divider::after {
+    content:''; flex:1; height:1px;
+    background:linear-gradient(to right, transparent, var(--border-color), transparent);
+}
+.cc-divider-label {
+    font-size:0.72rem; font-weight:700; text-transform:uppercase;
+    letter-spacing:1px; color:var(--text-gray);
+    display:flex; align-items:center; gap:5px;
+}
+.cc-divider-label i {
+    font-size:0.7rem;
+}
+
+/* Tabla de billetes */
+.cc-billetes-table {
+    width:100%; border-collapse:separate; border-spacing:0 3px;
+    font-size:0.92rem;
+}
+.cc-billetes-table th {
+    text-align:left; padding:4px 6px 6px 0;
+    font-weight:600; color:var(--text-gray); font-size:0.72rem; text-transform:uppercase;
+    letter-spacing:0.5px;
+    border-bottom:1px solid var(--border-color);
+}
+.cc-billetes-table th:last-child { text-align:right; }
+.cc-billetes-table td {
+    padding:4px 0;
+    vertical-align:middle;
+}
+.cc-billete-fila {
+    transition:background 0.15s;
+    border-radius:8px;
+}
+.cc-billete-fila:hover {
+    background:rgba(16,185,129,0.04);
+}
+.cc-billete-nombre {
+    font-weight:600; color:var(--text-main);
+    padding-left:6px;
+}
+.cc-billete-input-wrapper {
+    display:flex; align-items:center; justify-content:center;
+}
+.cc-billete-input {
+    width:72px; text-align:center;
+    padding:6px 8px;
+    border:1.5px solid var(--border-color);
+    border-radius:8px;
+    font-size:0.95rem;
+    font-weight:600;
+    background:rgba(255,255,255,0.5);
+    backdrop-filter:blur(4px);
+    transition:all 0.2s;
+    outline:none;
+}
+.cc-billete-input:focus {
+    border-color:var(--cc-green);
+    box-shadow:0 0 0 3px rgba(16,185,129,0.15);
+    background:white;
+}
+.cc-billete-input:hover {
+    border-color:#94a3b8;
+}
+.cc-billete-subtotal {
+    text-align:right; padding-right:6px;
+    font-weight:700; font-family:'Courier New',monospace;
+    color:var(--text-main);
+    font-size:0.95rem;
+}
+
+/* Card resumen */
+.cc-resumen-card {
+    margin-top:16px; margin-bottom:8px;
+    padding:16px 20px;
+    background:linear-gradient(135deg, rgba(16,185,129,0.06), rgba(5,150,105,0.1));
+    border:1.5px solid rgba(16,185,129,0.2);
+    border-radius:12px;
+    backdrop-filter:blur(4px);
+}
+.cc-resumen-row {
+    display:flex; justify-content:space-between; align-items:center;
+    flex-wrap:wrap; gap:10px;
+}
+.cc-resumen-left {
+    display:flex; flex-direction:column; gap:2px;
+}
+.cc-resumen-label {
+    font-size:0.75rem; font-weight:600; text-transform:uppercase;
+    letter-spacing:0.5px; color:var(--text-gray);
+}
+.cc-resumen-total-contado {
+    font-weight:700; font-size:1.3rem; color:var(--cc-green-dark);
+}
+.cc-resumen-right {
+    text-align:right;
+}
+.cc-resumen-diff {
+    font-weight:700; font-size:0.9rem;
+    padding:4px 12px; border-radius:6px;
+    display:inline-block;
+}
+.cc-resumen-diff.sobrante {
+    background:rgba(217,119,6,0.1); color:#d97706;
+    border:1px solid rgba(217,119,6,0.2);
+}
+.cc-resumen-diff.faltante {
+    background:rgba(220,38,38,0.1); color:#dc2626;
+    border:1px solid rgba(220,38,38,0.2);
+}
+.cc-resumen-diff.exacto {
+    background:rgba(5,150,105,0.1); color:#059669;
+    border:1px solid rgba(5,150,105,0.2);
+}
+
+/* Footer */
+.cc-modal-footer {
+    padding:14px 26px 18px;
+    border-top:1px solid var(--border-color);
+    display:flex; gap:10px; justify-content:flex-end;
+    background:rgba(0,0,0,0.02);
+}
+.cc-modal-footer .btn-cancelar {
+    padding:10px 22px;
+    border:1.5px solid var(--border-color);
+    border-radius:10px;
+    background:transparent;
+    color:var(--text-gray); font-weight:600;
+    cursor:pointer; font-size:0.88rem;
+    transition:all 0.2s;
+}
+.cc-modal-footer .btn-cancelar:hover {
+    background:rgba(0,0,0,0.04);
+    color:var(--text-main);
+}
+.cc-modal-footer .btn-confirmar {
+    background:linear-gradient(135deg,var(--cc-green),var(--cc-green-dark));
+    color:white; border:none;
+    padding:10px 22px; border-radius:10px;
+    font-weight:700; cursor:pointer; font-size:0.88rem;
+    display:flex; align-items:center; gap:7px;
+    transition:all 0.25s;
+    box-shadow:0 3px 10px rgba(16,185,129,0.25);
+}
+.cc-modal-footer .btn-confirmar:hover {
+    transform:translateY(-1px);
+    box-shadow:0 5px 16px rgba(16,185,129,0.35);
+}
+</style>
+
+<!-- ================================================================ -->
+<!-- MODAL: CONTEO DE BILLETES (ESTILO CRISTAL MEJORADO)              -->
+<!-- ================================================================ -->
+<div id="ccModalBilletes" class="cc-modal-overlay" onclick="if(event.target===this)ccCerrarModalBilletes()">
+    <div class="cc-modal-glass">
+        <!-- Header -->
+        <div class="cc-modal-header">
+            <div class="cc-modal-header-left">
+                <div class="cc-modal-header-title">
+                    <i class="fas fa-money-bill-wave"></i> Conteo de Billetes
+                </div>
+                <div class="cc-modal-header-badge">
+                    <i class="fas fa-user"></i> <span id="ccModalUsuarioLabel">-</span>
+                </div>
+            </div>
+            <div class="cc-modal-pendiente-box">
+                <div class="cc-modal-pendiente-label">Pendiente segun sistema</div>
+                <div class="cc-modal-pendiente-monto" id="ccModalTotalPendiente">$0.00</div>
+            </div>
+        </div>
+
+        <!-- Body -->
+        <div class="cc-modal-body">
+            <!-- Billetes -->
+            <div style="margin-bottom:4px;"><span style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-gray);display:flex;align-items:center;gap:5px;"><i class="fas fa-coins" style="font-size:0.65rem;"></i> BILLETES</span></div>
+            <table class="cc-billetes-table">
+                <thead>
+                    <tr>
+                        <th style="width:80px;">Denominaci&oacute;n</th>
+                        <th style="text-align:center;">Cantidad</th>
+                        <th style="text-align:right;padding-right:2px;">Sub-Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="cc-billete-fila"><td><span class="cc-billete-nombre">RD$2,000</span></td>
+                        <td><div class="cc-billete-input-wrapper"><input type="number" id="billete2000" class="cc-billete-input" min="0" oninput="ccCalcularBilletes()" onfocus="this.select()"></div></td>
+                        <td><span class="cc-billete-subtotal" id="billete2000_sub">0</span></td></tr>
+                    <tr class="cc-billete-fila"><td><span class="cc-billete-nombre">RD$1,000</span></td>
+                        <td><div class="cc-billete-input-wrapper"><input type="number" id="billete1000" class="cc-billete-input" min="0" oninput="ccCalcularBilletes()" onfocus="this.select()"></div></td>
+                        <td><span class="cc-billete-subtotal" id="billete1000_sub">0</span></td></tr>
+                    <tr class="cc-billete-fila"><td><span class="cc-billete-nombre">RD$500</span></td>
+                        <td><div class="cc-billete-input-wrapper"><input type="number" id="billete500" class="cc-billete-input" min="0" oninput="ccCalcularBilletes()" onfocus="this.select()"></div></td>
+                        <td><span class="cc-billete-subtotal" id="billete500_sub">0</span></td></tr>
+                    <tr class="cc-billete-fila"><td><span class="cc-billete-nombre">RD$200</span></td>
+                        <td><div class="cc-billete-input-wrapper"><input type="number" id="billete200" class="cc-billete-input" min="0" oninput="ccCalcularBilletes()" onfocus="this.select()"></div></td>
+                        <td><span class="cc-billete-subtotal" id="billete200_sub">0</span></td></tr>
+                    <tr class="cc-billete-fila"><td><span class="cc-billete-nombre">RD$100</span></td>
+                        <td><div class="cc-billete-input-wrapper"><input type="number" id="billete100" class="cc-billete-input" min="0" oninput="ccCalcularBilletes()" onfocus="this.select()"></div></td>
+                        <td><span class="cc-billete-subtotal" id="billete100_sub">0</span></td></tr>
+                    <tr class="cc-billete-fila"><td><span class="cc-billete-nombre">RD$50</span></td>
+                        <td><div class="cc-billete-input-wrapper"><input type="number" id="billete50" class="cc-billete-input" min="0" oninput="ccCalcularBilletes()" onfocus="this.select()"></div></td>
+                        <td><span class="cc-billete-subtotal" id="billete50_sub">0</span></td></tr>
+                    <tr class="cc-billete-fila"><td><span class="cc-billete-nombre">RD$25</span></td>
+                        <td><div class="cc-billete-input-wrapper"><input type="number" id="billete25" class="cc-billete-input" min="0" oninput="ccCalcularBilletes()" onfocus="this.select()"></div></td>
+                        <td><span class="cc-billete-subtotal" id="billete25_sub">0</span></td></tr>
+                    <tr class="cc-billete-fila"><td><span class="cc-billete-nombre">RD$10</span></td>
+                        <td><div class="cc-billete-input-wrapper"><input type="number" id="billete10" class="cc-billete-input" min="0" oninput="ccCalcularBilletes()" onfocus="this.select()"></div></td>
+                        <td><span class="cc-billete-subtotal" id="billete10_sub">0</span></td></tr>
+                    <tr class="cc-billete-fila"><td><span class="cc-billete-nombre">RD$5</span></td>
+                        <td><div class="cc-billete-input-wrapper"><input type="number" id="billete5" class="cc-billete-input" min="0" oninput="ccCalcularBilletes()" onfocus="this.select()"></div></td>
+                        <td><span class="cc-billete-subtotal" id="billete5_sub">0</span></td></tr>
+                </tbody>
+            </table>
+
+            <!-- Card resumen -->
+            <div class="cc-resumen-card">
+                <div class="cc-resumen-row">
+                    <div class="cc-resumen-left">
+                        <span class="cc-resumen-label"><i class="fas fa-calculator"></i> Total contado</span>
+                        <span class="cc-resumen-total-contado" id="ccModalTotalSinGastos">$0.00</span>
+                    </div>
+                    <div class="cc-resumen-right">
+                        <div style="font-size:0.7rem;font-weight:600;text-transform:uppercase;letter-spacing:0.4px;color:var(--text-gray);margin-bottom:3px;">Cuadre del d&iacute;a</div>
+                        <div id="ccModalDiferencia" class="cc-resumen-diff">Sin datos</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="cc-modal-footer">
+            <button onclick="ccCerrarModalBilletes()" class="btn-cancelar"><i class="fas fa-times"></i> Cancelar</button>
+            <button onclick="ccRealizarCuadre()" class="btn-confirmar"><i class="fas fa-check-circle"></i> Confirmar Cuadre</button>
         </div>
     </div>
 </div>
@@ -315,15 +650,93 @@ function ccCargarPendiente(usuario) {
     });
 }
 
-// ====== REALIZAR CUADRE ======
+// ====== MODAL BILLETES ======
+function ccAbrirModalBilletes() {
+    var usuario = document.getElementById('ccSelectUsuario').value;
+    if (!usuario) { return; }
+    
+    // Mostrar nombre de usuario en el badge
+    document.getElementById('ccModalUsuarioLabel').textContent = document.getElementById('ccBuscarUsuario').value || usuario;
+    
+    var totalPendiente = parseFloat(document.getElementById('ccTotalPendiente').textContent.replace(/[^0-9.-]/g, '')) || 0;
+    document.getElementById('ccModalTotalPendiente').textContent = '$' + totalPendiente.toFixed(2);
+    document.getElementById('ccModalTotalSinGastos').textContent = '$' + totalPendiente.toFixed(2);
+    
+    // Resetear cantidades
+    var inputs = document.querySelectorAll('.cc-billete-input');
+    inputs.forEach(function(inp) { inp.value = ''; });
+    ccCalcularBilletes();
+    
+    document.getElementById('ccModalBilletes').style.display = 'flex';
+    document.getElementById('ccModalBilletes').querySelector('.cc-modal-body').scrollTop = 0;
+}
+
+function ccCerrarModalBilletes() {
+    document.getElementById('ccModalBilletes').style.display = 'none';
+}
+
+function ccCalcularBilletes() {
+    var denominaciones = [
+        { id: 'billete2000', val: 2000 },
+        { id: 'billete1000', val: 1000 },
+        { id: 'billete500', val: 500 },
+        { id: 'billete200', val: 200 },
+        { id: 'billete100', val: 100 },
+        { id: 'billete50', val: 50 },
+        { id: 'billete25', val: 25 },
+        { id: 'billete10', val: 10 },
+        { id: 'billete5', val: 5 },
+    ];
+    var total = 0;
+    denominaciones.forEach(function(d) {
+        var input = document.getElementById(d.id);
+        var cant = parseInt(input.value) || 0;
+        var sub = cant * d.val;
+        document.getElementById(d.id + '_sub').textContent = sub.toLocaleString('es-DO');
+        total += sub;
+    });
+    document.getElementById('ccModalTotalSinGastos').textContent = '$' + total.toFixed(2);
+    var pendiente = parseFloat(document.getElementById('ccModalTotalPendiente').textContent.replace(/[^0-9.-]/g, '')) || 0;
+    var diff = total - pendiente;
+    var diffEl = document.getElementById('ccModalDiferencia');
+    // Quitar clases previas
+    diffEl.classList.remove('sobrante','faltante','exacto');
+    if (diff === 0) {
+        diffEl.textContent = ' ✓ CUADRE EXACTO';
+        diffEl.classList.add('exacto');
+    } else if (diff > 0) {
+        diffEl.textContent = ' ⬆ SOBRANTE: $' + diff.toFixed(2);
+        diffEl.classList.add('sobrante');
+    } else {
+        diffEl.textContent = ' ⬇ FALTANTE: $' + Math.abs(diff).toFixed(2);
+        diffEl.classList.add('faltante');
+    }
+}
+
+// ====== REALIZAR CUADRE (desde el modal) ======
 function ccRealizarCuadre() {
     var usuario = document.getElementById('ccSelectUsuario').value;
     if (!usuario) { return; }
     
-    if (!confirm('¿Estás seguro que deseas realizar e imprimir este cuadre para ' + usuario + '?')) return;
+    // Recolectar conteo de billetes
+    var denominaciones = [2000, 1000, 500, 200, 100, 50, 25, 10, 5];
+    var billetes = {};
+    var totalConteo = 0;
+    denominaciones.forEach(function(d) {
+        var input = document.getElementById('billete' + d);
+        var cant = parseInt(input.value) || 0;
+        if (cant > 0) {
+            billetes[d] = cant;
+            totalConteo += cant * d;
+        }
+    });
     
     var fd = new FormData();
     fd.append('usuario', usuario);
+    fd.append('conteo_billetes', JSON.stringify(billetes));
+    fd.append('total_conteo', totalConteo);
+    
+    ccCerrarModalBilletes();
     
     var btn = document.getElementById('ccBtnCuadrar');
     btn.disabled = true;

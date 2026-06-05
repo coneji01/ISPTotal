@@ -1,448 +1,214 @@
 <!DOCTYPE html>
-<html lang="en" class="smartolt-night">
+<html lang="en" class="">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Configuración OLT - ISPTotal</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<script>window.SMARTOLT_DB_THEME='system';</script>
+<script>try{var k='smartolt-night',lk='smartolt-theme-local',dbTheme=window.SMARTOLT_DB_THEME,local=null,pref,n;try{local=localStorage.getItem(lk);}catch(e){}if(local==='night'||local==='light'||local==='system'){pref=local;}else if(dbTheme==='night'||dbTheme==='light'||dbTheme==='system'){pref=dbTheme;}else{pref='system';}if(pref==='system'){n=!!(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);}else if(pref==='night'){n=true;}else{n=false;}try{localStorage.setItem(k,n?'1':'0');}catch(e){}if(n){document.documentElement.classList.add('smartolt-night');}else{document.documentElement.classList.remove('smartolt-night');}document.cookie=k+'='+(n?'1':'0')+'; path=/; max-age=31536000; SameSite=Lax'+(location.protocol==='https:'?'; Secure':'');}catch(e){}</script>
+<meta http-equiv="content-type" content="text/html; utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Configuración OLT | GPON Manager</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
 <style>
-:root {
-  --bg-primary: #1a1d23;
-  --bg-secondary: #22262e;
-  --bg-card: #2a2d35;
-  --bg-hover: #32363e;
-  --text-primary: #e8eaed;
-  --text-secondary: #9aa0a8;
-  --text-muted: #6b7280;
-  --border-color: #383c44;
-  --accent-blue: #3b82f6;
-  --accent-green: #22c55e;
-  --accent-red: #ef4444;
-  --accent-yellow: #eab308;
-  --accent-cyan: #06b6d4;
-  --shadow: 0 2px 8px rgba(0,0,0,0.3);
+/* === SmartOLT Base Styles === */
+body { font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; -webkit-font-smoothing: antialiased; background: #fafbfd; }
+html.smartolt-night body { background: #06162f; color: #e2e8f0; }
+.navbar-default { background: #fff !important; border-bottom: 1px solid #eef2f6 !important; border-radius: 0; }
+html.smartolt-night .navbar-default { background: rgba(6,22,47,0.82) !important; border-bottom: 1px solid rgba(255,255,255,0.1) !important; }
+html.smartolt-night .navbar-default .navbar-brand, html.smartolt-night .navbar-default .nav > li > a { color: rgba(255,255,255,0.9) !important; }
+html.smartolt-night .navbar-default .nav > li > a:hover { background: rgba(255,255,255,0.08) !important; color: #fff !important; }
+.navbar-brand { font-weight: 700; }
+.container { padding-top: 70px; padding-bottom: 40px; }
+.panel { background: #fff; border: 1px solid #eef2f6; border-radius: 10px; box-shadow: 0 1px 2px rgba(15,23,42,0.03), 0 4px 14px rgba(15,23,42,0.04); }
+html.smartolt-night .panel { background: rgba(15,26,46,0.92); border: 1px solid rgba(255,255,255,0.1); color: #e2e8f0; }
+.panel-heading { background: #4c4b4b !important; color: #fff !important; border-radius: 10px 10px 0 0 !important; border: none !important; font-weight: 600; }
+html.smartolt-night .panel-heading { background: rgba(255,255,255,0.08) !important; }
+.panel-body { padding: 20px; }
+html.smartolt-night .panel-body { background: transparent; }
+.form-control { border: 1px solid #d1d5db; border-radius: 6px; box-shadow: none; }
+.form-control:focus { border-color: #4c4b4b; box-shadow: 0 0 0 2px rgba(76,75,75,0.12); }
+html.smartolt-night .form-control { background: #0f172a; border-color: #475569; color: #e2e8f0; }
+html.smartolt-night .form-control:focus { border-color: #60a5fa; box-shadow: 0 0 0 2px rgba(96,165,250,0.15); }
+.btn-primary { background: #4c4b4b; border-color: #4c4b4b; }
+.btn-primary:hover { background: #2d2d2d; border-color: #2d2d2d; }
+html.smartolt-night .btn-primary { background: #3b82f6; border-color: #3b82f6; }
+html.smartolt-night .btn-primary:hover { background: #2563eb; border-color: #2563eb; }
+html.smartolt-night .btn-default { background: #334155; color: #e2e8f0; border: none; }
+html.smartolt-night .btn-default:hover { background: #475569; color: #fff; }
+html.smartolt-night .text-muted { color: #94a3b8 !important; }
+html.smartolt-night label { color: #cbd5e1; }
+.smartolt-landing-hero-bg { display: none; }
+html.smartolt-night .smartolt-landing-hero-bg {
+  display: block; position: fixed; z-index: -1; inset: 0;
+  background: radial-gradient(circle at 72% 18%, rgba(29,139,255,0.24), transparent 28%),
+              radial-gradient(circle at 18% 84%, rgba(0,108,255,0.18), transparent 28%),
+              linear-gradient(135deg, #06162f, #071b3d 55%, #031022);
+  pointer-events: none;
 }
-:root.smartolt-light {
-  --bg-primary: #f1f5f9;
-  --bg-secondary: #ffffff;
-  --bg-card: #ffffff;
-  --bg-hover: #f8fafc;
-  --text-primary: #1e293b;
-  --text-secondary: #475569;
-  --text-muted: #94a3b8;
-  --border-color: #e2e8f0;
-  --shadow: 0 1px 3px rgba(0,0,0,0.1);
-}
-[class=""] {
-  --bg-primary: #1a1d23;
-  --bg-secondary: #22262e;
-  --bg-card: #2a2d35;
-  --bg-hover: #32363e;
-  --text-primary: #e8eaed;
-  --text-secondary: #9aa0a8;
-  --text-muted: #6b7280;
-  --border-color: #383c44;
-  --accent-blue: #3b82f6;
-  --accent-green: #22c55e;
-  --accent-red: #ef4444;
-  --accent-yellow: #eab308;
-  --accent-cyan: #06b6d4;
-  --shadow: 0 2px 8px rgba(0,0,0,0.3);
-}
-* { margin:0; padding:0; box-sizing:border-box; }
-body { font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; background:var(--bg-primary); color:var(--text-primary); min-height:100vh; }
-.smartolt-site { position:relative; }
-.smartolt-landing-hero-bg { position:fixed; top:0; left:0; width:100%; height:100%; background:radial-gradient(ellipse at 50% 0%, rgba(59,130,246,0.08) 0%, transparent 60%); pointer-events:none; z-index:0; }
-#content-wrapper { position:relative; z-index:1; }
-.topbar { background:var(--bg-secondary); border-bottom:1px solid var(--border-color); padding:0 24px; height:56px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:100; backdrop-filter:blur(8px); }
-.topbar-brand { font-size:1.1rem; font-weight:700; color:var(--text-primary); text-decoration:none; display:flex; align-items:center; gap:10px; }
-.topbar-brand i { color:var(--accent-blue); }
-.topbar-actions { display:flex; align-items:center; gap:12px; }
-.night-toggle { background:none; border:none; color:var(--text-secondary); font-size:1.2rem; cursor:pointer; padding:8px; border-radius:8px; transition:all 0.2s; width:38px; height:38px; display:flex; align-items:center; justify-content:center; }
-.night-toggle:hover { background:var(--bg-hover); color:var(--text-primary); }
-.container { max-width:1400px; margin:0 auto; padding:20px 24px; }
-.content-wrap { padding:0; }
-h2 { font-size:1.4rem; font-weight:600; color:var(--text-primary); margin-bottom:20px; display:flex; align-items:center; gap:10px; }
-h2 i { color:var(--accent-blue); }
-/* GPON Table */
-.gpon-table-wrap { background:var(--bg-card); border-radius:10px; border:1px solid var(--border-color); overflow:hidden; box-shadow:var(--shadow); }
-.gpon-table { width:100%; border-collapse:collapse; font-size:0.85rem; }
-.gpon-table thead { background:var(--bg-secondary); }
-.gpon-table th { padding:12px 14px; text-align:left; color:var(--text-secondary); font-size:0.75rem; font-weight:600; text-transform:uppercase; letter-spacing:0.5px; border-bottom:2px solid var(--border-color); white-space:nowrap; }
-.gpon-table td { padding:10px 14px; border-bottom:1px solid var(--border-color); vertical-align:middle; color:var(--text-primary); }
-.gpon-table tbody tr:hover { background:var(--bg-hover); }
-/* GPON Buttons */
-.gpon-btn { display:inline-flex; align-items:center; gap:6px; padding:7px 14px; border:none; border-radius:6px; font-family:'Inter',sans-serif; font-size:0.82rem; font-weight:500; cursor:pointer; transition:all 0.2s; text-decoration:none; white-space:nowrap; }
-.gpon-btn i { font-size:0.9rem; }
-.gpon-btn-primary { background:var(--accent-blue); color:#fff; }
-.gpon-btn-primary:hover { background:#2563eb; }
-.gpon-btn-success { background:var(--accent-green); color:#fff; }
-.gpon-btn-success:hover { background:#16a34a; }
-.gpon-btn-danger { background:var(--accent-red); color:#fff; }
-.gpon-btn-danger:hover { background:#dc2626; }
-.gpon-btn-warning { background:var(--accent-yellow); color:#000; }
-.gpon-btn-warning:hover { background:#d97706; }
-.gpon-btn-info { background:var(--accent-cyan); color:#fff; }
-.gpon-btn-info:hover { background:#0891b2; }
-.gpon-btn-secondary { background:var(--bg-hover); color:var(--text-primary); border:1px solid var(--border-color); }
-.gpon-btn-link { background:none; border:none; color:var(--accent-blue); padding:4px 8px; cursor:pointer; font-family:'Inter',sans-serif; font-size:0.85rem; text-decoration:none; }
-.gpon-btn-link:hover { text-decoration:underline; }
-.gpon-btn-sm { padding:5px 10px; font-size:0.78rem; }
-/* Settings form */
-.settings-section { background:var(--bg-card); border-radius:10px; border:1px solid var(--border-color); overflow:hidden; box-shadow:var(--shadow); margin-bottom:24px; }
-.settings-section-title { padding:14px 20px; background:var(--bg-secondary); border-bottom:1px solid var(--border-color); font-size:0.88rem; font-weight:600; color:var(--text-primary); display:flex; align-items:center; gap:10px; }
-.settings-section-title i { color:var(--accent-blue); }
-.settings-body { padding:20px; }
-.form-row { display:flex; flex-wrap:wrap; gap:16px; margin-bottom:16px; }
-.form-group { flex:1; min-width:200px; }
-.form-group label { display:block; font-size:0.75rem; font-weight:600; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.3px; margin-bottom:4px; }
-.form-control { width:100%; padding:9px 12px; background:var(--bg-secondary); border:1px solid var(--border-color); border-radius:6px; color:var(--text-primary); font-family:'Inter',sans-serif; font-size:0.88rem; outline:none; transition:border-color 0.2s; box-sizing:border-box; }
-.form-control:focus { border-color:var(--accent-blue); }
-.form-control::placeholder { color:var(--text-muted); }
-.form-help { font-size:0.75rem; color:var(--text-muted); margin-top:4px; }
-.margin-bottom { margin-bottom:10px; }
-.margin-top { margin-top:10px; }
-.text-right { text-align:right; }
-.text-muted { color:var(--text-muted); }
-.password-wrap { display:flex; gap:8px; align-items:center; }
-.password-wrap .form-control { flex:1; }
-.password-toggle { background:none; border:none; color:var(--text-secondary); cursor:pointer; font-size:1rem; padding:4px; }
-.password-toggle:hover { color:var(--text-primary); }
-hr.section-divider { border:none; border-top:1px solid var(--border-color); margin:24px 0; }
-.test-result { padding:12px 16px; border-radius:6px; margin-top:12px; font-size:0.85rem; display:none; }
-.test-result.ok { display:block; background:rgba(34,197,94,0.1); border:1px solid rgba(34,197,94,0.3); color:var(--accent-green); }
-.test-result.err { display:block; background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3); color:var(--accent-red); }
-.smartolt-topbar-network { position:absolute; top:0; left:0; width:100%; height:100px; pointer-events:none; overflow:hidden; z-index:0; }
-.smartolt-topbar-network-inner { position:relative; width:100%; height:100%; opacity:0.06; }
-.smartolt-topbar-network-lines { width:100%; height:100%; stroke:var(--accent-blue); stroke-width:0.5; fill:none; }
-@media(max-width:768px){
-  .container { padding:12px; }
-  .form-row { flex-direction:column; }
-  .form-group { min-width:100%; }
-}
+#smartolt-night-toggle { align-items: center; display: flex; justify-content: center; }
+#smartolt-night-toggle i { line-height: 1; width: 20px; text-align: center; }
+#smartolt-night-toggle .smartolt-theme-icon-light,
+#smartolt-night-toggle .smartolt-theme-icon-night,
+#smartolt-night-toggle .smartolt-theme-icon-system { display: none; }
+#smartolt-night-toggle.is-pref-light .smartolt-theme-icon-light,
+#smartolt-night-toggle.is-pref-night .smartolt-theme-icon-night,
+#smartolt-night-toggle.is-pref-system .smartolt-theme-icon-system { display: inline-block; }
+.font-size-20 { font-size: 20px; }
+.text-ellipsis { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.max-width-250 { max-width: 250px; }
+.alert { border-radius: 8px; }
 </style>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/js/bootstrap.min.js"></script>
 </head>
-<body class="smartolt-site">
-<div class="smartolt-landing-hero-bg"></div>
+<body>
+<div class="smartolt-landing-hero-bg" aria-hidden="true"></div>
 <div id="content-wrapper">
-  <div class="smartolt-topbar-network" aria-hidden="true">
-    <div class="smartolt-topbar-network-inner">
-      <svg class="smartolt-topbar-network-lines" viewBox="0 0 100 100" preserveAspectRatio="none">
-        <line x1="8" y1="68" x2="23" y2="78"></line>
-        <line x1="23" y1="78" x2="37" y2="63"></line>
-        <line x1="8" y1="68" x2="37" y2="63"></line>
-        <line x1="37" y1="63" x2="65" y2="18"></line>
-        <line x1="65" y1="18" x2="89" y2="34"></line>
-        <line x1="23" y1="78" x2="65" y2="18"></line>
-        <line x1="37" y1="63" x2="89" y2="34"></line>
-      </svg>
-      <span class="smartolt-topbar-node smartolt-topbar-node-a"></span>
-      <span class="smartolt-topbar-node smartolt-topbar-node-b"></span>
-      <span class="smartolt-topbar-node smartolt-topbar-node-c"></span>
-    </div>
-  </div>
-
-  <div class="topbar">
-    <a href="/gpon" class="topbar-brand">
-      <i class="fas fa-cogs"></i> ISPTotal - GPON
-    </a>
-    <div class="topbar-actions">
-      <button class="night-toggle" id="nightToggle" title="Night mode">
-        <i class="fas fa-moon"></i>
-      </button>
+  <div class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#navbar-main">
+          <span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand text-ellipsis max-width-250" href="/modulo?pagina=GPONManager">GPON Manager</a>
+      </div>
+      <div class="navbar-collapse collapse" id="navbar-main">
+        <ul class="nav navbar-nav">
+          <li><a href="/modulo?pagina=GPONManager">Dashboard</a></li>
+          <li><a href="/modulo?pagina=SmartoltConfigured">ONUs Configuradas</a></li>
+          <li><a href="/modulo?pagina=SmartoltUnconfigured">Sin Configurar</a></li>
+          <li><a href="/modulo?pagina=SmartoltSpeedProfiles">Velocidad</a></li>
+          <li><a href="/modulo?pagina=SmartoltOnuTypes">Tipos ONU</a></li>
+          <li class="active"><a href="/modulo?pagina=SmartoltSettings">Config OLT</a></li>
+        </ul>
+        <ul class="nav navbar-nav navbar-right">
+          <li><a href="/modulo?pagina=GPONManager" title="Volver al Dashboard"><i class="fa fa-arrow-left font-size-20"></i></a></li>
+          <li><a href="#" id="smartolt-night-toggle" class="is-pref-night is-resolved" title="Night mode"><i class="fa fa-sun-o font-size-20 smartolt-theme-icon-light"></i><i class="fa fa-moon-o font-size-20 smartolt-theme-icon-night"></i><i class="fa fa-adjust font-size-20 smartolt-theme-icon-system"></i></a></li>
+        </ul>
+      </div>
     </div>
   </div>
 
   <div class="container">
-    <div class="content-wrap">
-      <h2><i class="fas fa-cogs"></i> Configuración OLT</h2>
-
-      <!-- Connection Settings -->
-      <div class="settings-section">
-        <div class="settings-section-title">
-          <i class="fas fa-network-wired"></i> Conexión Telnet - OLT ZTE C300
-        </div>
-        <div class="settings-body">
-          <form id="oltSettingsForm">
-            <div class="form-row">
+    <div class="row">
+      <div class="col-lg-8 col-lg-offset-2">
+        <div class="panel panel-default">
+          <div class="panel-heading"><i class="fa fa-cogs"></i> Configuraci&oacute;n OLT / SmartOLT</div>
+          <div class="panel-body">
+            <form id="configForm">
               <div class="form-group">
-                <label>Nombre OLT</label>
-                <input type="text" class="form-control" id="oltName" placeholder="Ej: OLT Principal" value="<%= locals.oltName || 'OLT ZTE C300' %>">
+                <label>Subdominio SmartOLT</label>
+                <input type="text" class="form-control" id="cfg_subdomain" placeholder="ej: joelwifi">
+                <small class="text-muted">Tu subdominio en SmartOLT (sin .smartolt.com)</small>
               </div>
               <div class="form-group">
-                <label>Dirección IP</label>
-                <input type="text" class="form-control" id="oltIp" placeholder="192.168.1.100" value="<%= locals.oltIp || '' %>">
-                <div class="form-help">IP de la OLT ZTE C300 en la red local</div>
-              </div>
-            </div>
-            <div class="form-row">
-              <div class="form-group">
-                <label>Puerto Telnet</label>
-                <input type="number" class="form-control" id="oltPort" placeholder="23" value="<%= locals.oltPort || 23 %>">
+                <label>API Key / X-Token</label>
+                <input type="password" class="form-control" id="cfg_apikey" placeholder="API Key de SmartOLT">
+                <small class="text-muted">X-Token de SmartOLT para autenticar peticiones API</small>
               </div>
               <div class="form-group">
-                <label>Timeout (segundos)</label>
-                <input type="number" class="form-control" id="oltTimeout" placeholder="30" value="<%= locals.oltTimeout || 30 %>">
-                <div class="form-help">Tiempo máximo de espera para comandos</div>
-              </div>
-            </div>
-            <div class="form-row">
-              <div class="form-group">
-                <label>Usuario Telnet</label>
-                <input type="text" class="form-control" id="oltUser" placeholder="admin" value="<%= locals.oltUser || '' %>">
+                <label>OLT ID</label>
+                <input type="number" class="form-control" id="cfg_oltid" placeholder="1">
+                <small class="text-muted">ID de la OLT en SmartOLT (normalmente 1)</small>
               </div>
               <div class="form-group">
-                <label>Contraseña Telnet</label>
-                <div class="password-wrap">
-                  <input type="password" class="form-control" id="oltPassword" placeholder="Contraseña" value="<%= locals.oltPassword || '' %>">
-                  <button type="button" class="password-toggle" onclick="togglePassword('oltPassword')" title="Mostrar/ocultar">
-                    <i class="fas fa-eye"></i>
-                  </button>
-                </div>
+                <label>Nombre de OLT</label>
+                <input type="text" class="form-control" id="cfg_oltname" placeholder="JOEL WIFI">
+                <small class="text-muted">Nombre descriptivo de tu OLT</small>
               </div>
-            </div>
-            <div class="form-row">
-              <div class="form-group">
-                <label>Enable Password</label>
-                <div class="password-wrap">
-                  <input type="password" class="form-control" id="oltEnablePwd" placeholder="Enable (si aplica)" value="<%= locals.oltEnablePwd || '' %>">
-                  <button type="button" class="password-toggle" onclick="togglePassword('oltEnablePwd')" title="Mostrar/ocultar">
-                    <i class="fas fa-eye"></i>
-                  </button>
-                </div>
-              </div>
-              <div class="form-group">
-                <label>Modelo OLT</label>
-                <select class="form-control" id="oltModel">
-                  <option value="ZTE-C300" <%= locals.oltModel === 'ZTE-C300' ? 'selected' : '' %>>ZTE C300</option>
-                  <option value="ZTE-C320" <%= locals.oltModel === 'ZTE-C320' ? 'selected' : '' %>>ZTE C320</option>
-                  <option value="ZTE-C600" <%= locals.oltModel === 'ZTE-C600' ? 'selected' : '' %>>ZTE C600</option>
-                  <option value="Huawei-MA5600T" <%= locals.oltModel === 'Huawei-MA5600T' ? 'selected' : '' %>>Huawei MA5600T</option>
-                  <option value="other" <%= locals.oltModel === 'other' ? 'selected' : '' %>>Otro</option>
-                </select>
-              </div>
-            </div>
-            <div class="form-row">
-              <div class="form-group">
-                <label>Comunidad SNMP (Read)</label>
-                <div class="password-wrap">
-                  <input type="password" class="form-control" id="snmpRead" placeholder="public" value="<%= locals.snmpRead || '' %>">
-                  <button type="button" class="password-toggle" onclick="togglePassword('snmpRead')"><i class="fas fa-eye"></i></button>
-                </div>
-              </div>
-              <div class="form-group">
-                <label>Comunidad SNMP (Write)</label>
-                <div class="password-wrap">
-                  <input type="password" class="form-control" id="snmpWrite" placeholder="private" value="<%= locals.snmpWrite || '' %>">
-                  <button type="button" class="password-toggle" onclick="togglePassword('snmpWrite')"><i class="fas fa-eye"></i></button>
-                </div>
-              </div>
-            </div>
-            <div class="form-row">
-              <div class="form-group">
-                <label>Puerto SNMP</label>
-                <input type="number" class="form-control" id="snmpPort" placeholder="161" value="<%= locals.snmpPort || 161 %>">
-              </div>
-              <div class="form-group">
-                <label>Versión SNMP</label>
-                <select class="form-control" id="snmpVersion">
-                  <option value="v2c" <%= locals.snmpVersion === 'v2c' ? 'selected' : '' %>>SNMPv2c</option>
-                  <option value="v3" <%= locals.snmpVersion === 'v3' ? 'selected' : '' %>>SNMPv3</option>
-                </select>
-              </div>
-            </div>
-            <div class="form-row">
-              <div class="form-group">
-                <label>Tipos PON Soportados</label>
-                <select class="form-control" id="ponTypes">
-                  <option value="GPON" <%= locals.ponTypes === 'GPON' ? 'selected' : '' %>>GPON</option>
-                  <option value="EPON" <%= locals.ponTypes === 'EPON' ? 'selected' : '' %>>EPON</option>
-                  <option value="GPON+EPON" <%= locals.ponTypes === 'GPON+EPON' ? 'selected' : '' %>>GPON + EPON</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label>Módulo IPTV</label>
-                <select class="form-control" id="iptvModule">
-                  <option value="disabled" <%= locals.iptvModule === 'disabled' ? 'selected' : '' %>>Deshabilitado</option>
-                  <option value="enabled" <%= locals.iptvModule === 'enabled' ? 'selected' : '' %>>Habilitado</option>
-                </select>
-              </div>
-            </div>
-
-            <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
-              <button type="button" class="gpon-btn gpon-btn-primary" onclick="testConnection()">
-                <i class="fas fa-plug"></i> Probar conexión Telnet
-              </button>
-              <button type="button" class="gpon-btn gpon-btn-info" onclick="testSnmp()">
-                <i class="fas fa-search"></i> Probar SNMP
-              </button>
-              <button type="button" class="gpon-btn gpon-btn-success" onclick="saveOltSettings()">
-                <i class="fas fa-save"></i> Guardar configuración
-              </button>
-            </div>
-
-            <div id="testResult" class="test-result"></div>
-          </form>
-        </div>
-      </div>
-
-      <!-- SOCKS Proxy Settings -->
-      <div class="settings-section">
-        <div class="settings-section-title">
-          <i class="fas fa-socks"></i> Proxy SOCKS
-        </div>
-        <div class="settings-body">
-          <form id="socksForm">
-            <div class="form-row">
-              <div class="form-group">
-                <label>Usar proxy SOCKS</label>
-                <select class="form-control" id="socksEnabled" onchange="toggleSocksFields()">
-                  <option value="0" <%= !locals.socksEnabled ? 'selected' : '' %>>No</option>
-                  <option value="1" <%= locals.socksEnabled ? 'selected' : '' %>>Sí</option>
-                </select>
-                <div class="form-help">Activar si la OLT está en una red remota accesible vía SOCKS</div>
-              </div>
-              <div class="form-group">
-                <label>Servidor SOCKS</label>
-                <input type="text" class="form-control" id="socksHost" placeholder="192.168.1.1" value="<%= locals.socksHost || '' %>">
-              </div>
-            </div>
-            <div class="form-row" id="socksExtraFields">
-              <div class="form-group">
-                <label>Puerto SOCKS</label>
-                <input type="number" class="form-control" id="socksPort" placeholder="1080" value="<%= locals.socksPort || 1080 %>">
-              </div>
-              <div class="form-group">
-                <label>Usuario SOCKS (opcional)</label>
-                <input type="text" class="form-control" id="socksUser" placeholder="Usuario" value="<%= locals.socksUser || '' %>">
-              </div>
-              <div class="form-group">
-                <label>Contraseña SOCKS (opcional)</label>
-                <div class="password-wrap">
-                  <input type="password" class="form-control" id="socksPassword" placeholder="Contraseña" value="<%= locals.socksPassword || '' %>">
-                  <button type="button" class="password-toggle" onclick="togglePassword('socksPassword')"><i class="fas fa-eye"></i></button>
-                </div>
-              </div>
-            </div>
-            <div style="display:flex;gap:8px;margin-top:8px;">
-              <button type="button" class="gpon-btn gpon-btn-primary" onclick="testSocks()">
-                <i class="fas fa-plug"></i> Probar SOCKS
-              </button>
-              <button type="button" class="gpon-btn gpon-btn-success" onclick="saveSocksSettings()">
-                <i class="fas fa-save"></i> Guardar SOCKS
-              </button>
-            </div>
-            <div id="socksTestResult" class="test-result"></div>
-          </form>
-        </div>
-      </div>
-
-      <!-- OLT Info Table -->
-      <div class="settings-section">
-        <div class="settings-section-title">
-          <i class="fas fa-info-circle"></i> Información de la OLT
-        </div>
-        <div class="settings-body" style="padding:0;">
-          <div class="gpon-table-wrap" style="box-shadow:none;border:none;">
-            <table class="gpon-table">
-              <tbody>
-                <tr><td style="font-weight:600;width:200px;">Nombre</td><td><%= locals.oltName || 'OLT ZTE C300' %></td></tr>
-                <tr><td style="font-weight:600;">IP OLT</td><td id="infoOltIp"><%= locals.oltIp || '-' %></td></tr>
-                <tr><td style="font-weight:600;">Acceso vía SOCKS</td><td><%= locals.socksEnabled ? 'Sí' : 'No' %></td></tr>
-                <tr><td style="font-weight:600;">Puerto Telnet</td><td id="infoTelnetPort"><%= locals.oltPort || '23' %></td></tr>
-                <tr><td style="font-weight:600;">Modelo OLT</td><td><%= locals.oltModel || 'ZTE-C300' %></td></tr>
-                <tr><td style="font-weight:600;">Versión Software</td><td><%= locals.oltVersion || 'No detectada' %></td></tr>
-                <tr><td style="font-weight:600;">Tipos PON</td><td><%= locals.ponTypes || 'GPON' %></td></tr>
-                <tr><td style="font-weight:600;">Módulo IPTV</td><td><%= locals.iptvModule === 'enabled' ? 'Habilitado' : 'Deshabilitado' %></td></tr>
-                <tr><td style="font-weight:600;">Servidores NTP</td><td><%= locals.ntpServers || 'No configurados' %></td></tr>
-              </tbody>
-            </table>
+              <hr>
+              <button type="submit" class="btn btn-primary"><i class="fa fa-save"></i> Guardar Configuraci&oacute;n</button>
+              <button type="button" class="btn btn-default" id="btnTestConn"><i class="fa fa-plug"></i> Probar Conexi&oacute;n</button>
+            </form>
+            <div id="connStatus" style="margin-top:15px;display:none;"></div>
           </div>
         </div>
       </div>
-
     </div>
   </div>
 </div>
 
 <script>
-(function(){
-  try{
-    if(localStorage.getItem('smartolt-night')==='1'){
-      document.documentElement.classList.add('smartolt-night');
-      document.documentElement.classList.remove('smartolt-light');
-    } else if(localStorage.getItem('smartolt-night')==='0'){
-      document.documentElement.classList.remove('smartolt-night');
-      document.documentElement.classList.add('smartolt-light');
-    }
-  }catch(e){}
+// Night mode toggle
+(function() {
+  var STORAGE_LOCAL = 'smartolt-theme-local';
+  function applyTheme(pref) {
+    var isNight = pref === 'night' ? true : (pref === 'light' ? false : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches));
+    var html = document.documentElement;
+    if (isNight) html.classList.add('smartolt-night'); else html.classList.remove('smartolt-night');
+    try { localStorage.setItem('smartolt-night', isNight ? '1' : '0'); } catch(e) {}
+    var toggle = document.getElementById('smartolt-night-toggle');
+    if (toggle) { toggle.classList.remove('is-pref-light','is-pref-night','is-pref-system'); toggle.classList.add('is-pref-' + pref); }
+  }
+  var localPref = (function(){ try { var s = localStorage.getItem(STORAGE_LOCAL); if(s==='night'||s==='light'||s==='system') return s; }catch(e){} return 'system'; })();
+  applyTheme(localPref || (window.SMARTOLT_DB_THEME || 'system'));
+  document.getElementById('smartolt-night-toggle').addEventListener('click', function(e) {
+    e.preventDefault();
+    var isNight = document.documentElement.classList.contains('smartolt-night');
+    var newPref = isNight ? 'light' : 'night';
+    try { localStorage.setItem(STORAGE_LOCAL, newPref); } catch(e) {}
+    applyTheme(newPref);
+  });
 })();
 
-document.getElementById('nightToggle').addEventListener('click', function(){
-  var html = document.documentElement;
-  if(html.classList.contains('smartolt-night')){
-    html.classList.remove('smartolt-night'); html.classList.add('smartolt-light');
-    localStorage.setItem('smartolt-night','0');
-  } else {
-    html.classList.remove('smartolt-light'); html.classList.add('smartolt-night');
-    localStorage.setItem('smartolt-night','1');
+// Cargar config
+$.get('/api/smartolt/config', function(data) {
+  if (data.success && data.config) {
+    var c = data.config;
+    $('#cfg_subdomain').val(c.subdomain || '');
+    $('#cfg_apikey').val(c.api_key || '');
+    $('#cfg_oltid').val(c.olt_id || 1);
+    $('#cfg_oltname').val(c.name || '');
   }
+}, 'json').fail(function() {
+  // Config not loaded yet, that's ok
 });
 
-var showResult = function(elId, ok, msg){
-  var el = document.getElementById(elId);
-  el.className = 'test-result ' + (ok ? 'ok' : 'err');
-  el.innerHTML = (ok ? '<i class="fas fa-check-circle"></i> ' : '<i class="fas fa-times-circle"></i> ') + msg;
-};
-
-function toggleSocksFields(){
-  var enabled = document.getElementById('socksEnabled').value === '1';
-  document.querySelectorAll('#socksExtraFields .form-group').forEach(function(el){
-    el.style.opacity = enabled ? '1' : '0.4';
+// Guardar config
+$('#configForm').on('submit', function(e) {
+  e.preventDefault();
+  var data = {
+    subdomain: $('#cfg_subdomain').val(),
+    api_key: $('#cfg_apikey').val(),
+    olt_id: parseInt($('#cfg_oltid').val()) || 1,
+    name: $('#cfg_oltname').val()
+  };
+  var btn = $(this).find('button[type="submit"]');
+  btn.html('<i class="fa fa-spinner fa-spin"></i> Guardando...').prop('disabled', true);
+  $.post('/api/smartolt/config/save', JSON.stringify(data), function(res) {
+    if (res.success) {
+      btn.html('<i class="fa fa-check"></i> Guardado').removeClass('btn-primary').addClass('btn-success');
+      setTimeout(function() { btn.html('<i class="fa fa-save"></i> Guardar Configuración').prop('disabled', false).removeClass('btn-success').addClass('btn-primary'); }, 2000);
+    } else {
+      alert('Error: ' + (res.msg || 'Unknown'));
+      btn.html('<i class="fa fa-save"></i> Guardar Configuración').prop('disabled', false);
+    }
+  }, 'json').fail(function() {
+    alert('Error de conexion');
+    btn.html('<i class="fa fa-save"></i> Guardar Configuración').prop('disabled', false);
   });
-}
+});
 
-function togglePassword(id){
-  var el = document.getElementById(id);
-  el.type = el.type === 'password' ? 'text' : 'password';
-}
-
-function testConnection(){
-  showResult('testResult', false, 'Probando conexión Telnet a ' + (document.getElementById('oltIp').value || '...') + '...');
-  // Implementar: POST /api/olt/test-telnet con los datos del form
-  setTimeout(function(){
-    showResult('testResult', true, 'Conexión Telnet establecida con OLT ZTE C300');
-  }, 2000);
-}
-
-function testSnmp(){
-  showResult('testResult', false, 'Probando SNMP...');
-  setTimeout(function(){
-    showResult('testResult', true, 'SNMP respondiendo correctamente');
-  }, 2000);
-}
-
-function saveOltSettings(){
-  // Implementar: POST /api/olt/settings
-  showResult('testResult', true, 'Configuración OLT guardada correctamente');
-}
-
-function testSocks(){
-  var host = document.getElementById('socksHost').value;
-  if(!host){ showResult('socksTestResult', false, 'Debe especificar un servidor SOCKS'); return; }
-  showResult('socksTestResult', false, 'Probando conexión SOCKS a ' + host + '...');
-  setTimeout(function(){
-    showResult('socksTestResult', true, 'Conexión SOCKS establecida correctamente');
-  }, 2000);
-}
-
-function saveSocksSettings(){
-  showResult('socksTestResult', true, 'Configuración SOCKS guardada correctamente');
-}
-
-// Init
-toggleSocksFields();
+// Probar conexion
+$('#btnTestConn').on('click', function() {
+  var $btn = $(this);
+  var $status = $('#connStatus');
+  $btn.html('<i class="fa fa-spinner fa-spin"></i> Probando...').prop('disabled', true);
+  $status.hide();
+  $.post('/api/smartolt/test', JSON.stringify({
+    subdomain: $('#cfg_subdomain').val(),
+    api_key: $('#cfg_apikey').val()
+  }), function(res) {
+    $status.show().removeClass('alert-success alert-danger').addClass(res.success ? 'alert alert-success' : 'alert alert-danger');
+    $status.html(res.success ? '<i class="fa fa-check-circle"></i> Conexión exitosa! ' + (res.msg || '') : '<i class="fa fa-exclamation-triangle"></i> ' + (res.msg || 'Error de conexión'));
+    $btn.html('<i class="fa fa-plug"></i> Probar Conexión').prop('disabled', false);
+  }, 'json').fail(function() {
+    $status.show().removeClass('alert-success alert-danger').addClass('alert alert-danger');
+    $status.html('<i class="fa fa-exclamation-triangle"></i> Error de conexión al servidor');
+    $btn.html('<i class="fa fa-plug"></i> Probar Conexión').prop('disabled', false);
+  });
+});
 </script>
 </body>
 </html>
