@@ -1,469 +1,463 @@
 <!DOCTYPE html>
-<html lang="en" class="">
+<html lang="en">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<script>window.SMARTOLT_DB_THEME='system';</script>
-<script>try{var k='smartolt-night',lk='smartolt-theme-local',dbTheme=window.SMARTOLT_DB_THEME,local=null,pref,n;try{local=localStorage.getItem(lk);}catch(e){}if(local==='night'||local==='light'||local==='system'){pref=local;}else if(dbTheme==='night'||dbTheme==='light'||dbTheme==='system'){pref=dbTheme;}else{pref='system';}if(pref==='system'){n=!!(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);}else if(pref==='night'){n=true;}else{n=false;}try{localStorage.setItem(k,n?'1':'0');}catch(e){}if(n){document.documentElement.classList.add('smartolt-night');}else{document.documentElement.classList.remove('smartolt-night');}document.cookie=k+'='+(n?'1':'0')+'; path=/; max-age=31536000; SameSite=Lax'+(location.protocol==='https:'?'; Secure':'');}catch(e){}</script>
-<meta http-equiv="content-type" content="text/html; utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Perfiles de Velocidad | GPON Manager</title>
+<title>Perfiles de Velocidad — SmartOLT</title>
+
+<!-- Bootstrap 3.4.1 -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/css/bootstrap.min.css">
+<!-- Font Awesome 4 -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
+<!-- DataTables -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap.min.css">
+
 <style>
-body { font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; -webkit-font-smoothing: antialiased; background: #fafbfd; }
-html.smartolt-night body { background: #06162f; color: #e2e8f0; }
-.navbar-default { background: #fff !important; border-bottom: 1px solid #eef2f6 !important; }
-html.smartolt-night .navbar-default { background: rgba(6,22,47,0.82) !important; border-bottom: 1px solid rgba(255,255,255,0.1) !important; }
-html.smartolt-night .navbar-default .navbar-brand, html.smartolt-night .navbar-default .nav > li > a { color: rgba(255,255,255,0.9) !important; }
-html.smartolt-night .navbar-default .nav > li > a:hover { background: rgba(255,255,255,0.08) !important; color: #fff !important; }
-.navbar-brand { font-weight: 700; }
-.container { padding-top: 70px; padding-bottom: 40px; }
-.panel { background: #fff; border: 1px solid #eef2f6; border-radius: 10px; box-shadow: 0 1px 2px rgba(15,23,42,0.03), 0 4px 14px rgba(15,23,42,0.04); }
-html.smartolt-night .panel { background: rgba(15,26,46,0.92); border: 1px solid rgba(255,255,255,0.1); color: #e2e8f0; }
-.panel-heading { background: #4c4b4b !important; color: #fff !important; border-radius: 10px 10px 0 0 !important; border: none !important; font-weight: 600; padding: 12px 20px !important; }
-html.smartolt-night .panel-heading { background: rgba(255,255,255,0.08) !important; }
-.panel-body { padding: 16px 20px; }
-html.smartolt-night .panel-body, html.smartolt-night .table, html.smartolt-night .table > tbody > tr > td, html.smartolt-night .table > thead > tr > th { background: transparent !important; color: #e2e8f0; }
-html.smartolt-night .table > tbody > tr:hover { background: rgba(255,255,255,0.04) !important; }
-html.smartolt-night .table > thead > tr > th { border-color: rgba(255,255,255,0.1); }
-.table { font-size: 12px; margin-bottom: 0; }
-.table > thead > tr > th { border-bottom: 2px solid #eef2f6; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; padding: 10px 8px; white-space: nowrap; }
-.table > tbody > tr > td { border-color: #f1f5f9; vertical-align: middle; padding: 8px; }
-html.smartolt-night .table > tbody > tr > td { border-color: rgba(255,255,255,0.06); }
-.smartolt-landing-hero-bg { display: none; }
-html.smartolt-night .smartolt-landing-hero-bg { display: block; position: fixed; z-index: -1; inset: 0; background: radial-gradient(circle at 72% 18%, rgba(29,139,255,0.24), transparent 28%), radial-gradient(circle at 18% 84%, rgba(0,108,255,0.18), transparent 28%), linear-gradient(135deg, #06162f, #071b3d 55%, #031022); pointer-events: none; }
-#smartolt-night-toggle { align-items: center; display: flex; justify-content: center; }
-#smartolt-night-toggle .smartolt-theme-icon-light, #smartolt-night-toggle .smartolt-theme-icon-night, #smartolt-night-toggle .smartolt-theme-icon-system { display: none; }
-#smartolt-night-toggle.is-pref-light .smartolt-theme-icon-light, #smartolt-night-toggle.is-pref-night .smartolt-theme-icon-night, #smartolt-night-toggle.is-pref-system .smartolt-theme-icon-system { display: inline-block; }
-.font-size-20 { font-size: 20px; }
-.text-ellipsis { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
-.max-width-250 { max-width: 250px; }
-.btn-action { margin: 1px; padding: 4px 10px; font-size: 11px; }
-html.smartolt-night .btn-default { background: #334155; color: #e2e8f0; border: none; }
-html.smartolt-night .btn-default:hover { background: #475569; color: #fff; }
-html.smartolt-night .btn-primary { background: #3b82f6; border-color: #3b82f6; }
-html.smartolt-night .btn-primary:hover { background: #2563eb; }
-html.smartolt-night .btn-success { background: #10b981; border-color: #10b981; }
-html.smartolt-night .btn-danger { background: #ef4444; border-color: #ef4444; }
-html.smartolt-night .text-muted { color: #94a3b8 !important; }
-.form-control, .input-sm { border: 1px solid #d1d5db; border-radius: 6px; font-size: 12px; box-shadow: none; }
-.form-control:focus { border-color: #4c4b4b; box-shadow: 0 0 0 2px rgba(76,75,75,0.12); }
-html.smartolt-night .form-control, html.smartolt-night .input-sm { background: #0f172a; border-color: #475569; color: #e2e8f0; }
-html.smartolt-night .form-control:focus { border-color: #60a5fa; box-shadow: 0 0 0 2px rgba(96,165,250,0.15); }
-.inline-edit input { width: 80px; display: inline-block; margin: 0 2px; }
-.badge { background: #eef2f6; color: #333; }
-html.smartolt-night .badge { background: rgba(255,255,255,0.12); color: #e2e8f0; }
+/* === RESET GLOBAL === */
+body {
+  font-family: Inter, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  background: #f5f7fa;
+  margin: 0; padding: 0 0 30px;
+  -webkit-font-smoothing: antialiased;
+}
+#wrapper { max-width: 1400px; margin: 0 auto; padding: 20px; }
+h2 { font-size: 22px; font-weight: 600; color: #1a2234; margin-bottom: 20px; }
+h2 i { margin-right: 8px; color: #1d8bff; }
+
+/* === TOP BAR === */
+.top-bar {
+  display: flex; justify-content: space-between; align-items: center;
+  flex-wrap: wrap; gap: 12px; margin-bottom: 20px;
+}
+.top-bar .left-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.top-bar .stats {
+  display: flex; gap: 20px; flex-wrap: wrap; align-items: center;
+  font-size: 13px; color: #64748b;
+}
+.top-bar .stats .stat-item { display: flex; align-items: center; gap: 5px; }
+.top-bar .stats .stat-item strong { color: #1a2234; font-size: 16px; }
+
+/* === TABLE WRAPPER === */
+.table-wrapper {
+  background: #fff; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 14px rgba(0,0,0,0.04);
+  padding: 20px;
+}
+.table-responsive { border: none !important; }
+.table {
+  margin-bottom: 0 !important;
+}
+.table > thead > tr > th {
+  background: #f8fafc; color: #475569; font-weight: 600; font-size: 12px;
+  text-transform: uppercase; letter-spacing: 0.4px; border-bottom: 2px solid #e2e8f0;
+  padding: 10px 8px; white-space: nowrap;
+}
+.table > tbody > tr > td {
+  padding: 10px 8px; vertical-align: middle; font-size: 13px; color: #1e293b;
+  border-top: 1px solid #f1f5f9;
+}
+.table > tbody > tr:hover { background: #f8fafc; }
+
+/* === BADGES === */
+.badge-download { background: #e0f2fe; color: #0369a1; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; display: inline-block; }
+.badge-upload { background: #fef3c7; color: #b45309; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; display: inline-block; }
+.badge-type { background: #e8e8e8; color: #555; padding: 2px 8px; border-radius: 4px; font-size: 11px; }
+.badge-tag { background: #dbeafe; color: #1d4ed8; padding: 1px 6px; border-radius: 3px; font-size: 11px; }
+
+/* === BUTTONS === */
+.btn-primary { background: #1d8bff; border-color: #1a7eeb; }
+.btn-primary:hover { background: #1674d6; }
+.btn-sm { font-size: 12px; padding: 5px 10px; }
+.btn-xs { font-size: 11px; padding: 2px 6px; }
+
+/* === MODAL === */
+.modal-content { border-radius: 10px; box-shadow: 0 10px 40px rgba(0,0,0,0.12); border: none; }
+.modal-header { background: #f8fafc; border-bottom: 1px solid #e2e8f0; border-radius: 10px 10px 0 0; padding: 14px 18px; }
+.modal-header h4 { font-weight: 600; font-size: 16px; }
+.modal-body { padding: 20px; }
+.modal-body .form-group { margin-bottom: 14px; }
+.modal-body label { font-weight: 500; font-size: 13px; color: #334155; }
+.modal-body .form-control { border-radius: 6px; border: 1px solid #cbd5e1; font-size: 13px; padding: 8px 12px; height: auto; box-shadow: none; }
+.modal-body .form-control:focus { border-color: #1d8bff; box-shadow: 0 0 0 2px rgba(29,139,255,0.15); }
+.modal-footer { border-top: 1px solid #e2e8f0; padding: 12px 18px; }
+
+/* === NIGHT MODE === */
+html.smartolt-night body { background: #0b1328; }
+html.smartolt-night h2 { color: #e2e8f0; }
+html.smartolt-night h2 i { color: #4da3ff; }
+html.smartolt-night .table-wrapper { background: #0f1a33; box-shadow: 0 1px 3px rgba(0,0,0,0.25); }
+html.smartolt-night .table > thead > tr > th { background: #0f1a33; color: #94a3b8; border-bottom-color: #1e2a4a; }
+html.smartolt-night .table > tbody > tr > td { color: #cbd5e1; border-top-color: #1a2744; }
+html.smartolt-night .table > tbody > tr:hover { background: #132141; }
+html.smartolt-night .top-bar .stats { color: #94a3b8; }
+html.smartolt-night .top-bar .stats .stat-item strong { color: #e2e8f0; }
+html.smartolt-night .modal-content { background: #0f1a33; }
+html.smartolt-night .modal-header { background: #132141; border-bottom-color: #1e2a4a; }
+html.smartolt-night .modal-header h4 { color: #e2e8f0; }
+html.smartolt-night .modal-body label { color: #94a3b8; }
+html.smartolt-night .modal-body .form-control { background: #0b1328; border-color: #1e2a4a; color: #cbd5e1; }
+html.smartolt-night .modal-footer { border-top-color: #1e2a4a; }
+html.smartolt-night .badge-download { background: #0a2a44; color: #7dd3fc; }
+html.smartolt-night .badge-upload { background: #2a2210; color: #fbbf24; }
+html.smartolt-night .badge-type { background: #1e2a4a; color: #94a3b8; }
+html.smartolt-night .badge-tag { background: #0a2a44; color: #93c5fd; }
+html.smartolt-night .close { color: #94a3b8; text-shadow: none; opacity: 0.8; }
+html.smartolt-night .close:hover { color: #e2e8f0; opacity: 1; }
+html.smartolt-night .btn-default { background: #1a2744; border-color: #1e2a4a; color: #cbd5e1; }
+html.smartolt-night .btn-default:hover { background: #243457; color: #e2e8f0; }
+html.smartolt-night .dropdown-menu { background: #132141; border-color: #1e2a4a; }
+html.smartolt-night .dropdown-menu > li > a { color: #cbd5e1; }
+html.smartolt-night .dropdown-menu > li > a:hover { background: #1a2744; color: #fff; }
+
+/* === RESPONSIVE === */
+@media (max-width: 768px) {
+  #wrapper { padding: 12px; }
+  .table-wrapper { padding: 12px; }
+  .top-bar { flex-direction: column; align-items: stretch; }
+  .top-bar .stats { justify-content: flex-start; gap: 10px; }
+}
 </style>
-<script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/js/bootstrap.min.js"></script>
 </head>
 <body>
-<div class="smartolt-landing-hero-bg" aria-hidden="true"></div>
-<div id="content-wrapper">
-  <div class="navbar navbar-default navbar-fixed-top">
-    <div class="container">
-      <div class="navbar-header">
-        <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#navbar-main">
-          <span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span>
-        </button>
-        <a class="navbar-brand text-ellipsis max-width-250" href="/modulo?pagina=GPONManager">GPON Manager</a>
-      </div>
-      <div class="navbar-collapse collapse" id="navbar-main">
-        <ul class="nav navbar-nav">
-          <li><a href="/modulo?pagina=GPONManager">Dashboard</a></li>
-          <li><a href="/modulo?pagina=SmartoltConfigured">ONUs Configuradas</a></li>
-          <li><a href="/modulo?pagina=SmartoltUnconfigured">Sin Configurar</a></li>
-          <li class="active"><a href="/modulo?pagina=SmartoltSpeedProfiles">Velocidad</a></li>
-          <li><a href="/modulo?pagina=SmartoltOnuTypes">Tipos ONU</a></li>
-          <li><a href="/modulo?pagina=SmartoltSettings">Config OLT</a></li>
-        </ul>
-        <ul class="nav navbar-nav navbar-right">
-          <li><a href="#" id="smartolt-night-toggle" class="is-pref-night is-resolved" title="Night mode"><i class="fa fa-sun-o font-size-20 smartolt-theme-icon-light"></i><i class="fa fa-moon-o font-size-20 smartolt-theme-icon-night"></i><i class="fa fa-adjust font-size-20 smartolt-theme-icon-system"></i></a></li>
-        </ul>
-      </div>
+<div id="wrapper">
+  <h2><i class="fa fa-tachometer"></i> Perfiles de Velocidad</h2>
+
+  <div class="top-bar">
+    <div class="left-actions">
+      <a href="/modulo?pagina=GPONManager" class="btn btn-default btn-sm"><i class="fa fa-arrow-left"></i> GPON Manager</a>
+      <button class="btn btn-success btn-sm" onclick="abrirModalCrear()"><i class="fa fa-plus"></i> Crear Perfil</button>
+      <button class="btn btn-info btn-sm" onclick="syncProfiles()"><i class="fa fa-refresh"></i> Refrescar</button>
+    </div>
+    <div class="stats">
+      <span class="stat-item"><i class="fa fa-list text-muted"></i> Total: <strong id="totalProfiles">0</strong></span>
+      <span class="stat-item"><i class="fa fa-check-circle text-success"></i> En uso: <strong id="usedProfiles">0</strong></span>
+      <span class="stat-item"><i class="fa fa-wifi text-info"></i> ONUs asociadas: <strong id="onuCount">0</strong></span>
     </div>
   </div>
 
-  <div class="container">
-    <!-- Toolbar -->
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px;">
-      <div>
-        <span style="font-size:16px;font-weight:600;">Perfiles de Velocidad</span>
-        <span class="text-muted" style="font-size:12px;margin-left:6px;" id="profileCount"></span>
-      </div>
-      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
-        <button class="btn btn-success btn-sm" onclick="showNewProfile()"><i class="fa fa-plus"></i> Nuevo Perfil</button>
-        <button class="btn btn-primary btn-sm" onclick="loadProfiles()"><i class="fa fa-refresh"></i> Refrescar</button>
-      </div>
-    </div>
-
-    <!-- Stats -->
-    <div class="row" style="margin-bottom:16px;">
-      <div class="col-sm-4">
-        <div class="panel panel-default" style="margin-bottom:0;">
-          <div class="panel-body text-center" style="padding:12px;">
-            <span class="huge" style="font-size:28px;font-weight:700;color:#3b82f6;" id="statTotal">0</span>
-            <div style="font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;">Total Perfiles</div>
-          </div>
-        </div>
-      </div>
-      <div class="col-sm-4">
-        <div class="panel panel-default" style="margin-bottom:0;">
-          <div class="panel-body text-center" style="padding:12px;">
-            <span class="huge" style="font-size:28px;font-weight:700;color:#10b981;" id="statActive">0</span>
-            <div style="font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;">En Uso</div>
-          </div>
-        </div>
-      </div>
-      <div class="col-sm-4">
-        <div class="panel panel-default" style="margin-bottom:0;">
-          <div class="panel-body text-center" style="padding:12px;">
-            <span class="huge" style="font-size:28px;font-weight:700;color:#f59e0b;" id="statONUs">0</span>
-            <div style="font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;">ONUs Asociadas</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Main table -->
-    <div class="panel panel-default">
-      <div class="panel-heading"><i class="fa fa-tachometer"></i> Lista de Perfiles de Velocidad</div>
-      <div class="panel-body" style="padding:0;">
-        <div class="table-responsive">
-          <table class="table table-hover" id="profilesTable">
-            <thead>
-              <tr>
-                <th style="width:30px;">#</th>
-                <th>Nombre del Perfil</th>
-                <th>Descarga</th>
-                <th>Subida</th>
-                <th>Tipo</th>
-                <th>Perfil MikroTik</th>
-                <th>Perfil OLT Subida</th>
-                <th>Perfil OLT Descarga</th>
-                <th style="text-align:center;">ONUs</th>
-                <th style="text-align:right;width:130px;">Acciones</th>
-              </tr>
-            </thead>
-            <tbody id="profilesBody">
-              <tr><td colspan="10" class="text-center text-muted" style="padding:50px;"><i class="fa fa-spinner fa-spin fa-2x"></i><br><br>Cargando perfiles de velocidad...</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
+  <div class="table-wrapper">
+    <div class="table-responsive">
+      <table id="speedTable" class="table table-striped" width="100%">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Descarga</th>
+            <th>Subida</th>
+            <th>Tipo</th>
+            <th>MikroTik</th>
+            <th>OLT Up</th>
+            <th>OLT Down</th>
+            <th>Burst Up</th>
+            <th>Burst Down</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="profileTableBody"></tbody>
+      </table>
     </div>
   </div>
 </div>
 
-<!-- Nuevo Perfil Modal -->
+<!-- Modal Crear/Editar -->
 <div class="modal fade" id="profileModal" tabindex="-1" role="dialog">
-  <div class="modal-dialog" role="document">
+  <div class="modal-dialog modal-md">
     <div class="modal-content">
-      <div class="modal-header" style="border-bottom:1px solid #eef2f6;padding:12px 16px;">
-        <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
-        <h5 class="modal-title" style="font-weight:600;" id="profileModalTitle"><i class="fa fa-plus-circle"></i> Nuevo Perfil de Velocidad</h5>
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title" id="modalTitle"><i class="fa fa-plus-circle"></i> Nuevo Perfil de Velocidad</h4>
       </div>
-      <div class="modal-body" style="padding:16px;">
-        <input type="hidden" id="editProfileId" value="">
-        <div class="form-group">
-          <label style="font-size:12px;font-weight:600;">Nombre del Perfil</label>
-          <input type="text" class="form-control" id="pfName" placeholder="Ej: Plan 100MB">
+      <div class="modal-body">
+        <input type="hidden" id="editId">
+        <div class="row">
+          <div class="col-md-6">
+            <div class="form-group">
+              <label>Nombre del Perfil</label>
+              <input type="text" class="form-control" id="fNombre" placeholder="Ej: Plan Básico 10MB">
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="form-group">
+              <label>Tipo</label>
+              <select class="form-control" id="fTipo">
+                <option value="Internet">Internet</option>
+                <option value="VoIP">VoIP</option>
+                <option value="IPTV">IPTV</option>
+                <option value="VLAN">VLAN</option>
+              </select>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="form-group">
+              <label>Perfil MikroTik</label>
+              <input type="text" class="form-control" id="fMikrotik" placeholder="simple-10mb">
+            </div>
+          </div>
         </div>
         <div class="row">
-          <div class="col-sm-6">
+          <div class="col-md-6">
             <div class="form-group">
-              <label style="font-size:12px;font-weight:600;">Velocidad Descarga</label>
-              <div class="input-group">
-                <input type="text" class="form-control" id="pfDown" placeholder="100">
-                <span class="input-group-addon">Mbps</span>
-              </div>
+              <label><i class="fa fa-arrow-down text-primary"></i> Descarga (Kbps)</label>
+              <input type="number" class="form-control" id="fDescarga" placeholder="10240" min="64">
             </div>
           </div>
-          <div class="col-sm-6">
+          <div class="col-md-6">
             <div class="form-group">
-              <label style="font-size:12px;font-weight:600;">Velocidad Subida</label>
-              <div class="input-group">
-                <input type="text" class="form-control" id="pfUp" placeholder="50">
-                <span class="input-group-addon">Mbps</span>
-              </div>
+              <label><i class="fa fa-arrow-up text-warning"></i> Subida (Kbps)</label>
+              <input type="number" class="form-control" id="fSubida" placeholder="2048" min="64">
             </div>
           </div>
-        </div>
-        <div class="form-group">
-          <label style="font-size:12px;font-weight:600;">Tipo</label>
-          <select class="form-control" id="pfType">
-            <option value="Internet">Internet</option>
-            <option value="TR-069">TR-069</option>
-            <option value="VoIP">VoIP</option>
-            <option value="IPTV">IPTV</option>
-            <option value="Management">Management</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label style="font-size:12px;font-weight:600;">Perfil MikroTik (opcional)</label>
-          <input type="text" class="form-control" id="pfMikrotik" placeholder="Ej: simple-100M">
         </div>
         <div class="row">
-          <div class="col-sm-6">
+          <div class="col-md-4">
             <div class="form-group">
-              <label style="font-size:12px;font-weight:600;">Perfil OLT Subida</label>
-              <input type="text" class="form-control" id="pfOltUp" placeholder="Ej: 50M_UP">
+              <label>OLT Upstream (Kbps)</label>
+              <input type="number" class="form-control" id="fOltUp" placeholder="10240">
             </div>
           </div>
-          <div class="col-sm-6">
+          <div class="col-md-4">
             <div class="form-group">
-              <label style="font-size:12px;font-weight:600;">Perfil OLT Descarga</label>
-              <input type="text" class="form-control" id="pfOltDown" placeholder="Ej: 100M_DOWN">
+              <label>OLT Downstream (Kbps)</label>
+              <input type="number" class="form-control" id="fOltDown" placeholder="10240">
             </div>
           </div>
-        </div>
-        <div class="form-group">
-          <label style="font-size:12px;font-weight:600;">Burst (opcional)</label>
-          <div class="row">
-            <div class="col-sm-4">
-              <input type="text" class="form-control" id="pfBurstUp" placeholder="Up Burst">
-            </div>
-            <div class="col-sm-4">
-              <input type="text" class="form-control" id="pfBurstDown" placeholder="Down Burst">
-            </div>
-            <div class="col-sm-4">
-              <input type="text" class="form-control" id="pfBurstThreshold" placeholder="Threshold">
+          <div class="col-md-4">
+            <div class="form-group">
+              <label>Burst</label>
+              <input type="text" class="form-control" id="fBurst" placeholder="1M">
             </div>
           </div>
         </div>
       </div>
-      <div class="modal-footer" style="padding:10px 16px;border-top:1px solid #eef2f6;">
-        <button type="button" class="btn btn-default btn-sm" data-dismiss="modal">Cancelar</button>
-        <button type="button" class="btn btn-primary btn-sm" onclick="saveProfile()"><i class="fa fa-save"></i> Guardar Perfil</button>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-primary" onclick="guardarPerfil()"><i class="fa fa-save"></i> Guardar</button>
       </div>
     </div>
   </div>
 </div>
+
+<!-- Delete Confirm Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title"><i class="fa fa-trash text-danger"></i> Eliminar Perfil</h4>
+      </div>
+      <div class="modal-body">
+        <p>¿Estás seguro de eliminar <strong id="deleteName"></strong>?</p>
+        <p class="text-muted small">Esta acción no se puede deshacer.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-danger" id="confirmDeleteBtn"><i class="fa fa-trash"></i> Eliminar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/js/bootstrap.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap.min.js"></script>
 
 <script>
-var profiles = [];
-
-// Night mode
-(function() {
-  var STORAGE_LOCAL = 'smartolt-theme-local';
-  function applyTheme(pref) {
-    var isNight = pref === 'night' ? true : (pref === 'light' ? false : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches));
-    var html = document.documentElement;
-    if (isNight) html.classList.add('smartolt-night'); else html.classList.remove('smartolt-night');
-    try { localStorage.setItem('smartolt-night', isNight ? '1' : '0'); } catch(e) {}
-    var toggle = document.getElementById('smartolt-night-toggle');
-    if (toggle) { toggle.classList.remove('is-pref-light','is-pref-night','is-pref-system'); toggle.classList.add('is-pref-' + pref); }
-  }
-  var localPref = (function(){ try { var s = localStorage.getItem(STORAGE_LOCAL); if(s==='night'||s==='light'||s==='system') return s; }catch(e){} return 'system'; })();
-  applyTheme(localPref || (window.SMARTOLT_DB_THEME || 'system'));
-  document.getElementById('smartolt-night-toggle').addEventListener('click', function(e) {
-    e.preventDefault();
-    var isNight = document.documentElement.classList.contains('smartolt-night');
-    var newPref = isNight ? 'light' : 'night';
-    try { localStorage.setItem(STORAGE_LOCAL, newPref); } catch(e) {}
-    applyTheme(newPref);
-  });
+// ===== NIGHT MODE INIT =====
+(function(){
+  var n = localStorage.getItem('smartolt-night');
+  if (n === '1') document.documentElement.classList.add('smartolt-night');
+  else document.documentElement.classList.remove('smartolt-night');
 })();
 
-function loadProfiles() {
-  $('#profilesBody').html('<tr><td colspan="10" class="text-center text-muted" style="padding:40px;"><i class="fa fa-spinner fa-spin fa-2x"></i><br><br>Cargando...</td></tr>');
-  $.get('/api/smartolt/speed-profiles', function(data) {
-    if (data.success && data.profiles) {
-      profiles = data.profiles;
-    } else {
-      profiles = generateMockProfiles(5);
-    }
-    renderProfiles();
-  }, 'json').fail(function() {
-    profiles = generateMockProfiles(5);
-    renderProfiles();
-  });
+var dataTableInstance = null;
+var modalMode = 'create';
+
+// ===== FORMAT HELPERS =====
+function formatSpeed(kbps) {
+  if (!kbps || kbps == 0) return '-';
+  var n = parseInt(kbps);
+  if (n >= 1048576) return (n / 1048576).toFixed(1) + ' Gbps';
+  if (n >= 1024) return (n / 1024).toFixed(0) + ' Mbps';
+  return n + ' Kbps';
 }
 
-function generateMockProfiles(count) {
-  var names = ['Plan 10MB Básico','Plan 25MB Estándar','Plan 50MB Premium','Plan 100MB Ultra','Plan 200MB Gamer'];
-  var types = ['Internet','Internet','Internet','Internet','Internet'];
-  var arr = [];
-  for (var i = 0; i < count; i++) {
-    arr.push({
-      id: i + 1,
-      name: names[i] || 'Plan ' + (i+1)*10 + 'MB',
-      speed: (i+1)*10 + 'Mbps',
-      download_burst: '',
-      upload_speed: ((i+1)*5) + 'Mbps',
-      type: types[i] || 'Internet',
-      perfil_mikrotik: 'simple-' + ((i+1)*10) + 'M',
-      perfil_olt_descarga: ((i+1)*10) + 'M_DOWN',
-      perfil_olt_subida: ((i+1)*5) + 'M_UP',
-      onu_count: Math.floor(Math.random() * 20)
+function unformatSpeed(str) {
+  if (!str || str === '-' || str === '0') return 0;
+  str = String(str).replace(/,/g, '').trim();
+  if (/Gbps?$/i.test(str)) return Math.round(parseFloat(str) * 1048576);
+  if (/Mbps?$/i.test(str)) return Math.round(parseFloat(str) * 1024);
+  if (/Kbps?$/i.test(str)) return parseInt(str);
+  return parseInt(str) || 0;
+}
+
+// ===== CARGAR DATOS =====
+function cargarPerfiles() {
+  $.getJSON('/api/smartolt/speed-profiles', function(r) {
+    var profiles = r.data || r.profiles || r || [];
+    if (!Array.isArray(profiles)) profiles = [];
+
+    var total = profiles.length;
+    var used = profiles.filter(function(p){ return p.total_onus > 0; }).length;
+    var onuCount = profiles.reduce(function(s,p){ return s + (parseInt(p.total_onus) || 0); }, 0);
+    $('#totalProfiles').text(total);
+    $('#usedProfiles').text(used);
+    $('#onuCount').text(onuCount);
+
+    var rows = '';
+    profiles.forEach(function(p){
+      var descarga = formatSpeed(p.descarga || p.download_speed || p.download || 0);
+      var subida = formatSpeed(p.subida || p.upload_speed || p.upload || 0);
+      var oltUp = p.olt_upstream ? formatSpeed(p.olt_upstream) : '-';
+      var oltDown = p.olt_downstream ? formatSpeed(p.olt_downstream) : '-';
+      var burst = p.burst || '-';
+      var tipo = p.tipo || p.type || 'Internet';
+      var mikrotik = p.perfil_mikrotik || '-';
+
+      rows += '<tr>' +
+        '<td><strong>' + p.nombre + '</strong>' + (p.total_onus > 0 ? ' <span class="badge-tag">' + p.total_onus + ' ONUs</span>' : '') + '</td>' +
+        '<td><span class="badge-download"><i class="fa fa-arrow-down"></i> ' + descarga + '</span></td>' +
+        '<td><span class="badge-upload"><i class="fa fa-arrow-up"></i> ' + subida + '</span></td>' +
+        '<td><span class="badge-type">' + tipo + '</span></td>' +
+        '<td>' + (mikrotik !== '-' ? '<code>' + mikrotik + '</code>' : mikrotik) + '</td>' +
+        '<td>' + oltUp + '</td>' +
+        '<td>' + oltDown + '</td>' +
+        '<td>' + burst + '</td>' +
+        '<td>' + (p.burst_down || '-') + '</td>' +
+        '<td style="white-space:nowrap">' +
+          '<button class="btn btn-primary btn-xs" onclick="editarPerfil(' + p.id + ',\'' + p.nombre.replace(/'/g,"\\'") + '\',' + (p.descarga||p.download_speed||0) + ',' + (p.subida||p.upload_speed||0) + ',\'' + (p.tipo||p.type||'Internet') + '\',\'' + (p.perfil_mikrotik||'') + '\',' + (p.olt_upstream||0) + ',' + (p.olt_downstream||0) + ',\'' + (p.burst||'') + '\')"><i class="fa fa-pencil"></i></button> ' +
+          '<button class="btn btn-danger btn-xs" onclick="eliminarPerfil(' + p.id + ',\'' + p.nombre.replace(/'/g,"\\'") + '\')"><i class="fa fa-trash"></i></button>' +
+        '</td>' +
+        '</tr>';
     });
-  }
-  return arr;
-}
+    $('#profileTableBody').html(rows);
 
-function renderProfiles() {
-  $('#profileCount').text('(' + profiles.length + ' perfiles)');
-  $('#statTotal').text(profiles.length);
-  var active = profiles.filter(function(p) { return p.onu_count > 0; }).length;
-  $('#statActive').text(active);
-  var totalOnus = profiles.reduce(function(sum, p) { return sum + (parseInt(p.onu_count) || 0); }, 0);
-  $('#statONUs').text(totalOnus);
-
-  if (profiles.length === 0) {
-    $('#profilesBody').html('<tr><td colspan="10" class="text-center text-muted" style="padding:40px;"><i class="fa fa-inbox" style="font-size:3rem;display:block;margin-bottom:10px;"></i>No hay perfiles de velocidad. Crea uno nuevo.</td></tr>');
-    return;
-  }
-
-  var h = '';
-  profiles.forEach(function(p, idx) {
-    var download = p.speed || p.velocidad_bajada || '0 Mbps';
-    var upload = p.upload_speed || p.velocidad_subida || '0 Mbps';
-    var name = p.name || p.nombre || 'Perfil #' + (idx + 1);
-    var type = p.type || p.perfil_mikrotik || 'Internet';
-    var mk = p.perfil_mikrotik || '--';
-    var oltUp = p.perfil_olt_subida || '--';
-    var oltDown = p.perfil_olt_descarga || '--';
-    var onuCount = p.onu_count || 0;
-
-    h += '<tr>';
-    h += '<td class="text-muted">' + (idx + 1) + '</td>';
-    h += '<td><strong>' + escapeHtml(name) + '</strong></td>';
-    h += '<td><span class="label label-success">' + escapeHtml(download) + '</span></td>';
-    h += '<td><span class="label label-info">' + escapeHtml(upload) + '</span></td>';
-    h += '<td>' + escapeHtml(type) + '</td>';
-    h += '<td><small class="text-muted">' + escapeHtml(mk) + '</small></td>';
-    h += '<td><small>' + escapeHtml(oltUp) + '</small></td>';
-    h += '<td><small>' + escapeHtml(oltDown) + '</small></td>';
-    h += '<td style="text-align:center;"><span class="badge">' + onuCount + '</span></td>';
-    h += '<td style="text-align:right;white-space:nowrap;">';
-    h += '<button class="btn btn-xs btn-default btn-action" onclick="editProfile(' + (p.id || idx+1) + ')" title="Editar"><i class="fa fa-pencil"></i></button> ';
-    h += '<button class="btn btn-xs btn-danger btn-action" onclick="deleteProfile(' + (p.id || idx+1) + ',\'' + escapeHtml(name) + '\')" title="Eliminar"><i class="fa fa-trash"></i></button>';
-    h += '</td></tr>';
+    // Re-inicializar DataTable
+    if (dataTableInstance) { dataTableInstance.destroy(); dataTableInstance = null; }
+    dataTableInstance = $('#speedTable').DataTable({
+      paging: true, pageLength: 25, lengthChange: true, searching: true,
+      ordering: true, info: true, autoWidth: false,
+      language: { search: 'Buscar:', lengthMenu: 'Mostrar _MENU_ registros',
+        info: 'Mostrando _START_ a _END_ de _TOTAL_ perfiles',
+        infoEmpty: 'No hay perfiles', paginate: { first: 'Primero', last: 'Último', next: '»', previous: '«' }
+      },
+      order: [[0, 'asc']]
+    });
+  }).fail(function(){
+    $('#profileTableBody').html('<tr><td colspan="10" class="text-center text-muted">Error al cargar perfiles</td></tr>');
   });
-  $('#profilesBody').html(h);
 }
 
-function showNewProfile() {
-  $('#profileModalTitle').html('<i class="fa fa-plus-circle"></i> Nuevo Perfil de Velocidad');
-  $('#editProfileId').val('');
-  $('#pfName').val('');
-  $('#pfDown').val('');
-  $('#pfUp').val('');
-  $('#pfType').val('Internet');
-  $('#pfMikrotik').val('');
-  $('#pfOltUp').val('');
-  $('#pfOltDown').val('');
-  $('#pfBurstUp').val('');
-  $('#pfBurstDown').val('');
-  $('#pfBurstThreshold').val('');
+// ===== CRUD =====
+function abrirModalCrear() {
+  modalMode = 'create';
+  $('#modalTitle').html('<i class="fa fa-plus-circle"></i> Nuevo Perfil de Velocidad');
+  $('#editId').val('');
+  $('#fNombre').val('');
+  $('#fDescarga').val('');
+  $('#fSubida').val('');
+  $('#fTipo').val('Internet');
+  $('#fMikrotik').val('');
+  $('#fOltUp').val('');
+  $('#fOltDown').val('');
+  $('#fBurst').val('');
   $('#profileModal').modal('show');
 }
 
-function editProfile(id) {
-  var p = profiles.find(function(x) { return (x.id || 0) === id || parseInt(x.id) === id; });
-  if (!p) return alert('Perfil no encontrado');
-  $('#profileModalTitle').html('<i class="fa fa-pencil"></i> Editar Perfil: ' + escapeHtml(p.name || p.nombre || ''));
-  $('#editProfileId').val(p.id || '');
-  $('#pfName').val(p.name || p.nombre || '');
-  $('#pfDown').val((p.speed || p.velocidad_bajada || '').replace(/[^0-9]/g, ''));
-  $('#pfUp').val((p.upload_speed || p.velocidad_subida || '').replace(/[^0-9]/g, ''));
-  $('#pfType').val(p.type || 'Internet');
-  $('#pfMikrotik').val(p.perfil_mikrotik || '');
-  $('#pfOltUp').val(p.perfil_olt_subida || '');
-  $('#pfOltDown').val(p.perfil_olt_descarga || '');
-  $('#pfBurstUp').val(p.upload_burst || '');
-  $('#pfBurstDown').val(p.download_burst || '');
-  $('#pfBurstThreshold').val(p.burst_threshold_up || '');
+function editarPerfil(id, nombre, descarga, subida, tipo, mikrotik, oltUp, oltDown, burst) {
+  modalMode = 'edit';
+  $('#modalTitle').html('<i class="fa fa-pencil"></i> Editar Perfil');
+  $('#editId').val(id);
+  $('#fNombre').val(nombre);
+  $('#fDescarga').val(descarga);
+  $('#fSubida').val(subida);
+  $('#fTipo').val(tipo || 'Internet');
+  $('#fMikrotik').val(mikrotik || '');
+  $('#fOltUp').val(oltUp || '');
+  $('#fOltDown').val(oltDown || '');
+  $('#fBurst').val(burst || '');
   $('#profileModal').modal('show');
 }
 
-function saveProfile() {
-  var id = $('#editProfileId').val();
-  var name = $('#pfName').val().trim();
-  var down = $('#pfDown').val().trim();
-  var up = $('#pfUp').val().trim();
-  if (!name) { alert('El nombre es obligatorio'); return; }
-
+function guardarPerfil() {
   var data = {
-    id: id || null,
-    nombre: name,
-    velocidad: down + 'Mbps',
-    velocidad_subida: up + 'Mbps',
-    perfil_mikrotik: $('#pfMikrotik').val().trim(),
-    perfil_olt_descarga: $('#pfOltDown').val().trim(),
-    perfil_olt_subida: $('#pfOltUp').val().trim(),
-    upload_burst: $('#pfBurstUp').val().trim(),
-    download_burst: $('#pfBurstDown').val().trim(),
-    burst_threshold_up: $('#pfBurstThreshold').val().trim()
+    id: $('#editId').val() || null,
+    nombre: $('#fNombre').val().trim(),
+    descarga: parseInt($('#fDescarga').val()) || 0,
+    subida: parseInt($('#fSubida').val()) || 0,
+    tipo: $('#fTipo').val(),
+    perfil_mikrotik: $('#fMikrotik').val().trim(),
+    olt_upstream: parseInt($('#fOltUp').val()) || 0,
+    olt_downstream: parseInt($('#fOltDown').val()) || 0,
+    burst: $('#fBurst').val().trim()
   };
 
+  if (!data.nombre) { alert('El nombre del perfil es requerido'); return; }
+  if (data.descarga < 64) { alert('La descarga debe ser al menos 64 Kbps'); return; }
+  if (data.subida < 64) { alert('La subida debe ser al menos 64 Kbps'); return; }
+
   $.ajax({
-    url: '/api/planes/save',
+    url: '/api/smartolt/speed-profiles/save',
     method: 'POST',
     contentType: 'application/json',
     data: JSON.stringify(data),
-    success: function(resp) {
-      if (resp && resp.status === 'success') {
+    success: function(r) {
+      if (r.success) {
         $('#profileModal').modal('hide');
-        showToast('Perfil guardado exitosamente', 'success');
-        loadProfiles();
+        if (dataTableInstance) { dataTableInstance.destroy(); dataTableInstance = null; }
+        cargarPerfiles();
       } else {
-        // Simulate save locally
-        $('#profileModal').modal('hide');
-        showToast('Perfil guardado (local)', 'info');
-        if (id) {
-          var idx = profiles.findIndex(function(x) { return parseInt(x.id) === parseInt(id); });
-          if (idx >= 0) profiles[idx].name = name;
-        }
-        renderProfiles();
+        alert('Error: ' + (r.error || r.msg || 'Desconocido'));
       }
     },
-    error: function() {
-      $('#profileModal').modal('hide');
-      showToast('Perfil guardado (local, sin backend)', 'info');
-      renderProfiles();
+    error: function(xhr) {
+      alert('Error del servidor: ' + (xhr.responseJSON ? xhr.responseJSON.error : xhr.statusText));
     }
   });
 }
 
-function deleteProfile(id, name) {
-  if (!confirm('¿Eliminar perfil "' + name + '"?\nEsta acción no se puede deshacer.')) return;
+var deleteTargetId = null;
+function eliminarPerfil(id, nombre) {
+  deleteTargetId = id;
+  $('#deleteName').text(nombre);
+  $('#deleteModal').modal('show');
+}
+
+$('#confirmDeleteBtn').click(function(){
+  if (!deleteTargetId) return;
   $.ajax({
-    url: '/api/planes/delete',
+    url: '/api/smartolt/speed-profiles/delete',
     method: 'POST',
     contentType: 'application/json',
-    data: JSON.stringify({ id: id }),
-    success: function(resp) {
-      if (resp && resp.status === 'success') {
-        showToast('Perfil eliminado', 'success');
-        loadProfiles();
+    data: JSON.stringify({ id: deleteTargetId }),
+    success: function(r) {
+      $('#deleteModal').modal('hide');
+      if (r.success) {
+        if (dataTableInstance) { dataTableInstance.destroy(); dataTableInstance = null; }
+        cargarPerfiles();
       } else {
-        // Remove locally
-        profiles = profiles.filter(function(p) { return (p.id || 0) !== parseInt(id); });
-        showToast('Perfil eliminado (local)', 'warning');
-        renderProfiles();
+        alert('Error: ' + (r.error || 'Desconocido'));
       }
     },
-    error: function() {
-      profiles = profiles.filter(function(p) { return (p.id || 0) !== parseInt(id); });
-      showToast('Perfil eliminado (local)', 'warning');
-      renderProfiles();
+    error: function(xhr) {
+      alert('Error: ' + (xhr.responseJSON ? xhr.responseJSON.error : xhr.statusText));
     }
   });
+});
+
+function syncProfiles() {
+  $.get('/api/smartolt/sync-unconfigured', function(r) {
+    if (r.success) {
+      if (dataTableInstance) { dataTableInstance.destroy(); dataTableInstance = null; }
+      cargarPerfiles();
+    } else {
+      alert('Sync falló: ' + (r.error || ''));
+    }
+  }).fail(function(){ alert('Error de conexión al sync'); });
 }
 
-function showToast(msg, type) {
-  var color = type === 'success' ? '#10b981' : (type === 'error' ? '#ef4444' : '#f59e0b');
-  var $toast = $('<div style="position:fixed;bottom:20px;right:20px;background:' + color + ';color:#fff;padding:12px 20px;border-radius:8px;font-size:13px;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,0.2);max-width:350px;">' + escapeHtml(msg) + '</div>');
-  $('body').append($toast);
-  setTimeout(function() { $toast.fadeOut(300, function() { $toast.remove(); }); }, 3000);
-}
-
-function escapeHtml(s) { if (!s) return ''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-
-$(document).ready(function() {
-  loadProfiles();
+// ===== INIT =====
+$(document).ready(function(){
+  cargarPerfiles();
 });
 </script>
 </body>

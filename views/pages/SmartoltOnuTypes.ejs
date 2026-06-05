@@ -1,513 +1,489 @@
 <!DOCTYPE html>
-<html lang="en" class="">
+<html lang="en">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<script>window.SMARTOLT_DB_THEME='system';</script>
-<script>try{var k='smartolt-night',lk='smartolt-theme-local',dbTheme=window.SMARTOLT_DB_THEME,local=null,pref,n;try{local=localStorage.getItem(lk);}catch(e){}if(local==='night'||local==='light'||local==='system'){pref=local;}else if(dbTheme==='night'||dbTheme==='light'||dbTheme==='system'){pref=dbTheme;}else{pref='system';}if(pref==='system'){n=!!(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);}else if(pref==='night'){n=true;}else{n=false;}try{localStorage.setItem(k,n?'1':'0');}catch(e){}if(n){document.documentElement.classList.add('smartolt-night');}else{document.documentElement.classList.remove('smartolt-night');}document.cookie=k+'='+(n?'1':'0')+'; path=/; max-age=31536000; SameSite=Lax'+(location.protocol==='https:'?'; Secure':'');}catch(e){}</script>
-<meta http-equiv="content-type" content="text/html; utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Tipos de ONU | GPON Manager</title>
+<title>Tipos de ONU — SmartOLT</title>
+
+<!-- Bootstrap 3.4.1 -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/css/bootstrap.min.css">
+<!-- Font Awesome 4 -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
+<!-- DataTables -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap.min.css">
+
 <style>
-body { font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; -webkit-font-smoothing: antialiased; background: #fafbfd; }
-html.smartolt-night body { background: #06162f; color: #e2e8f0; }
-.navbar-default { background: #fff !important; border-bottom: 1px solid #eef2f6 !important; }
-html.smartolt-night .navbar-default { background: rgba(6,22,47,0.82) !important; border-bottom: 1px solid rgba(255,255,255,0.1) !important; }
-html.smartolt-night .navbar-default .navbar-brand, html.smartolt-night .navbar-default .nav > li > a { color: rgba(255,255,255,0.9) !important; }
-html.smartolt-night .navbar-default .nav > li > a:hover { background: rgba(255,255,255,0.08) !important; color: #fff !important; }
-.navbar-brand { font-weight: 700; }
-.container { padding-top: 70px; padding-bottom: 40px; }
-.panel { background: #fff; border: 1px solid #eef2f6; border-radius: 10px; box-shadow: 0 1px 2px rgba(15,23,42,0.03), 0 4px 14px rgba(15,23,42,0.04); }
-html.smartolt-night .panel { background: rgba(15,26,46,0.92); border: 1px solid rgba(255,255,255,0.1); color: #e2e8f0; }
-.panel-heading { background: #4c4b4b !important; color: #fff !important; border-radius: 10px 10px 0 0 !important; border: none !important; font-weight: 600; padding: 12px 20px !important; }
-html.smartolt-night .panel-heading { background: rgba(255,255,255,0.08) !important; }
-.panel-body { padding: 16px 20px; }
-html.smartolt-night .panel-body, html.smartolt-night .table, html.smartolt-night .table > tbody > tr > td, html.smartolt-night .table > thead > tr > th { background: transparent !important; color: #e2e8f0; }
-html.smartolt-night .table > tbody > tr:hover { background: rgba(255,255,255,0.04) !important; }
-html.smartolt-night .table > thead > tr > th { border-color: rgba(255,255,255,0.1); }
-.table { font-size: 12px; margin-bottom: 0; }
-.table > thead > tr > th { border-bottom: 2px solid #eef2f6; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; padding: 10px 8px; white-space: nowrap; }
-.table > tbody > tr > td { border-color: #f1f5f9; vertical-align: middle; padding: 8px; }
-html.smartolt-night .table > tbody > tr > td { border-color: rgba(255,255,255,0.06); }
-.smartolt-landing-hero-bg { display: none; }
-html.smartolt-night .smartolt-landing-hero-bg { display: block; position: fixed; z-index: -1; inset: 0; background: radial-gradient(circle at 72% 18%, rgba(29,139,255,0.24), transparent 28%), radial-gradient(circle at 18% 84%, rgba(0,108,255,0.18), transparent 28%), linear-gradient(135deg, #06162f, #071b3d 55%, #031022); pointer-events: none; }
-#smartolt-night-toggle { align-items: center; display: flex; justify-content: center; }
-#smartolt-night-toggle .smartolt-theme-icon-light, #smartolt-night-toggle .smartolt-theme-icon-night, #smartolt-night-toggle .smartolt-theme-icon-system { display: none; }
-#smartolt-night-toggle.is-pref-light .smartolt-theme-icon-light, #smartolt-night-toggle.is-pref-night .smartolt-theme-icon-night, #smartolt-night-toggle.is-pref-system .smartolt-theme-icon-system { display: inline-block; }
-.font-size-20 { font-size: 20px; }
-.text-ellipsis { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
-.max-width-250 { max-width: 250px; }
-.btn-action { margin: 1px; padding: 4px 10px; font-size: 11px; }
-html.smartolt-night .btn-default { background: #334155; color: #e2e8f0; border: none; }
-html.smartolt-night .btn-default:hover { background: #475569; color: #fff; }
-html.smartolt-night .btn-primary { background: #3b82f6; border-color: #3b82f6; }
-html.smartolt-night .btn-primary:hover { background: #2563eb; }
-html.smartolt-night .btn-success { background: #10b981; border-color: #10b981; }
-html.smartolt-night .btn-danger { background: #ef4444; border-color: #ef4444; }
-html.smartolt-night .btn-info { background: #3b82f6; border-color: #3b82f6; }
-html.smartolt-night .text-muted { color: #94a3b8 !important; }
-.form-control, .input-sm { border: 1px solid #d1d5db; border-radius: 6px; font-size: 12px; box-shadow: none; }
-.form-control:focus { border-color: #4c4b4b; box-shadow: 0 0 0 2px rgba(76,75,75,0.12); }
-html.smartolt-night .form-control, html.smartolt-night .input-sm { background: #0f172a; border-color: #475569; color: #e2e8f0; }
-html.smartolt-night .form-control:focus { border-color: #60a5fa; box-shadow: 0 0 0 2px rgba(96,165,250,0.15); }
-.fa-ul { margin-left: 2em; }
-.badge { background: #eef2f6; color: #333; font-size: 11px; }
-html.smartolt-night .badge { background: rgba(255,255,255,0.12); color: #e2e8f0; }
-.model-icon { width: 40px; text-align: center; font-size: 20px; }
-html.smartolt-night .table-striped > tbody > tr:nth-of-type(odd) { background: rgba(255,255,255,0.015) !important; }
+/* === GLOBAL === */
+body {
+  font-family: Inter, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  background: #f5f7fa;
+  margin: 0; padding: 0 0 30px;
+  -webkit-font-smoothing: antialiased;
+}
+#wrapper { max-width: 1400px; margin: 0 auto; padding: 20px; }
+h2 { font-size: 22px; font-weight: 600; color: #1a2234; margin-bottom: 20px; }
+h2 i { margin-right: 8px; color: #1d8bff; }
+
+/* === TOP BAR === */
+.top-bar {
+  display: flex; justify-content: space-between; align-items: center;
+  flex-wrap: wrap; gap: 12px; margin-bottom: 20px;
+}
+.top-bar .left-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.top-bar .stats {
+  display: flex; gap: 20px; flex-wrap: wrap; align-items: center;
+  font-size: 13px; color: #64748b;
+}
+.top-bar .stats .stat-item { display: flex; align-items: center; gap: 5px; }
+.top-bar .stats .stat-item strong { color: #1a2234; font-size: 16px; }
+
+/* === TABLE === */
+.table-wrapper {
+  background: #fff; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 14px rgba(0,0,0,0.04);
+  padding: 20px;
+}
+.table-responsive { border: none !important; }
+.table { margin-bottom: 0 !important; }
+.table > thead > tr > th {
+  background: #f8fafc; color: #475569; font-weight: 600; font-size: 12px;
+  text-transform: uppercase; letter-spacing: 0.4px; border-bottom: 2px solid #e2e8f0;
+  padding: 10px 8px; white-space: nowrap;
+}
+.table > tbody > tr > td {
+  padding: 10px 8px; vertical-align: middle; font-size: 13px; color: #1e293b;
+  border-top: 1px solid #f1f5f9;
+}
+.table > tbody > tr:hover { background: #f8fafc; }
+
+/* === BADGES === */
+.badge-vendor { background: #ede9fe; color: #6d28d9; padding: 2px 8px; border-radius: 4px; font-size: 12px; display: inline-block; }
+.badge-gpon { background: #d1fae5; color: #065f46; padding: 2px 8px; border-radius: 4px; font-size: 11px; display: inline-block; }
+.badge-ports { background: #fef3c7; color: #92400e; padding: 2px 8px; border-radius: 4px; font-size: 11px; display: inline-block; }
+.badge-wifi { background: #dbeafe; color: #1e40af; padding: 2px 8px; border-radius: 4px; font-size: 11px; display: inline-block; }
+.badge-wan { background: #fce7f3; color: #9d174d; padding: 2px 8px; border-radius: 4px; font-size: 11px; display: inline-block; }
+.badge-signal-good { background: #d1fae5; color: #065f46; padding: 2px 6px; border-radius: 3px; font-size: 11px; }
+.badge-signal-warn { background: #fef3c7; color: #92400e; padding: 2px 6px; border-radius: 3px; font-size: 11px; }
+
+/* === MODAL === */
+.modal-content { border-radius: 10px; box-shadow: 0 10px 40px rgba(0,0,0,0.12); border: none; }
+.modal-header { background: #f8fafc; border-bottom: 1px solid #e2e8f0; border-radius: 10px 10px 0 0; padding: 14px 18px; }
+.modal-header h4 { font-weight: 600; font-size: 16px; }
+.modal-body { padding: 20px; }
+.modal-body .form-group { margin-bottom: 14px; }
+.modal-body label { font-weight: 500; font-size: 13px; color: #334155; }
+.modal-body .form-control { border-radius: 6px; border: 1px solid #cbd5e1; font-size: 13px; padding: 8px 12px; height: auto; box-shadow: none; }
+.modal-body .form-control:focus { border-color: #1d8bff; box-shadow: 0 0 0 2px rgba(29,139,255,0.15); }
+.modal-body .input-group-addon { border-radius: 6px 0 0 6px; font-size: 12px; }
+.modal-footer { border-top: 1px solid #e2e8f0; padding: 12px 18px; }
+
+/* === NIGHT MODE === */
+html.smartolt-night body { background: #0b1328; }
+html.smartolt-night h2 { color: #e2e8f0; }
+html.smartolt-night h2 i { color: #4da3ff; }
+html.smartolt-night .table-wrapper { background: #0f1a33; box-shadow: 0 1px 3px rgba(0,0,0,0.25); }
+html.smartolt-night .table > thead > tr > th { background: #0f1a33; color: #94a3b8; border-bottom-color: #1e2a4a; }
+html.smartolt-night .table > tbody > tr > td { color: #cbd5e1; border-top-color: #1a2744; }
+html.smartolt-night .table > tbody > tr:hover { background: #132141; }
+html.smartolt-night .top-bar .stats { color: #94a3b8; }
+html.smartolt-night .top-bar .stats .stat-item strong { color: #e2e8f0; }
+html.smartolt-night .modal-content { background: #0f1a33; }
+html.smartolt-night .modal-header { background: #132141; border-bottom-color: #1e2a4a; }
+html.smartolt-night .modal-header h4 { color: #e2e8f0; }
+html.smartolt-night .modal-body label { color: #94a3b8; }
+html.smartolt-night .modal-body .form-control { background: #0b1328; border-color: #1e2a4a; color: #cbd5e1; }
+html.smartolt-night .modal-body .input-group-addon { background: #132141; border-color: #1e2a4a; color: #94a3b8; }
+html.smartolt-night .modal-footer { border-top-color: #1e2a4a; }
+html.smartolt-night .badge-vendor { background: #1e1a3a; color: #a78bfa; }
+html.smartolt-night .badge-gpon { background: #0a2a1a; color: #6ee7b7; }
+html.smartolt-night .badge-ports { background: #2a2210; color: #fbbf24; }
+html.smartolt-night .badge-wifi { background: #0a2a44; color: #93c5fd; }
+html.smartolt-night .badge-wan { background: #2a1020; color: #f472b6; }
+html.smartolt-night .badge-signal-good { background: #0a2a1a; color: #6ee7b7; }
+html.smartolt-night .badge-signal-warn { background: #2a2210; color: #fbbf24; }
+html.smartolt-night .close { color: #94a3b8; text-shadow: none; opacity: 0.8; }
+html.smartolt-night .close:hover { color: #e2e8f0; opacity: 1; }
+html.smartolt-night .btn-default { background: #1a2744; border-color: #1e2a4a; color: #cbd5e1; }
+html.smartolt-night .btn-default:hover { background: #243457; color: #e2e8f0; }
+html.smartolt-night .dropdown-menu { background: #132141; border-color: #1e2a4a; }
+html.smartolt-night .dropdown-menu > li > a { color: #cbd5e1; }
+html.smartolt-night .dropdown-menu > li > a:hover { background: #1a2744; color: #fff; }
+
+/* === RESPONSIVE === */
+@media (max-width: 768px) {
+  #wrapper { padding: 12px; }
+  .table-wrapper { padding: 12px; }
+  .top-bar { flex-direction: column; align-items: stretch; }
+  .top-bar .stats { justify-content: flex-start; gap: 10px; }
+}
 </style>
-<script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/js/bootstrap.min.js"></script>
 </head>
 <body>
-<div class="smartolt-landing-hero-bg" aria-hidden="true"></div>
-<div id="content-wrapper">
-  <div class="navbar navbar-default navbar-fixed-top">
-    <div class="container">
-      <div class="navbar-header">
-        <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#navbar-main">
-          <span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span>
-        </button>
-        <a class="navbar-brand text-ellipsis max-width-250" href="/modulo?pagina=GPONManager">GPON Manager</a>
-      </div>
-      <div class="navbar-collapse collapse" id="navbar-main">
-        <ul class="nav navbar-nav">
-          <li><a href="/modulo?pagina=GPONManager">Dashboard</a></li>
-          <li><a href="/modulo?pagina=SmartoltConfigured">ONUs Configuradas</a></li>
-          <li><a href="/modulo?pagina=SmartoltUnconfigured">Sin Configurar</a></li>
-          <li><a href="/modulo?pagina=SmartoltSpeedProfiles">Velocidad</a></li>
-          <li class="active"><a href="/modulo?pagina=SmartoltOnuTypes">Tipos ONU</a></li>
-          <li><a href="/modulo?pagina=SmartoltSettings">Config OLT</a></li>
-        </ul>
-        <ul class="nav navbar-nav navbar-right">
-          <li><a href="#" id="smartolt-night-toggle" class="is-pref-night is-resolved" title="Night mode"><i class="fa fa-sun-o font-size-20 smartolt-theme-icon-light"></i><i class="fa fa-moon-o font-size-20 smartolt-theme-icon-night"></i><i class="fa fa-adjust font-size-20 smartolt-theme-icon-system"></i></a></li>
-        </ul>
-      </div>
+<div id="wrapper">
+  <h2><i class="fa fa-microchip"></i> Tipos de ONU</h2>
+
+  <div class="top-bar">
+    <div class="left-actions">
+      <a href="/modulo?pagina=GPONManager" class="btn btn-default btn-sm"><i class="fa fa-arrow-left"></i> GPON Manager</a>
+      <button class="btn btn-success btn-sm" onclick="abrirModalCrear()"><i class="fa fa-plus"></i> Agregar Tipo</button>
+      <button class="btn btn-info btn-sm" onclick="cargarTipos()"><i class="fa fa-refresh"></i> Refrescar</button>
+    </div>
+    <div class="stats">
+      <span class="stat-item"><i class="fa fa-list text-muted"></i> Modelos: <strong id="totalModels">0</strong></span>
+      <span class="stat-item"><i class="fa fa-building text-muted"></i> Fabricantes: <strong id="totalVendors">0</strong></span>
+      <span class="stat-item"><i class="fa fa-plug text-info"></i> ONUs instaladas: <strong id="onuInstalled">0</strong></span>
+      <span class="stat-item"><i class="fa fa-signal text-success"></i> Señal óptima: <strong id="optimalSignal">0</strong></span>
     </div>
   </div>
 
-  <div class="container">
-    <!-- Toolbar -->
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px;">
-      <div>
-        <span style="font-size:16px;font-weight:600;">Tipos de ONU</span>
-        <span class="text-muted" style="font-size:12px;margin-left:6px;" id="typeCount"></span>
-      </div>
-      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
-        <input type="text" id="searchType" class="form-control input-sm" placeholder="Buscar modelo..." style="width:180px;display:inline-block;">
-        <button class="btn btn-success btn-sm" onclick="showNewType()"><i class="fa fa-plus"></i> Nuevo Tipo</button>
-        <button class="btn btn-primary btn-sm" onclick="loadTypes()"><i class="fa fa-refresh"></i> Refrescar</button>
-      </div>
-    </div>
-
-    <!-- Stats row -->
-    <div class="row" style="margin-bottom:16px;">
-      <div class="col-sm-3">
-        <div class="panel panel-default" style="margin-bottom:0;">
-          <div class="panel-body text-center" style="padding:12px;">
-            <span class="huge" style="font-size:28px;font-weight:700;color:#3b82f6;" id="statTotal">0</span>
-            <div style="font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;">Modelos</div>
-          </div>
-        </div>
-      </div>
-      <div class="col-sm-3">
-        <div class="panel panel-default" style="margin-bottom:0;">
-          <div class="panel-body text-center" style="padding:12px;">
-            <span class="huge" style="font-size:28px;font-weight:700;color:#10b981;" id="statFabricantes">0</span>
-            <div style="font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;">Fabricantes</div>
-          </div>
-        </div>
-      </div>
-      <div class="col-sm-3">
-        <div class="panel panel-default" style="margin-bottom:0;">
-          <div class="panel-body text-center" style="padding:12px;">
-            <span class="huge" style="font-size:28px;font-weight:700;color:#f59e0b;" id="statONUs">0</span>
-            <div style="font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;">ONUs Instaladas</div>
-          </div>
-        </div>
-      </div>
-      <div class="col-sm-3">
-        <div class="panel panel-default" style="margin-bottom:0;">
-          <div class="panel-body text-center" style="padding:12px;">
-            <span class="huge" style="font-size:28px;font-weight:700;color:#8b5cf6;" id="statRxOK">0</span>
-            <div style="font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;">Señal Óptima</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Main table -->
-    <div class="panel panel-default">
-      <div class="panel-heading"><i class="fa fa-list"></i> Modelos Registrados</div>
-      <div class="panel-body" style="padding:0;">
-        <div class="table-responsive">
-          <table class="table table-hover table-striped" id="typesTable">
-            <thead>
-              <tr>
-                <th style="width:30px;"></th>
-                <th>Modelo</th>
-                <th>Fabricante</th>
-                <th>Puertos</th>
-                <th>Tipo GPON</th>
-                <th>WAN</th>
-                <th>WiFi</th>
-                <th style="text-align:center;">ONUs</th>
-                <th>Señal Promedio</th>
-                <th style="text-align:right;width:120px;">Acciones</th>
-              </tr>
-            </thead>
-            <tbody id="typesBody">
-              <tr><td colspan="10" class="text-center text-muted" style="padding:50px;"><i class="fa fa-spinner fa-spin fa-2x"></i><br><br>Cargando tipos de ONU...</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
+  <div class="table-wrapper">
+    <div class="table-responsive">
+      <table id="onuTable" class="table table-striped" width="100%">
+        <thead>
+          <tr>
+            <th>Modelo</th>
+            <th>Fabricante</th>
+            <th>Puertos</th>
+            <th>Tipo GPON</th>
+            <th>WiFi</th>
+            <th>WAN</th>
+            <th>VLAN Default</th>
+            <th>Señal Promedio</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="onuTypeBody"></tbody>
+      </table>
     </div>
   </div>
 </div>
 
-<!-- Nuevo Tipo Modal -->
+<!-- Modal Crear/Editar -->
 <div class="modal fade" id="typeModal" tabindex="-1" role="dialog">
-  <div class="modal-dialog" role="document">
+  <div class="modal-dialog modal-md">
     <div class="modal-content">
-      <div class="modal-header" style="border-bottom:1px solid #eef2f6;padding:12px 16px;">
-        <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
-        <h5 class="modal-title" style="font-weight:600;" id="typeModalTitle"><i class="fa fa-plus-circle"></i> Nuevo Tipo de ONU</h5>
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title" id="modalTitle"><i class="fa fa-plus-circle"></i> Nuevo Tipo de ONU</h4>
       </div>
-      <div class="modal-body" style="padding:16px;">
-        <input type="hidden" id="editTypeKey" value="">
+      <div class="modal-body">
+        <input type="hidden" id="editKey">
         <div class="row">
-          <div class="col-sm-8">
+          <div class="col-md-6">
             <div class="form-group">
-              <label style="font-size:12px;font-weight:600;">Nombre del Modelo</label>
-              <input type="text" class="form-control" id="tpModel" placeholder="Ej: F673AV9, HS8545M5, EG8021V5">
+              <label>Modelo</label>
+              <input type="text" class="form-control" id="fModelo" placeholder="Ej: F673AV9">
             </div>
           </div>
-          <div class="col-sm-4">
+          <div class="col-md-6">
             <div class="form-group">
-              <label style="font-size:12px;font-weight:600;">Fabricante</label>
-              <select class="form-control" id="tpVendor">
-                <option value="Huawei">Huawei</option>
+              <label>Fabricante</label>
+              <select class="form-control" id="fVendor">
                 <option value="ZTE">ZTE</option>
-                <option value="FiberHome">FiberHome</option>
+                <option value="Huawei">Huawei</option>
                 <option value="Nokia">Nokia</option>
-                <option value="Alcatel">Alcatel</option>
-                <option value="Calix">Calix</option>
+                <option value="FiberHome">FiberHome</option>
+                <option value="Ubiquiti">Ubiquiti</option>
                 <option value="VSOL">VSOL</option>
-                <option value="Other">Otro</option>
+                <option value="MikroTik">MikroTik</option>
+                <option value="Genexis">Genexis</option>
+                <option value="OTRO">Otro</option>
               </select>
             </div>
           </div>
         </div>
         <div class="row">
-          <div class="col-sm-4">
+          <div class="col-md-4">
             <div class="form-group">
-              <label style="font-size:12px;font-weight:600;">Puertos LAN</label>
-              <select class="form-control" id="tpPorts">
-                <option value="1">1</option>
-                <option value="2">2</option>
-                <option value="4" selected>4</option>
-                <option value="8">8</option>
+              <label>Puertos</label>
+              <input type="number" class="form-control" id="fPorts" placeholder="4" min="1" value="4">
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="form-group">
+              <label>Tipo GPON</label>
+              <select class="form-control" id="fGponType">
+                <option value="GPON">GPON</option>
+                <option value="XG-PON">XG-PON</option>
+                <option value="XGS-PON">XGS-PON</option>
+                <option value="EPON">EPON</option>
+                <option value="10G-EPON">10G-EPON</option>
               </select>
             </div>
           </div>
-          <div class="col-sm-4">
+          <div class="col-md-4">
             <div class="form-group">
-              <label style="font-size:12px;font-weight:600;">Tipo GPON</label>
-              <select class="form-control" id="tpGponType">
-                <option value="SFU">SFU</option>
-                <option value="HGU" selected>HGU</option>
-                <option value="MDU">MDU</option>
-                <option value="SBU">SBU</option>
-              </select>
+              <label>VLAN Default</label>
+              <input type="number" class="form-control" id="fVlan" placeholder="100" min="1" max="4094" value="100">
             </div>
           </div>
-          <div class="col-sm-4">
+        </div>
+        <div class="row">
+          <div class="col-md-6">
             <div class="form-group">
-              <label style="font-size:12px;font-weight:600;">WiFi</label>
-              <select class="form-control" id="tpWifi">
+              <label>WiFi</label>
+              <select class="form-control" id="fWifi">
                 <option value="No">No</option>
-                <option value="2.4GHz">2.4GHz</option>
-                <option value="5GHz">5GHz</option>
-                <option value="Dual" selected>Dual Band</option>
-                <option value="WiFi 6">WiFi 6</option>
-                <option value="WiFi 7">WiFi 7</option>
+                <option value="2.4 GHz">2.4 GHz</option>
+                <option value="5 GHz">5 GHz</option>
+                <option value="Dual (2.4+5)">Dual (2.4+5)</option>
               </select>
             </div>
           </div>
-        </div>
-        <div class="row">
-          <div class="col-sm-6">
+          <div class="col-md-6">
             <div class="form-group">
-              <label style="font-size:12px;font-weight:600;">Modo WAN</label>
-              <select class="form-control" id="tpWan">
-                <option value="PPPoE">PPPoE</option>
-                <option value="Bridge">Bridge</option>
-                <option value="DHCP">DHCP</option>
-                <option value="Static">Static IP</option>
+              <label>WAN</label>
+              <select class="form-control" id="fWan">
+                <option value="1 GbE">1 GbE</option>
+                <option value="2.5 GbE">2.5 GbE</option>
+                <option value="10 GbE">10 GbE</option>
+                <option value="SFP">SFP</option>
+                <option value="N/A">N/A</option>
               </select>
-            </div>
-          </div>
-          <div class="col-sm-6">
-            <div class="form-group">
-              <label style="font-size:12px;font-weight:600;">VLAN por Defecto</label>
-              <input type="text" class="form-control" id="tpVlan" placeholder="100">
             </div>
           </div>
         </div>
       </div>
-      <div class="modal-footer" style="padding:10px 16px;border-top:1px solid #eef2f6;">
-        <button type="button" class="btn btn-default btn-sm" data-dismiss="modal">Cancelar</button>
-        <button type="button" class="btn btn-primary btn-sm" onclick="saveType()"><i class="fa fa-save"></i> Guardar</button>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-primary" onclick="guardarTipo()"><i class="fa fa-save"></i> Guardar</button>
       </div>
     </div>
   </div>
 </div>
+
+<!-- Delete Confirm Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title"><i class="fa fa-trash text-danger"></i> Eliminar Tipo</h4>
+      </div>
+      <div class="modal-body">
+        <p>¿Eliminar <strong id="deleteName"></strong>?</p>
+        <p class="text-muted small">Esta acción no se puede deshacer. Las ONUs existentes no se verán afectadas.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-danger" id="confirmDeleteBtn"><i class="fa fa-trash"></i> Eliminar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/js/bootstrap.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap.min.js"></script>
 
 <script>
-var types = [];
-
-// Night mode
-(function() {
-  var STORAGE_LOCAL = 'smartolt-theme-local';
-  function applyTheme(pref) {
-    var isNight = pref === 'night' ? true : (pref === 'light' ? false : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches));
-    var html = document.documentElement;
-    if (isNight) html.classList.add('smartolt-night'); else html.classList.remove('smartolt-night');
-    try { localStorage.setItem('smartolt-night', isNight ? '1' : '0'); } catch(e) {}
-    var toggle = document.getElementById('smartolt-night-toggle');
-    if (toggle) { toggle.classList.remove('is-pref-light','is-pref-night','is-pref-system'); toggle.classList.add('is-pref-' + pref); }
-  }
-  var localPref = (function(){ try { var s = localStorage.getItem(STORAGE_LOCAL); if(s==='night'||s==='light'||s==='system') return s; }catch(e){} return 'system'; })();
-  applyTheme(localPref || (window.SMARTOLT_DB_THEME || 'system'));
-  document.getElementById('smartolt-night-toggle').addEventListener('click', function(e) {
-    e.preventDefault();
-    var isNight = document.documentElement.classList.contains('smartolt-night');
-    var newPref = isNight ? 'light' : 'night';
-    try { localStorage.setItem(STORAGE_LOCAL, newPref); } catch(e) {}
-    applyTheme(newPref);
-  });
+// ===== NIGHT MODE =====
+(function(){
+  var n = localStorage.getItem('smartolt-night');
+  if (n === '1') document.documentElement.classList.add('smartolt-night');
+  else document.documentElement.classList.remove('smartolt-night');
 })();
 
-function loadTypes() {
-  $('#typesBody').html('<tr><td colspan="10" class="text-center text-muted" style="padding:40px;"><i class="fa fa-spinner fa-spin fa-2x"></i><br><br>Cargando...</td></tr>');
-  $.get('/api/smartolt/onu-types', function(data) {
-    if (data.success && data.types) {
-      types = data.types;
-    } else {
-      types = generateMockTypes(8);
+var dataTableInstance = null;
+var modalMode = 'create';
+
+// ===== CARGAR TIPOS =====
+function cargarTipos() {
+  $.getJSON('/api/smartolt/onu-types', function(r) {
+    var types = r.types || r.data || r || [];
+    if (!Array.isArray(types)) types = [];
+    if (types.length === 0 && typeof types === 'object') {
+      // Maybe it's wrapped
+      var keys = Object.keys(r);
+      for (var i = 0; i < keys.length; i++) {
+        if (Array.isArray(r[keys[i]])) { types = r[keys[i]]; break; }
+      }
     }
-    renderTypes();
-  }, 'json').fail(function() {
-    types = generateMockTypes(8);
-    renderTypes();
+
+    // Stats
+    var models = types.length;
+    var vendors = {};
+    var installed = 0;
+    var signalGood = 0;
+    types.forEach(function(t){
+      var v = t.vendor || t.fabricante || '';
+      if (v) vendors[v] = (vendors[v] || 0) + 1;
+      installed += parseInt(t.total_onus || t.onus_count || 0);
+      var sig = parseFloat(t.avg_signal || t.senal_promedio || t.average_signal || -99);
+      if (sig > -22) signalGood++;
+    });
+    $('#totalModels').text(models);
+    $('#totalVendors').text(Object.keys(vendors).length);
+    $('#onuInstalled').text(installed);
+    $('#optimalSignal').text(signalGood);
+
+    // Rows
+    var rows = '';
+    types.forEach(function(t){
+      var modelo = t.model || t.modelo || t.name || t.key || '-';
+      var vendor = t.vendor || t.fabricante || '-';
+      var ports = t.ports || t.puertos || t.ethernet_ports || '-';
+      var gpon = t.gpon_type || t.pon_type || 'GPON';
+      var wifi = t.wifi || t.wifi_band || 'No';
+      var wan = t.wan || '1 GbE';
+      var vlan = t.vlan_default || t.vlan || '-';
+      var signal = parseFloat(t.avg_signal || t.senal_promedio || t.average_signal || -99);
+      var signalStr = signal < -25 ? '<span class="badge-signal-warn">' + signal + ' dBm</span>' :
+        '<span class="badge-signal-good">' + signal + ' dBm</span>';
+
+      // Build edit params
+      var en = modelo.replace(/'/g, "\\'");
+
+      rows += '<tr>' +
+        '<td><strong>' + modelo + '</strong>' +
+          (t.total_onus > 0 ? ' <span class="badge-gpon" style="background:#d1fae5;color:#065f46;padding:1px 6px;border-radius:3px;font-size:10px;">' + t.total_onus + '</span>' : '') +
+        '</td>' +
+        '<td><span class="badge-vendor">' + vendor + '</span></td>' +
+        '<td><span class="badge-ports">' + ports + ' FE</span></td>' +
+        '<td><span class="badge-gpon">' + gpon + '</span></td>' +
+        '<td><span class="badge-wifi">' + wifi + '</span></td>' +
+        '<td><span class="badge-wan">' + wan + '</span></td>' +
+        '<td>' + vlan + '</td>' +
+        '<td>' + signalStr + '</td>' +
+        '<td style="white-space:nowrap">' +
+          '<button class="btn btn-primary btn-xs" onclick="editarTipo(\'' + en + '\')"><i class="fa fa-pencil"></i></button> ' +
+          '<button class="btn btn-danger btn-xs" onclick="eliminarTipo(\'' + en + '\')"><i class="fa fa-trash"></i></button>' +
+        '</td>' +
+        '</tr>';
+    });
+    $('#onuTypeBody').html(rows);
+
+    // Re-init DataTable
+    if (dataTableInstance) { dataTableInstance.destroy(); dataTableInstance = null; }
+    dataTableInstance = $('#onuTable').DataTable({
+      paging: true, pageLength: 25, lengthChange: true, searching: true,
+      ordering: true, info: true, autoWidth: false,
+      language: { search: 'Buscar:', lengthMenu: 'Mostrar _MENU_ registros',
+        info: 'Mostrando _START_ a _END_ de _TOTAL_ tipos',
+        infoEmpty: 'No hay tipos de ONU', paginate: { first: 'Primero', last: 'Último', next: '»', previous: '«' }
+      },
+      order: [[0, 'asc']]
+    });
+  }).fail(function(){
+    $('#onuTypeBody').html('<tr><td colspan="9" class="text-center text-muted">Error al cargar tipos de ONU</td></tr>');
   });
 }
 
-function generateMockTypes(count) {
-  var models = [
-    { model: 'F673AV9', vendor: 'Huawei', ports: '4', gpon: 'HGU', wifi: 'Dual Band', wan: 'PPPoE' },
-    { model: 'EG8021V5', vendor: 'ZTE', ports: '4', gpon: 'HGU', wifi: 'Dual Band', wan: 'PPPoE' },
-    { model: 'HS8545M5', vendor: 'Huawei', ports: '4', gpon: 'SFU', wifi: 'No', wan: 'Bridge' },
-    { model: 'GPON_ONUV7.1', vendor: 'FiberHome', ports: '2', gpon: 'HGU', wifi: '2.4GHz', wan: 'DHCP' },
-    { model: 'HG8145X6-10', vendor: 'Huawei', ports: '4', gpon: 'HGU', wifi: 'WiFi 6', wan: 'PPPoE' },
-    { model: 'F601', vendor: 'Huawei', ports: '1', gpon: 'SFU', wifi: 'No', wan: 'Bridge' },
-    { model: 'EG8145V5', vendor: 'ZTE', ports: '4', gpon: 'HGU', wifi: 'Dual Band', wan: 'PPPoE' },
-    { model: 'AN5506-04', vendor: 'FiberHome', ports: '4', gpon: 'HGU', wifi: '5GHz', wan: 'PPPoE' },
-  ];
-  return models.map(function(m, i) {
-    var count = Math.floor(Math.random() * 30);
-    return {
-      key: 'onu_type_' + (i + 1),
-      model: m.model,
-      vendor: m.vendor,
-      ports: m.ports,
-      gpon_type: m.gpon,
-      wifi: m.wifi,
-      wan: m.wan,
-      vlan_default: '100',
-      onu_count: count,
-      avg_signal: count > 0 ? (-(Math.random() * 8 + 17)).toFixed(1) + ' dBm' : '--'
-    };
-  });
-}
-
-function renderTypes() {
-  var q = $('#searchType').val().toLowerCase().trim();
-  var filtered = types.filter(function(t) {
-    if (!q) return true;
-    return (t.model || t.key || '').toLowerCase().indexOf(q) !== -1 ||
-           (t.vendor || '').toLowerCase().indexOf(q) !== -1;
-  });
-
-  $('#typeCount').text('(' + types.length + ' modelos)');
-  $('#statTotal').text(types.length);
-  var vendors = {};
-  types.forEach(function(t) { vendors[t.vendor || 'Otro'] = true; });
-  $('#statFabricantes').text(Object.keys(vendors).length);
-  var totalOnus = types.reduce(function(s, t) { return s + (parseInt(t.onu_count) || 0); }, 0);
-  $('#statONUs').text(totalOnus);
-  var rxOk = types.filter(function(t) { return t.avg_signal && parseFloat(t.avg_signal) > -25; }).length;
-  $('#statRxOK').text(rxOk);
-
-  if (filtered.length === 0) {
-    $('#typesBody').html('<tr><td colspan="10" class="text-center text-muted" style="padding:40px;">No se encontraron modelos</td></tr>');
-    return;
-  }
-
-  var h = '';
-  filtered.forEach(function(t) {
-    var icon = t.vendor === 'Huawei' ? 'fa-microchip' :
-               t.vendor === 'ZTE' ? 'fa-cube' :
-               t.vendor === 'FiberHome' ? 'fa-server' : 'fa-gear';
-    var signalClass = 'text-muted';
-    var signalVal = parseFloat(t.avg_signal);
-    if (signalVal < -25) signalClass = 'text-danger';
-    else if (signalVal < -22) signalClass = 'text-warning';
-    else signalClass = 'text-success';
-
-    h += '<tr>';
-    h += '<td class="text-center model-icon"><i class="fa ' + icon + '" style="font-size:18px;"></i></td>';
-    h += '<td><strong>' + escapeHtml(t.model || t.key) + '</strong></td>';
-    h += '<td>' + escapeHtml(t.vendor || '--') + '</td>';
-    h += '<td>' + escapeHtml(t.ports || '--') + '</td>';
-    h += '<td><span class="label label-default">' + escapeHtml(t.gpon_type || 'HGU') + '</span></td>';
-    h += '<td><small>' + escapeHtml(t.wan || '--') + '</small></td>';
-    h += '<td><small>' + escapeHtml(t.wifi || '--') + '</small></td>';
-    h += '<td style="text-align:center;"><span class="badge">' + (t.onu_count || 0) + '</span></td>';
-    h += '<td><span class="' + signalClass + '">' + escapeHtml(t.avg_signal || '--') + '</span></td>';
-    h += '<td style="text-align:right;white-space:nowrap;">';
-    h += '<button class="btn btn-xs btn-default btn-action" onclick="editType(\'' + escapeHtml(t.key || t.model) + '\')" title="Editar"><i class="fa fa-pencil"></i></button> ';
-    h += '<button class="btn btn-xs btn-danger btn-action" onclick="deleteType(\'' + escapeHtml(t.key || t.model) + '\',\'' + escapeHtml(t.model || t.key) + '\')" title="Eliminar"><i class="fa fa-trash"></i></button>';
-    h += '</td></tr>';
-  });
-  $('#typesBody').html(h);
-}
-
-function showNewType() {
-  $('#typeModalTitle').html('<i class="fa fa-plus-circle"></i> Nuevo Tipo de ONU');
-  $('#editTypeKey').val('');
-  $('#tpModel').val('');
-  $('#tpVendor').val('Huawei');
-  $('#tpPorts').val('4');
-  $('#tpGponType').val('HGU');
-  $('#tpWifi').val('Dual Band');
-  $('#tpWan').val('PPPoE');
-  $('#tpVlan').val('100');
+// ===== CRUD =====
+function abrirModalCrear() {
+  modalMode = 'create';
+  $('#modalTitle').html('<i class="fa fa-plus-circle"></i> Nuevo Tipo de ONU');
+  $('#editKey').val('');
+  $('#fModelo').val('');
+  $('#fVendor').val('ZTE');
+  $('#fPorts').val('4');
+  $('#fGponType').val('GPON');
+  $('#fVlan').val('100');
+  $('#fWifi').val('No');
+  $('#fWan').val('1 GbE');
   $('#typeModal').modal('show');
 }
 
-function editType(key) {
-  var t = types.find(function(x) { return (x.key || x.model) === key; });
-  if (!t) return alert('Tipo no encontrado');
-  $('#typeModalTitle').html('<i class="fa fa-pencil"></i> Editar: ' + escapeHtml(t.model || t.key));
-  $('#editTypeKey').val(t.key || t.model);
-  $('#tpModel').val(t.model || '');
-  $('#tpVendor').val(t.vendor || 'Huawei');
-  $('#tpPorts').val(t.ports || '4');
-  $('#tpGponType').val(t.gpon_type || 'HGU');
-  $('#tpWifi').val(t.wifi || 'Dual Band');
-  $('#tpWan').val(t.wan || 'PPPoE');
-  $('#tpVlan').val(t.vlan_default || '100');
-  $('#typeModal').modal('show');
+function editarTipo(key) {
+  // Find by key/modelo from data
+  $.getJSON('/api/smartolt/onu-types', function(r) {
+    var types = r.types || r.data || r || [];
+    if (!Array.isArray(types)) {
+      var keys = Object.keys(r);
+      for (var i = 0; i < keys.length; i++) {
+        if (Array.isArray(r[keys[i]])) { types = r[keys[i]]; break; }
+      }
+    }
+    var t = null;
+    for (var i = 0; i < types.length; i++) {
+      var mk = types[i].model || types[i].modelo || types[i].name || types[i].key || '';
+      if (mk === key) { t = types[i]; break; }
+    }
+    if (!t) { alert('No se encontró el tipo "' + key + '"'); return; }
+
+    modalMode = 'edit';
+    $('#modalTitle').html('<i class="fa fa-pencil"></i> Editar Tipo: ' + key);
+    var fullKey = t.key || ('onu_type_' + key);
+    $('#editKey').val(fullKey);
+    $('#fModelo').val(t.model || t.modelo || t.name || '');
+    $('#fVendor').val(t.vendor || t.fabricante || 'ZTE');
+    $('#fPorts').val(t.ports || t.puertos || t.ethernet_ports || 4);
+    $('#fGponType').val(t.gpon_type || t.pon_type || 'GPON');
+    $('#fVlan').val(t.vlan_default || t.vlan || 100);
+    $('#fWifi').val(t.wifi || t.wifi_band || 'No');
+    $('#fWan').val(t.wan || '1 GbE');
+    $('#typeModal').modal('show');
+  });
 }
 
-function saveType() {
-  var model = $('#tpModel').val().trim();
-  if (!model) { alert('El nombre del modelo es obligatorio'); return; }
+function guardarTipo() {
+  var modelo = $('#fModelo').val().trim();
+  if (!modelo) { alert('El modelo es requerido'); return; }
 
-  var key = $('#editTypeKey').val() || ('onu_type_' + Date.now());
   var data = {
-    key: key,
-    model: model,
-    vendor: $('#tpVendor').val(),
-    ports: $('#tpPorts').val(),
-    gpon_type: $('#tpGponType').val(),
-    wifi: $('#tpWifi').val(),
-    wan: $('#tpWan').val(),
-    vlan_default: $('#tpVlan').val().trim()
+    key: $('#editKey').val() || null,
+    model: modelo,
+    vendor: $('#fVendor').val(),
+    ports: parseInt($('#fPorts').val()) || 4,
+    gpon_type: $('#fGponType').val(),
+    vlan_default: parseInt($('#fVlan').val()) || 100,
+    wifi: $('#fWifi').val(),
+    wan: $('#fWan').val()
   };
 
   $.ajax({
-    url: '/api/smartolt/onu-type/save',
+    url: '/api/smartolt/onu-types/save',
     method: 'POST',
     contentType: 'application/json',
     data: JSON.stringify(data),
-    success: function(resp) {
-      if (resp && resp.success) {
+    success: function(r) {
+      if (r.success) {
         $('#typeModal').modal('hide');
-        showToast('Tipo de ONU guardado', 'success');
-        loadTypes();
+        if (dataTableInstance) { dataTableInstance.destroy(); dataTableInstance = null; }
+        cargarTipos();
       } else {
-        saveTypeLocal(key, data);
+        alert('Error: ' + (r.error || r.msg || 'Desconocido'));
       }
     },
-    error: function() {
-      saveTypeLocal(key, data);
+    error: function(xhr) {
+      alert('Error del servidor: ' + (xhr.responseJSON ? xhr.responseJSON.error : xhr.statusText));
     }
   });
 }
 
-function saveTypeLocal(key, data) {
-  var idx = types.findIndex(function(t) { return (t.key || t.model) === key; });
-  var entry = {
-    key: key,
-    model: data.model,
-    vendor: data.vendor,
-    ports: data.ports,
-    gpon_type: data.gpon_type,
-    wifi: data.wifi,
-    wan: data.wan,
-    vlan_default: data.vlan_default,
-    onu_count: idx >= 0 ? types[idx].onu_count : 0,
-    avg_signal: idx >= 0 ? types[idx].avg_signal : '--'
-  };
-  if (idx >= 0) types[idx] = entry;
-  else types.push(entry);
-  $('#typeModal').modal('hide');
-  renderTypes();
-  showToast('Tipo de ONU guardado (local)', 'info');
+var deleteTargetKey = null;
+function eliminarTipo(key) {
+  deleteTargetKey = key;
+  $('#deleteName').text(key);
+  $('#deleteModal').modal('show');
 }
 
-function deleteType(key, model) {
-  if (!confirm('¿Eliminar tipo "' + model + '"?\nEsta acción no se puede deshacer.')) return;
+$('#confirmDeleteBtn').click(function(){
+  if (!deleteTargetKey) return;
   $.ajax({
-    url: '/api/smartolt/onu-type/delete',
+    url: '/api/smartolt/onu-types/delete',
     method: 'POST',
     contentType: 'application/json',
-    data: JSON.stringify({ key: key }),
-    success: function(resp) {
-      if (resp && resp.success) {
-        showToast('Tipo de ONU eliminado', 'success');
-        loadTypes();
+    data: JSON.stringify({ key: deleteTargetKey }),
+    success: function(r) {
+      $('#deleteModal').modal('hide');
+      if (r.success) {
+        if (dataTableInstance) { dataTableInstance.destroy(); dataTableInstance = null; }
+        cargarTipos();
       } else {
-        types = types.filter(function(t) { return (t.key || t.model) !== key; });
-        renderTypes();
-        showToast('Tipo de ONU eliminado (local)', 'warning');
+        alert('Error: ' + (r.error || 'Desconocido'));
       }
     },
-    error: function() {
-      types = types.filter(function(t) { return (t.key || t.model) !== key; });
-      renderTypes();
-      showToast('Tipo de ONU eliminado (local)', 'warning');
+    error: function(xhr) {
+      alert('Error: ' + (xhr.responseJSON ? xhr.responseJSON.error : xhr.statusText));
     }
   });
-}
+});
 
-function showToast(msg, type) {
-  var color = type === 'success' ? '#10b981' : (type === 'error' ? '#ef4444' : '#f59e0b');
-  var $toast = $('<div style="position:fixed;bottom:20px;right:20px;background:' + color + ';color:#fff;padding:12px 20px;border-radius:8px;font-size:13px;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,0.2);max-width:350px;">' + escapeHtml(msg) + '</div>');
-  $('body').append($toast);
-  setTimeout(function() { $toast.fadeOut(300, function() { $toast.remove(); }); }, 3000);
-}
-
-function escapeHtml(s) { if (!s) return ''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-
-$(document).ready(function() {
-  loadTypes();
-  $('#searchType').on('input', function() { renderTypes(); });
+// ===== INIT =====
+$(document).ready(function(){
+  cargarTipos();
 });
 </script>
 </body>

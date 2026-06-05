@@ -6022,10 +6022,47 @@ async function smartoltFetchOlt(oltObj, endpoint, method, body) {
 // GET /api/smartolt/speed-profiles - List speed profiles
 app.get('/api/smartolt/speed-profiles', requireAuth, async (req, res) => {
   try {
-    const profiles = db.prepare("SELECT id, nombre as name, COALESCE(velocidad, '0') as speed, COALESCE(perfil_mikrotik, 'Internet') as type, CAST((SELECT COUNT(*) FROM servicios WHERE plan_id = planes.id) AS INTEGER) as onu_count FROM planes ORDER BY velocidad ASC").all();
-    res.json({ success: true, profiles: profiles });
+    const profiles = db.prepare(`SELECT 
+      id, nombre, COALESCE(velocidad,0) as descarga, COALESCE(velocidad_subida,0) as subida,
+      COALESCE(tipo,'Internet') as tipo, COALESCE(perfil_mikrotik,'') as perfil_mikrotik,
+      COALESCE(velocidad,0) as olt_upstream, COALESCE(velocidad_subida,0) as olt_downstream,
+      COALESCE(upload_burst,'') as burst,
+      (SELECT COUNT(*) FROM servicios WHERE plan_id = planes.id) as total_onus
+    FROM planes ORDER BY nombre ASC`).all();
+    res.json({ success: true, data: profiles });
   } catch (e) {
-    res.json({ success: false, message: e.message });
+    res.json({ success: false, error: e.message });
+  }
+});
+
+// POST /api/smartolt/speed-profiles/save - Create/Update speed profile
+app.post('/api/smartolt/speed-profiles/save', requireAuth, async (req, res) => {
+  try {
+    const { id, nombre, descarga, subida, tipo, perfil_mikrotik, olt_upstream, olt_downstream, burst } = req.body;
+    if (!nombre || !nombre.trim()) return res.json({ success: false, error: 'El nombre es requerido' });
+
+    if (id) {
+      db.prepare(`UPDATE planes SET nombre=?, velocidad=?, velocidad_subida=?, tipo=?, perfil_mikrotik=?, upload_burst=? WHERE id=?`)
+        .run(nombre.trim(), String(descarga||0), String(subida||0), tipo||'Internet', perfil_mikrotik||'', burst||'', id);
+    } else {
+      db.prepare(`INSERT INTO planes (nombre, velocidad, velocidad_subida, tipo, perfil_mikrotik, upload_burst) VALUES (?,?,?,?,?,?)`)
+        .run(nombre.trim(), String(descarga||0), String(subida||0), tipo||'Internet', perfil_mikrotik||'', burst||'');
+    }
+    res.json({ success: true });
+  } catch (e) {
+    res.json({ success: false, error: e.message });
+  }
+});
+
+// POST /api/smartolt/speed-profiles/delete - Delete speed profile
+app.post('/api/smartolt/speed-profiles/delete', requireAuth, async (req, res) => {
+  try {
+    const { id } = req.body;
+    if (!id) return res.json({ success: false, error: 'ID requerido' });
+    db.prepare('DELETE FROM planes WHERE id=?').run(id);
+    res.json({ success: true });
+  } catch (e) {
+    res.json({ success: false, error: e.message });
   }
 });
 
@@ -6349,48 +6386,52 @@ app.get('/api/smartolt/onu-types', requireAuth, (req, res) => {
           wifi: parsed.wifi || parsed.wifi_band || 'none',
           wan: parsed.wan || parsed.mode || 'PPPoE',
           vlan_default: parsed.vlan_default || '100',
-          onu_count: parsed.onu_count || 0,
+          total_onus: parsed.total_onus || parsed.onu_count || 0,
           avg_signal: parsed.avg_signal || '--'
         });
       } catch(e) {}
     });
     res.json({ success: true, types: result });
   } catch (e) {
-    res.json({ success: false, message: e.message });
+    res.json({ success: false, error: e.message });
   }
 });
 
+// POST /api/smartolt/onu-types/save - Create/Update ONU type (v2)
 app.post('/api/smartolt/onu-types/save', requireAuth, (req, res) => {
-  const { id, name, pon_type, ethernet_ports, wifi_band } = req.body;
-  if (!name) {
-    return res.json({ success: false, message: 'Nombre requerido' });
-  }
+  const { key, model, vendor, ports, gpon_type, wifi, wan, vlan_default } = req.body;
+  if (!model) return res.json({ success: false, error: 'Modelo requerido' });
   try {
-    let typeId = parseInt(id) || 0;
-    if (typeId <= 0) {
-      // Get next ID
-      const existing = db.prepare('SELECT value FROM configuracion WHERE key LIKE \'onu_type_%\'').all();
-      let maxId = 0;
-      existing.forEach(function(t) {
-        try { const p = JSON.parse(t.value); if (p.id > maxId) maxId = p.id; } catch(e) {}
-      });
-      typeId = maxId + 1;
-    }
-
+    const typeKey = key || ('onu_type_' + Date.now());
     const data = JSON.stringify({
-      id: typeId,
-      name: name,
-      pon_type: pon_type || 'gpon',
-      ethernet_ports: parseInt(ethernet_ports) || 4,
-      wifi_band: wifi_band || 'none'
+      name: model,
+      model: model,
+      vendor: vendor || 'Other',
+      ports: ports || '4',
+      gpon_type: gpon_type || 'HGU',
+      wifi: wifi || '--',
+      wan: wan || 'PPPoE',
+      vlan_default: vlan_default || '100',
+      ethernet_ports: parseInt(ports) || 4,
+      pon_type: gpon_type || 'HGU',
+      wifi_band: wifi || 'none'
     });
-
-    db.prepare('INSERT OR REPLACE INTO configuracion (key, value) VALUES (?, ?)')
-      .run('onu_type_' + typeId, data);
-
+    db.prepare('INSERT OR REPLACE INTO configuracion (key, value) VALUES (?, ?)').run(typeKey, data);
     res.json({ success: true, message: 'Modelo de ONU guardado' });
   } catch (e) {
-    res.json({ success: false, message: e.message });
+    res.json({ success: false, error: e.message });
+  }
+});
+
+// POST /api/smartolt/onu-types/delete - Delete ONU type
+app.post('/api/smartolt/onu-types/delete', requireAuth, (req, res) => {
+  const { key } = req.body;
+  if (!key) return res.json({ success: false, error: 'Key requerido' });
+  try {
+    db.prepare('DELETE FROM configuracion WHERE key=?').run(key);
+    res.json({ success: true });
+  } catch (e) {
+    res.json({ success: false, error: e.message });
   }
 });
 
