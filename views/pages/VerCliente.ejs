@@ -1998,6 +1998,8 @@ function openAddOnuModal(srvId, clId, planName, authType, pppoeUser, pppoePass) 
       olts.forEach(function(o) {
         if (o.smartolt_subdomain && o.smartolt_api_key) {
           sel.innerHTML += '<option value="' + o.id + '">' + o.nombre + ' (' + o.smartolt_subdomain + '.smartolt.com)</option>';
+        } else if (o.olt_ip && o.olt_ip !== '') {
+          sel.innerHTML += '<option value="' + o.id + '">' + o.nombre + ' (' + o.olt_ip + ') [Directa]</option>';
         }
       });
       sel.innerHTML += '<option value="new">+ Agregar nueva OLT...</option>';

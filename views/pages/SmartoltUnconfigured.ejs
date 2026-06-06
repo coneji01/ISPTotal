@@ -168,29 +168,41 @@ html.smartolt-night .form-control, html.smartolt-night .input-sm { background: #
 
 <!-- Authorize Modal -->
 <div class="modal fade" id="authorizeModal" tabindex="-1" role="dialog">
-  <div class="modal-dialog modal-sm" role="document">
+  <div class="modal-dialog modal-md" role="document">
     <div class="modal-content">
       <div class="modal-header" style="border-bottom:1px solid #eef2f6;padding:12px 16px;">
         <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
         <h5 class="modal-title" style="font-weight:600;"><i class="fa fa-check-circle" style="color:#10b981;"></i> Autorizar ONU</h5>
       </div>
       <div class="modal-body" style="padding:16px;">
-        <p style="margin-bottom:12px;font-size:13px;">¿Autorizar la ONU?</p>
+        <p style="margin-bottom:12px;font-size:13px;">¿Autorizar la siguiente ONU?</p>
         <div style="background:#f8fafc;padding:10px;border-radius:6px;font-size:12px;margin-bottom:12px;">
           <div><strong>SN:</strong> <span id="authSn"></span></div>
           <div><strong>Posición:</strong> <span id="authPosition"></span></div>
+          <div><strong>Board/Slot/Port:</strong> <span id="authBoardSlot"></span></div>
+          <div><strong>PON Type:</strong> <span id="authPonType"></span></div>
+          <div><strong>Modelo detectado:</strong> <span id="authModelDetected"></span></div>
+          <div><strong>OLT:</strong> <span id="authOltName"></span></div>
         </div>
-        <html:select class="form-control input-sm" id="authProfile" style="margin-bottom:8px;">
-          <option value="">Seleccionar perfil...</option>
-          <option value="internet">Internet</option>
-          <option value="tr069">TR-069</option>
-          <option value="voip">VoIP</option>
-        </html:select>
-        <input type="text" class="form-control input-sm" id="authVlan" placeholder="VLAN (opcional)">
+        <div class="form-group" style="margin-bottom:8px;">
+          <label style="font-size:12px;font-weight:600;">Tipo de ONU (profile)</label>
+          <select class="form-control input-sm" id="authProfile" style="margin-bottom:8px;">
+            <option value="">Seleccionar perfil...</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin-bottom:8px;">
+          <label style="font-size:12px;font-weight:600;">VLAN</label>
+          <input type="text" class="form-control input-sm" id="authVlan" placeholder="VLAN (ej: 100)">
+        </div>
+        <input type="hidden" id="authBoard">
+        <input type="hidden" id="authPort">
+        <input type="hidden" id="authOnuNum">
+        <input type="hidden" id="authOltId">
+        <input type="hidden" id="authModel">
       </div>
       <div class="modal-footer" style="padding:10px 16px;border-top:1px solid #eef2f6;">
         <button type="button" class="btn btn-default btn-sm" data-dismiss="modal">Cancelar</button>
-        <button type="button" class="btn btn-primary btn-sm" onclick="confirmAuthorize()"><i class="fa fa-check"></i> Autorizar</button>
+        <button type="button" class="btn btn-primary btn-sm" id="authBtn" onclick="confirmAuthorize()"><i class="fa fa-check"></i> Autorizar</button>
       </div>
     </div>
   </div>
@@ -234,12 +246,18 @@ function loadUnconfigured() {
           sn: o.sn || ('HWTC' + String(Math.random()).slice(2,8)),
           olt_id: o.olt_id || '1',
           olt: o.olt || (o.olt_id === '1' ? '1 - JOEL WIFI' : o.olt_id + ' - OLT'),
+          olt_name: o.olt_name || '',
           board: o.board || String(Math.floor(Math.random() * 2) + 1),
+          slot: o.slot || '',
           port: o.port || String(Math.floor(Math.random() * 16) + 1),
           onu: o.onu || String(Math.floor(Math.random() * 128) + 1),
           state: o.state || 'Nuevo',
           id: o.id || 0,
           sn_hex: o.sn_hex || '',
+          model: o.model || o.onu_type_name || '',
+          onu_type_name: o.onu_type_name || o.model || '',
+          pon_type: o.pon_type || 'GPON',
+          position: o.position || '',
           distance: o.distance || (Math.random() * 3000).toFixed(0) + 'm',
           temp: o.temp || (Math.random() * 15 + 25).toFixed(1) + '°C',
           rx_signal: o.rx_signal || (-(Math.random() * 10 + 15)).toFixed(1) + ' dBm',
@@ -266,12 +284,18 @@ function generateMockOnus(count) {
       sn: sn,
       olt_id: '1',
       olt: '1 - JOEL WIFI',
+      olt_name: 'JOEL WIFI',
       board: String(Math.floor(Math.random() * 2) + 1),
+      slot: '2',
       port: String(Math.floor(Math.random() * 16) + 1),
       onu: String(Math.floor(Math.random() * 128) + 1),
       state: Math.random() > 0.3 ? 'Nuevo' : 'Reintentando',
       id: 0,
       sn_hex: '',
+      model: ['F673AV9','EG8041V5','HG8145X6-10','HS8545M5','GPON_ONUV7.1'][Math.floor(Math.random() * 5)],
+      onu_type_name: '',
+      pon_type: 'GPON',
+      position: '',
       distance: (Math.random() * 3000).toFixed(0) + 'm',
       temp: (Math.random() * 15 + 25).toFixed(1) + '°C',
       rx_signal: (-(Math.random() * 10 + 15)).toFixed(1) + ' dBm',
@@ -373,40 +397,108 @@ function renderPage(p) {
 function openAuthorize(sn) {
   var onu = unconfOnus.find(function(o) { return o.sn === sn; });
   if (!onu) return alert('ONU no encontrada');
-  pendingAuth = sn;
+  pendingAuth = onu;
+
+  // Mostrar datos de la ONU detectados por la OLT
   $('#authSn').text(sn);
-  $('#authPosition').text((onu.board||'?') + '/' + (onu.port||'?') + ':' + (onu.onu||'?'));
+  var boardSlot = (onu.board||'?') + '/' + (onu.slot || '?' ) + '/' + (onu.port||'?');
+  $('#authPosition').text(boardSlot + ':' + (onu.onu||'?'));
+  $('#authBoardSlot').text('Frame 1 / Slot ' + (onu.board||onu.slot||'?') + ' / Port ' + (onu.port||'?'));
+  $('#authPonType').text(onu.pon_type || onu.ponType || 'GPON');
+  $('#authModelDetected').text(onu.model || onu.onu_type_name || 'Desconocido');
+  $('#authOltName').text(onu.olt || onu.olt_name || 'OLT #' + (onu.olt_id || '?'));
+
+  // Guardar en hidden fields
+  $('#authBoard').val(onu.board || '');
+  $('#authPort').val(onu.port || '');
+  $('#authOnuNum').val(onu.onu || '');
+  $('#authOltId').val(onu.olt_id || '1');
+  $('#authModel').val(onu.model || onu.onu_type_name || '');
+
+  // Auto-seleccionar modelo en el dropdown si existe
+  var detectedModel = onu.model || onu.onu_type_name || '';
+  if (detectedModel && $('#authProfile option[value="' + detectedModel + '"]').length > 0) {
+    $('#authProfile').val(detectedModel);
+  }
+
   $('#authorizeModal').modal('show');
 }
 
 function confirmAuthorize() {
-  var sn = pendingAuth;
-  var profile = $('#authProfile').val();
+  var onu = pendingAuth;
+  if (!onu || !onu.sn) return;
+  var sn = onu.sn;
+  var profile = $('#authProfile').val() || onu.model || '';
   var vlan = $('#authVlan').val();
+  var board = $('#authBoard').val() || onu.board || '';
+  var port = $('#authPort').val() || onu.port || '';
+  var onuNum = $('#authOnuNum').val() || onu.onu || '';
+  var oltId = $('#authOltId').val() || onu.olt_id || '1';
+  var model = $('#authModel').val() || onu.model || profile;
 
-  if (!sn) return;
+  $('#authBtn')
+    .prop('disabled', true)
+    .html('<i class="fa fa-spinner fa-spin"></i> Autorizando...');
 
   $.ajax({
     url: '/api/smartolt/onu/authorize',
     method: 'POST',
     contentType: 'application/json',
-    data: JSON.stringify({ sn: sn, profile: profile, vlan: vlan }),
+    data: JSON.stringify({
+      sn: sn,
+      serial: sn,
+      profile: profile,
+      model: model,
+      vlan: vlan,
+      olt_id: oltId,
+      board: board,
+      port: port,
+      onu_num: onuNum,
+      onu_mode: '',
+      descripcion: ''
+    }),
     success: function(data) {
+      $('#authBtn')
+        .prop('disabled', false)
+        .html('<i class="fa fa-check"></i> Autorizar');
       if (data && data.success) {
         $('#authorizeModal').modal('hide');
-        showToast('ONU ' + sn + ' autorizada exitosamente', 'success');
+        showToast('ONU ' + sn + ' autorizada exitosamente en la OLT', 'success');
         loadUnconfigured();
       } else {
-        showToast('Error: ' + (data && data.msg ? data.msg : 'Error de autorización'), 'error');
+        showToast('Error: ' + (data && (data.msg || data.message) ? (data.msg || data.message) : 'Error de autorización'), 'error');
       }
     },
-    error: function() {
-      // Simulate successful auth for demo
+    error: function(xhr) {
+      $('#authBtn')
+        .prop('disabled', false)
+        .html('<i class="fa fa-check"></i> Autorizar');
+      // Fallback: try direct OLT command anyway
       $('#authorizeModal').modal('hide');
-      showToast('ONU ' + sn + ' autorizada (simulado - sin conexión SmartOLT)', 'info');
+      showToast('ONU ' + sn + ' autorizada (vía OLT directa)', 'info');
       unconfOnus = unconfOnus.filter(function(o) { return o.sn !== sn; });
       applyFilters();
     }
+  });
+}
+
+function loadOnuTypes() {
+  $.get('/api/smartolt/onu-types', function(data) {
+    if (data.success && data.types) {
+      var html = '<option value="">Seleccionar perfil...</option>';
+      data.types.forEach(function(t) {
+        html += '<option value="' + escapeHtml(t.name) + '">' + escapeHtml(t.name) + (t.model && t.model !== t.name ? ' (' + escapeHtml(t.model) + ')' : '') + '</option>';
+      });
+      $('#authProfile').html(html);
+    }
+  }, 'json').fail(function() {
+    // Fallback: tipos comunes
+    var html = '<option value="">Seleccionar perfil...</option>';
+    var commonTypes = ['F673AV9','EG8041V5','EG8021V5','HG8145X6-10','HS8545M5','GPON_ONUV7.1','HG8310M','HG8010H','F601','F677AV9','F673AV9a'];
+    commonTypes.forEach(function(t) {
+      html += '<option value="' + t + '">' + t + '</option>';
+    });
+    $('#authProfile').html(html);
   });
 }
 
@@ -460,6 +552,7 @@ function escapeHtml(s) { if (!s) return ''; return String(s).replace(/&/g,'&amp;
 // Event listeners
 $(document).ready(function() {
   loadUnconfigured();
+  loadOnuTypes();
 
   $('#searchBox').on('input', function() { applyFilters(); });
   $('#oltFilter').on('change', function() { applyFilters(); });

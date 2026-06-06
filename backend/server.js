@@ -6616,9 +6616,22 @@ app.get('/api/smartolt/onus', requireAuth, (req, res) => {
 // GET /api/smartolt/onus/unconfigured - List unconfigured ONUs
 app.get('/api/smartolt/onus/unconfigured', requireAuth, (req, res) => {
   try {
-    const onus = db.prepare("SELECT id, sn, COALESCE(olt_id,'1') as olt_id, COALESCE(CAST(puerto_olt AS TEXT),'0') as port, '0' as board, id as onu, COALESCE(estado,'Nuevo') as state, created_at FROM onu WHERE (estado IS NULL OR estado = 'pending' OR estado = '') ORDER BY created_at DESC").all();
+    const onus = db.prepare("SELECT id, sn, COALESCE(olt_id,'1') as olt_id, COALESCE(CAST(puerto_olt AS TEXT),'0') as port, '0' as board, id as onu, COALESCE(estado,'Nuevo') as state, created_at, model FROM onu WHERE (estado IS NULL OR estado = 'pending' OR estado = '') ORDER BY created_at DESC").all();
     // Transform to expected format
-    const transformed = onus.map(function(o) { return { sn: o.sn, olt: o.olt_id, board: o.board, port: o.port, onu: String(o.onu), state: o.state, id: o.id }; });
+    const transformed = onus.map(function(o) {
+      return {
+        sn: o.sn,
+        olt_id: o.olt_id,
+        olt: o.olt_id,
+        board: o.board,
+        port: o.port,
+        onu: String(o.onu),
+        state: o.state,
+        id: o.id,
+        model: o.model || '',
+        pon_type: 'GPON'
+      };
+    });
     res.json({ success: true, onus: transformed });
   } catch (e) {
     res.json({ success: false, message: e.message });
@@ -7443,14 +7456,16 @@ app.get('/api/olts', requireAuth, (req, res) => {
 });
 
 app.post('/api/olts/save', requireAuth, (req, res) => {
-  const { id, nombre, tipo, smartolt_subdomain, smartolt_api_key, smartolt_olt_id, vlan_default, tr069_vlan, tr069_profile } = req.body;
+  const { id, nombre, tipo, smartolt_subdomain, smartolt_api_key, smartolt_olt_id, vlan_default, tr069_vlan, tr069_profile, olt_ip, olt_port, olt_username, olt_password, socks_host, socks_port, modelo } = req.body;
   if (!nombre) return res.json({ success: false, message: 'Nombre requerido' });
   if (parseInt(id) > 0) {
-    db.prepare('UPDATE olts SET nombre=?, smartolt_subdomain=?, smartolt_api_key=?, smartolt_olt_id=?, vlan_default=?, tr069_vlan=?, tr069_profile=? WHERE id=?')
-      .run(nombre, smartolt_subdomain||null, smartolt_api_key||null, smartolt_olt_id||null, vlan_default||'', tr069_vlan||'', tr069_profile||'SmartOLT', parseInt(id));
+    db.prepare('UPDATE olts SET nombre=?, smartolt_subdomain=?, smartolt_api_key=?, smartolt_olt_id=?, vlan_default=?, tr069_vlan=?, tr069_profile=?, olt_ip=?, olt_port=?, olt_username=?, olt_password=?, socks_host=?, socks_port=?, modelo=? WHERE id=?')
+      .run(nombre, smartolt_subdomain||null, smartolt_api_key||null, smartolt_olt_id||null, vlan_default||'', tr069_vlan||'', tr069_profile||'SmartOLT',
+        olt_ip||null, parseInt(olt_port)||23, olt_username||null, olt_password||null, socks_host||null, parseInt(socks_port)||1080, modelo||null, parseInt(id));
   } else {
-    db.prepare('INSERT INTO olts (nombre, tipo, smartolt_subdomain, smartolt_api_key, smartolt_olt_id, vlan_default, tr069_vlan, tr069_profile) VALUES (?,?,?,?,?,?,?,?)')
-      .run(nombre, tipo||'smartolt', smartolt_subdomain||null, smartolt_api_key||null, smartolt_olt_id||null, vlan_default||'', tr069_vlan||'', tr069_profile||'SmartOLT');
+    db.prepare('INSERT INTO olts (nombre, tipo, smartolt_subdomain, smartolt_api_key, smartolt_olt_id, vlan_default, tr069_vlan, tr069_profile, olt_ip, olt_port, olt_username, olt_password, socks_host, socks_port, modelo) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)')
+      .run(nombre, tipo||'smartolt', smartolt_subdomain||null, smartolt_api_key||null, smartolt_olt_id||null, vlan_default||'', tr069_vlan||'', tr069_profile||'SmartOLT',
+        olt_ip||null, parseInt(olt_port)||23, olt_username||null, olt_password||null, socks_host||null, parseInt(socks_port)||1080, modelo||null);
   }
   res.json({ success: true });
 });
@@ -7458,6 +7473,48 @@ app.post('/api/olts/save', requireAuth, (req, res) => {
 app.post('/api/olts/:id/delete', requireAuth, (req, res) => {
   db.prepare('DELETE FROM olts WHERE id=?').run(req.params.id);
   res.json({ success: true });
+});
+
+// POST /api/olts/test-connection - Test direct OLT connection via SOCKS
+app.post('/api/olts/test-connection', requireAuth, async (req, res) => {
+  const { olt_ip, olt_port, socks_host, socks_port } = req.body;
+  if (!olt_ip) return res.json({ success: false, message: 'IP de OLT requerida' });
+  try {
+    const ZteOLT = require('./zte-olt');
+    const olt = new ZteOLT(
+      { host: socks_host || '172.30.105.2', port: parseInt(socks_port) || 1080 },
+      { host: olt_ip, port: parseInt(olt_port) || 23, username: 'test', password: 'test' }
+    );
+    const net = require('net');
+    const s = new net.Socket();
+    s.setTimeout(8000);
+    const result = await new Promise((resolve) => {
+      s.on('connect', () => {
+        // SOCKS4 connect
+        const ipParts = olt_ip.split('.').map(Number);
+        const buf = Buffer.alloc(9);
+        buf[0] = 4; buf[1] = 1;
+        buf.writeUInt16BE(parseInt(olt_port) || 23, 2);
+        buf[4] = ipParts[0]; buf[5] = ipParts[1]; buf[6] = ipParts[2]; buf[7] = ipParts[3]; buf[8] = 0;
+        s.write(buf);
+      });
+      s.once('data', (data) => {
+        if (data.length >= 2 && data[1] === 90) {
+          s.destroy();
+          resolve({ success: true, info: 'Conectada' });
+        } else {
+          s.destroy();
+          resolve({ success: false, message: 'SOCKS rechazó la conexión (código ' + (data[1] || 0) + ')' });
+        }
+      });
+      s.on('error', (e) => { s.destroy(); resolve({ success: false, message: e.message }); });
+      s.on('timeout', () => { s.destroy(); resolve({ success: false, message: 'Timeout' }); });
+      s.connect(parseInt(socks_port) || 1080, socks_host || '172.30.105.2');
+    });
+    res.json(result);
+  } catch(e) {
+    res.json({ success: false, message: e.message });
+  }
 });
 
 // POST /api/smartolt/onu/sync-unconfigured - Sync unconfigured ONUs from SmartOLT
@@ -7500,13 +7557,15 @@ app.post('/api/smartolt/onu/sync-unconfigured', requireAuth, async (req, res) =>
   }
 });
 
-// POST /api/smartolt/onu/authorize - Authorize ONU on SmartOLT
+// POST /api/smartolt/onu/authorize - Authorize ONU on SmartOLT or Direct OLT
 app.post('/api/smartolt/onu/authorize', requireAuth, async (req, res) => {
-  const { olt_id, serial, model, descripcion, vlan, servicio_id, cliente_nombre, board, port, onu_mode, pppoe_user, pppoe_pass, auth_type } = req.body;
-  require('fs').appendFileSync('/tmp/isptotal.log', new Date().toISOString() + ' [AUTHORIZE-ONU] REQ olt=' + olt_id + ' sn=' + serial + ' model=' + (model||'') + ' vlan=' + (vlan||'') + ' board=' + (board||'') + ' port=' + (port||'') + ' mode=' + (onu_mode||'') + '\n');
-  if (!olt_id || !serial) return res.json({ success: false, message: 'OLT y Serial requeridos' });
+  const { olt_id, serial, model, descripcion, vlan, servicio_id, cliente_nombre, board, port, onu_num, onu_mode, pppoe_user, pppoe_pass, auth_type } = req.body;
+  var sn = (serial || req.body.sn || '').trim().toUpperCase();
+  require('fs').appendFileSync('/tmp/isptotal.log', new Date().toISOString() + ' [AUTHORIZE-ONU] REQ olt=' + olt_id + ' sn=' + sn + ' model=' + (model||'') + ' vlan=' + (vlan||'') + ' board=' + (board||'') + ' port=' + (port||'') + ' onu_num=' + (onu_num||'') + ' mode=' + (onu_mode||'') + '\\n');
+  if (!olt_id || !sn) return res.json({ success: false, message: 'OLT y Serial requeridos' });
   const olt = db.prepare('SELECT * FROM olts WHERE id=? ').get(olt_id);
-  if (!olt || !olt.smartolt_subdomain || !olt.smartolt_api_key) return res.json({ success: false, message: 'OLT no configurada' });
+  if (!olt || (!olt.smartolt_subdomain && !olt.smartolt_api_key && !(olt.olt_ip && olt.olt_ip !== '')))
+    return res.json({ success: false, message: 'OLT no configurada' });
 
   // Get zone from the service
   let zonaName = '';
@@ -7515,252 +7574,358 @@ app.post('/api/smartolt/onu/authorize', requireAuth, async (req, res) => {
     if (svc && svc.zona_nombre) zonaName = svc.zona_nombre;
   }
 
+  // Get service plan info for speed profiles
+  let planProfiles = null;
+  if (servicio_id) {
+    planProfiles = db.prepare('SELECT p.perfil_olt_descarga, p.perfil_olt_subida, p.perfil_mikrotik, p.nombre as plan_name FROM servicios s LEFT JOIN planes p ON p.id=s.plan_id WHERE s.id=?').get(servicio_id);
+  }
+  var dlProfile = (planProfiles && planProfiles.perfil_olt_descarga) ? planProfiles.perfil_olt_descarga : (planProfiles ? (planProfiles.perfil_mikrotik || planProfiles.plan_name || '') : '');
+  var ulProfile = (planProfiles && planProfiles.perfil_olt_subida) ? planProfiles.perfil_olt_subida : dlProfile;
+
   try {
-    const apiUrl = 'https://' + olt.smartolt_subdomain + '.smartolt.com/api';
-    const params = new URLSearchParams();
-    params.append('olt_id', olt.smartolt_olt_id || olt_id);
-    params.append('sn', serial);
-    params.append('pon_type', 'gpon');
-    if (!model && serial) {
-      try {
-        const detResp = await fetch(apiUrl + '/onu/get_onus_details_by_sn/' + serial, { method: 'GET', headers: { 'X-Token': olt.smartolt_api_key, 'Accept': 'application/json' } });
-        const detData = await detResp.json();
-        let detList = detData.onus || detData.response || [];
-        if (detList.length > 0 && (detList[0].onu_type || detList[0].model)) {
-          model = detList[0].onu_type || detList[0].model;
-        }
-      } catch(eDet) {}
-    }
-    // Enviar onu_type si está disponible (requerido por SmartOLT)
-    if (model) params.append('onu_type', model);
-    // Siempre Routing a menos que el usuario envíe explícitamente 'bridge'
-    var onuMode = 'Routing';
-    if (req.body.onu_mode && (req.body.onu_mode.toLowerCase() === 'bridging' || req.body.onu_mode.toLowerCase() === 'bridge')) onuMode = 'Bridging';
-    params.append('onu_mode', onuMode);
-    params.append('zone', zonaName || 'default');
-    params.append('name', (cliente_nombre || descripcion || serial).replace(/[^a-zA-Z0-9 @$&()\-`.+,/_\:;]/g, '').trim().substring(0, 64) || serial);
-    if (vlan) params.append('vlan', vlan);
-    else if (olt.vlan_default) params.append('vlan', olt.vlan_default);
-    if (board) params.append('board', board);
-    if (port) params.append('port', port);
-
-    // If ONU was already pre-authorized, delete it first
-    try {
-      const searchResp = await fetch(apiUrl + '/onu/get_onus_details_by_sn/' + serial, {
-        method: 'GET', headers: { 'X-Token': olt.smartolt_api_key, 'Accept': 'application/json' }
-      });
-      const searchData = await searchResp.json();
-      let existingOnuId = null;
-      var existingOnuList = searchData.onus || searchData.response || [];
-      if (Array.isArray(existingOnuList) && existingOnuList.length > 0) {
-        existingOnuId = existingOnuList[0].id || existingOnuList[0].onu_id || existingOnuList[0].external_id || existingOnuList[0].unique_external_id || null;
+    // ========== SMARTOLT CLOUD PATH ==========
+    if (olt.smartolt_subdomain && olt.smartolt_api_key) {
+      const apiUrl = 'https://' + olt.smartolt_subdomain + '.smartolt.com/api';
+      const params = new URLSearchParams();
+      params.append('olt_id', olt.smartolt_olt_id || olt_id);
+      params.append('sn', sn);
+      params.append('pon_type', 'gpon');
+      if (!model && sn) {
+        try {
+          const detResp = await fetch(apiUrl + '/onu/get_onus_details_by_sn/' + sn, { method: 'GET', headers: { 'X-Token': olt.smartolt_api_key, 'Accept': 'application/json' } });
+          const detData = await detResp.json();
+          let detList = detData.onus || detData.response || [];
+          if (detList.length > 0 && (detList[0].onu_type || detList[0].model)) {
+            model = detList[0].onu_type || detList[0].model;
+          }
+        } catch(eDet) {}
       }
-      if (existingOnuId) {
-        await fetch(apiUrl + '/onu/delete/' + existingOnuId, {
-          method: 'POST', headers: { 'X-Token': olt.smartolt_api_key }
-        });
-      }
-    } catch(e) {}
+      if (model) params.append('onu_type', model);
+      var onuMode = 'Routing';
+      if (req.body.onu_mode && (req.body.onu_mode.toLowerCase() === 'bridging' || req.body.onu_mode.toLowerCase() === 'bridge')) onuMode = 'Bridging';
+      params.append('onu_mode', onuMode);
+      params.append('zone', zonaName || 'default');
+      params.append('name', (cliente_nombre || descripcion || sn).replace(/[^a-zA-Z0-9 @$&()\\-`.+,/_\\:;]/g, '').trim().substring(0, 64) || sn);
+      if (vlan) params.append('vlan', vlan);
+      else if (olt.vlan_default) params.append('vlan', olt.vlan_default);
+      if (board) params.append('board', board);
+      if (port) params.append('port', port);
 
-    console.log('[CAMBIO-ONU] Params enviados a SmartOLT:', params.toString());
-    console.log('[CAMBIO-ONU-2] Params:', params.toString());
-    const response = await fetch(apiUrl + '/onu/authorize_onu', {
-      method: 'POST',
-      headers: { 'X-Token': olt.smartolt_api_key, 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: params
-    });
-    const ct = response.headers.get('content-type') || '';
-    let data;
-    if (ct.indexOf('json') !== -1) {
-      data = await response.json();
-    } else {
-      const text = await response.text();
-      return res.json({ success: false, message: text.substring(0, 300) });
-    }
-    require('fs').appendFileSync('/tmp/isptotal.log', new Date().toISOString() + ' [CAMBIO-ONU] Auth response: ' + JSON.stringify(data) + '\n');
-    console.log('[CAMBIO-ONU] Auth response:', JSON.stringify(data));
-    if (data.status === 'success' || data.status === true || data.response_code === 'success') {
-      // Wait 15 seconds for ONU to register on OLT before sending config
-
-
-      // Get ONU external ID for further configuration
-      let extId = '';
+      // If ONU was already pre-authorized, delete it first
       try {
-        const extResp = await fetch(apiUrl + '/onu/get_onus_details_by_sn/' + serial, {
+        const searchResp = await fetch(apiUrl + '/onu/get_onus_details_by_sn/' + sn, {
           method: 'GET', headers: { 'X-Token': olt.smartolt_api_key, 'Accept': 'application/json' }
         });
-        const extData = await extResp.json();
-        let onuList = extData.onus || extData.response || [];
-        if (onuList.length > 0) {
-          extId = onuList[0].unique_external_id || onuList[0].id || onuList[0].onu_id || '';
+        const searchData = await searchResp.json();
+        let existingOnuId = null;
+        var existingOnuList = searchData.onus || searchData.response || [];
+        if (Array.isArray(existingOnuList) && existingOnuList.length > 0) {
+          existingOnuId = existingOnuList[0].id || existingOnuList[0].onu_id || existingOnuList[0].external_id || existingOnuList[0].unique_external_id || null;
+        }
+        if (existingOnuId) {
+          await fetch(apiUrl + '/onu/delete/' + existingOnuId, {
+            method: 'POST', headers: { 'X-Token': olt.smartolt_api_key }
+          });
         }
       } catch(e) {}
 
-      // Get service plan info for speed profiles (down/up)
-      let planProfiles = null;
-      if (servicio_id) {
-        planProfiles = db.prepare('SELECT p.perfil_olt_descarga, p.perfil_olt_subida, p.perfil_mikrotik, p.nombre as plan_name FROM servicios s LEFT JOIN planes p ON p.id=s.plan_id WHERE s.id=?').get(servicio_id);
+      console.log('[SMARTOLT-AUTHORIZE] Params:', params.toString());
+      const response = await fetch(apiUrl + '/onu/authorize_onu', {
+        method: 'POST',
+        headers: { 'X-Token': olt.smartolt_api_key, 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: params
+      });
+      const ct = response.headers.get('content-type') || '';
+      let data;
+      if (ct.indexOf('json') !== -1) {
+        data = await response.json();
+      } else {
+        const text = await response.text();
+        return res.json({ success: false, message: text.substring(0, 300) });
       }
-      var dlProfile = (planProfiles && planProfiles.perfil_olt_descarga) ? planProfiles.perfil_olt_descarga : (planProfiles ? (planProfiles.perfil_mikrotik || planProfiles.plan_name || '') : '');
-      var ulProfile = (planProfiles && planProfiles.perfil_olt_subida) ? planProfiles.perfil_olt_subida : dlProfile;
-
-      if (extId) {
-        var logVlan = vlan || olt.vlan_default || '';
-        var logTr069Vlan = olt.tr069_vlan || logVlan;
-        require('fs').appendFileSync('/tmp/isptotal.log', '[AUTHORIZE-ONU] extId=' + extId + ' speed down=' + dlProfile + ' up=' + ulProfile + ' vlan=' + logVlan + ' tr069Vlan=' + logTr069Vlan + ' tr069=SmartOLT mgmt=DHCP\n');
-        // Set speed profiles if available
-        if (dlProfile) {
-          try {
-            const spParams = new URLSearchParams();
-            spParams.append('upload_speed_profile_name', ulProfile);
-            spParams.append('download_speed_profile_name', dlProfile);
-            const spResp = await fetch(apiUrl + '/onu/update_onu_speed_profiles/' + extId, {
-              method: 'POST',
-              headers: { 'X-Token': olt.smartolt_api_key, 'Content-Type': 'application/x-www-form-urlencoded' },
-              body: spParams
-            });
-            const spData = await spResp.json();
-            require('fs').appendFileSync('/tmp/isptotal.log', '[AUTHORIZE-ONU] SpeedProfile=' + JSON.stringify(spData) + '\n');
-          } catch(e) { console.log('[AUTHORIZE-ONU] Speed profile error:', e.message); }
-        }
-
-                console.log('[AUTHORIZE-ONU] Enabling TR069 with profile SmartOLT...');
-        // Set Mgmt IP mode to DHCP with VLAN
+      require('fs').appendFileSync('/tmp/isptotal.log', new Date().toISOString() + ' [SMARTOLT-AUTHORIZE] Auth response: ' + JSON.stringify(data) + '\\n');
+      console.log('[SMARTOLT-AUTHORIZE] Auth response:', JSON.stringify(data));
+      if (data.status === 'success' || data.status === true || data.response_code === 'success') {
+        // Get ONU external ID for further configuration
+        let extId = '';
         try {
-          const mgmtParams = new URLSearchParams();
-          // Use TR069 VLAN for Mgmt IP, fallback to service vlan or default
-          const mgmtVlan = olt.tr069_vlan || vlan || olt.vlan_default || '';
-          if (mgmtVlan) mgmtParams.append('vlan', mgmtVlan);
-          const mgmtResp = await fetch(apiUrl + '/onu/set_onu_mgmt_ip_dhcp/' + extId, {
-            method: 'POST',
-            headers: { 'X-Token': olt.smartolt_api_key, 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: mgmtParams
+          const extResp = await fetch(apiUrl + '/onu/get_onus_details_by_sn/' + sn, {
+            method: 'GET', headers: { 'X-Token': olt.smartolt_api_key, 'Accept': 'application/json' }
           });
-          const mgmtData = await mgmtResp.json();
-          require('fs').appendFileSync('/tmp/isptotal.log', '[AUTHORIZE-ONU] MgmtIP=' + JSON.stringify(mgmtData) + '\n');
-        } catch(e) { console.log('[AUTHORIZE-ONU] Mgmt IP error:', e.message); }
-      }
-
-
-        // Enable TR069 with SmartOLT profile
-        try {
-          const tr069Params = new URLSearchParams();
-          tr069Params.append('tr069_profile', olt.tr069_profile || 'SmartOLT');
-          const trResp = await fetch(apiUrl + '/onu/enable_tr069/' + extId, {
-            method: 'POST',
-            headers: { 'X-Token': olt.smartolt_api_key, 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: tr069Params
-          });
-          const trData = await trResp.json();
-          require('fs').appendFileSync('/tmp/isptotal.log', '[AUTHORIZE-ONU] TR069=' + JSON.stringify(trData) + '\n');
-        } catch(e) { console.log('[AUTHORIZE-ONU] TR069 error:', e.message); }
-
-        console.log('[AUTHORIZE-ONU] Setting Mgmt IP to DHCP with vlan=' + (vlan || olt.vlan_default || ''));
-
-        // Read service WAN data from DB (like TR069 does)
-        if (servicio_id) {
-          var wanSvc = db.prepare('SELECT pppoe_user, pppoe_pass, auth_type, wifi_ssid, wifi_pass FROM servicios WHERE id=?').get(servicio_id);
-          if (wanSvc) {
-            if (wanSvc.auth_type) req.body.auth_type = wanSvc.auth_type;
-            if (wanSvc.pppoe_user) req.body.pppoe_user = wanSvc.pppoe_user;
-            if (wanSvc.pppoe_pass) req.body.pppoe_pass = wanSvc.pppoe_pass;
+          const extData = await extResp.json();
+          let onuList = extData.onus || extData.response || [];
+          if (onuList.length > 0) {
+            extId = onuList[0].unique_external_id || onuList[0].id || onuList[0].onu_id || '';
           }
-        }
-        // Set WAN mode based on auth_type
-        try {
-          var wanType = req.body.auth_type || 'dhcp';
-          require('fs').appendFileSync('/tmp/isptotal.log', '[AUTHORIZE-ONU] Setting WAN mode=' + wanType + ' user=' + (req.body.pppoe_user || 'Joel') + '\\n');
-          if (wanType === 'pppoe') {
-            var ppParams = new URLSearchParams();
-            ppParams.append('username', req.body.pppoe_user || 'Joel');
-            ppParams.append('password', req.body.pppoe_pass || '1320');
-            ppParams.append('configuration_method', 'TR069');
-            ppParams.append('ip_protocol', 'ipv4ipv6');
-            var ppResp = await fetch(apiUrl + '/onu/set_onu_wan_mode_pppoe/' + extId, {
-              method: 'POST', headers: { 'X-Token': olt.smartolt_api_key, 'Content-Type': 'application/x-www-form-urlencoded' }, body: ppParams
-            });
-            var ppData = await ppResp.json();
-            require('fs').appendFileSync('/tmp/isptotal.log', '[AUTHORIZE-ONU] WAN PPPoE=' + JSON.stringify(ppData) + '\\n');
-          } else {
-            var dhcpWanParams = new URLSearchParams();
-            dhcpWanParams.append('configuration_method', 'OMCI');
-            dhcpWanParams.append('ip_protocol', 'ipv4ipv6');
-            var dhcpWanResp = await fetch(apiUrl + '/onu/set_onu_wan_mode_dhcp/' + extId, {
-              method: 'POST', headers: { 'X-Token': olt.smartolt_api_key, 'Content-Type': 'application/x-www-form-urlencoded' }, body: dhcpWanParams
-            });
-            var dhcpWanData = await dhcpWanResp.json();
-            require('fs').appendFileSync('/tmp/isptotal.log', '[AUTHORIZE-ONU] WAN DHCP=' + JSON.stringify(dhcpWanData) + '\\n');
-          }
-        } catch(e) { require('fs').appendFileSync('/tmp/isptotal.log', '[AUTHORIZE-ONU] WAN error:' + e.message + '\\n'); }
+        } catch(e) {}
 
-        // Set WiFi if service has SSID configured
-        if (extId && servicio_id) {
+        if (extId) {
+          // Set speed profiles
+          if (dlProfile) {
+            try {
+              const spParams = new URLSearchParams();
+              spParams.append('upload_speed_profile_name', ulProfile);
+              spParams.append('download_speed_profile_name', dlProfile);
+              await fetch(apiUrl + '/onu/update_onu_speed_profiles/' + extId, {
+                method: 'POST', headers: { 'X-Token': olt.smartolt_api_key, 'Content-Type': 'application/x-www-form-urlencoded' }, body: spParams
+              });
+            } catch(e) { console.log('[AUTHORIZE-ONU] Speed profile error:', e.message); }
+          }
+
+          // Mgmt IP DHCP
           try {
-            var wifiSvc = db.prepare('SELECT wifi_ssid, wifi_pass FROM servicios WHERE id=?').get(servicio_id);
-            if (wifiSvc && wifiSvc.wifi_ssid) {
-              var wifiParams = new URLSearchParams();
-              wifiParams.append('wifi_port', 'wifi_0/1');
-              wifiParams.append('ssid', wifiSvc.wifi_ssid);
-              wifiParams.append('password', wifiSvc.wifi_pass || '');
-              wifiParams.append('authentication_mode', 'WPA2');
-              await fetch(apiUrl + '/onu/set_wifi_port_lan/' + extId, {
-                method: 'POST', headers: { 'X-Token': olt.smartolt_api_key, 'Content-Type': 'application/x-www-form-urlencoded' }, body: wifiParams
+            const mgmtVlan = olt.tr069_vlan || vlan || olt.vlan_default || '';
+            if (mgmtVlan) {
+              const mgmtParams = new URLSearchParams();
+              mgmtParams.append('vlan', mgmtVlan);
+              await fetch(apiUrl + '/onu/set_onu_mgmt_ip_dhcp/' + extId, {
+                method: 'POST', headers: { 'X-Token': olt.smartolt_api_key, 'Content-Type': 'application/x-www-form-urlencoded' }, body: mgmtParams
               });
             }
-          } catch(eW) { console.log('[AUTHORIZE-ONU] WiFi error:', eW.message); }
+          } catch(e) { console.log('[AUTHORIZE-ONU] Mgmt IP error:', e.message); }
+
+          // Enable TR069
+          try {
+            const tr069Params = new URLSearchParams();
+            tr069Params.append('tr069_profile', olt.tr069_profile || 'SmartOLT');
+            await fetch(apiUrl + '/onu/enable_tr069/' + extId, {
+              method: 'POST', headers: { 'X-Token': olt.smartolt_api_key, 'Content-Type': 'application/x-www-form-urlencoded' }, body: tr069Params
+            });
+          } catch(e) { console.log('[AUTHORIZE-ONU] TR069 error:', e.message); }
+
+          // Set WAN mode
+          try {
+            if (servicio_id) {
+              var wanSvc = db.prepare('SELECT pppoe_user, pppoe_pass, auth_type FROM servicios WHERE id=?').get(servicio_id);
+              if (wanSvc) {
+                if (wanSvc.auth_type) req.body.auth_type = wanSvc.auth_type;
+                if (wanSvc.pppoe_user) req.body.pppoe_user = wanSvc.pppoe_user;
+                if (wanSvc.pppoe_pass) req.body.pppoe_pass = wanSvc.pppoe_pass;
+              }
+            }
+            var wanType = req.body.auth_type || 'dhcp';
+            if (wanType === 'pppoe') {
+              var ppParams = new URLSearchParams();
+              ppParams.append('username', req.body.pppoe_user || 'Joel');
+              ppParams.append('password', req.body.pppoe_pass || '1320');
+              ppParams.append('configuration_method', 'TR069');
+              ppParams.append('ip_protocol', 'ipv4ipv6');
+              await fetch(apiUrl + '/onu/set_onu_wan_mode_pppoe/' + extId, {
+                method: 'POST', headers: { 'X-Token': olt.smartolt_api_key, 'Content-Type': 'application/x-www-form-urlencoded' }, body: ppParams
+              });
+            } else {
+              var dhcpWanParams = new URLSearchParams();
+              dhcpWanParams.append('configuration_method', 'OMCI');
+              dhcpWanParams.append('ip_protocol', 'ipv4ipv6');
+              await fetch(apiUrl + '/onu/set_onu_wan_mode_dhcp/' + extId, {
+                method: 'POST', headers: { 'X-Token': olt.smartolt_api_key, 'Content-Type': 'application/x-www-form-urlencoded' }, body: dhcpWanParams
+              });
+            }
+          } catch(e) { console.log('[AUTHORIZE-ONU] WAN error:', e.message); }
+
+          // WiFi
+          if (servicio_id) {
+            try {
+              var wifiSvc = db.prepare('SELECT wifi_ssid, wifi_pass FROM servicios WHERE id=?').get(servicio_id);
+              if (wifiSvc && wifiSvc.wifi_ssid) {
+                var wifiParams = new URLSearchParams();
+                wifiParams.append('wifi_port', 'wifi_0/1');
+                wifiParams.append('ssid', wifiSvc.wifi_ssid);
+                wifiParams.append('password', wifiSvc.wifi_pass || '');
+                wifiParams.append('authentication_mode', 'WPA2');
+                await fetch(apiUrl + '/onu/set_wifi_port_lan/' + extId, {
+                  method: 'POST', headers: { 'X-Token': olt.smartolt_api_key, 'Content-Type': 'application/x-www-form-urlencoded' }, body: wifiParams
+                });
+              }
+            } catch(eW) { console.log('[AUTHORIZE-ONU] WiFi error:', eW.message); }
+          }
+
+          // Save config
+          try {
+            await fetch(apiUrl + '/system/save_config', { method: 'POST', headers: { 'X-Token': olt.smartolt_api_key } });
+          } catch(e) { console.log('[AUTHORIZE-ONU] save_config error:', e.message); }
         }
 
-        // Save config to OLT
-      try {
-        console.log('[AUTHORIZE-ONU] Saving config to OLT...');
-        const saveResp = await fetch(apiUrl + '/system/save_config', { method: 'POST', headers: { 'X-Token': olt.smartolt_api_key } });
-        const saveData = await saveResp.json();
-        require('fs').appendFileSync('/tmp/isptotal.log', '[AUTHORIZE-ONU] SaveConfig=' + JSON.stringify(saveData) + '\n');
-      } catch(e) { console.log('[AUTHORIZE-ONU] save_config error:', e.message); }
+        // Link ONU to service
+        if (servicio_id && sn) {
+          try {
+            var clId = null;
+            if (servicio_id) {
+              var svc2 = db.prepare('SELECT cliente_id FROM servicios WHERE id=?').get(servicio_id);
+              if (svc2) clId = svc2.cliente_id;
+            }
+            var valCliente = clId ? db.prepare('SELECT id FROM clientes WHERE id=?').get(clId) : null;
+            var valServicio = db.prepare('SELECT id FROM servicios WHERE id=?').get(servicio_id);
+            var finalClId = valCliente ? clId : null;
+            var finalSvcId = valServicio ? servicio_id : null;
+            db.prepare("INSERT INTO onu (sn, nombre, cliente_id, olt_id, servicio_id, estado) VALUES (?,?,?,?,?,'activo') ON CONFLICT(sn) DO UPDATE SET cliente_id=COALESCE(excluded.cliente_id,onu.cliente_id), servicio_id=COALESCE(excluded.servicio_id,onu.servicio_id), olt_id=COALESCE(excluded.olt_id,onu.olt_id)")
+              .run(sn, cliente_nombre || descripcion || sn, finalClId, olt_id, finalSvcId);
+          } catch(e2) { console.log('[AUTHORIZE-ONU] Error vinculando ONU:', e2.message); }
+        }
 
-      // Link ONU to service
-      if (servicio_id && serial) {
-        try {
-          var clId = null;
-          if (servicio_id) {
-            var svc2 = db.prepare('SELECT cliente_id FROM servicios WHERE id=?').get(servicio_id);
-            if (svc2) clId = svc2.cliente_id;
-          }
-          // Validar que cliente_id y servicio_id existan antes de insertar
-          var valCliente = clId ? db.prepare('SELECT id FROM clientes WHERE id=?').get(clId) : null;
-          var valServicio = db.prepare('SELECT id FROM servicios WHERE id=?').get(servicio_id);
-          var finalClId = valCliente ? clId : null;
-          var finalSvcId = valServicio ? servicio_id : null;
-          db.prepare('INSERT INTO onu (sn, nombre, cliente_id, olt_id, servicio_id, estado) VALUES (?,?,?,?,?,\'activo\') ON CONFLICT(sn) DO UPDATE SET cliente_id=COALESCE(excluded.cliente_id,onu.cliente_id), servicio_id=COALESCE(excluded.servicio_id,onu.servicio_id), olt_id=COALESCE(excluded.olt_id,onu.olt_id)')
-            .run(serial, cliente_nombre || descripcion || serial, finalClId, olt_id, finalSvcId);
-          require('fs').appendFileSync('/tmp/isptotal.log', '[AUTHORIZE-ONU] ONU vinculada a servicio #' + servicio_id + ' (cliente=' + (finalClId||'?') + ')\n');
-        } catch(e2) { require('fs').appendFileSync('/tmp/isptotal.log', '[AUTHORIZE-ONU] Error vinculando ONU: ' + e2.message + '\n'); }
+        return res.json({ success: true, message: 'ONU autorizada y configurada exitosamente' });
       }
-
-      return res.json({ success: true, message: 'ONU autorizada y configurada exitosamente' });
+      require('fs').appendFileSync('/tmp/isptotal.log', new Date().toISOString() + ' [SMARTOLT-AUTHORIZE] Auth FAILED: ' + JSON.stringify(data) + '\\n');
+      return res.json({ success: false, message: data.msg || data.message || data.error || 'Error al autorizar ONU' });
     }
-    require('fs').appendFileSync('/tmp/isptotal.log', new Date().toISOString() + ' [CAMBIO-ONU] Auth FAILED: ' + JSON.stringify(data) + '\n');
-    return res.json({ success: false, message: data.msg || data.message || data.error || 'Error al autorizar ONU' });
+
+    // ========== DIRECT OLT (TELNET) PATH ==========
+    if (olt.olt_ip && olt.olt_ip !== '') {
+      const ZteOLT = require('./zte-olt');
+      const zte = new ZteOLT(
+        { host: olt.socks_host || '172.30.105.2', port: parseInt(olt.socks_port) || 1080 },
+        { host: olt.olt_ip, username: olt.olt_username || 'zte', password: olt.olt_password || 'zte' }
+      );
+
+      await zte.connect();
+
+      try {
+        var frame = 1;
+        var slot = 2;
+        var portNum = parseInt(port) || 1;
+        if (!port || port.indexOf('/') >= 0) {
+          // Parse "board/port:onu" or "board/port"
+          var parts = (port || board + '/' + port).split('/');
+          frame = parseInt(parts[0]) || 1;
+          slot = parseInt(parts[1]) || 2;
+          portNum = parseInt(parts[2]) || 1;
+        }
+
+        // 1. Get ONU type profile from DB config (model from scan or request)
+        var onuType = model || 'F673AV9';
+        // Try to find matching ONU type in configuracion
+        var onuTypeConfig = db.prepare("SELECT value FROM configuracion WHERE key LIKE 'onu_type_%'").all();
+        var foundProfile = null;
+        onuTypeConfig.forEach(function(row) {
+          try {
+            var t = JSON.parse(row.value);
+            if (t.name === onuType || t.model === onuType) foundProfile = t.name;
+          } catch(e) {}
+        });
+        var profileName = foundProfile || onuType;
+
+        // 2. Authorize ONU in config terminal
+        var authResult = await zte.authorizeOnu(frame, slot, portNum, sn, profileName, 1);
+        require('fs').appendFileSync('/tmp/isptotal.log', new Date().toISOString() + ' [DIRECT-AUTHORIZE] Auth result: ' + JSON.stringify(authResult) + '\\n');
+
+        if (authResult.success || (!authResult.output || authResult.output.indexOf('already') >= 0)) {
+          // 3. Set description/name
+          var onuId = 'gpon-onu_' + frame + '/' + slot + '/' + portNum + ':' + (onu_num || portNum);
+          await zte.exec('config terminal', 2000);
+          await zte.exec('interface ' + onuId, 2000);
+          var clientName = (cliente_nombre || descripcion || sn).replace(/[^a-zA-Z0-9 @$&()\\-`.+,/_\\:;]/g, '').trim().substring(0, 64);
+          if (clientName) {
+            await zte.exec('name ' + clientName, 2000);
+          }
+          await zte.exec('exit', 1000);
+
+          // 4. Set VLAN via service-port
+          var finalVlan = vlan || olt.vlan_default || '';
+          if (finalVlan) {
+            try {
+              // Enter config terminal if not already
+              await zte.exec('config terminal', 2000);
+              var vlanCmd = 'service-port vlan ' + finalVlan + ' gpon-onu ' + onuId + ' gemport 1';
+              await zte.exec(vlanCmd, 5000);
+              await zte.exec('exit', 1000);
+            } catch(eVlan) { console.log('[DIRECT-AUTHORIZE] VLAN error:', eVlan.message); }
+          }
+
+          // 5. Exit to enable mode
+          try { await zte.exec('exit', 1000); } catch(e) {}
+
+          // 6. Save configuration
+          try {
+            await zte.saveConfig();
+          } catch(e) { console.log('[DIRECT-AUTHORIZE] Save error:', e.message); }
+
+          // 7. Link ONU to service in local DB
+          if (servicio_id && sn) {
+            try {
+              var clId = null;
+              var svc2 = db.prepare('SELECT cliente_id FROM servicios WHERE id=?').get(servicio_id);
+              if (svc2) clId = svc2.cliente_id;
+              var valCliente = clId ? db.prepare('SELECT id FROM clientes WHERE id=?').get(clId) : null;
+              var valServicio = db.prepare('SELECT id FROM servicios WHERE id=?').get(servicio_id);
+              var finalClId = valCliente ? clId : null;
+              var finalSvcId = valServicio ? servicio_id : null;
+              db.prepare("INSERT INTO onu (sn, nombre, cliente_id, olt_id, servicio_id, estado, puerto_olt) VALUES (?,?,?,?,?,'activo',?) ON CONFLICT(sn) DO UPDATE SET cliente_id=COALESCE(excluded.cliente_id,onu.cliente_id), servicio_id=COALESCE(excluded.servicio_id,onu.servicio_id), olt_id=COALESCE(excluded.olt_id,onu.olt_id), puerto_olt=COALESCE(excluded.puerto_olt,onu.puerto_olt)")
+                .run(sn, clientName || sn, finalClId, olt_id, finalSvcId, frame + '/' + slot + '/' + portNum);
+            } catch(e2) { console.log('[DIRECT-AUTHORIZE] Error vinculando ONU:', e2.message); }
+          }
+
+          zte.disconnect();
+          return res.json({ success: true, message: 'ONU autorizada y configurada en OLT ' + olt.nombre + ' (' + frame + '/' + slot + '/' + portNum + ')' });
+        } else {
+          zte.disconnect();
+          return res.json({ success: false, message: authResult.output || 'Error al autorizar ONU en OLT' });
+        }
+      } catch(e) {
+        try { zte.disconnect(); } catch(ed) {}
+        require('fs').appendFileSync('/tmp/isptotal.log', new Date().toISOString() + ' [DIRECT-AUTHORIZE] Error: ' + e.message + '\\n');
+        return res.json({ success: false, message: 'Error en OLT: ' + e.message });
+      }
+    }
+
+    return res.json({ success: false, message: 'OLT sin configuración válida' });
   } catch(e) {
     return res.json({ success: false, message: e.message });
   }
 });
 
-// POST /api/smartolt/onu/scan - Scan unconfigured ONUs from specific SmartOLT (via MikroTik)
+// POST /api/smartolt/onu/scan - Scan unconfigured ONUs
 app.post('/api/smartolt/onu/scan', requireAuth, async (req, res) => {
   const { olt_id } = req.body;
   const olt = db.prepare('SELECT * FROM olts WHERE id=?').get(olt_id);
-  if (!olt || !olt.smartolt_subdomain || !olt.smartolt_api_key) {
-    return res.json({ success: false, message: 'OLT no configurada para SmartOLT' });
+  if (!olt) return res.json({ success: false, message: 'OLT no encontrada' });
+
+  // SmartOLT cloud scan
+  if (olt.smartolt_subdomain && olt.smartolt_api_key) {
+    try {
+      var data = await smartoltFetchOlt(olt, '/onu/unconfigured_onus', 'GET');
+      let onus = [];
+      if (data.response && Array.isArray(data.response)) onus = data.response;
+      else if (data.data && Array.isArray(data.data)) onus = data.data;
+      else if (Array.isArray(data)) onus = data;
+      return res.json({ success: true, onus: onus, olt_name: olt.nombre });
+    } catch (e) { return res.json({ success: false, message: e.message }); }
   }
-  try {
-    var data = await smartoltFetchOlt(olt, '/onu/unconfigured_onus', 'GET');
-    let onus = [];
-    if (data.response && Array.isArray(data.response)) onus = data.response;
-    else if (data.data && Array.isArray(data.data)) onus = data.data;
-    else if (Array.isArray(data)) onus = data;
-    return res.json({ success: true, onus: onus, olt_name: olt.nombre });
-  } catch (e) { return res.json({ success: false, message: e.message }); }
+
+  // Direct OLT scan via telnet/SOCKS
+  if (olt.olt_ip && olt.olt_ip !== '') {
+    try {
+      const ZteOLT = require('./zte-olt');
+      const zte = new ZteOLT(
+        { host: olt.socks_host || '172.30.105.2', port: parseInt(olt.socks_port) || 1080 },
+        { host: olt.olt_ip, username: olt.olt_username || 'zte', password: olt.olt_password || 'zte' }
+      );
+      await zte.connect();
+      const onus = await zte.getUnconfiguredOnus();
+      zte.disconnect && zte.disconnect();
+      const mapped = onus.map(function(o) {
+        return {
+          serial_number: o.sn || o.serial || '',
+          sn: o.sn || o.serial || '',
+          name: o.name || '',
+          port: o.port || o.puerto || '',
+          pon_port: o.port || o.puerto || '',
+          board: o.board || '',
+          slot: o.slot || '',
+          onu: o.onu || '',
+          onu_type_name: o.model || '',
+          model: o.model || '',
+          pon_type: o.pon_type || 'GPON',
+          position: o.position || '',
+          distance: o.distance || '',
+          temp: o.temp || '',
+          rx_signal: o.rx_signal || ''
+        };
+      });
+      return res.json({ success: true, onus: mapped, olt_name: olt.nombre });
+    } catch (e) { return res.json({ success: false, message: 'Error escaneando OLT: ' + e.message }); }
+  }
+
+  return res.json({ success: false, message: 'OLT sin configuración válida' });
 });
 
 // POST /api/smartolt/onu/detalle - Get ONU details from SmartOLT
@@ -7996,7 +8161,8 @@ app.post('/api/smartolt/onu/wifi', requireAuth, async (req, res) => {
   if (!wifi_ssid) return res.json({ success: false, message: 'SSID requerido' });
   if (!wifi_pass) return res.json({ success: false, message: 'Contraseña requerida' });
   const olt = db.prepare('SELECT * FROM olts WHERE id=? ').get(olt_id);
-  if (!olt || !olt.smartolt_subdomain || !olt.smartolt_api_key) return res.json({ success: false, message: 'OLT no configurada' });
+  if (!olt || (!olt.smartolt_subdomain && !olt.smartolt_api_key && !(olt.olt_ip && olt.olt_ip !== '')))
+    return res.json({ success: false, message: 'OLT no configurada' });
   try {
     const apiUrl = 'https://' + olt.smartolt_subdomain + '.smartolt.com/api';
     const headers = { 'X-Token': olt.smartolt_api_key, 'Accept': 'application/json' };

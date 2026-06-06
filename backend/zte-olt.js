@@ -419,11 +419,37 @@ class ZteOLT {
     var results = [];
     output.split('\n').forEach(function(line) {
       if (line.toLowerCase().includes('invalid') || line.toLowerCase().includes('error')) return;
-      // Formato: gpon-onu_1/3/3:1         HWTCDF3AD5A6        unknown
-      var m = line.match(/gpon-onu_\S+\s+(\S{10,20})\s+/);
+      if (line.includes('OnuIndex') || line.includes('----')) return;
+      if (line.includes('ZXAN') || line.trim() === '') return;
+      // Formato ZTE C300:
+      // gpon-onu_1/2/4:1         HWTC0555D49E        unknown
+      var m = line.match(/gpon-onu_(\d+)\/(\d+)\/(\d+):(\d+)\s+(\S{10,20})\s+(\S+)/);
       if (m) {
-        var sn = m[1].trim();
-        if (sn.length >= 10 && /^[A-Z0-9]+$/.test(sn)) results.push({ sn: sn });
+        var sn = m[5].trim();
+        if (sn.length >= 10 && /^[A-Z0-9]+$/.test(sn)) {
+          var state = m[6].trim();
+          results.push({
+            sn: sn,
+            board: m[1],
+            slot: m[2],
+            port: m[3],
+            onu: m[4],
+            model: '',
+            onu_type_name: '',
+            state: state === 'unknown' ? 'Nuevo' : state,
+            position: m[1] + '/' + m[2] + '/' + m[3] + ':' + m[4],
+            pon_type: 'GPON'
+          });
+        }
+      } else {
+        // Fallback: match partial (just SN)
+        var m2 = line.match(/gpon-onu_\S+\s+(\S{10,20})\s+/);
+        if (m2) {
+          var sn2 = m2[1].trim();
+          if (sn2.length >= 10 && /^[A-Z0-9]+$/.test(sn2)) {
+            results.push({ sn: sn2, model: '', onu_type_name: '' });
+          }
+        }
       }
     });
     return results;
