@@ -1,0 +1,50 @@
+Exec commands:
+  auto-update      Auto-update
+  bfd-stat         Clear bfd statistics
+  cfm              Connectivity fault management
+  check            Check the status of the device
+  clear            Reset functions
+  clock            Manage the system clock
+  configure        Enter configuration mode
+  debug            Debugging functions
+  diagnose         Enter diagnosis mode
+  disable          Turn off privileged commands
+  enable           Turn on privileged commands
+  end              Exit to privilege mode
+  exit             Exit from the EXEC
+  file             File operation
+  kick-off         Kick off DHCP users
+  license          License operation
+  login            Login as a particular user
+  logout           Exit from the EXEC
+  manual-backup    Start  manual backup
+  no               Negate a command or set its defaults
+  package          Package operation
+  patch            Patch load or unload to version
+  ping             Send echo messages
+  ping6            Send IPv6 echo messages
+  qry              Qry MP is ready to change-over
+  quit             Quit from the EXEC
+  reboot           Reboot a shelf
+  release          Release a resource
+  remote-unit      RU manual action
+  renew            Renew a resource
+  reset-card       Reset a card
+  reset-subcard    Reset a subcard
+  restore          Restore factory defaults
+  show             Show running system information
+  swap             MP changeover
+  swapver          Swap MP active version
+  telnet           Open a telnet connection
+  telnet6          Open a telnet6 connection
+  terminal         Set terminal line parameters
+  trace            Trace route to destination
+  trace6           Trace route to destination using IPv6
+  update-boot      Update boot
+  update-cpld      Set update-cpld flag
+  update-sub-boot  update sub boot
+  user             cli user commands
+  who              List users who are logining on
+  write            Write running configuration to memory
+ZXAN#
+ZXAN#

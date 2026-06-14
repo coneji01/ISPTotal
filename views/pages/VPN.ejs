@@ -1,222 +1,1042 @@
-<div class="page-header" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
-  <div>
-    <h2 style="margin:0;font-size:1.3rem;color:var(--text-dark);display:flex;align-items:center;gap:10px;">
-      <i class="fas fa-shield-alt" style="color:var(--accent);"></i> Servidores VPN
-    </h2>
-    <div style="font-size:0.85rem;color:var(--text-gray);margin-top:2px;">OpenVPN sobre TCP — Debian como servidor, MikroTik como cliente</div>
-  </div>
-  <button class="btn btn-primary" onclick="vpnOpenCreate()" style="padding:10px 20px;border:none;border-radius:8px;background:var(--accent);color:#fff;font-weight:700;font-size:0.9rem;cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:0.15s;">
-    <i class="fas fa-plus"></i> Nuevo Túnel
-  </button>
-</div>
+<!DOCTYPE html>
+<!-- saved from url=(0043)# -->
+<html lang="en" class="smartolt-night"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <script>window.SMARTOLT_DB_THEME='system';</script>
+    <!-- Paint-blocking: resolve theme before first paint. Precedence: per-device override (smartolt-theme-local, set by the header button) > account/DB pref > device (system). -->
+    <script>try{var k='smartolt-night',lk='smartolt-theme-local',dbTheme=window.SMARTOLT_DB_THEME,local=null,pref,n;try{local=localStorage.getItem(lk);}catch(e){}if(local==='night'||local==='light'||local==='system'){pref=local;}else if(dbTheme==='night'||dbTheme==='light'||dbTheme==='system'){pref=dbTheme;}else{pref='system';}if(pref==='system'){n=!!(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);}else if(pref==='night'){n=true;}else{n=false;}try{localStorage.setItem(k,n?'1':'0');}catch(e){}if(n){document.documentElement.classList.add('smartolt-night');}else{document.documentElement.classList.remove('smartolt-night');}document.cookie=k+'='+(n?'1':'0')+'; path=/; max-age=31536000; SameSite=Lax'+(location.protocol==='https:'?'; Secure':'');}catch(e){}</script>
+        <meta http-equiv="content-type" content="text/html; utf-8">
+    
+    <meta http-equiv="Content-Language" content="en">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="#" type="image/x-icon">
+    <link rel="shortcut icon" href="#" type="image/x-icon">
+    
+  <title>System configuration - JOEL WIFI</title>
 
-<div id="vpnDepBanner" class="vdb" style="display:none;">
-  <div class="dt"><i class="fas fa-exclamation-triangle"></i> Dependencias</div>
-  <div id="vpnDepList"><span class="vdi ok"><i class="fas fa-check-circle"></i> OpenVPN</span></div>
-</div>
+  <!-- Bootstrap Core CSS -->
+  <link href="/public/smartolt-files/bootstrap-custom.css" rel="stylesheet">
+  <link href="/public/smartolt-files/bootstrap-multiselect.css" rel="stylesheet">
+  <link href="/public/smartolt-files/styles.css" rel="stylesheet">
+  <link href="/public/smartolt-files/toast.css" rel="stylesheet">
 
-<div id="vpnList" class="vg">
-  <div style="text-align:center;padding:60px 20px;color:var(--text-gray);">
-    <i class="fas fa-spinner fa-spin" style="font-size:2rem;display:block;margin-bottom:12px;"></i>
-    Cargando servidores VPN...
-  </div>
-</div>
+  
+  <!-- Custom Fonts -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
 
-<!-- Modal Crear -->
-<div id="vpnCreateModal" class="modal" style="display:none">
-  <div class="modal-content" style="max-width:500px;">
-    <div class="modal-header">
-      <h3 style="display:flex;align-items:center;gap:8px;"><i class="fas fa-plus-circle" style="color:var(--accent);"></i> Nuevo Servidor OpenVPN</h3>
-      <button onclick="vpnCloseCreate()" style="background:var(--accent-danger);color:white;border:none;border-radius:6px;padding:5px 12px;cursor:pointer;font-size:0.78rem;font-weight:600;">×</button>
+  <!-- Message box CSS -->
+  <link href="/public/smartolt-files/messagebox.css" rel="stylesheet" type="text/css">
+
+  <link href="/public/smartolt-files/inter-fonts.css" rel="stylesheet">
+  <link href="/public/smartolt-files/dashboard-smartolt-night.css" rel="stylesheet">
+  <script src="/public/smartolt-files/dashboard-smartolt-night.js" defer=""></script>
+    
+  <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+  <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+  <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+  <!-- jQuery -->
+  <script src="/public/smartolt-files/jquery.min.js"></script>
+
+  
+  
+  <!-- Toast alerts -->
+  <script src="/public/smartolt-files/toast.js"></script>
+
+  <!-- Pauses recurring AJAX polling while the tab is hidden OR the user has been idle, resumes on focus / activity. -->
+  <script src="/public/smartolt-files/polling.js"></script>
+
+  
+  
+</head>
+
+<body class="smartolt-site">
+<script type="text/javascript">
+$( document ).ready(function() {
+	$.ajaxSetup({
+		cache: false
+	});
+	
+	window.jqxhrs = [];
+
+      window.registerJqxhr = function(jqxhr) {
+        jqxhrs.push(jqxhr);
+      }
+
+      window.abortJqxhr = function() {
+        for (var i = jqxhrs.length - 1; i >= 0; i--) {
+          if (jqxhrs[i]) {
+            jqxhrs[i].abort();
+          }
+        }
+
+        window.jqxhrs = [];
+      }
+
+      $(window).bind("beforeunload", function(event) {
+        abortJqxhr();
+      });
+
+      function unregisterJqxhr(event, jqxhr, settings) {
+        var idx = $.inArray(jqxhr, jqxhrs);
+        if (idx != -1) {
+          jqxhrs.splice(idx, 1);
+        }
+      }
+
+      $(document).ajaxComplete(unregisterJqxhr);
+
+      config = {
+        X_TOKEN: '9C23F19BE06B4BEB93046ECFDF50FF91'
+      }
+    });
+  </script>
+
+  <div class="smartolt-landing-hero-bg" aria-hidden="true"></div>
+
+  <div id="content-wrapper">
+    <div class="smartolt-topbar-network" aria-hidden="true">
+      <div class="smartolt-topbar-network-inner">
+        <svg class="smartolt-topbar-network-lines" viewBox="0 0 100 100" preserveAspectRatio="none">
+          <line x1="8" y1="68" x2="23" y2="78"></line>
+          <line x1="23" y1="78" x2="37" y2="63"></line>
+          <line x1="8" y1="68" x2="37" y2="63"></line>
+          <line x1="37" y1="63" x2="65" y2="18"></line>
+          <line x1="65" y1="18" x2="89" y2="34"></line>
+          <line x1="23" y1="78" x2="65" y2="18"></line>
+          <line x1="37" y1="63" x2="89" y2="34"></line>
+        </svg>
+        <span class="smartolt-topbar-node smartolt-topbar-node-a"></span>
+        <span class="smartolt-topbar-node smartolt-topbar-node-b"></span>
+        <span class="smartolt-topbar-node smartolt-topbar-node-c"></span>
+        <span class="smartolt-topbar-node smartolt-topbar-node-d"></span>
+        <span class="smartolt-topbar-node smartolt-topbar-node-e"></span>
+      </div>
     </div>
-    <div class="modal-body">
-      <div class="form-group">
-        <label class="form-label">Nombre</label>
-        <input type="text" id="vpnName" class="form-control" placeholder="enlace-sucursal1" oninput="this.value=this.value.replace(/[^a-zA-Z0-9\-]/g,'')">
-        <div style="font-size:0.75rem;color:var(--text-gray);margin-top:4px;">Solo letras, números, guiones</div>
-      </div>
-      <div style="margin-bottom:14px;">
-        <label style="display:flex;align-items:center;gap:8px;font-size:0.85rem;font-weight:600;color:var(--text-dark);cursor:pointer;">
-          <input type="checkbox" id="vpnAutoIp" checked onchange="vpnToggleIpMode()"> Asignar IP automáticamente <span style="font-size:0.75rem;color:var(--text-gray);font-weight:400;">(10.7.117.x)</span>
-        </label>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;" id="vpnIpFields">
-        <div class="form-group">
-          <label class="form-label">IP Local (Gateway)</label>
-          <input type="text" id="vpnLocalIp" class="form-control" value="10.7.117.1" readonly style="background:var(--bg-body);">
+    <div class="navbar navbar-default navbar-fixed-top default-menu">
+      <div class="container">
+        <div class="navbar-header">
+          <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#navbar-main" aria-expanded="false" aria-controls="navbar">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand text-ellipsis max-width-250" href="#" title="JOEL WIFI">JOEL WIFI</a>
         </div>
-        <div class="form-group">
-          <label class="form-label">IP Remota (Cliente)</label>
-          <input type="text" id="vpnRemoteIp" class="form-control" placeholder="10.7.117.2" readonly style="background:var(--bg-body);">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Puerto TCP</label>
-          <input type="number" id="vpnPort" class="form-control" value="4443" min="1" max="65535">
+
+        <div class="navbar-collapse collapse" id="navbar-main">
+          <ul class="nav navbar-nav in">
+
+                        
+              <li><a href="#">Unconfigured</a></li>
+            
+                          <li><a href="#">Configured</a></li>
+            
+            
+                        	                <li><a href="#">Graphs</a></li>
+                                                <li><a href="#">Diagnostics</a></li>
+                
+                                <li><a href="#">Tasks</a></li>
+                                
+                                 <li class="dropdown">
+                  <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="settings">Reports <span class="caret"></span></a>
+                  <ul class="dropdown-menu" aria-labelledby="settings">
+                  	                    <li><a href="#">Authorizations</a></li>
+                                                            <li><a href="#">Export</a></li>
+                                                            <li><a href="#">Import</a></li>
+                                                            <li><a href="#">Find config mismatches (DB vs OLT)</a></li>
+                                      </ul>
+                </li>
+                
+                                    <li><a href="#" class="save-configuration-anchor" data-toggle="modal">Save config</a></li>
+                                
+              <li class="dropdown">
+                <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="settings">Settings <span class="caret"></span></a>
+                <ul class="dropdown-menu in" aria-labelledby="settings">
+
+                                        <li><a href="#">Zones</a></li>
+                    
+                                        <li><a href="#">ODBs</a></li>
+                    
+                                        <li><a href="#">ONU types</a></li>
+                    
+                                        <li><a href="#">Speed profiles</a></li>
+                    
+                                        <li><a href="#">OLTs</a></li>
+                    
+                                        <li><a href="#" class="active">VPN &amp; TR069</a></li>
+                    
+                                        <li><a href="#">Authorization presets</a></li>
+                    
+                    
+                                        <li><a href="#">General</a></li>
+                    
+                                        <li><a href="#">Billing</a></li>
+                                    </ul>
+              </li>
+
+              
+            
+          </ul>
+
+          <ul class="nav navbar-nav navbar-right">
+            <li><a href="#" id="smartolt-night-toggle" class="is-pref-night is-resolved is-night" title="Night mode" aria-label="Night mode" data-title-light="Light mode" data-title-night="Night mode" data-title-system="System"><i class="fa fa-sun-o font-size-20 smartolt-theme-icon-light" aria-hidden="true"></i><i class="fa fa-moon-o font-size-20 smartolt-theme-icon-night" aria-hidden="true"></i><i class="fa fa-adjust font-size-20 smartolt-theme-icon-system" aria-hidden="true"></i></a></li>
+            <li><a href="#" title="Edit user joelr802@gmail.com"><i class="fa fa-user glyphicon-white font-size-20"> </i></a></li>
+            <li><a href="#"><i class="glyphicon glyphicon-off glyphicon glyphicon-white"> </i> Log out</a></li>
+                      </ul>
+          
         </div>
       </div>
-      <div style="background:var(--bg-success);padding:12px 14px;border-radius:8px;font-size:0.82rem;color:var(--text-success);line-height:1.5;">
-        <i class="fas fa-info-circle"></i> Se generan certificados TLS automáticamente.<br>
-        En MikroTik: <b>Interfaces → OVPN Client</b>, IP del servidor, puerto TCP, user/pass.
-      </div>
     </div>
-    <div class="modal-footer">
-      <button class="btn btn-secondary" onclick="vpnCloseCreate()">Cancelar</button>
-      <button class="btn btn-primary" id="vpnBtnCreate" onclick="vpnCreate()"><i class="fas fa-check"></i> Crear</button>
+
+    <!-- Page Content -->
+    <div class="container">
+<div class="container-fluid content-wrap">
+	<h2>System Config</h2>
+	<!-- Modals -->
+	
+	<!-- All purpose modal -->	
+	<div id="modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="basicModal" aria-hidden="true">
+    	<div class="modal-dialog">
+    		<div class="modal-content">
+        			<div class="modal-header">
+        				<button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></button>
+        				<h4 class="modal-title" id="modal_title">Title</h4>
+        			</div>
+        			       			
+        			<div class="modal-body" id="modal_content">
+            		</div>
+            		
+        			<div class="modal-footer">
+                		<a href="#" type="submit" class="btn btn-primary modal_submit" id="modal_action_button"><i class="glyphicon glyphicon-file glyphicon glyphicon-white"></i> Save</a>
+                		<a href="#" class="btn btn-link" data-dismiss="modal">Close</a>
+                	</div>
+    		</div>
+    	</div>
     </div>
-  </div>
+	<!-- All purpose modal End -->
+		
+	<!-- Tab menu -->
+
+	<ul class="nav nav-tabs">
+		<li class="active"><a href="#" data-toggle="tab">VPN tunnels</a></li>
+		<li class=""><a href="#" data-toggle="tab">TR069 Profiles</a></li>
+	</ul>
+	
+	<!-- First Tab - VPN tunnel -->	
+
+		
+		
+	
+	<div class="tab-content">
+	
+		<!-- First tab content -->
+		<div class="tab-pane active" id="tunnel">
+    		 <div class="margin-top">
+        		 <div class="panel-group" id="accordion_tunnel">
+                      <div class="panel panel-default">
+                        <div class="panel-heading">
+                          <h4 class="panel-title">
+                            <a class="accordion-toggle collapsed btn-block" data-toggle="collapse" data-parent="#accordion_tunnel" href="#" aria-expanded="false">
+                              Info                            </a>
+                          </h4>
+                        </div>
+                        <div id="infoTunnels" class="panel-collapse collapse">
+                          <div class="panel-body">
+                          		<p>You can find VPN Tunnel and TR069 configuration instructions here: <a href="https://smartolt.com/setup_instructions_tr069.html" target="_blank">VPN Tunnel and TR069 configuration</a></p>
+								<p>VPN tunnels use Open VPN to establish a secure L3 tunnel between your site and SmartOLT server.</p>
+								<p>Your endpoint has to be a device from which you have access to all your ONU/OLT devices and which supports OpenVPN client, preferably a <a href="https://mikrotik.com/" target="_blank">Mikrotik/RouterOS</a> gateway.</p>
+								<p>The tunnel subnet must be an unused private /24 subnet, routed inside your network. You can use the default 10.69.69.0/24 if it's not yet allocated inside your network.</p>
+								<p>Each Tunnel must have unique routes (Connected routes), which represent the OLT and ONU management IP subnets.</p>
+								<p>If you have multiple sites that are not interconnected and you have no route exchange between sites, you must setup a tunnel for each site to route the management subnets you have in each site.</p>
+								<br>
+								<p>TR069 flow diagram:</p>
+								<div class="smartolt-tr069-flow-wrap">
+									<a href="#"><img src="/public/smartolt-files/TR069_flow.png" class="img-responsive smartolt-tr069-flow-img" alt="" data-smartolt-ph-bound="1"></a>
+								</div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="panel panel-default">
+                        <div class="panel-heading">
+                          <h4 class="panel-title">
+                            <a class="accordion-toggle btn-block" data-toggle="collapse" data-parent="#accordion_tunnel" href="#" aria-expanded="true">
+                              Tunnel status                            </a>
+                          </h4>
+                        </div>
+                        <div id="Tunnels" class="panel-collapse collapse in">
+                          <div class="panel-body table-responsive">
+                            	                            		<table class="table table-striped margin-top">
+                                		<tbody><tr>
+                                			<th>#</th>
+                                			<th class="col-md-2">User/tunnel name</th>
+                                			<th class="col-md-3">Status</th>
+                                			<th class="col-md-1">Subnet</th>
+                                			<th class="col-md-1">Connected subnets</th>
+                                			<th class="col-md-4">Actions</th>
+                                		</tr> 
+                            	                                		<tr class="valign-center">
+                                			<td>1</td>
+                                			<td>
+												tunnel1&nbsp; <span class="text-success" title="Certificate is valid until 2055-07-03"><i class="fa fa-info-circle" aria-hidden="true"></i></span>											</td>
+                                			<td><span class="text-success">Connected</span> (38.159.230.91:52338)<br>Tunnel IP: 10.69.69.2 <br><a href="#" class="view_tunnel_log" data-href="/system_config/get_tunnel_log/1" style="color:inherit; text-decoration:none;"><i class="fa fa-file-text-o" aria-hidden="true" style="color:#0064C8;"></i> Logs</a>&nbsp;&nbsp;&nbsp;<a href="#" class="view_tunnel_log" data-href="/system_config/get_tunnel_log/1" style="color:inherit; text-decoration:none;"><i class="fa fa-upload text-success" aria-hidden="true"></i> 430 MB</a>&nbsp;&nbsp;&nbsp; <a href="#" class="view_tunnel_log" data-href="/system_config/get_tunnel_log/1" style="color:inherit; text-decoration:none;"><i class="fa fa-download text-success" aria-hidden="true"></i> 133 MB</a><br>Since: 2026-06-03 02:55</td>
+                                			<td>10.69.69.0/24</td>
+                                			<td>10.0.0.0/8
+172.16.0.0/12
+192.168.0.0/16</td>
+                                			<td>
+                                				<a href="#" data-href="/system_config/show_config/1?device=routeros" class="btn btn-success config_tunnel margin-bottom"><i class="fa fa-file-code-o" aria-hidden="true"></i> Mikrotik VPN setup</a>
+                                				<!-- <a href="#" data-href="/system_config/show_config/1?device=ubuntu" class="btn btn-success config_tunnel margin-bottom"><i class="fa fa-linux" aria-hidden="true"></i> Ubuntu</a> -->
+                                				<a href="#" data-href="/system_config/edit_tunnel/1" class="btn btn-primary edit_tunnel margin-bottom">Edit</a>
+                                				<a href="#" data-href="/system_config/del_tunnel/1" class="btn btn-danger del_tunnel margin-bottom">Del</a>
+                                			</td>
+                                		</tr>
+                            	                            		</tbody></table>
+                    			
+								<br>
+                            	<br>
+                            	<br>
+                            	<br>
+                            	<br>
+                            	<br>
+                            	<br>
+                            	<br>
+                      			<a href="#" class="btn btn-primary margin-top" id="setup_tunnel">Create a new tunnel</a>
+                          </div>
+                        </div>
+                      </div>
+				 </div>
+    		 </div>
+		</div>
+	
+	
+	<!-- Second tab: Tr069 -->
+		
+    	<div class="tab-pane " id="tr069">
+    		 <div class="margin-top">
+        		 <div class="panel-group" id="accordion_tr69">
+                      <div class="panel panel-default">
+                        <div class="panel-heading">
+                          <h4 class="panel-title">
+                            <a class="accordion-toggle collapsed btn-block" data-toggle="collapse" data-parent="#accordion_tr69" href="#" aria-expanded="false">
+                              Info                            </a>
+                          </h4>
+                        </div>
+                        <div id="infoTr069Profiles" class="panel-collapse collapse">
+                          <div class="panel-body">
+                          	<p>In order to use TR069 protocol in your network you must have a VPN tunnel configured and a TR069 profile defined and attached to each <a href="#">OLT</a> where you want this service to be available.</p>
+                          	<p>To each ONU you must apply the TR069 profile in SmartOLT in order to activate TR069. The profile contains just the minimum info required and we autocomplete the form with the recommended settings, making things as easy as possible.</p>
+                                                    </div>
+                        </div>
+                      </div>
+                      <div class="panel panel-default">
+                        <div class="panel-heading">
+                          <h4 class="panel-title">
+                            <a class="accordion-toggle btn-block" data-toggle="collapse" data-parent="#accordion_tr69" href="#" aria-expanded="true">
+                              Defined profiles                            </a>
+                          </h4>
+                        </div>
+                        <div id="Tr069Profiles" class="panel-collapse collapse in">
+                          <div class="panel-body table-responsive">
+                            	                            		<table class="table table-striped margin-top">
+                                		<tbody><tr>
+                                			<th class="col-md-2">Profile name</th>
+                                			<th class="col-md-1 text-center">CWMP ACS</th>
+                                			<th class="col-md-3 text-center">Status</th>
+                                			<th class="col-md-2 text-center">OLTs</th>
+                                			<th class="col-md-4 text-center">Action</th>
+                                		</tr> 
+                            	                                		<tr class="valign-center">
+                                			<td>SmartOLT</td>
+                                			<td>http://10.69.69.1:14501</td>
+                                			<td class="text-center">CWMP: <i class="fa fa-check-circle-o text-success" aria-hidden="true" title="Service active"></i>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+                                			<td>
+                                				<form action="#" id="set_tr069_profile_olts_1" class="set-tr069-profile-olts-form form-horizontal" method="post" accept-charset="utf-8">
+<span class="multiselect-native-select"><select name="profile_1_olts[]" class="form-control input-180 profile-olts-select" multiple="multiple" id="profile_1_olts" size="1">
+<option value="1" selected="selected">1 - JOEL WIFI</option>
+</select><div class="btn-group"><div class="multiselect dropdown-toggle overflow-hidden text-nowrap form-control input-180 profile-olts-select" data-toggle="dropdown" title="1 - JOEL WIFI"><span class="multiselect-selected-text">1 - JOEL WIFI</span> <span class="caret pull-right" style="margin-right: -12px; margin-top: 8px" aria-hidden="true"></span></div><ul class="multiselect-container dropdown-menu"><li class="multiselect-item multiselect-filter" value="0"><div class="input-group"><span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span><input class="form-control multiselect-search" type="text" placeholder="Search"><span class="input-group-btn"><button class="btn btn-default multiselect-clear-filter" type="button"><i class="glyphicon glyphicon-remove-circle"></i></button></span></div></li><li class="multiselect-item multiselect-all active"><a href="#" tabindex="0" class="multiselect-all"><label class="checkbox"><input type="checkbox" value="multiselect-all"> Select All</label></a></li><li class="active"><a href="#" tabindex="0"><label class="checkbox"><input type="checkbox" value="1"> 1 - JOEL WIFI</label></a></li></ul></div></span>
+</form>                                			</td>
+                                			<td class="text-right">
+												<a href="#" class="btn btn-primary tr069_profile_olts_commit margin-bottom" disabled="true">Set OLTs</a>
+                                				<a href="#" data-href="/system_config/view_tr69profile/1" class="btn btn-success edit_tr69profile margin-bottom">View</a>
+                                				                                				<a href="#" data-href="/system_config/tr69fs_list/1" class="btn btn-success tr69fs margin-bottom">Files</a>
+                                				                                				<a href="#" data-href="/system_config/del_tr69profile/1" class="btn btn-danger del_tr69profile margin-bottom">Del</a>
+                                			</td>
+                                		</tr>
+                            	                            		</tbody></table>
+                    			
+                            	<br>
+                            	<br>
+                            	<br>
+                            	<br>
+                            	<br>
+                            	<br>
+                            	<br>
+                            	<br>
+                            	<a class="btn btn-primary margin-top" id="setup_tr69_profile">Add a new profile</a>
+
+                          </div>
+                        </div>
+                      </div>
+                 </div>
+    		 </div>
+		</div>
+	</div>
 </div>
 
-<!-- Modal Logs -->
-<div id="vpnLogsModal" class="modal" style="display:none">
-  <div class="modal-content" style="max-width:680px;">
-    <div class="modal-header">
-      <h3 style="display:flex;align-items:center;gap:8px;"><i class="fas fa-terminal"></i> <span id="vpnLogsTitle">Logs</span></h3>
-      <button onclick="document.getElementById('vpnLogsModal').style.display='none'" style="background:var(--accent-danger);color:white;border:none;border-radius:6px;padding:5px 12px;cursor:pointer;font-size:0.78rem;font-weight:600;">×</button>
-    </div>
-    <div class="modal-body">
-      <pre class="vlp" id="vpnLogsContent" style="background:#0f172a;color:#e2e8f0;padding:14px 16px;border-radius:8px;font-size:0.75rem;font-family:monospace;max-height:300px;overflow-y:auto;white-space:pre-wrap;word-break:break-all;line-height:1.5;">Cargando...</pre>
-    </div>
-  </div>
+<script type="text/javascript">
+
+	function display_modal(title, get_url, button) {
+		
+		$('#modal_title').html(title);
+
+		$('#modal_content').html('<div class="text-center"><i class="fa fa-spinner fa-spin fa-3x"></i><br>Generating config</div>');
+		$('#modal').modal('show');
+
+		$.ajax({
+			type: 'GET',
+			url: get_url,
+			timeout: 30000,
+			success: function(response)
+			{
+				$('#modal_content').html(response);
+				
+				if (button) {
+					$('#modal_action_button').html(button);
+					$('#modal_action_button').show();
+				} else {
+					$('#modal_action_button').hide();
+				}
+				
+				$('#modal').modal('show');
+				
+				$('#modal').on('click','.modal_submit', function () {
+					formData = new FormData($(this).parent().prev().find('form')[0]);
+					showLoadingOverlay("Waiting for provisioning scripts");
+
+					$.ajax({
+						type: 'POST',
+						url: get_url,
+						data: formData,
+						processData: false,
+						contentType: false,
+						success: function(response_post) {
+							$('#modal_content').html(response_post);
+							hideLoadingOverlay();
+						},
+						error: function(response)
+						{
+							alert('Some error occurred!');
+							hideLoadingOverlay();
+						}
+					});
+					
+				});		
+			}
+		});
+
+		$("#modal").on('hidden.bs.modal', clean_modal());
+	}
+
+	function clean_modal() {
+		$('#modal').off('click','.modal_submit').data('bs.modal', null);
+		if (typeof modal_hide_timeout !== 'undefined') {
+			clearTimeout(modal_hide_timeout);
+		}
+	}
+
+	$(document).ready(function() {
+		
+		$('#setup_tunnel').on('click', function() {
+			$('.modal-dialog').removeClass('modal-lg modal-xl');
+			display_modal('Create a new VPN tunnel',
+						'/system_config/add_tunnel/',
+						'<i class="fa fa-plus"></i> Add tunnel'
+						);
+		});
+
+		$('#setup_tr69_profile').on('click', function () {
+			$('.modal-dialog').removeClass('modal-lg modal-xl');
+			display_modal('Add new TR069 profile',
+						'/system_config/add_tr69profile/',
+						'<i class="glyphicon glyphicon-file glyphicon glyphicon-white"></i> Add profile'
+					);
+		});
+
+		// Tunnel actions
+		$('.config_tunnel').on('click', function () {
+			$('.modal-dialog').addClass('modal-lg');
+			var title = $(this).text();
+			display_modal(title,
+							$(this).data('href'), 	
+							null
+						);
+		});
+
+		$('.del_tunnel').on('click', function () {
+			href = $(this).data('href');
+			MessageBoxConfirm("Are you sure you want to delete this tunnel?").done(function() {
+				showLoadingOverlay("");
+				$.post(href ,null, function() { window.location.href = '/system_config/index/tunnel'; hideLoadingOverlay(); } );	
+			});
+		});
+			
+		$('.edit_tunnel').on('click', function () {
+			$('.modal-dialog').removeClass('modal-lg modal-xl');
+			display_modal('Edit tunnel',
+					$(this).data('href'),
+					'<i class="fa fa-floppy-o" aria-hidden="true"></i> Save changes'
+				);
+		});
+
+		$(document).on('click', '.view_tunnel_log', function (e) {
+			e.preventDefault();
+			$('.modal-dialog').addClass('modal-xl');
+			display_modal('VPN tunnel log',
+				$(this).data('href'),
+				null
+			);
+		});
+
+		$(document).on('click', '.refresh_tunnel_log', function (e) {
+			e.preventDefault();
+			var href = $(this).data('href');
+			$('#modal_content').html('<div class="text-center"><i class="fa fa-spinner fa-spin fa-3x"></i></div>');
+			$.get(href, function (response) { $('#modal_content').html(response); });
+		});
+
+		// Tr069 profile actions
+
+		$('.del_tr69profile').on('click', function () {
+			href = $(this).data('href');
+			MessageBoxConfirm("Are you sure you want to delete this profile?").done(function() {
+				showLoadingOverlay("");
+				$.post(href,null, function() { window.location.href = '/system_config/index/tr069'; hideLoadingOverlay(); });
+			});
+		});
+
+		$('.edit_tr69profile').on('click', function () {
+			$('.modal-dialog').removeClass('modal-lg modal-xl');
+			display_modal('Edit TR069 Profile',
+					$(this).data('href'),
+					'<i class="fa fa-floppy-o" aria-hidden="true"></i> Save changes'
+				);
+		});
+
+		$('.tr69fs').on('click', function () {
+			$('.modal-dialog').addClass('modal-xl');
+			display_modal('View files',
+				$(this).data('href'),
+				''
+			);
+		});
+
+		
+		$(".profile-olts-select").on('change', function () {
+			$(this).closest('td').next().children('a.tr069_profile_olts_commit').attr('disabled', false);
+		});
+
+		$(".profile-olts-select").attr('multiple', 'multiple').multiselect({
+						enableHTML: true,
+						buttonClass: '',
+						inheritClass: true,
+						includeSelectAllOption: true,
+						enableCaseInsensitiveFiltering: true,
+						buttonContainer:'<div class="btn-group"/>',
+						nonSelectedText: 'Please select',
+						selectAllText: 'Select All',
+						filterPlaceholder: 'Search',
+						numberDisplayed: 1,
+						widthSynchronizationMode: 'always',
+						buttonTextAlignment: 'left',
+						templates: {
+							button: '<div class="multiselect dropdown-toggle overflow-hidden text-nowrap" data-toggle="dropdown"><span class="multiselect-selected-text"></span> <span class="caret pull-right" style="margin-right: -12px; margin-top: 8px" aria-hidden="true"></span></div>',
+		 					li: '<li><a href="#" tabindex="0"><label></label></a></li>',
+						}
+					});
+
+		$('.tr069_profile_olts_commit').on('click', function (e) {
+			e.preventDefault();
+
+			if ($(this).attr("disabled")) {
+				return false;
+			}
+			
+			showLoadingOverlay();
+			$(this).parent().prev().children('form').submit();
+			
+			return false;
+		});
+
+		
+	});
+	
+</script>	
+
+
+</div>
+<br>
+<!-- /#page-wrapper -->
+    
+<div id="saveConfigModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="saveConfigModalLabel" aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+		  <div class="modal-header">
+		    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+		    <h3 id="saveConfigModalLabel">Save configuration</h3>
+		  </div>
+		  <div class="modal-body">
+		    <p>This will save the current OLT(s) configuration as startup configuration. It may take up to 5 minutes for the OLT(s) to finish saving the config. Are you sure?</p>
+		  </div>
+		  <div class="modal-footer">
+		    <button class="btn btn-link" data-dismiss="modal" aria-hidden="true">No, cancel</button>
+		    <button class="btn btn-primary save-configuration-button">Yes, save configuration</button>
+		  </div>
+		</div>
+	</div>
 </div>
 
-<!-- Modal Certificados -->
-<div id="vpnCertsModal" class="modal" style="display:none">
-  <div class="modal-content" style="max-width:680px;">
-    <div class="modal-header">
-      <h3 style="display:flex;align-items:center;gap:8px;"><i class="fas fa-key"></i> <span id="vpnCertsTitle">Certificados</span></h3>
-      <button onclick="document.getElementById('vpnCertsModal').style.display='none'" style="background:var(--accent-danger);color:white;border:none;border-radius:6px;padding:5px 12px;cursor:pointer;font-size:0.78rem;font-weight:600;">×</button>
-    </div>
-    <div class="modal-body" id="vpnCertsContent">Cargando...</div>
-  </div>
+<div id="importModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="importModalLabel" aria-hidden="true">
+</div>
+
+<div id="rebuildModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="rebuildModalLabel" aria-hidden="true">
+</div>
+
+<div id="deleteAllApiReconciliationModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="deleteAllApiReconciliationModalLabel" aria-hidden="true">
+</div>
+
+<div id="generateSnmpIdsModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="generateSnmpIdsModalLabel" aria-hidden="true">
+</div>
+
+    <!-- Bootstrap Core JavaScript -->
+    <script src="/public/smartolt-files/bootstrap.min.js"></script>
+    <script src="/public/smartolt-files/bootstrap-multiselect.js"></script>
+
+    <!-- Metis Menu Plugin JavaScript -->
+    <script src="/public/smartolt-files/metisMenu.min.js"></script>
+
+    <!-- Custom Theme JavaScript -->
+    <script src="/public/smartolt-files/sb-admin-2.js"></script>
+        
+    <!-- Loading overlay -->
+    <script src="/public/smartolt-files/loadingoverlay.custom.js"></script>
+    
+    <!-- Message box -->
+    <script src="/public/smartolt-files/messagebox.min.js"></script>
+    
+    
+
+<script type="text/javascript">
+
+$( document ).ready(function() {
+	
+	// Hide new version dot if user has already seen this version
+	var currentVersion = '3.53.0';
+	var lastSeenVersion = localStorage.getItem('lastSeenVersion');
+	if (lastSeenVersion === currentVersion) {
+		$('.new-version-dot').hide();
+	}
+
+	
+	$('#smartolt-update-banner-changelog').on('click', function(e) {
+		e.preventDefault();
+		localStorage.setItem('lastSeenVersion', currentVersion);
+		$('.new-version-dot').hide();
+				window.location.href = '/changelog';
+			});
+
+	$('#smartolt-update-banner-dismiss').on('click', function() {
+		localStorage.setItem('lastSeenVersion', currentVersion);
+		$('.new-version-dot').hide();
+		$('#smartolt-update-banner').slideUp(300);
+	});
+
+	$('#footer-changelog-link').on('click', function() {
+		localStorage.setItem('lastSeenVersion', currentVersion);
+		$('.new-version-dot').hide();
+	});
+
+	//hide alert-success after 5 seconds
+	/*setTimeout(function(){
+		$('.alert-success').not('.nofade').fadeOut();
+	},5000);*/
+	
+	var waitingForOLT   = $("<div>", {
+	    id      : "waitingOLT",
+	    css     : {
+	        "font-size" : "50px",
+			"white-space" : "nowrap"
+	    },
+	    text    : "Waiting for OLT"
+	});
+
+	var loadingOverlaySettings = {
+		    image       : "",
+		    fontawesome : "fa fa-spinner fa-spin",
+		    custom  : waitingForOLT,
+		    resizeInterval : 0
+		};
+
+	$.LoadingOverlay("append", loadingOverlaySettings);
+
+	window.showLoadingOverlay = function(loadingText = null) {
+		if(loadingText != null) {
+			$("#waitingOLT").text(loadingText);
+		}
+		else {
+			$("#waitingOLT").text("Waiting for OLT");
+		}
+		
+		$.LoadingOverlay("show", loadingOverlaySettings);
+	}
+
+	window.hideLoadingOverlay = function() {
+		$.LoadingOverlay("hide");
+	}
+
+	window.isLoadingOverlayVisible = function() {
+		return $('.loadingoverlay').is(":visible");
+	}
+	
+	//hide loading overlay when ajax request finishes
+	/*$(document).ajaxStop(function(){
+		hideLoadingOverlay();
+	});*/
+
+	//show toast with error
+	$(document).ajaxError(function(requestObject, error, errorThrown) {
+		if(error.status != 404 && error != undefined && error.responseJSON != undefined && 
+				error.responseJSON.error != undefined && error.responseJSON.error.length > 0) {
+			toast(error.responseJSON.error);
+		}
+	});
+
+	//confirm message box
+	window.MessageBoxConfirm = function(message){
+	    return $.MessageBox({
+	        buttonDone  : "OK",
+	        buttonFail  : "Cancel",
+	        message     : message
+	    });
+	}
+
+	window.getSelectedText = function() {
+        if (window.getSelection) {
+            return window.getSelection().toString();
+        } 
+        else if (document.selection) {
+            return document.selection.createRange().text;
+        }
+        return '';
+    }
+
+	//close navbar menu when clicking outside of it
+	$(document).click(function (event) {
+		var clickover = $(event.target);
+		var $nav = $("div.navbar-collapse");
+        var _opened = $nav.hasClass("in");
+
+        if (_opened === true && !clickover.hasClass("navbar-toggle")) {
+			$nav.collapse('hide');
+        }
+    });
+
+	/*https://www.quirksmode.org/blog/archives/2014/02/mouse_event_bub.html
+	  Safari on iOS only allows the mouse events, including click, to bubble up in the following situations:
+	  1. The target element of the event is a link or a form field.
+	  2. The target element, or any of its ancestors up to but not including the <body>, has an explicit event handler set for any of the mouse events. This event handler may be an empty function.
+      3. The target element, or any of its ancestors up to and including the document has a cursor: pointer CSS declarations. */
+	$("#content-wrapper").click(function (event) {
+		//this is here only for iOS to allow mouse events to bubble up so we can close navbar menu when clicking outside of it
+    });
+
+	// check navbar menu top offset
+    function closeMenuIfOpened() {
+		var $nav = $("div.navbar-collapse");
+    	var _opened = $nav.hasClass("in");
+
+        if (_opened === true && $(".navbar").offset().top > 50) {
+			$nav.collapse('hide');
+        }
+    }
+
+    //for touch devices, detect zoom in/out events and close the navbar menu if opened
+    var tracks = [];
+    $(window).on("touchmove", function (event) {
+	
+	    //only run code if the user has two fingers touching
+	    if (event.originalEvent.touches.length === 2) {
+	
+	        //track the touches, I'm setting each touch as an array inside the tracks array
+	        //each touch array contains an X and Y coordinate
+	        tracks.push([ [event.originalEvent.touches[0].pageX, event.originalEvent.touches[0].pageY], [event.originalEvent.touches[1].pageX, event.originalEvent.touches[1].pageY] ]);
+	    }
+	}).on("touchstart", function () {
+	    //start-over
+	    tracks = [];
+	}).on("touchend", function () {
+	    if(tracks.length > 0) {
+			var $nav = $("div.navbar-collapse");
+	    	var _opened = $nav.hasClass("in");
+	        if (_opened === true) {
+				$nav.collapse('hide');
+	        }
+	    }
+	});
+
+	// COPY TO CLIPBOARD
+	// Attempts to use .execCommand('copy') on a created text field
+	// Falls back to a selectable alert if not supported
+	// Attempts to display status in Bootstrap tooltip
+	// ------------------------------------------------------------------------------
+
+	function copyToClipboard(text, el) {
+	  var copyTest = document.queryCommandSupported('copy');
+	  var elOriginalText = el.attr('data-original-title');
+
+	  if (copyTest === true) {
+	    var copyTextArea = document.createElement("textarea");
+	    copyTextArea.value = text;
+	    document.body.appendChild(copyTextArea);
+	    copyTextArea.select();
+	    try {
+	      var successful = document.execCommand('copy');
+	      var msg = successful ? "Copied!" : "Whoops, not copied!";
+	      el.attr('data-original-title', msg).tooltip('show');
+	    } 
+	    catch (err) {
+	      console.log("Oops, unable to copy");
+	    }
+	    document.body.removeChild(copyTextArea);
+	    el.attr('data-original-title', elOriginalText);
+	  } 
+	  else {
+	    // Fallback if browser doesn't support .execCommand('copy')
+	    window.prompt("Copy to clipboard", text);
+	  }
+	}
+
+	function copyToClipboard2(text, el) {
+		  if (document.queryCommandSupported('copy') === true) {
+			var elOriginalText = el.attr('data-original-title');
+	 	    var copyTextArea = document.createElement("textarea");
+		    copyTextArea.textContent = text.text();
+		    document.body.appendChild(copyTextArea);
+
+		    var selection = document.getSelection();
+		    var range = document.createRange();
+		    range.selectNode(copyTextArea);
+		    selection.removeAllRanges();
+		    selection.addRange(range);
+		    
+		    try {
+		      var successful = document.execCommand('copy');
+			  var msg;
+
+			  if (successful) {
+				  msg = "Copied!";
+			  } 
+			  else {
+				msg = "Whoops, not copied!";
+				el.removeClass('not-selectable');
+			  }
+		      el.attr('data-original-title', msg).tooltip('show');
+		    } 
+		    catch (err) {
+		      console.log("Oops, unable to copy");
+		    }
+		    selection.removeAllRanges();
+		    document.body.removeChild(copyTextArea);
+		    el.attr('data-original-title', elOriginalText);
+		  } 
+		  else {
+			$('.not-selectable').removeClass('not-selectable');
+		    // Fallback if browser doesn't support .execCommand('copy')
+		    window.prompt("Copy to clipboard", text.text());
+		  }
+		}
+
+	// Initialize
+   // ---------------------------------------------------------------------
+
+   // Tooltips
+   // Requires Bootstrap 3 for functionality
+   $('.js-tooltip').tooltip();
+
+   // Copy to clipboard
+   // Grab any text in the attribute 'data-copy' and pass it to the 
+   // copy function
+   $('.js-copy').click(function() {
+     var text = $(this).attr('data-copy');
+     var el = $(this);
+     copyToClipboard(text, el);
+   });
+
+   $(document).on('click','.comma-copy', function() {
+	   $(this).removeClass('btn-primary').addClass('btn-default');
+	     var el = $('#'+$(this).attr('data-idtag'));
+	     copyToClipboard2(el, $(this));
+	     el.removeClass('text-primary').addClass('text-muted');
+	   });
+
+   //trim white spaces when paste in any input
+   $(document).on('paste', 'input[type=text]', function(e) {
+	  // prevent copying action
+	  e.preventDefault();
+	  
+	  var pastedText = e.originalEvent.clipboardData.getData('Text');
+	  var withoutSpaces = pastedText;
+	  if(pastedText) {
+		  withoutSpaces = pastedText.trim();
+	  }
+
+	  //remove all spaces, including from inside the text
+	  if($(this).hasClass('no_spaces')) {
+		  withoutSpaces = withoutSpaces.replace(/\s/g, '');
+	  }
+	  
+	  $(this).insertAtCaret(withoutSpaces);
+	});
+
+   $.fn.insertAtCaret = function(text) {
+	    return this.each(function() {
+	        if (document.selection && this.tagName == 'TEXTAREA') {
+	            //IE textarea support
+	            this.focus();
+	            sel = document.selection.createRange();
+	            sel.text = text;
+	            this.focus();
+	        } else if (this.selectionStart || this.selectionStart == '0') {
+	            //MOZILLA/NETSCAPE support
+	            startPos = this.selectionStart;
+	            endPos = this.selectionEnd;
+	            scrollTop = this.scrollTop;
+	            this.value = this.value.substring(0, startPos) + text + this.value.substring(endPos, this.value.length);
+	            this.focus();
+	            this.selectionStart = startPos + text.length;
+	            this.selectionEnd = startPos + text.length;
+	            this.scrollTop = scrollTop;
+	        } else {
+	            // IE input[type=text] and other browsers
+	            this.value += text;
+	            this.focus();
+	            this.value = this.value;    // forces cursor to end
+	        }
+	    });
+	};
+    
+	
+  $('.save-configuration-button').click(function (){
+    var button = $('.save-configuration-anchor');
+
+    button.toggleClass('active');
+    button.attr('disabled', true);
+    button.text("Saving...");
+    $('#saveConfigModal').modal('hide');
+
+    $.ajax({
+        method: "GET",
+        beforeSend: function(request) {
+		    request.setRequestHeader("X-Token", config.X_TOKEN);
+		  },
+        url: "/api/system/write",
+      })
+      .done(function( response ) {
+        $.MessageBox((response && response.response) ? response.response : "Save initiated. It could take the OLT up to 5 minutes to write the config!");
+        button.text("Save config");
+        setTimeout(function () {
+          button.toggleClass('active');
+          button.attr('disabled', false);
+          button.text("Save config");
+        }, 1000);
+      })
+      .fail(function(jqXHR, textStatus) {
+    	  if(jqXHR.responseJSON) {
+				$.MessageBox(jqXHR.responseJSON.error);
+			}
+			else {
+				$.MessageBox(jqXHR.responseText);
+			}
+	        setTimeout(function () {
+	        	 button.toggleClass('active');
+	             button.attr('disabled', false);
+	             button.text("Save config");
+	        }, 1000);
+      });
+  });
+
+    
+});
+</script>
+
 </div>
 
 <style>
-:root{--vp:#16a34a;--vpbg:#f0fdf4;--vpd:#15803d;--vg:#059669;--vgb:#ecfdf5;--vr:#dc2626;--va:#d97706;--vab:#fffbeb;--vb:#e2e8f0;--vt:#0f172a;--vm:#64748b;--vf:#f8fafc;}
-.vg{display:grid;grid-template-columns:repeat(auto-fill,minmax(380px,1fr));gap:16px}@media(max-width:500px){.vg{grid-template-columns:1fr}}
-.vc{background:var(--bg-card);border:1px solid var(--border-color);border-radius:14px;overflow:hidden;transition:0.2s}.vc:hover{box-shadow:0 6px 20px rgba(0,0,0,0.06)}.vc.on{border-color:var(--vg)}
-.vct{padding:18px 20px;display:flex;align-items:flex-start;gap:14px}
-.vci{width:10px;height:10px;border-radius:50%;margin-top:6px;flex-shrink:0;background:#cbd5e1}.vc.on .vci{background:var(--vg);box-shadow:0 0 8px rgba(5,150,105,0.4);animation:vpu 2s infinite}
-@keyframes vpu{0%,100%{box-shadow:0 0 4px rgba(5,150,105,0.3)}50%{box-shadow:0 0 12px rgba(5,150,105,0.6)}}
-.vcf{flex:1;min-width:0}.vcn{font-weight:800;font-size:1.05rem;color:var(--text-dark);margin-bottom:4px;display:flex;align-items:center;gap:8px}
-.vcp{font-size:0.68rem;font-weight:800;padding:2px 7px;border-radius:4px;text-transform:uppercase;background:#dcfce7;color:#166534}
-.vips{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px 12px;margin-top:10px}.vil{font-size:0.7rem;color:var(--text-gray);font-weight:600;text-transform:uppercase}.viv{font-size:0.85rem;color:var(--text-dark);font-family:monospace;font-weight:600}
-.vcs{margin-top:10px;padding-top:10px;border-top:1px dashed var(--border-color);font-size:0.78rem;display:flex;align-items:center;gap:6px}
-.vsd{width:7px;height:7px;border-radius:50%;display:inline-block}.vsd.li{background:var(--vg)}.vsd.dn{background:#cbd5e1}
-.vcr{background:var(--bg-body);padding:10px 20px;border-top:1px solid var(--border-color);display:grid;grid-template-columns:1fr 1fr;gap:4px 16px}
-.vcrl{font-size:0.7rem;color:var(--text-gray);font-weight:600;text-transform:uppercase}.vcrv{font-size:0.82rem;color:var(--text-dark);font-family:monospace;display:flex;align-items:center;gap:6px}
-.vcrv .cb{background:none;border:none;color:var(--text-gray);cursor:pointer;font-size:0.75rem;padding:2px}.vcrv .cb:hover{color:var(--vp)}
-.vca{padding:10px 20px;border-top:1px solid var(--border-color);display:flex;justify-content:space-between;align-items:center;gap:6px}
-.vb{border:none;padding:7px 14px;border-radius:6px;cursor:pointer;font-weight:700;font-size:0.8rem;display:inline-flex;align-items:center;gap:5px;transition:0.15s}
-.vbc{background:var(--vgb);color:var(--vg)}.vbc:hover{background:#d1fae5}
-.vbd{background:var(--vab);color:var(--va)}.vbd:hover{background:#fef3c7}
-.vbl{background:var(--bg-body);color:var(--text-gray)}.vbl:hover{background:#e2e8f0;color:var(--text-dark)}
-.vbk{background:#eff6ff;color:#2563eb}.vbk:hover{background:#dbeafe}
-.vbx{background:transparent;color:#94a3b8;font-size:0.85rem;padding:7px 10px}.vbx:hover{color:var(--vr)}
-.vdb{background:var(--vab);border:1px solid #fde68a;border-radius:10px;padding:14px 18px;margin-bottom:20px;display:none}
-.vdb .dt{font-weight:700;color:var(--va);font-size:0.9rem;margin-bottom:8px}
-.vdi{display:inline-flex;align-items:center;gap:6px;font-size:0.82rem;padding:4px 12px;border-radius:6px;margin:3px 4px 3px 0;cursor:pointer;font-weight:600;transition:0.15s}
-.vdi.ok{background:#dcfce7;color:#166534;cursor:default}.vdi.mi{background:#fee2e2;color:#991b1b}.vdi.mi:hover{background:#fecaca}
-.vto{position:fixed;bottom:20px;right:20px;z-index:99999;padding:12px 20px;border-radius:10px;font-size:0.85rem;font-weight:600;color:#fff;opacity:0;transform:translateY(20px);transition:0.3s;max-width:360px}
-.vto.sh{opacity:1;transform:translateY(0)}.vto.ok{background:var(--vg)}.vto.er{background:var(--vr)}
-.vlpl{background:#0f172a;color:#e2e8f0;padding:14px 16px;border-radius:8px;font-size:0.75rem;font-family:monospace;max-height:300px;overflow-y:auto;white-space:pre-wrap;word-break:break-all;line-height:1.5}
-.ve{text-align:center;padding:60px 20px;color:var(--text-gray)}.ve i{font-size:3rem;opacity:0.2;margin-bottom:14px;display:block}
+.new-version-dot {
+	display: inline-block;
+	width: 8px;
+	height: 8px;
+	background-color: #5cb85c;
+	border-radius: 50%;
+	margin-left: 4px;
+	animation: pulse-green 2s infinite;
+}
+.footer-dot-sep {
+	opacity: 0.5;
+	margin: 0 2px;
+}
+footer {
+	height: auto;
+	padding-bottom: 8px;
+}
+#feature-tour-whatsnew .fa-bullhorn {
+	margin-right: 5px;
+	font-size: 2em;
+	vertical-align: -6px;
+}
+
+@keyframes pulse-green {
+	0% {
+		transform: scale(0.95);
+		box-shadow: 0 0 0 0 rgba(92, 184, 92, 0.7);
+	}
+	70% {
+		transform: scale(1);
+		box-shadow: 0 0 0 6px rgba(92, 184, 92, 0);
+	}
+	100% {
+		transform: scale(0.95);
+		box-shadow: 0 0 0 0 rgba(92, 184, 92, 0);
+	}
+}
+
 </style>
 
-<script>
-(function(){
-function aj(action,data,cb){
-  var url='<%= '/modulo?pagina=VPN&ajax=' %>'+action;
-  if(!data){fetch(url).then(r=>r.json()).then(cb).catch(e=>cb({status:'error',msg:e.message}));return;}
-  if(typeof data==='string'){fetch(url+'&'+data).then(r=>r.json()).then(cb).catch(e=>cb({status:'error',msg:e.message}));return;}
-  var fd=new FormData();for(var k in data)fd.append(k,data[k]);
-  fetch(url,{method:'POST',body:fd}).then(r=>r.json()).then(cb).catch(e=>cb({status:'error',msg:e.message}));
-}
-function toast(m,t){
-  var e=document.getElementById('vpnToast');
-  if(!e){e=document.createElement('div');e.id='vpnToast';e.className='vto';document.body.appendChild(e);}
-  e.textContent=m;e.className='vto '+(t==='error'?'er':'ok');
-  setTimeout(()=>e.classList.add('sh'),10);setTimeout(()=>e.classList.remove('sh'),3500);
-}
-function esc(s){var d=document.createElement('div');d.textContent=s;return d.innerHTML;}
+<footer>
+	<div class="text-center row">SmartOLT <a href="#" class="btn-link" id="footer-changelog-link">v3.53.0<span class="new-version-dot" title="New updates" style="display: none;"></span></a> © 2026</div>
+</footer>
 
-function load(){
-  aj('list',null,function(d){
-    var el=document.getElementById('vpnList');
-    if(d.status!=='success'||!d.data||!d.data.length){
-      el.innerHTML='<div class="ve"><i class="fas fa-shield-alt"></i><p>No hay servidores VPN</p><button class="btn btn-primary" onclick="vpnOpenCreate()" style="margin-top:12px;padding:8px 20px;border:none;border-radius:8px;background:var(--accent);color:#fff;font-weight:600;cursor:pointer;"><i class="fas fa-plus"></i> Crear primero</button></div>';
-      return;
-    }
-    var h='';d.data.forEach(function(t){
-      var up=t.live_status==='listening',st=up?'Escuchando TCP:'+(t.listen_port||4443):'Detenido';
-      h+='<div class="vc '+(up?'on':'')+'">';
-      h+='<div class="vct"><div class="vci"></div><div class="vcf">';
-      h+='<div class="vcn">'+esc(t.name)+' <span class="vcp">OVPN</span></div>';
-      h+='<div class="vips"><div><div class="vil">Local</div><div class="viv">'+esc(t.local_ip)+'</div></div>';
-      h+='<div><div class="vil">Remota</div><div class="viv">'+esc(t.remote_ip)+'</div></div>';
-      h+='<div><div class="vil">Puerto</div><div class="viv">TCP:'+(t.listen_port||4443)+'</div></div></div>';
-      h+='<div class="vcs"><span class="vsd '+(up?'li':'dn')+'"></span> '+st+'</div>';
-      h+='</div></div>';
-      h+='<div class="vcr"><div><div class="vcrl">Usuario</div><div class="vcrv">'+esc(t.username)+' <button class="cb" onclick="event.stopPropagation();vpnCopy(\''+esc(t.username).replace(/'/g,"\\'")+'\')"><i class="fas fa-copy"></i></button></div></div>';
-      h+='<div><div class="vcrl">Password</div><div class="vcrv">'+esc(t.password)+' <button class="cb" onclick="event.stopPropagation();vpnCopy(\''+esc(t.password).replace(/'/g,"\\'")+'\')"><i class="fas fa-copy"></i></button></div></div></div>';
-      h+='<div class="vca">';
-      h+=up?'<button class="vb vbd" onclick="vpnStop('+t.id+')"><i class="fas fa-stop"></i> Detener</button>':'<button class="vb vbc" onclick="vpnStart('+t.id+')"><i class="fas fa-play"></i> Iniciar</button>';
-      h+=' <div><button class="vb vbk" onclick="vpnCerts('+t.id+',\''+esc(t.name).replace(/'/g,"\\'")+'\')"><i class="fas fa-key"></i> Certs</button>';
-      h+=' <button class="vb vbl" onclick="vpnLogs('+t.id+',\''+esc(t.name).replace(/'/g,"\\'")+'\')"><i class="fas fa-terminal"></i></button>';
-      h+=' <button class="vb vbx" onclick="vpnDel('+t.id+',\''+esc(t.name).replace(/'/g,"\\'")+'\')"><i class="fas fa-trash-alt"></i></button></div>';
-      h+='</div></div>';
-    });el.innerHTML=h;
-  });
-}
-function checkDeps(){
-  aj('check_deps',null,function(d){
-    if(d.status!=='success')return;var dp=d.data,el=document.getElementById('vpnDepList'),b=document.getElementById('vpnDepBanner'),h='',miss=false;
-    [{ok:dp.openvpn,p:'openvpn',l:'OpenVPN'}].forEach(function(i){
-      if(i.ok)h+='<span class="vdi ok"><i class="fas fa-check-circle"></i> '+i.l+'</span>';
-      else{miss=true;h+='<span class="vdi mi" onclick="vpnInst(\''+i.p+'\',this)"><i class="fas fa-download"></i> '+i.l+'</span>';}
-    });el.innerHTML=h;b.style.display=miss?'block':'none';
-  });
-}
-window.vpnInst=function(p,el){el.innerHTML='<i class="fas fa-spinner fa-spin"></i> ...';el.style.pointerEvents='none';aj('install_deps',{package:p},function(d){d.status==='success'?(toast(d.msg),checkDeps()):(toast(d.msg,'error'),el.innerHTML='Error',el.style.pointerEvents='auto');});};
-window.vpnOpenCreate=function(){
-  document.getElementById('vpnName').value='';
-  document.getElementById('vpnPort').value='4443';
-  document.getElementById('vpnAutoIp').checked=true;vpnToggleIpMode();
-  document.getElementById('vpnCreateModal').style.display='flex';
-  aj('next_ip',null,function(d){if(d.status==='success'){document.getElementById('vpnLocalIp').value=d.local_ip;document.getElementById('vpnRemoteIp').value=d.remote_ip;}});
-};
-window.vpnToggleIpMode=function(){
-  var auto=document.getElementById('vpnAutoIp').checked,lip=document.getElementById('vpnLocalIp'),rip=document.getElementById('vpnRemoteIp');
-  if(auto){lip.readOnly=true;lip.style.background='var(--bg-body)';rip.readOnly=true;rip.style.background='var(--bg-body)';aj('next_ip',null,function(d){if(d.status==='success'){lip.value=d.local_ip;rip.value=d.remote_ip;}});}
-  else{lip.readOnly=false;lip.style.background='';rip.readOnly=false;rip.style.background='';}
-};
-window.vpnCloseCreate=function(){document.getElementById('vpnCreateModal').style.display='none';};
-window.vpnCreate=function(){
-  var n=document.getElementById('vpnName').value.trim(),l=document.getElementById('vpnLocalIp').value.trim(),r=document.getElementById('vpnRemoteIp').value.trim(),p=document.getElementById('vpnPort').value;
-  if(!n||!l||!r){toast('Completa todos los campos','error');return;}
-  var btn=document.getElementById('vpnBtnCreate');btn.disabled=true;btn.innerHTML='<i class="fas fa-spinner fa-spin"></i>';
-  aj('create',{name:n,local_ip:l,remote_ip:r,listen_port:p},function(d){btn.disabled=false;btn.innerHTML='<i class="fas fa-check"></i> Crear';d.status==='success'?(toast('Creado'),vpnCloseCreate(),load()):toast(d.msg,'error');});
-};
-window.vpnStart=function(id){toast('Iniciando...');aj('connect',{id:id},function(d){toast(d.status==='success'?'Iniciado':d.msg,d.status==='success'?'':'error');setTimeout(load,2000);});};
-window.vpnStop=function(id){aj('disconnect',{id:id},function(d){toast(d.status==='success'?'Detenido':d.msg,d.status==='success'?'':'error');load();});};
-window.vpnDel=function(id,n){if(!confirm('Eliminar "'+n+'"?'))return;aj('delete',{id:id},function(d){toast(d.status==='success'?'Eliminado':d.msg,d.status==='success'?'':'error');load();});};
-window.vpnLogs=function(id,n){document.getElementById('vpnLogsTitle').textContent='Logs: '+n;document.getElementById('vpnLogsContent').textContent='Cargando...';document.getElementById('vpnLogsModal').style.display='flex';aj('logs','id='+id,function(d){document.getElementById('vpnLogsContent').textContent=d.status==='success'?(d.logs||'Sin logs'):d.msg;});};
-window.vpnCerts=function(id,n){
-  document.getElementById('vpnCertsTitle').textContent='Certificados: '+n;
-  document.getElementById('vpnCertsContent').innerHTML='<div style="text-align:center;padding:20px;color:var(--text-gray);"><i class="fas fa-spinner fa-spin"></i> Cargando certificados...</div>';
-  document.getElementById('vpnCertsModal').style.display='flex';
-  aj('certs','id='+id,function(d){
-    if(d.status!=='success'){document.getElementById('vpnCertsContent').textContent=d.msg;return;}
-    var c=d.data,h='';
-    h+='<div style="font-size:0.78rem;font-weight:700;color:var(--text-dark);margin-bottom:4px;">Server Certificate (importar en MikroTik)</div>';
-    h+='<div style="background:#0f172a;color:#a5f3fc;padding:10px 14px;border-radius:8px;font-size:0.72rem;font-family:monospace;max-height:180px;overflow-y:auto;white-space:pre-wrap;word-break:break-all;margin-bottom:12px;position:relative;" id="certKey">'+esc(c.server_crt)+'<button class="vcert-copy" onclick="vpnCopyCert(\'certKey\')" style="position:absolute;top:6px;right:6px;background:rgba(255,255,255,0.15);border:none;color:#fff;padding:4px 8px;border-radius:4px;cursor:pointer;font-size:0.7rem;"><i class="fas fa-copy"></i></button></div>';
-    h+='<div style="background:#eff6ff;padding:10px 14px;border-radius:8px;font-size:0.8rem;color:#1e40af;line-height:1.6;margin-top:8px">';
-    h+='<b>En MikroTik:</b><br>1. Copiar el certificado y guardarlo como archivo .crt en Files<br>2. System → Certificates → Import → seleccionar el .crt<br>3. PPP → Profiles → crear perfil OVPN con local/remote address<br>4. Interfaces → OVPN Client → Add:<br>&nbsp;&nbsp;• Connect To: <b>IP_publica</b>, Port: <b>4443</b><br>&nbsp;&nbsp;• Protocol: <b>tcp</b><br>&nbsp;&nbsp;• User/Password: credenciales de la tarjeta<br>&nbsp;&nbsp;• Cipher: <b>aes 256 cbc</b>, Auth: <b>sha256</b><br>&nbsp;&nbsp;• Certificate: el cert importado<br>&nbsp;&nbsp;• Verify Server Certificate: <b>no</b></div>';
-    document.getElementById('vpnCertsContent').innerHTML=h;
-  });
-};
-window.vpnCopyCert=function(id){var t=document.getElementById(id).innerText;navigator.clipboard?navigator.clipboard.writeText(t).then(()=>toast('Copiado')):toast('Error copiando','error');};
-window.vpnCopy=function(t){navigator.clipboard?navigator.clipboard.writeText(t).then(()=>toast('Copiado')):(function(){var a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();document.execCommand('copy');document.body.removeChild(a);toast('Copiado');})();};
-checkDeps();load();setInterval(load,15000);
-})();
-</script>
-</div>
+
+
+
+
+
+
+<script>
+$(document).ready(function() {
+  $.ajax({url:'/api/smartolt/vpn-servers', method:'GET', success:function(r) {
+    if(!r.success) return;
+    var h = '';
+    (r.data||[]).forEach(function(v, i) {
+      h += '<tr class="valign-center"><td>'+(i+1)+'</td><td>'+(v.nombre||'tunnel'+(i+1))+'</td><td><span class="text-success">Connected</span></td><td>'+(v.subnet||'10.69.69.0/24')+'</td><td>'+(v.routes||'10.0.0.0/8')+'</td><td><a href="#" class="btn btn-success btn-xs">Edit</a></td></tr>';
+    });
+    $('table.table-striped tbody').html(h || '<tr><td colspan="6" class="text-muted text-center">No VPN tunnels</td></tr>');
+  }});
+});
+</script><div class="loadingoverlay" style="background-color: rgba(255, 255, 255, 0.8); position: fixed; display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; top: 0px; left: 0px; width: 100%; height: 100%; background-size: 100px;"><div class="loadingoverlay_fontawesome fa fa-spinner fa-spin" style="font-size: 100px;"></div><div id="waitingOLT" style="font-size: 50px; white-space: nowrap;">Waiting for OLT</div></div></body></html>

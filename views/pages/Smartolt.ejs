@@ -158,7 +158,14 @@ label{display:block;font-size:0.82rem;font-weight:600;color:#374151;margin-botto
                   </div>
                   <div class="section-title">Proxy SOCKS (Router MikroTik intermediario)</div>
                   <div class="row">
+                    <div class="col-6"><label>Router intermediario</label>
+                      <select id="oltRouterSelect" class="form-control" onchange="onOltRouterChange()">
+                        <option value="">-- Seleccionar router --</option>
+                      </select>
+                    </div>
                     <div class="col-6"><label>IP del Proxy SOCKS</label><input type="text" id="oltSocksIp" class="form-control" placeholder="Ej: 172.30.105.2"></div>
+                  </div>
+                  <div class="row">
                     <div class="col-6"><label>Puerto SOCKS</label><input type="number" id="oltSocksPort" class="form-control" value="1080" placeholder="1080"></div>
                   </div>
                   <div style="margin-top:8px;padding:10px;background:#fefce8;border-radius:6px;font-size:0.82rem;color:#92400e;">
@@ -217,6 +224,33 @@ var editandoOnuId = 0;
 var erroresOLT = {};
 
 function cerrarModal(id) { document.getElementById(id).style.display = 'none'; }
+
+// Cargar routers en el selector de OLT directa
+function cargarRoutersOlt() {
+  var sel = document.getElementById('oltRouterSelect');
+  if (!sel) return;
+  fetch('/api/routers')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      sel.innerHTML = '<option value="">-- Seleccionar router --</option>';
+      if (data && data.length > 0) {
+        data.forEach(function(r) {
+          var opt = document.createElement('option');
+          opt.value = r.vpn_ip || r.ip || '';
+          opt.textContent = r.name + ' (' + (r.vpn_ip || r.ip || 'sin IP') + ')';
+          sel.appendChild(opt);
+        });
+      }
+    })
+    .catch(function(){});
+}
+
+function onOltRouterChange() {
+  var ip = document.getElementById('oltRouterSelect').value;
+  if (ip) {
+    document.getElementById('oltSocksIp').value = ip;
+  }
+}
 
 // ===== Tabs: SmartOLT vs Directa =====
 function toggleOltTab(tab) {
@@ -330,6 +364,7 @@ function abrirModalOLT() {
   document.getElementById('btnGuardarOLT').innerHTML = '<i class="fas fa-save"></i> Guardar';
   toggleOltTab('smartolt');
   document.getElementById('modalOLT').style.display = 'flex';
+  cargarRoutersOlt();
 }
 
 function editarOLT(id) {

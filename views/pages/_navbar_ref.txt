@@ -1,0 +1,37 @@
+<div class="navbar navbar-default navbar-fixed-top default-menu">
+    <div class="container">
+      <div class="navbar-header">
+        <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#navbar-main" aria-expanded="false" aria-controls="navbar">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand text-ellipsis max-width-250" href="/modulo?pagina=GPONManager" title="GPON Manager">GPON Manager</a>
+      </div>
+      <div class="navbar-collapse collapse" id="navbar-main">
+        <ul class="nav navbar-nav">
+          <li><a href="/modulo?pagina=GPONManager"><i class="fa fa-tachometer"></i> Dashboard</a></li>
+          <li><a href="/modulo?pagina=smartolt_configured_full"><i class="fa fa-check-circle"></i> Configuradas</a></li>
+          <li><a href="/modulo?pagina=smartolt_unconfigured_full"><i class="fa fa-clock-o"></i> No configuradas</a></li>
+          <li><a href="/modulo?pagina=smartolt_onu_types_full"><i class="fa fa-microchip"></i> Tipos ONU</a></li>
+          <li><a href="/modulo?pagina=smartolt_speed_profiles_full"><i class="fa fa-tachometer"></i> Velocidad</a></li>
+          <li><a href="/modulo?pagina=smartolt_locations_full"><i class="fa fa-map-marker"></i> Zonas</a></li>
+          <li class="dropdown">
+            <a class="dropdown-toggle" data-toggle="dropdown" href="#">Settings <span class="caret"></span></a>
+            <ul class="dropdown-menu">
+              <li><a href="/modulo?pagina=smartolt_olt">OLTs</a></li>
+              <li><a href="/modulo?pagina=smartolt_general">General</a></li>
+              <li><a href="/modulo?pagina=smartolt_billing">Billing</a></li>
+              <li><a href="/modulo?pagina=smartolt_system_config">VPN &amp; TR069</a></li>
+              <li><a href="/modulo?pagina=smartolt_presets_full">Presets</a></li>
+              <li><a href="/modulo?pagina=smartolt_diagnostics_full">Diagnostics</a></li>
+              <li><a href="/modulo?pagina=smartolt_graphs">Graphs</a></li>
+            </ul>
+          </li>
+        </ul>
+        <ul class="nav navbar-nav navbar-right">
+          <li><a href="/logout"><i class="fa fa-sign-out"></i></a></li>
+        </ul>
+      </div>
+    </div>
+  </div>

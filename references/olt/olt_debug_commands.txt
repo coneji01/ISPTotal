@@ -1,0 +1,50 @@
+debugging
+  arp                            ARP information
+  bfd                            BFD information
+  bgp                            BGP information
+  cardtest                       Configure card test command
+  cfm                            CFM information
+  dhcpv4-l2-relay-agent          Dhcpv4 layer-2 relay agent debugging
+                                 infomation
+  dhcpv6-l2-relay-agent          Dhcpv6 layer-2 relay agent debugging
+                                 infomation
+  dot1x                          dot1x debugging information
+  erps                           
+  ethernet-oam                   Ethernet OAM information
+  igmp                           IGMP debugging messages
+  ip                             IP information
+  iptv                           Iptv debug management
+  ipv6                           IPv6 information
+  isis                           IS-IS information
+  l2vpn                          L2VPN debug
+  lacp                           Link aggregation control protocol
+  layer2                         Layer2 information
+  lldp                           Link layer discovery protocol
+  mac-file                       mac-file debugging information
+  mac-ping                       MAC ping information
+  mld                            MLD debugging messages
+  mpls                           MPLS debug
+  mstp                           MSTP debugging information
+  nas                            NAS information
+  ndp-lio                        ndp-lio debugging infomation
+  ntp                            NTP information
+  oam-track                      OAM track information
+  pon                            PON debug
+  port                           port-link debugging infomation
+  port-identification            port-identification debugging infomation
+  portloc-profile                portloc-profile debugging infomation
+  ppp                            PPP (point to point protocol) information
+  ppp-comm                       ppp-comm debugging infomation
+  pppoe-common                   pppoe-common debugging infomation
+  show-vector-loopback-result    Show all debug vector loopback check result
+  show-vector-path-check-result  Show debug vector-path-check-result
+  tunnel                         Generic tunnel interface
+  vector-loopback-check          Vector-loopback-check command
+  vector-loopback-check-all      Vector-loopback-check-all command
+  vector-loopback-check-single   Vector-loopback-check-single command
+  vector-path-check              Vector-path-check Command
+  vector-path-check-switch       Vector-path-check switch
+  vrrp                           Debug virtual router redundancy protocol
+ZXAN#
+%Error 20203: Incomplete command.
+ZXAN#

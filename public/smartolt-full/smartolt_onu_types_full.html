@@ -1,0 +1,1468 @@
+<!DOCTYPE html><html lang="en"><head>
+        <script>window.SMARTOLT_DB_THEME='system';</script>
+    <!-- Paint-blocking: resolve theme before first paint. Precedence: per-device override (smartolt-theme-local, set by the header button) > account/DB pref > device (system). -->
+    <script>try{var k='smartolt-night',lk='smartolt-theme-local',dbTheme=window.SMARTOLT_DB_THEME,local=null,pref,n;try{local=localStorage.getItem(lk);}catch(e){}if(local==='night'||local==='light'||local==='system'){pref=local;}else if(dbTheme==='night'||dbTheme==='light'||dbTheme==='system'){pref=dbTheme;}else{pref='system';}if(pref==='system'){n=!!(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);}else if(pref==='night'){n=true;}else{n=false;}try{localStorage.setItem(k,n?'1':'0');}catch(e){}if(n){document.documentElement.classList.add('smartolt-night');}else{document.documentElement.classList.remove('smartolt-night');}document.cookie=k+'='+(n?'1':'0')+'; path=/; max-age=31536000; SameSite=Lax'+(location.protocol==='https:'?'; Secure':'');}catch(e){}</script>
+    <script>try{var wk='smartolt-wide-tables',wv=null,m=document.cookie.match(new RegExp('(?:^|; )'+wk+'=([^;]*)'));try{wv=localStorage.getItem(wk);}catch(e){}if(wv!=='1'&&wv!=='0'&&m){wv=decodeURIComponent(m[1]);}if(wv==='1'){document.documentElement.classList.add('smartolt-wide-tables');}}catch(e){}</script>
+        <meta http-equiv="content-type" content="text/html; utf-8">
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Language" content="en">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    
+  <title>ONU types - JOEL WIFI</title>
+
+  <!-- Bootstrap Core CSS -->
+  <link href="/public/smartolt-files/bootstrap-custom.css?v=3.53.0.24" rel="stylesheet">
+  <link href="/public/smartolt-files/bootstrap-multiselect.css?v=3.53.0.20" rel="stylesheet">
+  <link href="/public/smartolt-files/styles.css?v=3.53.0.29" rel="stylesheet">
+  <link href="/public/smartolt-files/toast.css?v=3.53.0.20" rel="stylesheet">
+
+  
+  <!-- Custom Fonts -->
+  <link href="/public/smartolt-files/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+  <!-- Message box CSS -->
+  <link href="/public/smartolt-files/messagebox.css" rel="stylesheet" type="text/css">
+
+  <link href="/public/smartolt-files/inter-fonts.css?v=3.53.0.1" rel="stylesheet">
+  <link href="/public/smartolt-files/dashboard-smartolt-night.css?v=3.53.0.209" rel="stylesheet">
+  <script src="/public/smartolt-files/dashboard-smartolt-night.js?v=3.53.0.63" defer=""></script>
+    
+  <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+  <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+  <!--[if lt IE 9]>
+        <script src="/public/smartolt-files/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="/public/smartolt-files/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+  <!-- jQuery -->
+  <script src="/public/smartolt-files/jquery.min.js"></script>
+
+  
+  
+  <!-- Toast alerts -->
+  <script src="/public/smartolt-files/toast.js"></script>
+
+  <!-- Pauses recurring AJAX polling while the tab is hidden OR the user has been idle, resumes on focus / activity. -->
+  <script src="/public/smartolt-files/polling.js?v=3.53.0.3"></script>
+
+  <!-- Geolocation permission-error → localized message helper (shared by location pickers). -->
+  <script src="/public/smartolt-files/geolocation_helper.js?v=3.53.0.1"></script>
+
+  
+  
+</head>
+
+<body class="smartolt-site">
+<script type="text/javascript">
+$( document ).ready(function() {
+	$.ajaxSetup({
+		cache: false
+	});
+	
+	window.jqxhrs = [];
+
+      window.registerJqxhr = function(jqxhr) {
+        jqxhrs.push(jqxhr);
+      }
+
+      window.abortJqxhr = function() {
+        for (var i = jqxhrs.length - 1; i >= 0; i--) {
+          if (jqxhrs[i]) {
+            jqxhrs[i].abort();
+          }
+        }
+
+        window.jqxhrs = [];
+      }
+
+      $(window).bind("beforeunload", function(event) {
+        abortJqxhr();
+      });
+
+      function unregisterJqxhr(event, jqxhr, settings) {
+        var idx = $.inArray(jqxhr, jqxhrs);
+        if (idx != -1) {
+          jqxhrs.splice(idx, 1);
+        }
+      }
+
+      $(document).ajaxComplete(unregisterJqxhr);
+
+      config = {
+        X_TOKEN: '9C23F19BE06B4BEB93046ECFDF50FF91'
+      }
+    });
+  </script>
+
+  <div class="smartolt-landing-hero-bg" aria-hidden="true"></div>
+
+  <div id="content-wrapper">
+    <div class="smartolt-topbar-network" aria-hidden="true">
+      <div class="smartolt-topbar-network-inner">
+        <svg class="smartolt-topbar-network-lines" viewBox="0 0 100 100" preserveAspectRatio="none">
+          <line x1="8" y1="68" x2="23" y2="78"></line>
+          <line x1="23" y1="78" x2="37" y2="63"></line>
+          <line x1="8" y1="68" x2="37" y2="63"></line>
+          <line x1="37" y1="63" x2="65" y2="18"></line>
+          <line x1="65" y1="18" x2="89" y2="34"></line>
+          <line x1="23" y1="78" x2="65" y2="18"></line>
+          <line x1="37" y1="63" x2="89" y2="34"></line>
+        </svg>
+        <span class="smartolt-topbar-node smartolt-topbar-node-a"></span>
+        <span class="smartolt-topbar-node smartolt-topbar-node-b"></span>
+        <span class="smartolt-topbar-node smartolt-topbar-node-c"></span>
+        <span class="smartolt-topbar-node smartolt-topbar-node-d"></span>
+        <span class="smartolt-topbar-node smartolt-topbar-node-e"></span>
+      </div>
+    </div>
+      <div class="navbar navbar-default navbar-fixed-top default-menu">
+    <div class="container">
+      <div class="navbar-header">
+        <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#navbar-main" aria-expanded="false" aria-controls="navbar">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand text-ellipsis max-width-250" href="/modulo?pagina=GPONManager" title="GPON Manager">GPON Manager</a>
+      </div>
+      <div class="navbar-collapse collapse" id="navbar-main">
+        <ul class="nav navbar-nav">
+          <li><a href="/modulo?pagina=GPONManager"><i class="fa fa-tachometer"></i> Dashboard</a></li>
+          <li><a href="/modulo?pagina=SmartoltConfigured"><i class="fa fa-check-circle"></i> Configuradas</a></li>
+          <li><a href="/modulo?pagina=SmartoltUnconfigured"><i class="fa fa-clock-o"></i> No configuradas</a></li>
+          <li><a href="/modulo?pagina=SmartoltOnuTypes"><i class="fa fa-microchip"></i> Tipos ONU</a></li>
+          <li><a href="/modulo?pagina=SmartoltSpeedProfiles"><i class="fa fa-tachometer"></i> Velocidad</a></li>
+          <li><a href="/modulo?pagina=SmartoltLocations"><i class="fa fa-map-marker"></i> Zonas</a></li>
+          <li class="dropdown">
+            <a class="dropdown-toggle" data-toggle="dropdown" href="#">Settings <span class="caret"></span></a>
+            <ul class="dropdown-menu">
+              <li><a href="/modulo?pagina=smartolt_olt">OLTs</a></li>
+              <li><a href="/modulo?pagina=SmartoltDashboard">SmartOLT App</a></li>
+              <li><a href="/modulo?pagina=smartolt_general">General</a></li>
+              <li><a href="/modulo?pagina=smartolt_billing">Billing</a></li>
+              <li><a href="/modulo?pagina=smartolt_system_config">VPN &amp; TR069</a></li>
+              <li><a href="/modulo?pagina=smartolt_presets">Authorization presets</a></li>
+            </ul>
+          </li>
+        </ul>
+        <ul class="nav navbar-nav navbar-right">
+          <li><a href="/logout"><i class="fa fa-sign-out"></i></a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+    <!-- Page Content -->
+    <div class="container">
+
+<div class="container-fluid content-wrap">
+	<h2>ONU types</h2>
+		
+			<a href="/onu_types/add" class="btn btn-success margin-bottom"><span class="glyphicon glyphicon-plus"> </span> Add ONU type</a>
+	
+
+	<table class="table table-striped">
+		<tbody><tr>
+			<th class="col-md-1"><a href="/onu_types/listing?sort_by=pon_type&amp;sort_order=asc" class="sort-link">PON type </a></th>
+			<th class="col-md-1 text-center"><a href="/onu_types/listing?sort_by=channels&amp;sort_order=asc" class="sort-link">Channels </a></th>
+			<th class="col-md-2"><a href="/onu_types/listing?sort_by=name&amp;sort_order=desc" class="sort-link">ONU type <i class="fa fa-sort-asc" aria-hidden="true"></i></a></th>
+			<th class="col-md-2"><a href="/onu_types/listing?sort_by=eth_ports&amp;sort_order=asc" class="sort-link">Ethernet ports </a></th>
+			<th class="col-md-1"><a href="/onu_types/listing?sort_by=wifi_ports&amp;sort_order=asc" class="sort-link">WiFi </a></th>
+			<th class="col-md-2"><a href="/onu_types/listing?sort_by=voip_ports&amp;sort_order=asc" class="sort-link">VoIP ports </a></th>
+			<th class="col-md-1"><a href="/onu_types/listing?sort_by=catv&amp;sort_order=asc" class="sort-link">CATV </a></th>
+						<th class="col-md-2"><a href="/onu_types/listing?sort_by=allow_custom_templates&amp;sort_order=asc" class="sort-link">Allow custom profiles </a></th>
+						<th class="col-md-2"><a href="/onu_types/listing?sort_by=capability&amp;sort_order=asc" class="sort-link">Capability </a></th>
+			<th></th>
+			<th class="col-md-1 text-center">Action</th>
+		</tr>
+
+				<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="/onu_types/edit/81" class="btn btn-link">EG8021V5</a>
+							</td>
+			<td>4</td>
+			<td>8</td>
+			<td>0</td>
+			<td>0</td>
+						<td>Yes</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="/onu_types/delete/81" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="/onu_types/edit/79" class="btn btn-link">EG8041V5</a>
+							</td>
+			<td>4</td>
+			<td>1</td>
+			<td>0</td>
+			<td>0</td>
+						<td>Yes</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="/onu_types/delete/79" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="/onu_types/edit/55" class="btn btn-link">EG8141A5</a>
+							</td>
+			<td>4</td>
+			<td>1</td>
+			<td>0</td>
+			<td>0</td>
+						<td>Yes</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="/onu_types/delete/55" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="/onu_types/edit/72" class="btn btn-link">EG8145V5</a>
+							</td>
+			<td>4</td>
+			<td>0</td>
+			<td>0</td>
+			<td>0</td>
+						<td>Yes</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="/onu_types/delete/72" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="/onu_types/edit/71" class="btn btn-link">ET8145V5CUS</a>
+							</td>
+			<td>4</td>
+			<td>10</td>
+			<td>0</td>
+			<td>0</td>
+						<td>Yes</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="/onu_types/delete/71" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="/onu_types/edit/76" class="btn btn-link">F670LV1.1.01</a>
+							</td>
+			<td>4</td>
+			<td>0</td>
+			<td>0</td>
+			<td>0</td>
+						<td>Yes</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="/onu_types/delete/76" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="/onu_types/edit/75" class="btn btn-link">F670LV9.0</a>
+							</td>
+			<td>4</td>
+			<td>3</td>
+			<td>0</td>
+			<td>0</td>
+						<td>Yes</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="/onu_types/delete/75" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="/onu_types/edit/47" class="btn btn-link">F673AV9</a>
+							</td>
+			<td>4</td>
+			<td>0</td>
+			<td>1</td>
+			<td>0</td>
+						<td>Yes</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="/onu_types/delete/47" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="/onu_types/edit/80" class="btn btn-link">F679LV9.1</a>
+							</td>
+			<td>4</td>
+			<td>4</td>
+			<td>0</td>
+			<td>0</td>
+						<td>Yes</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="/onu_types/delete/80" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="/onu_types/edit/61" class="btn btn-link">FD504GW</a>
+							</td>
+			<td>4</td>
+			<td>1</td>
+			<td>0</td>
+			<td>0</td>
+						<td>Yes</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="/onu_types/delete/61" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="/onu_types/edit/82" class="btn btn-link">GPON_ONUV7.1</a>
+							</td>
+			<td>4</td>
+			<td>8</td>
+			<td>0</td>
+			<td>0</td>
+						<td>Yes</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="/onu_types/delete/82" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="/onu_types/edit/48" class="btn btn-link">HG8010H</a>
+							</td>
+			<td>1</td>
+			<td>0</td>
+			<td>0</td>
+			<td>0</td>
+						<td>Yes</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="/onu_types/delete/48" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="/onu_types/edit/49" class="btn btn-link">HG8120C</a>
+							</td>
+			<td>2</td>
+			<td>0</td>
+			<td>1</td>
+			<td>0</td>
+						<td>Yes</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="/onu_types/delete/49" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="/onu_types/edit/56" class="btn btn-link">HG8145V5</a>
+							</td>
+			<td>4</td>
+			<td>2</td>
+			<td>1</td>
+			<td>1</td>
+						<td>Yes</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="/onu_types/delete/56" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="/onu_types/edit/70" class="btn btn-link">HG8145X6---10</a>
+							</td>
+			<td>4</td>
+			<td>4</td>
+			<td>0</td>
+			<td>0</td>
+						<td>Yes</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="/onu_types/delete/70" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="/onu_types/edit/69" class="btn btn-link">HG8145X6--10</a>
+							</td>
+			<td>4</td>
+			<td>4</td>
+			<td>0</td>
+			<td>0</td>
+						<td>Yes</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="/onu_types/delete/69" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="/onu_types/edit/68" class="btn btn-link">HG8145X6-10</a>
+							</td>
+			<td>4</td>
+			<td>1</td>
+			<td>0</td>
+			<td>0</td>
+						<td>Yes</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="/onu_types/delete/68" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="/onu_types/edit/62" class="btn btn-link">HG8240H</a>
+							</td>
+			<td>4</td>
+			<td>4</td>
+			<td>2</td>
+			<td>0</td>
+						<td>Yes</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="/onu_types/delete/62" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="/onu_types/edit/50" class="btn btn-link">HG8242H</a>
+							</td>
+			<td>4</td>
+			<td>4</td>
+			<td>2</td>
+			<td>1</td>
+						<td>Yes</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="/onu_types/delete/50" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="/onu_types/edit/51" class="btn btn-link">HG8245H</a>
+							</td>
+			<td>4</td>
+			<td>4</td>
+			<td>2</td>
+			<td>0</td>
+						<td>Yes</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="/onu_types/delete/51" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="/onu_types/edit/63" class="btn btn-link">HG8340M</a>
+							</td>
+			<td>4</td>
+			<td>0</td>
+			<td>0</td>
+			<td>0</td>
+						<td>Yes</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="/onu_types/delete/63" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="/onu_types/edit/64" class="btn btn-link">HG8347R</a>
+							</td>
+			<td>4</td>
+			<td>4</td>
+			<td>1</td>
+			<td>0</td>
+						<td>Yes</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="/onu_types/delete/64" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="/onu_types/edit/52" class="btn btn-link">HG8545M</a>
+							</td>
+			<td>4</td>
+			<td>4</td>
+			<td>1</td>
+			<td>0</td>
+						<td>Yes</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="/onu_types/delete/52" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="/onu_types/edit/53" class="btn btn-link">HG8546M</a>
+							</td>
+			<td>4</td>
+			<td>4</td>
+			<td>1</td>
+			<td>0</td>
+						<td>Yes</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="/onu_types/delete/53" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="/onu_types/edit/54" class="btn btn-link">HS8145V</a>
+							</td>
+			<td>4</td>
+			<td>4</td>
+			<td>1</td>
+			<td>0</td>
+						<td>Yes</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="/onu_types/delete/54" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="/onu_types/edit/78" class="btn btn-link">HS8545M5</a>
+							</td>
+			<td>4</td>
+			<td>1</td>
+			<td>0</td>
+			<td>0</td>
+						<td>Yes</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="/onu_types/delete/78" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="/onu_types/edit/65" class="btn btn-link">HS8546V</a>
+							</td>
+			<td>4</td>
+			<td>4</td>
+			<td>1</td>
+			<td>0</td>
+						<td>Yes</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="/onu_types/delete/65" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="/onu_types/edit/59" class="btn btn-link">HSGQ-X100W2</a>
+							</td>
+			<td>1</td>
+			<td>1</td>
+			<td>0</td>
+			<td>0</td>
+						<td>Yes</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="/onu_types/delete/59" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="/onu_types/edit/77" class="btn btn-link">R2</a>
+							</td>
+			<td>4</td>
+			<td>0</td>
+			<td>0</td>
+			<td>0</td>
+						<td>Yes</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="/onu_types/delete/77" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="/onu_types/edit/66" class="btn btn-link">XC220-G3v</a>
+							</td>
+			<td>4</td>
+			<td>0</td>
+			<td>1</td>
+			<td>0</td>
+						<td>Yes</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="/onu_types/delete/66" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="/onu_types/edit/57" class="btn btn-link">XN020-G3</a>
+							</td>
+			<td>1</td>
+			<td>0</td>
+			<td>0</td>
+			<td>0</td>
+						<td>Yes</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="/onu_types/delete/57" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="/onu_types/edit/58" class="btn btn-link">XN020-G3v</a>
+							</td>
+			<td>2</td>
+			<td>0</td>
+			<td>1</td>
+			<td>0</td>
+						<td>Yes</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="/onu_types/delete/58" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="/onu_types/edit/60" class="btn btn-link">XN020G3</a>
+							</td>
+			<td>1</td>
+			<td>2</td>
+			<td>0</td>
+			<td>0</td>
+						<td>No</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="/onu_types/delete/60" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="/onu_types/edit/40" class="btn btn-link">ZTE-F600</a>
+							</td>
+			<td>4</td>
+			<td>0</td>
+			<td>0</td>
+			<td>0</td>
+						<td>Yes</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="/onu_types/delete/40" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="/onu_types/edit/28" class="btn btn-link">ZTE-F601</a>
+							</td>
+			<td>1</td>
+			<td>0</td>
+			<td>0</td>
+			<td>0</td>
+						<td>Yes</td>
+						<td>Bridging</td>
+			<td></td>
+			<td>
+									<a href="/onu_types/delete/28" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="/onu_types/edit/45" class="btn btn-link">ZTE-F601V6.0</a>
+							</td>
+			<td>1</td>
+			<td>0</td>
+			<td>0</td>
+			<td>0</td>
+						<td>Yes</td>
+						<td>Bridging</td>
+			<td></td>
+			<td>
+									<a href="/onu_types/delete/45" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="/onu_types/edit/32" class="btn btn-link">ZTE-F620</a>
+							</td>
+			<td>4</td>
+			<td>0</td>
+			<td>2</td>
+			<td>0</td>
+						<td>Yes</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="/onu_types/delete/32" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="/onu_types/edit/29" class="btn btn-link">ZTE-F623</a>
+							</td>
+			<td>4</td>
+			<td>4</td>
+			<td>1</td>
+			<td>0</td>
+						<td>Yes</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="/onu_types/delete/29" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="/onu_types/edit/27" class="btn btn-link">ZTE-F625</a>
+							</td>
+			<td>4</td>
+			<td>0</td>
+			<td>2</td>
+			<td>1</td>
+						<td>Yes</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="/onu_types/delete/27" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="/onu_types/edit/34" class="btn btn-link">ZTE-F625G</a>
+							</td>
+			<td>4</td>
+			<td>0</td>
+			<td>2</td>
+			<td>1</td>
+						<td>Yes</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="/onu_types/delete/34" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="/onu_types/edit/33" class="btn btn-link">ZTE-F627</a>
+							</td>
+			<td>4</td>
+			<td>4</td>
+			<td>2</td>
+			<td>0</td>
+						<td>Yes</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="/onu_types/delete/33" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="/onu_types/edit/37" class="btn btn-link">ZTE-F643</a>
+							</td>
+			<td>4</td>
+			<td>4</td>
+			<td>2</td>
+			<td>0</td>
+						<td>Yes</td>
+						<td>Bridging</td>
+			<td></td>
+			<td>
+									<a href="/onu_types/delete/37" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="/onu_types/edit/44" class="btn btn-link">ZTE-F643V6.0</a>
+							</td>
+			<td>1</td>
+			<td>0</td>
+			<td>0</td>
+			<td>0</td>
+						<td>Yes</td>
+						<td>Bridging</td>
+			<td></td>
+			<td>
+									<a href="/onu_types/delete/44" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="/onu_types/edit/30" class="btn btn-link">ZTE-F660</a>
+							</td>
+			<td>4</td>
+			<td>4</td>
+			<td>2</td>
+			<td>0</td>
+						<td>Yes</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="/onu_types/delete/30" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="/onu_types/edit/41" class="btn btn-link">ZTE-F660V5.0</a>
+							</td>
+			<td>4</td>
+			<td>4</td>
+			<td>2</td>
+			<td>0</td>
+						<td>Yes</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="/onu_types/delete/41" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="/onu_types/edit/42" class="btn btn-link">ZTE-F660V5.2</a>
+							</td>
+			<td>4</td>
+			<td>4</td>
+			<td>2</td>
+			<td>0</td>
+						<td>Yes</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="/onu_types/delete/42" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="/onu_types/edit/43" class="btn btn-link">ZTE-F660V6.0</a>
+							</td>
+			<td>4</td>
+			<td>4</td>
+			<td>2</td>
+			<td>0</td>
+						<td>Yes</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="/onu_types/delete/43" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="/onu_types/edit/31" class="btn btn-link">ZTE-F668</a>
+							</td>
+			<td>4</td>
+			<td>4</td>
+			<td>2</td>
+			<td>1</td>
+						<td>Yes</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="/onu_types/delete/31" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="/onu_types/edit/67" class="btn btn-link">ZXHN-F670L</a>
+							</td>
+			<td>4</td>
+			<td>2</td>
+			<td>0</td>
+			<td>0</td>
+						<td>Yes</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="/onu_types/delete/67" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+		</tbody></table>
+
+</div>
+
+
+</div>
+<br>
+<!-- /#page-wrapper -->
+    
+<div id="saveConfigModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="saveConfigModalLabel" aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+		  <div class="modal-header">
+		    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+		    <h3 id="saveConfigModalLabel">Save configuration</h3>
+		  </div>
+		  <div class="modal-body">
+		    <p>This will save the current OLT(s) configuration as startup configuration. It may take up to 5 minutes for the OLT(s) to finish saving the config. Are you sure?</p>
+		  </div>
+		  <div class="modal-footer">
+		    <button class="btn btn-link" data-dismiss="modal" aria-hidden="true">No, cancel</button>
+		    <button class="btn btn-primary save-configuration-button">Yes, save configuration</button>
+		  </div>
+		</div>
+	</div>
+</div>
+
+<div id="importModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="importModalLabel" aria-hidden="true">
+</div>
+
+<div id="rebuildModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="rebuildModalLabel" aria-hidden="true">
+</div>
+
+<div id="deleteAllApiReconciliationModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="deleteAllApiReconciliationModalLabel" aria-hidden="true">
+</div>
+
+<div id="generateSnmpIdsModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="generateSnmpIdsModalLabel" aria-hidden="true">
+</div>
+
+    <!-- Bootstrap Core JavaScript -->
+    <script src="/public/smartolt-files/bootstrap.min.js"></script>
+    <script src="/public/smartolt-files/bootstrap-multiselect.js?v=3.53.0"></script>
+
+    <!-- Metis Menu Plugin JavaScript -->
+    <script src="/public/smartolt-files/metisMenu.min.js"></script>
+
+    <!-- Custom Theme JavaScript -->
+    <script src="/public/smartolt-files/sb-admin-2.js"></script>
+        
+    <!-- Loading overlay -->
+    <script src="/public/smartolt-files/loadingoverlay.custom.js?v=2"></script>
+    
+    <!-- Message box -->
+    <script src="/public/smartolt-files/messagebox.min.js"></script>
+    
+    
+
+<script type="text/javascript">
+
+$( document ).ready(function() {
+	
+	// Hide new version dot if user has already seen this version
+	var currentVersion = '3.53.0';
+	var lastSeenVersion = localStorage.getItem('lastSeenVersion');
+	if (lastSeenVersion === currentVersion) {
+		$('.new-version-dot').hide();
+	}
+
+	
+	$('#smartolt-update-banner-changelog').on('click', function(e) {
+		e.preventDefault();
+		localStorage.setItem('lastSeenVersion', currentVersion);
+		$('.new-version-dot').hide();
+				window.location.href = '/changelog';
+			});
+
+	$('#smartolt-update-banner-dismiss').on('click', function() {
+		localStorage.setItem('lastSeenVersion', currentVersion);
+		$('.new-version-dot').hide();
+		$('#smartolt-update-banner').slideUp(300);
+	});
+
+	$('#footer-changelog-link').on('click', function() {
+		localStorage.setItem('lastSeenVersion', currentVersion);
+		$('.new-version-dot').hide();
+	});
+
+	//hide alert-success after 5 seconds
+	/*setTimeout(function(){
+		$('.alert-success').not('.nofade').fadeOut();
+	},5000);*/
+	
+	var waitingForOLT   = $("<div>", {
+	    id      : "waitingOLT",
+	    css     : {
+	        "font-size" : "50px",
+			"white-space" : "nowrap"
+	    },
+	    text    : "Waiting for OLT"
+	});
+
+	var loadingOverlaySettings = {
+		    image       : "",
+		    fontawesome : "fa fa-spinner fa-spin",
+		    custom  : waitingForOLT,
+		    resizeInterval : 0
+		};
+
+	$.LoadingOverlay("append", loadingOverlaySettings);
+
+	window.showLoadingOverlay = function(loadingText = null) {
+		if(loadingText != null) {
+			$("#waitingOLT").text(loadingText);
+		}
+		else {
+			$("#waitingOLT").text("Waiting for OLT");
+		}
+		
+		$.LoadingOverlay("show", loadingOverlaySettings);
+	}
+
+	window.hideLoadingOverlay = function() {
+		$.LoadingOverlay("hide");
+	}
+
+	window.isLoadingOverlayVisible = function() {
+		return $('.loadingoverlay').is(":visible");
+	}
+	
+	//hide loading overlay when ajax request finishes
+	/*$(document).ajaxStop(function(){
+		hideLoadingOverlay();
+	});*/
+
+	//show toast with error
+	$(document).ajaxError(function(requestObject, error, errorThrown) {
+		if(error.status != 404 && error != undefined && error.responseJSON != undefined && 
+				error.responseJSON.error != undefined && error.responseJSON.error.length > 0) {
+			toast(error.responseJSON.error);
+		}
+	});
+
+	//confirm message box
+	window.MessageBoxConfirm = function(message){
+	    return $.MessageBox({
+	        buttonDone  : "OK",
+	        buttonFail  : "Cancel",
+	        message     : message
+	    });
+	}
+
+	window.getSelectedText = function() {
+        if (window.getSelection) {
+            return window.getSelection().toString();
+        } 
+        else if (document.selection) {
+            return document.selection.createRange().text;
+        }
+        return '';
+    }
+
+	//close navbar menu when clicking outside of it
+	$(document).click(function (event) {
+		var clickover = $(event.target);
+		var $nav = $("div.navbar-collapse");
+        var _opened = $nav.hasClass("in");
+
+        if (_opened === true && !clickover.hasClass("navbar-toggle")) {
+			$nav.collapse('hide');
+        }
+    });
+
+	/*https://www.quirksmode.org/blog/archives/2014/02/mouse_event_bub.html
+	  Safari on iOS only allows the mouse events, including click, to bubble up in the following situations:
+	  1. The target element of the event is a link or a form field.
+	  2. The target element, or any of its ancestors up to but not including the <body>, has an explicit event handler set for any of the mouse events. This event handler may be an empty function.
+      3. The target element, or any of its ancestors up to and including the document has a cursor: pointer CSS declarations. */
+	$("#content-wrapper").click(function (event) {
+		//this is here only for iOS to allow mouse events to bubble up so we can close navbar menu when clicking outside of it
+    });
+
+	// check navbar menu top offset
+    function closeMenuIfOpened() {
+		var $nav = $("div.navbar-collapse");
+    	var _opened = $nav.hasClass("in");
+
+        if (_opened === true && $(".navbar").offset().top > 50) {
+			$nav.collapse('hide');
+        }
+    }
+
+    //for touch devices, detect zoom in/out events and close the navbar menu if opened
+    var tracks = [];
+    $(window).on("touchmove", function (event) {
+	
+	    //only run code if the user has two fingers touching
+	    if (event.originalEvent.touches.length === 2) {
+	
+	        //track the touches, I'm setting each touch as an array inside the tracks array
+	        //each touch array contains an X and Y coordinate
+	        tracks.push([ [event.originalEvent.touches[0].pageX, event.originalEvent.touches[0].pageY], [event.originalEvent.touches[1].pageX, event.originalEvent.touches[1].pageY] ]);
+	    }
+	}).on("touchstart", function () {
+	    //start-over
+	    tracks = [];
+	}).on("touchend", function () {
+	    if(tracks.length > 0) {
+			var $nav = $("div.navbar-collapse");
+	    	var _opened = $nav.hasClass("in");
+	        if (_opened === true) {
+				$nav.collapse('hide');
+	        }
+	    }
+	});
+
+	// COPY TO CLIPBOARD
+	// Attempts to use .execCommand('copy') on a created text field
+	// Falls back to a selectable alert if not supported
+	// Attempts to display status in Bootstrap tooltip
+	// ------------------------------------------------------------------------------
+
+	function copyToClipboard(text, el) {
+	  var copyTest = document.queryCommandSupported('copy');
+	  var elOriginalText = el.attr('data-original-title');
+
+	  if (copyTest === true) {
+	    var copyTextArea = document.createElement("textarea");
+	    copyTextArea.value = text;
+	    document.body.appendChild(copyTextArea);
+	    copyTextArea.select();
+	    try {
+	      var successful = document.execCommand('copy');
+	      var msg = successful ? "Copied!" : "Whoops, not copied!";
+	      el.attr('data-original-title', msg).tooltip('show');
+	    } 
+	    catch (err) {
+	      console.log("Oops, unable to copy");
+	    }
+	    document.body.removeChild(copyTextArea);
+	    el.attr('data-original-title', elOriginalText);
+	  } 
+	  else {
+	    // Fallback if browser doesn't support .execCommand('copy')
+	    window.prompt("Copy to clipboard", text);
+	  }
+	}
+
+	function copyToClipboard2(text, el) {
+		  if (document.queryCommandSupported('copy') === true) {
+			var elOriginalText = el.attr('data-original-title');
+	 	    var copyTextArea = document.createElement("textarea");
+		    copyTextArea.textContent = text.text();
+		    document.body.appendChild(copyTextArea);
+
+		    var selection = document.getSelection();
+		    var range = document.createRange();
+		    range.selectNode(copyTextArea);
+		    selection.removeAllRanges();
+		    selection.addRange(range);
+		    
+		    try {
+		      var successful = document.execCommand('copy');
+			  var msg;
+
+			  if (successful) {
+				  msg = "Copied!";
+			  } 
+			  else {
+				msg = "Whoops, not copied!";
+				el.removeClass('not-selectable');
+			  }
+		      el.attr('data-original-title', msg).tooltip('show');
+		    } 
+		    catch (err) {
+		      console.log("Oops, unable to copy");
+		    }
+		    selection.removeAllRanges();
+		    document.body.removeChild(copyTextArea);
+		    el.attr('data-original-title', elOriginalText);
+		  } 
+		  else {
+			$('.not-selectable').removeClass('not-selectable');
+		    // Fallback if browser doesn't support .execCommand('copy')
+		    window.prompt("Copy to clipboard", text.text());
+		  }
+		}
+
+	// Initialize
+   // ---------------------------------------------------------------------
+
+   // Tooltips
+   // Requires Bootstrap 3 for functionality
+   $('.js-tooltip').tooltip();
+
+   // Copy to clipboard
+   // Grab any text in the attribute 'data-copy' and pass it to the 
+   // copy function
+   $('.js-copy').click(function() {
+     var text = $(this).attr('data-copy');
+     var el = $(this);
+     copyToClipboard(text, el);
+   });
+
+   $(document).on('click','.comma-copy', function() {
+	   $(this).removeClass('btn-primary').addClass('btn-default');
+	     var el = $('#'+$(this).attr('data-idtag'));
+	     copyToClipboard2(el, $(this));
+	     el.removeClass('text-primary').addClass('text-muted');
+	   });
+
+   //trim white spaces when paste in any input
+   $(document).on('paste', 'input[type=text]', function(e) {
+	  // prevent copying action
+	  e.preventDefault();
+	  
+	  var pastedText = e.originalEvent.clipboardData.getData('Text');
+	  var withoutSpaces = pastedText;
+	  if(pastedText) {
+		  withoutSpaces = pastedText.trim();
+	  }
+
+	  //remove all spaces, including from inside the text
+	  if($(this).hasClass('no_spaces')) {
+		  withoutSpaces = withoutSpaces.replace(/\s/g, '');
+	  }
+	  
+	  $(this).insertAtCaret(withoutSpaces);
+	});
+
+   $.fn.insertAtCaret = function(text) {
+	    return this.each(function() {
+	        if (document.selection && this.tagName == 'TEXTAREA') {
+	            //IE textarea support
+	            this.focus();
+	            sel = document.selection.createRange();
+	            sel.text = text;
+	            this.focus();
+	        } else if (this.selectionStart || this.selectionStart == '0') {
+	            //MOZILLA/NETSCAPE support
+	            startPos = this.selectionStart;
+	            endPos = this.selectionEnd;
+	            scrollTop = this.scrollTop;
+	            this.value = this.value.substring(0, startPos) + text + this.value.substring(endPos, this.value.length);
+	            this.focus();
+	            this.selectionStart = startPos + text.length;
+	            this.selectionEnd = startPos + text.length;
+	            this.scrollTop = scrollTop;
+	        } else {
+	            // IE input[type=text] and other browsers
+	            this.value += text;
+	            this.focus();
+	            this.value = this.value;    // forces cursor to end
+	        }
+	    });
+	};
+    
+	
+  $('.save-configuration-button').click(function (){
+    var button = $('.save-configuration-anchor');
+
+    button.toggleClass('active');
+    button.attr('disabled', true);
+    button.text("Saving...");
+    $('#saveConfigModal').modal('hide');
+
+    $.ajax({
+        method: "GET",
+        beforeSend: function(request) {
+		    request.setRequestHeader("X-Token", config.X_TOKEN);
+		  },
+        url: "/api/system/write",
+      })
+      .done(function( response ) {
+        $.MessageBox((response && response.response) ? response.response : "Save initiated. It could take the OLT up to 5 minutes to write the config!");
+        button.text("Save config");
+        setTimeout(function () {
+          button.toggleClass('active');
+          button.attr('disabled', false);
+          button.text("Save config");
+        }, 1000);
+      })
+      .fail(function(jqXHR, textStatus) {
+    	  if(jqXHR.responseJSON) {
+				$.MessageBox(jqXHR.responseJSON.error);
+			}
+			else {
+				$.MessageBox(jqXHR.responseText);
+			}
+	        setTimeout(function () {
+	        	 button.toggleClass('active');
+	             button.attr('disabled', false);
+	             button.text("Save config");
+	        }, 1000);
+      });
+  });
+
+    
+});
+</script>
+
+</div>
+
+<style>
+.new-version-dot {
+	display: inline-block;
+	width: 8px;
+	height: 8px;
+	background-color: #5cb85c;
+	border-radius: 50%;
+	margin-left: 4px;
+	animation: pulse-green 2s infinite;
+}
+.footer-dot-sep {
+	opacity: 0.5;
+	margin: 0 2px;
+}
+footer {
+	height: auto;
+	padding-bottom: 8px;
+}
+#feature-tour-whatsnew .fa-bullhorn {
+	margin-right: 5px;
+	font-size: 2em;
+	vertical-align: -6px;
+}
+
+@keyframes pulse-green {
+	0% {
+		transform: scale(0.95);
+		box-shadow: 0 0 0 0 rgba(92, 184, 92, 0.7);
+	}
+	70% {
+		transform: scale(1);
+		box-shadow: 0 0 0 6px rgba(92, 184, 92, 0);
+	}
+	100% {
+		transform: scale(0.95);
+		box-shadow: 0 0 0 0 rgba(92, 184, 92, 0);
+	}
+}
+
+</style>
+
+<footer>
+	<div class="text-center row">SmartOLT <a href="/changelog" class="btn-link" id="footer-changelog-link">v3.53.0<span class="new-version-dot" title="New updates"></span></a> © 2026</div>
+</footer>
+
+
+
+
+<div class="loadingoverlay" style="background-color: rgba(255, 255, 255, 0.8); position: fixed; display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; top: 0px; left: 0px; width: 100%; height: 100%; background-size: 100px;"><div class="loadingoverlay_fontawesome fa fa-spinner fa-spin" style="font-size: 100px;"></div><div id="waitingOLT" style="font-size: 50px; white-space: nowrap;">Waiting for OLT</div></div></body></html>

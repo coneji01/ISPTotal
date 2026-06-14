@@ -1,0 +1,44 @@
+/* The toast - position it at the top and on the right of the screen */
+#toastsBox {
+    visibility: hidden; /* Hidden by default. Visible on click */
+    margin-left: -1 25px; /* Divide value of min-width by 2 */
+    position: fixed; /* Sit on top of the screen */
+    top: 70px; /* 100px from the top */
+    width: 100%;
+}
+
+#toastsBox > * {
+    visibility: hidden;
+    margin-bottom: 20px;
+    background-color: #333; /* Black background color */
+    color: #fff; /* White text color */
+    text-align: center; /* Centered text */
+    border-radius: 2px; /* Rounded borders */
+    padding: 16px; /* Padding */
+    top: 0px;
+    border-radius: 5px; /* rounded corners */
+    z-index: 1100; /* Add a z-index if needed */
+    position: fixed;
+    min-width: 250px;
+    right: 10%;
+}
+
+/* Show the toast when clicking on a button (class added with JavaScript) */
+#toastsBox > .show {
+    visibility: visible; /* Show the toast */
+/* Add animation: Take 0.5 seconds to fade in and out the toast. 
+However, delay the fade out process for 2.5 seconds ; removed '2.5s' from end */
+    -webkit-animation: fadein 0.5s linear;
+    animation: fadein 0.5s  linear;
+}
+
+/* Animations to fade the toast in and out */
+@-webkit-keyframes fadein {
+    from { opacity: 0;} 
+    to { opacity: 1;}
+}
+
+@keyframes fadein {
+    from { opacity: 0;}
+    to { opacity: 1;}
+}

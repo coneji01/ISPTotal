@@ -1,0 +1,1771 @@
+<!DOCTYPE html><html lang="en" class="smartolt-night"><head>
+        <script>window.SMARTOLT_DB_THEME='system';</script>
+    <!-- Paint-blocking: resolve theme before first paint. Precedence: per-device override (smartolt-theme-local, set by the header button) > account/DB pref > device (system). -->
+    <script>try{var k='smartolt-night',lk='smartolt-theme-local',dbTheme=window.SMARTOLT_DB_THEME,local=null,pref,n;try{local=localStorage.getItem(lk);}catch(e){}if(local==='night'||local==='light'||local==='system'){pref=local;}else if(dbTheme==='night'||dbTheme==='light'||dbTheme==='system'){pref=dbTheme;}else{pref='system';}if(pref==='system'){n=!!(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);}else if(pref==='night'){n=true;}else{n=false;}try{localStorage.setItem(k,n?'1':'0');}catch(e){}if(n){document.documentElement.classList.add('smartolt-night');}else{document.documentElement.classList.remove('smartolt-night');}document.cookie=k+'='+(n?'1':'0')+'; path=/; max-age=31536000; SameSite=Lax'+(location.protocol==='https:'?'; Secure':'');}catch(e){}</script>
+    <script>try{var wk='smartolt-wide-tables',wv=null,m=document.cookie.match(new RegExp('(?:^|; )'+wk+'=([^;]*)'));try{wv=localStorage.getItem(wk);}catch(e){}if(wv!=='1'&&wv!=='0'&&m){wv=decodeURIComponent(m[1]);}if(wv==='1'){document.documentElement.classList.add('smartolt-wide-tables');}}catch(e){}</script>
+        <meta http-equiv="content-type" content="text/html; utf-8">
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Language" content="en">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="https://joelwifi.smartolt.com/favicon.ico" type="image/x-icon">
+    <link rel="shortcut icon" href="https://joelwifi.smartolt.com/favicon.ico" type="image/x-icon">
+    
+  <title>Unconfigured ONUs - JOEL WIFI</title>
+
+  <!-- Bootstrap Core CSS -->
+  <link href="/vendor/bootstrap/css/bootstrap-custom.css?v=3.53.0.24" rel="stylesheet">
+  <link href="/vendor/bootstrap/css/bootstrap-multiselect.css?v=3.53.0.20" rel="stylesheet">
+  <link href="/vendor/bootstrap/css/styles.css?v=3.53.0.29" rel="stylesheet">
+  <link href="/vendor/bootstrap/css/toast.css?v=3.53.0.20" rel="stylesheet">
+
+  
+  <!-- Custom Fonts -->
+  <link href="/vendor/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+  <!-- Message box CSS -->
+  <link href="/vendor/jquery-message-box-2.2.1/src/messagebox.css" rel="stylesheet" type="text/css">
+
+  <link href="/vendor/smartolt/css/inter-fonts.css?v=3.53.0.1" rel="stylesheet">
+  <link href="/vendor/smartolt/css/dashboard-smartolt-night.css?v=3.53.0.209" rel="stylesheet">
+  <script src="/vendor/smartolt/scripts/dashboard-smartolt-night.js?v=3.53.0.63" defer=""></script>
+    
+  <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+  <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+  <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+  <!-- jQuery -->
+  <script src="/vendor/jquery/jquery.min.js"></script>
+
+  
+  
+  <!-- Toast alerts -->
+  <script src="/vendor/bootstrap/js/toast.js"></script>
+
+  <!-- Pauses recurring AJAX polling while the tab is hidden OR the user has been idle, resumes on focus / activity. -->
+  <script src="/vendor/smartolt/scripts/polling.js?v=3.53.0.3"></script>
+
+  <!-- Geolocation permission-error → localized message helper (shared by location pickers). -->
+  <script src="/vendor/smartolt/scripts/geolocation_helper.js?v=3.53.0.1"></script>
+
+  
+  
+</head>
+
+<body class="smartolt-site">
+<script type="text/javascript">
+$( document ).ready(function() {
+	$.ajaxSetup({
+		cache: false
+	});
+	
+	window.jqxhrs = [];
+
+      window.registerJqxhr = function(jqxhr) {
+        jqxhrs.push(jqxhr);
+      }
+
+      window.abortJqxhr = function() {
+        for (var i = jqxhrs.length - 1; i >= 0; i--) {
+          if (jqxhrs[i]) {
+            jqxhrs[i].abort();
+          }
+        }
+
+        window.jqxhrs = [];
+      }
+
+      $(window).bind("beforeunload", function(event) {
+        abortJqxhr();
+      });
+
+      function unregisterJqxhr(event, jqxhr, settings) {
+        var idx = $.inArray(jqxhr, jqxhrs);
+        if (idx != -1) {
+          jqxhrs.splice(idx, 1);
+        }
+      }
+
+      $(document).ajaxComplete(unregisterJqxhr);
+
+      config = {
+        X_TOKEN: '9C23F19BE06B4BEB93046ECFDF50FF91'
+      }
+    });
+  </script>
+
+  <div class="smartolt-landing-hero-bg" aria-hidden="true"></div>
+
+  <div id="content-wrapper">
+    <div class="smartolt-topbar-network" aria-hidden="true">
+      <div class="smartolt-topbar-network-inner">
+        <svg class="smartolt-topbar-network-lines" viewBox="0 0 100 100" preserveAspectRatio="none">
+          <line x1="8" y1="68" x2="23" y2="78"></line>
+          <line x1="23" y1="78" x2="37" y2="63"></line>
+          <line x1="8" y1="68" x2="37" y2="63"></line>
+          <line x1="37" y1="63" x2="65" y2="18"></line>
+          <line x1="65" y1="18" x2="89" y2="34"></line>
+          <line x1="23" y1="78" x2="65" y2="18"></line>
+          <line x1="37" y1="63" x2="89" y2="34"></line>
+        </svg>
+        <span class="smartolt-topbar-node smartolt-topbar-node-a"></span>
+        <span class="smartolt-topbar-node smartolt-topbar-node-b"></span>
+        <span class="smartolt-topbar-node smartolt-topbar-node-c"></span>
+        <span class="smartolt-topbar-node smartolt-topbar-node-d"></span>
+        <span class="smartolt-topbar-node smartolt-topbar-node-e"></span>
+      </div>
+    </div>
+    <div class="navbar navbar-default navbar-fixed-top default-menu">
+      <div class="container">
+        <div class="navbar-header">
+          <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#navbar-main" aria-expanded="false" aria-controls="navbar">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand text-ellipsis max-width-250" href="/" title="JOEL WIFI">JOEL WIFI</a>
+        </div>
+
+        <div class="navbar-collapse collapse" id="navbar-main">
+          <ul class="nav navbar-nav in">
+
+                        
+              <li><a href="/onu/unconfigured" class="active">Unconfigured</a></li>
+            
+                          <li><a href="/onu/configured">Configured</a></li>
+            
+            
+                        	                <li><a href="https://joelwifi.smartolt.com/graphs">Graphs</a></li>
+                                                <li><a href="https://joelwifi.smartolt.com/diagnostics">Diagnostics</a></li>
+                
+                                <li><a href="https://joelwifi.smartolt.com/reports/tasks">Tasks</a></li>
+                                
+                                 <li class="dropdown">
+                  <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="settings">Reports <span class="caret"></span></a>
+                  <ul class="dropdown-menu" aria-labelledby="settings">
+                  	                    <li><a href="https://joelwifi.smartolt.com/reports/authorizations/list">Authorizations</a></li>
+                                                            <li><a href="https://joelwifi.smartolt.com/reports/export">Export</a></li>
+                                                            <li><a href="https://joelwifi.smartolt.com/reports/import">Import</a></li>
+                                                            <li><a href="https://joelwifi.smartolt.com/config_comparison">Find config mismatches (DB vs OLT)</a></li>
+                                      </ul>
+                </li>
+                
+                                    <li><a href="#saveConfigModal" class="save-configuration-anchor" data-toggle="modal">Save config</a></li>
+                                
+              <li class="dropdown">
+                <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="settings">Settings <span class="caret"></span></a>
+                <ul class="dropdown-menu" aria-labelledby="settings">
+
+                                        <li><a href="/locations/listing">Zones</a></li>
+                    
+                                        <li><a href="/odbs/listing">ODBs</a></li>
+                    
+                                        <li><a href="/onu_types/listing">ONU types</a></li>
+                    
+                                        <li><a href="/speed_profiles">Speed profiles</a></li>
+                    
+                                        <li><a href="/olt">OLTs</a></li>
+                    
+                                        <li><a href="/system_config">VPN &amp; TR069</a></li>
+                    
+                                        <li><a href="/onu_authorization_presets/listing">Authorization presets</a></li>
+                    
+                    
+                                        <li><a href="/general">General</a></li>
+                    
+                                        <li><a href="/general/listing/billing">Billing</a></li>
+                                    </ul>
+              </li>
+
+              
+            
+          </ul>
+
+          <ul class="nav navbar-nav navbar-right">
+            <li><a href="#" id="smartolt-night-toggle" class="is-pref-night is-resolved is-night" title="Night mode" aria-label="Night mode" data-title-light="Light mode" data-title-night="Night mode" data-title-system="System"><i class="fa fa-sun-o font-size-20 smartolt-theme-icon-light" aria-hidden="true"></i><i class="fa fa-moon-o font-size-20 smartolt-theme-icon-night" aria-hidden="true"></i><i class="fa fa-adjust font-size-20 smartolt-theme-icon-system" aria-hidden="true"></i></a></li>
+                        <li><a href="/auth" title="Edit user joelr802@gmail.com"><i class="fa fa-user glyphicon-white font-size-20"> </i></a></li>
+            <li><a href="/auth/logout"><i class="glyphicon glyphicon-off glyphicon glyphicon-white"> </i> Log out</a></li>
+                      </ul>
+          
+        </div>
+      </div>
+    </div>
+
+    <!-- Page Content -->
+    <div class="container">
+
+<div class="container-fluid content-wrap" id="unconfigured_div">
+	<h2>Unconfigured ONUs</h2>
+				
+	<form action="https://joelwifi.smartolt.com/onu/unconfigured" class="form-inline unconfigured" method="get" onsubmit="return false;" accept-charset="utf-8">
+	
+	<div class="margin-bottom">
+		<div class="form-group">
+			<label class="control-label" for="olt">OLT</label>
+			<span class="multiselect-native-select"><select id="olt" name="olt_id" multiple="" class="form-control input-220 select-search text-nowrap" style="display:none">
+									<option value="1" selected="">
+						1 - JOEL WIFI					</option>
+											</select><div class="btn-group input-220"><button type="button" class="multiselect dropdown-toggle overflow-hidden  form-control input-220 select-search text-nowrap" data-toggle="dropdown" title="
+						1 - JOEL WIFI					"><span class="multiselect-selected-text">
+						1 - JOEL WIFI					</span> <b class="caret"></b></button><ul class="multiselect-container dropdown-menu" style="max-height: 500px; overflow: hidden auto;"><li class="multiselect-item multiselect-filter" value="0"><div class="input-group"><span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span><input class="form-control multiselect-search" type="text" placeholder="Search"><span class="input-group-btn"><button class="btn btn-default multiselect-clear-filter" type="button"><i class="glyphicon glyphicon-remove-circle"></i></button></span></div></li><li class="multiselect-item multiselect-all active"><a href="#" tabindex="0" class="multiselect-all"><label class="full-width checkbox"><input type="checkbox" value="multiselect-all"> Select All</label></a></li><li class="active"><a href="#" tabindex="0"><label class="full-width checkbox"><input type="checkbox" value="1"> 
+						1 - JOEL WIFI					</label></a></li></ul></div></span>
+		</div>
+		<div id="pon-wrapper" class="form-group" style="">
+				<label class="control-label" for="pon">PON</label>
+				<select name="pon" id="pon" class="form-control input-150 select-search text-nowrap"><option value="">Any</option><option value="2/1">GPON 2/1</option><option value="2/2">GPON 2/2</option><option value="2/3">GPON 2/3</option><option value="2/4">GPON 2/4</option><option value="2/5">GPON 2/5</option><option value="2/6">GPON 2/6</option><option value="2/7">GPON 2/7</option><option value="2/8">GPON 2/8</option><option value="2/9">GPON 2/9</option><option value="2/10">GPON 2/10</option><option value="2/11">GPON 2/11</option><option value="2/12">GPON 2/12</option><option value="2/13">GPON 2/13</option><option value="2/14">GPON 2/14</option><option value="2/15">GPON 2/15</option><option value="2/16">GPON 2/16</option><option value="3/1">GPON 3/1</option><option value="3/2">GPON 3/2</option><option value="3/3">GPON 3/3</option><option value="3/4">GPON 3/4</option><option value="3/5">GPON 3/5</option><option value="3/6">GPON 3/6</option><option value="3/7">GPON 3/7</option><option value="3/8">GPON 3/8</option><option value="3/9">GPON 3/9</option><option value="3/10">GPON 3/10</option><option value="3/11">GPON 3/11</option><option value="3/12">GPON 3/12</option><option value="3/13">GPON 3/13</option><option value="3/14">GPON 3/14</option><option value="3/15">GPON 3/15</option><option value="3/16">GPON 3/16</option><option value="4/1">GPON 4/1</option><option value="4/2">GPON 4/2</option><option value="4/3">GPON 4/3</option><option value="4/4">GPON 4/4</option><option value="4/5">GPON 4/5</option><option value="4/6">GPON 4/6</option><option value="4/7">GPON 4/7</option><option value="4/8">GPON 4/8</option><option value="4/9">GPON 4/9</option><option value="4/10">GPON 4/10</option><option value="4/11">GPON 4/11</option><option value="4/12">GPON 4/12</option><option value="4/13">GPON 4/13</option><option value="4/14">GPON 4/14</option><option value="4/15">GPON 4/15</option><option value="4/16">GPON 4/16</option></select>
+		</div>
+		<div class="form-group margin-left">
+			<a href="#" class="btn btn-primary get-unconfigured" aria-disabled="false">Refresh								
+							</a>
+		</div>
+	</div>
+
+			<div class="margin-top">
+    <div class="panel-group" id="accordion_tasks">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h4 class="panel-title">
+                <a class="accordion-toggle collapsed btn-block" data-toggle="collapse" data-parent="#accordion_tasks" href="#tasksList" aria-expanded="true">
+                    Auto actions                </a>
+                </h4>
+            </div>
+            <div id="tasksList" class="panel-collapse collapse in">
+                <div class="panel-body">
+                    <div class="tasks-buttons-container clearfix">
+                        <button class="btn btn-success task-btn" id="auto-actions">Configure actions</button>
+                        <a href="/reports/tasks" class="btn btn-success task-btn"><i class="fa fa-history"></i> Task history</a>
+                        <button class="btn btn-danger task-btn task-btn-stop" id="stop-auto-actions" disabled="">Stop auto actions</button>
+                    </div>
+
+                    <div id="active-tasks-container" style="opacity: 1;"></div>
+
+                    <div class="text-muted text-right active-tasks-refresh-hint" style="display: none; margin-top: 4px;">
+                        <i class="fa fa-info-circle"></i> Auto actions list updates automatically                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+$(document).ready(function() {
+    // Adaptive auto-refresh cadence
+    var ACTIVE_REFRESH_MS = 10000;   // 10s when there is at least one active task
+    var IDLE_REFRESH_MS = 300000;    // 5min when the active-tasks list is empty
+    var currentRefreshMs = IDLE_REFRESH_MS;
+    var refreshPoller = null;  // SmartOLTPolling controller; pauses on hidden tab
+
+    // Load active tasks asynchronously
+    loadActiveTasks();
+
+    // Start auto-refresh
+    startAutoRefresh();
+
+    $("#auto-actions").click(function () {
+		abortJqxhr();
+		display_modal("Auto actions", "/onu/add_task", "auto_actions_form");
+	});
+
+    // Stop auto actions button
+    $("#stop-auto-actions").click(function () {
+        var selectedTaskActions = [];
+        $('.task-checkbox:checked').each(function() {
+            selectedTaskActions.push($(this).val());
+        });
+
+        if (selectedTaskActions.length === 0) {
+            $.MessageBox('Please select at least one task action to stop');
+            return;
+        }
+
+        var confirmMsg = "Are you sure you want to stop {count} task action(s)?";
+        confirmMsg = confirmMsg.replace('{count}', selectedTaskActions.length);
+        MessageBoxConfirm(confirmMsg).done(function() {
+            showLoadingOverlay();
+
+            // Send all task action IDs in one request
+            $.ajax({
+                type: 'POST',
+                url: '/onu/stop_task_actions',
+                data: { task_action_ids: selectedTaskActions },
+                dataType: 'json',
+                success: function(response) {
+                    hideLoadingOverlay();
+                    toast('Task actions stopped successfully');
+                    loadActiveTasks(true);
+
+                    updateStopButtonState();
+
+                    // Open the accordion if not already open
+                    if (!$('#tasksList').hasClass('in')) {
+                        $('#tasksList').collapse('show');
+                    }
+                },
+                error: function() {
+                    hideLoadingOverlay();
+                    toast('Error stopping task actions');
+                }
+            });
+        });
+    });
+
+    // Select all checkboxes functionality (delegated event)
+    $(document).on('change', '#select-all-tasks', function() {
+        $('.task-checkbox').prop('checked', $(this).prop('checked'));
+        updateStopButtonState();
+    });
+
+    // Update stop button state when individual checkboxes change
+    $(document).on('change', '.task-checkbox', function() {
+        updateStopButtonState();
+    });
+
+    // Function to enable/disable stop button based on selected checkboxes
+    function updateStopButtonState() {
+        var checkedCount = $('.task-checkbox:checked').length;
+        $('#stop-auto-actions').prop('disabled', checkedCount === 0);
+
+        // Stop auto-refresh if any checkboxes are checked, otherwise start it
+        if (checkedCount > 0) {
+            stopAutoRefresh();
+        } else {
+            startAutoRefresh();
+        }
+    }
+
+    // Handle Edit button clicks for tasks (delegated event for dynamic content)
+    $(document).on('click', 'a[id^="edit_task_"]', function(e) {
+        e.preventDefault();
+
+        var taskId = $(this).attr('id').replace('edit_task_', '');
+
+        abortJqxhr();
+        display_modal("Task Details", "/onu/update_auto_task/" + taskId, "task_details_form");
+    });
+
+    // Stop auto-refresh when modal is shown
+    $('#autoActionsModal').on('show.bs.modal', function () {
+        stopAutoRefresh();
+    });
+
+    // Reload tasks and open accordion when modal is closed
+    $('#autoActionsModal').on('hidden.bs.modal', function () {
+        // Reload active tasks
+        loadActiveTasks(true);
+
+        // Open the accordion if not already open
+        if (!$('#tasksList').hasClass('in')) {
+            $('#tasksList').collapse('show');
+        }
+
+        // Restart auto-refresh after modal is closed
+        startAutoRefresh();
+    });
+
+    function loadActiveTasks(letSpinnerShowLonger = false) {
+        // Only add opacity to existing content instead of replacing it
+        $('#active-tasks-container').css('opacity', '0.5');
+
+        if(letSpinnerShowLonger) {
+            setTimeout(function() {
+                getActiveTasks();
+                    }, 500); //wait 500 ms before polling the server, for the loader to display nicely
+        }
+        else {
+            getActiveTasks();
+        }
+    }
+
+    function getActiveTasks() {
+        $.ajax({
+                type: 'GET',
+                url: '/onu/get_active_tasks_on_unconfigured',
+                timeout: 30000,
+                success: function(response) {
+                    $('#active-tasks-container').html(response).css('opacity', '1');
+                    // Init Bootstrap tooltips on freshly-rendered rows
+                    $('#active-tasks-container [data-toggle="tooltip"]').tooltip();
+                    adjustRefreshCadence();
+                },
+                error: function() {
+                    $('#active-tasks-container').html().css('opacity', '1');
+                }
+            });
+    }
+
+    // Re-evaluate the desired polling cadence based on whether any active
+    // tasks are rendered. If the cadence changes and the timer is currently
+    // running (i.e. not paused by a checked checkbox or open modal),
+    // restart it with the new interval.
+    function adjustRefreshCadence() {
+        var activeCount = $('#active-tasks-container .task-checkbox').length;
+        var desiredMs = activeCount > 0 ? ACTIVE_REFRESH_MS : IDLE_REFRESH_MS;
+
+        // Show the auto-refresh hint only when there are active tasks
+        // (matches the cadence — there's nothing to refresh otherwise).
+        $('.active-tasks-refresh-hint').toggle(activeCount > 0);
+
+        if (desiredMs !== currentRefreshMs) {
+            currentRefreshMs = desiredMs;
+            if (refreshPoller) {
+                startAutoRefresh();
+            }
+        }
+    }
+
+    function display_modal(title, getUrl, formId) {
+
+		$('#autoActionsModalTitle').html(title);
+
+		$.ajax({
+			type: 'GET',
+			url: getUrl,
+			timeout: 30000,
+			success: function(response)
+			{
+				$('#autoActionsModalContent').html(response);
+
+				// Ensure modal has fade class before showing
+				if (!$('#autoActionsModal').hasClass('fade')) {
+					$('#autoActionsModal').addClass('fade');
+				}
+
+				// Show modal with fade effect
+				$('#autoActionsModal').modal('show');
+			}
+		});
+	}
+
+    // Start auto-refresh at the most recently observed cadence.
+    // SmartOLTPolling pauses while the tab is hidden.
+    function startAutoRefresh() {
+        if (refreshPoller) {
+            refreshPoller.stop();
+        }
+
+        refreshPoller = SmartOLTPolling.register(function () {
+            loadActiveTasks(true);
+        }, currentRefreshMs);
+    }
+
+    function stopAutoRefresh() {
+        if (refreshPoller) {
+            refreshPoller.stop();
+            refreshPoller = null;
+        }
+    }
+});
+</script>
+
+<style>
+.table th {
+    font-weight: 600;
+    color: #2b2b2b;
+    background-color: #f5f7f8;
+}
+.table td, .table th {
+    vertical-align: middle !important;
+}
+#active-tasks-container {
+    transition: opacity 0.3s ease-in-out;
+}
+
+/* Task buttons container */
+.tasks-buttons-container {
+    margin-bottom: 15px;
+}
+
+.tasks-buttons-container .task-btn {
+    margin-right: 5px;
+    margin-bottom: 5px;
+}
+
+/* Stop button floats right on larger screens */
+.tasks-buttons-container .task-btn-stop {
+    float: right;
+    margin-right: 0;
+}
+
+/* Stacked succeeded/failed progress bar — used in active-tasks rows AND the
+   task-details modal. Distinct class to avoid colliding with `.task-progress`,
+   which the modal uses as a Bootstrap column-wrapper. The custom theme paints
+   `.progress-bar-success` blue, so override it back to green inside this bar. */
+.task-progress-bar {
+    height: 12px;
+    margin-bottom: 4px;
+    border-radius: 3px;
+}
+.task-progress-bar .progress-bar-success {
+    background-color: #5cb85c;
+}
+.task-progress-bar .progress-bar-danger {
+    background-color: #d9534f;
+}
+
+/* On small screens, stack buttons vertically */
+@media (max-width: 767px) {
+    .tasks-buttons-container .task-btn {
+        display: block;
+        width: 100%;
+        margin-right: 0;
+        margin-bottom: 8px;
+    }
+
+    .tasks-buttons-container .task-btn-stop {
+        float: none;
+    }
+}
+</style>		
+	
+	<div id="gpon_epon_unconfigured" style="min-height: 10vh" data-select-olt-text="Please select an OLT" data-scanning-text="Scanning OLTs for Unconfigured ONUs" data-waiting-text="Waiting to scan...">
+		
+	<div id="existingUnconfiguredOnus" data-scanning-text="Scanning OLT for unconfigured ONUs...">
+			<div id="gpon-epon-unconfigured-1" style="">		<h4>1 - JOEL WIFI		<a href="#" class="refresh-single-olt text-blue" style="margin-left: 8px; font-size: 16px; position: relative; top: -1px;" data-olt-id="1" title="Refresh this OLT only">
+			<i class="fa fa-refresh"></i>
+		</a>
+			</h4>
+					<div class="text-muted margin-bottom-sm">
+			Last scan:
+							<span title="2026-06-09 23:41:41">11 seconds ago</span>
+					</div>
+	
+					<table class="table table-striped">
+				<tbody><tr>
+					<th class="col-md-1">PON type</th>
+					<th class="col-md-1">Board</th>
+					<th class="col-md-1">Port</th>
+					<th class="col-md-2">PON description</th>
+					<th class="col-md-2">SN</th>
+					<th>Type</th>
+					<th class="col-md-4 text-center">Action</th>
+				</tr>
+					
+							<tr class="valign-center">
+					<td>GPON</td>
+					<td>2</td>
+					<td>4</td>
+					<td></td>
+					<td>HWTC0555D49E</td>
+											<td class="text-nowrap">HS8545M5</td>
+					
+					<td class="text-center">
+																																								<a href="/onu_authorization/authorize?board=2&amp;port=4&amp;sn=HWTC0555D49E&amp;pon=gpon&amp;onu_type=78&amp;olt=1" class="btn btn-link activateButton">Authorize</a>
+																															
+											</td>
+				</tr>
+							<tr class="valign-center">
+					<td>GPON</td>
+					<td>3</td>
+					<td>3</td>
+					<td></td>
+					<td>TPLG00CE8220</td>
+											<td class="text-nowrap">XN020-G3v</td>
+					
+					<td class="text-center">
+																																								<a href="/onu_authorization/authorize?board=3&amp;port=3&amp;sn=TPLG00CE8220&amp;pon=gpon&amp;onu_type=58&amp;olt=1" class="btn btn-link activateButton">Authorize</a>
+																															
+											</td>
+				</tr>
+			
+
+			</tbody></table>
+				<br>
+
+	<hr>
+	
+	<script type="text/javascript">
+		$(document).ready(function() {
+			$("#gpon-epon-unconfigured-1").show();
+			$('#gpon_epon_unconfigured_loading').remove();
+		});
+	</script>
+
+
+</div>				
+	</div>
+
+<script type="text/javascript">
+
+	
+	$(document).ready(function()  {
+
+					var oltId = 1;
+			var button = $('button.get-unconfigured');
+			fetchOltUnconfigured('/onu/get_unconfigured_for_olt/', oltId, '' );
+			});
+	
+</script>
+</div>
+
+	
+	</form>	
+	<br>
+
+			<div style="margin-bottom: 15px;">
+			<a href="/onu_authorization_presets/listing" class="btn btn-success" target="_blank">
+				<i class="fa fa-list"></i> Authorization Presets			</a>
+			<div class="text-muted" style="margin-top: 5px;">
+				<i class="fa fa-info-circle"></i> Manage presets for quick ONU authorization			</div>
+		</div>
+    
+			<hr style="margin: 15px 0;">
+		<div>
+			<form action="https://joelwifi.smartolt.com/onu_authorization/offline" class="form-inline offline" method="get" accept-charset="utf-8">
+				<div class="form-group">
+					<button type="submit" class="btn btn-primary form-control">Add ONU for later authorization</button>
+				</div>
+			</form>		</div>
+		
+		
+	
+			<!-- continue auth modal -->
+		<div id="continueAuth" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+						<h3 id="myModalLabel">Finalize authorization</h3>
+					</div>
+					<div class="modal-body">
+						<p class="continueAuthText"></p>
+					</div>
+					<div class="modal-footer">
+						<a href="#" class="btn btn-link" data-dismiss="modal" aria-hidden="true">Close</a>
+						<a href="#" class="btn alert-success continueAuthButton"> Authorize</a>
+					</div>
+				</div>
+			</div>
+		</div>
+		
+	<!-- Move onu modal -->
+	<div id="moveOnu" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+					<h3 id="myModalLabel">Move ONU</h3>
+				</div>
+				<div class="modal-body">
+					<p class="moveOnuText"></p>
+				</div>
+				<div class="modal-footer">
+					<a href="#" class="btn btn-link" data-dismiss="modal" aria-hidden="true">Close</a>
+					<a href="#" class="btn alert-success saveMoveOnuButton" onclick="showOverlayAndDisableButton(this)"> Move</a>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	<!-- Rebuild modal -->
+	<div id="rebuildModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+					<h3 id="myModalLabel">Recreate OLT config for ONU</h3>
+				</div>
+				<div class="modal-body">
+					<p class="rebuildOnuText"></p>
+				</div>
+				<div class="modal-footer">
+					<a href="#" class="btn btn-link" data-dismiss="modal" aria-hidden="true">Close</a>
+					<a href="#" class="btn btn-yellow saveRebuildOnuButton" onclick="showOverlayAndDisableButton(this)"><i class="glyphicon glyphicon-refresh glyphicon glyphicon-white"></i> Resync config</a>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div id="autoActionsModal" class="modal fade" tabindex="-1" role="dialog">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+    			<div class="modal-header">
+    				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+    				<h4 class="modal-title" id="autoActionsModalTitle"></h4>
+    			</div>
+    			<div id="autoActionsModalContent">
+    			</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Apply Preset Modal -->
+	<div id="applyPresetModal" class="modal fade" tabindex="-1" role="dialog">
+		<div class="modal-dialog modal-lg" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+					<h4 class="modal-title"><i class="fa fa-magic"></i> Authorize ONU with Preset</h4>
+				</div>
+				<div class="modal-body">
+					<div style="margin-bottom: 15px;">
+						<p style="margin-bottom: 10px;">
+							<i class="fa fa-info-circle text-info"></i> Select a preset to automatically configure this ONU:						</p>
+						<div style="margin-left: 25px;">
+							<div><strong>OLT:</strong> <span id="preset-modal-olt"></span></div>
+							<div><strong>Board:</strong> <span id="preset-modal-board"></span></div>
+							<div><strong>Port:</strong> <span id="preset-modal-port"></span></div>
+							<div><strong>SN:</strong> <span id="preset-modal-sn"></span></div>
+							<div style="margin-top: 10px;">
+								<strong>Name:</strong> <input type="text" class="form-control form-control-sm input-sm" id="preset_onu_name" placeholder="Enter ONU name" style="display: inline-block; width: 300px; margin-left: 5px;">
+								<small class="text-muted" id="preset_name_hint" style="display: none; margin-left: 10px;">
+									<i class="fa fa-info-circle"></i> <span id="preset_name_hint_text"></span>
+								</small>
+							</div>
+						</div>
+					</div>
+					<hr>
+					<div id="presetsListContainer">
+						<div class="text-center">
+							<i class="fa fa-spinner fa-spin fa-2x"></i>
+							<p>Loading presets...</p>
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+					<button type="button" class="btn btn-success" id="applyPresetBtn" disabled="">
+						<i class="fa fa-check"></i> Authorize with Preset					</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+</div>
+
+<script src="/vendor/smartolt/scripts/common.js?v=3.53.0.22"></script>
+<script src="/vendor/smartolt/scripts/olt_unconfigured.js?v=3.53.0.28"></script>
+
+<script type="text/javascript">
+$(document).ready(function() {
+
+	form_data = {
+		olt_id: [1],
+		pon: "",
+	};
+
+	overwriteFormDataFromUrlParameters();
+
+	var multiselectOptions = {
+		enableHTML: true,
+		buttonClass: '',
+		inheritClass: true,
+		disableIfEmpty: true,
+		enableCaseInsensitiveFiltering: true,
+		buttonContainer:'<div class="btn-group input-220"/>',
+		nonSelectedText: 'Select OLT(s)',
+		numberDisplayed: 2,
+		widthSynchronizationMode: 'always',
+		buttonTextAlignment: 'left',
+		maxHeight: 500,
+		includeSelectAllOption: true,
+		selectAllText: 'Select All',
+		templates: {
+			button: '<button type="button" class="multiselect dropdown-toggle overflow-hidden " data-toggle="dropdown"><span class="multiselect-selected-text"></span> <b class="caret"></b></button>',
+			li: '<li><a href="#" tabindex="0"><label class="full-width"></label></a></li>',
+		},
+		zIndex: 10000
+	};
+
+	$('#olt').multiselect(multiselectOptions);
+
+	$('.continueAuthButton').click(function(){
+		showLoadingOverlay();
+	});	
+
+	$('.saveMoveOnuButton').click(function(){
+		showLoadingOverlay();
+	});	
+
+	initFilterActionsNoSubmit('getUnconfigured');
+
+	initOltUnconfigured("#unconfigured_div", '/onu_authorization/continue_authorize', '/onu/get_unconfigured_for_olt/', '/onu/move_onu/', '/onu/rebuild/');
+
+	var _initialOlts = Array.isArray(form_data['olt_id']) ? form_data['olt_id'] : (form_data['olt_id'] ? [form_data['olt_id']] : []);
+	if (_initialOlts.length > 0) {
+		// Skip direct call when exactly one OLT + PON are both set: getPonList
+		// will call getUnconfigured() after restoring the PON selection.
+		if (!(_initialOlts.length === 1 && form_data['pon'])) {
+			getUnconfigured();
+		}
+	} else {
+		showSelectOltMessage();
+	}
+
+	$(document).on('click', '.toggledisabled', function(event) {
+		
+		var linkText = $(this).text();
+		
+		if ($(this).text().includes('Show')) {
+			linkText = linkText.replace('Show', 'Hide');
+		} else {
+			linkText = linkText.replace('Hide', 'Show');
+		}
+
+		$(this).text(linkText);
+
+		$(this).closest('div').find('.label-info').closest('tr').toggleClass('hidden');
+		event.preventDefault();
+	});
+
+	$('#unconfigured_div').on('click', '.onu-type-add', function() {
+		var msg = "This ONU type is not defined in SmartOLT database. <a href='/onu_types/add/{onu_type_name}'>Click here</a> or go to Settings -> ONU types and Add this specific model with correct number of ports and capabilities";
+
+		msg = msg.replace("{onu_type_name}", $(this).data('onu-type-name'));
+
+		$.MessageBox(msg);
+	});
+
+	// ===========================
+	// Apply Preset functionality
+	// ===========================
+	var currentOnuData = null;
+	var selectedPresetId = null;
+	var presetsCheckInterval = null;
+	var presetsData = {}; // Store preset data for accessing location_name
+
+	$(document).on('click', '.apply-preset-btn', function(e) {
+		e.preventDefault();
+
+		// Store ONU data
+		currentOnuData = {
+			board: $(this).data('board'),
+			port: $(this).data('port'),
+			sn: $(this).data('sn'),
+			ponType: $(this).data('pon-type'),
+			onuTypeId: $(this).data('onu-type-id'),
+			oltId: $(this).data('olt-id')
+		};
+
+		// Reset selected preset and name field
+		selectedPresetId = null;
+		presetsData = {};
+		$('#preset_onu_name').val('');
+		$('#preset_name_hint').hide();
+		$('#applyPresetBtn').prop('disabled', true);
+
+		// Update modal with ONU info
+		$('#preset-modal-sn').text(currentOnuData.sn);
+		$('#preset-modal-board').text(currentOnuData.board);
+		$('#preset-modal-port').text(currentOnuData.port);
+
+		// Get OLT name from the button's data attribute and display as "ID - Name"
+		var oltName = $(this).data('olt-name') || '';
+		var oltDisplay = oltName ? currentOnuData.oltId + ' - ' + oltName : 'OLT #' + currentOnuData.oltId;
+		$('#preset-modal-olt').text(oltDisplay);
+
+		// Load presets for this OLT and ONU
+		loadPresetsForModal(currentOnuData);
+
+		// Show modal
+		$('#applyPresetModal').modal('show');
+
+		// Start checking for window focus to reload presets when user comes back
+		startPresetsAutoRefresh();
+	});
+
+	// When modal is hidden, stop auto-refresh
+	$('#applyPresetModal').on('hidden.bs.modal', function() {
+		stopPresetsAutoRefresh();
+	});
+
+	// Auto-refresh presets when window regains focus
+	function startPresetsAutoRefresh() {
+		stopPresetsAutoRefresh(); // Clear any existing interval
+
+		$(window).on('focus.presetsRefresh', function() {
+			// Only refresh if modal is still open
+			if ($('#applyPresetModal').is(':visible') && currentOnuData) {
+				console.log('Window regained focus - refreshing presets');
+				loadPresetsForModal(currentOnuData);
+			}
+		});
+	}
+
+	function stopPresetsAutoRefresh() {
+		$(window).off('focus.presetsRefresh');
+		if (presetsCheckInterval) {
+			clearInterval(presetsCheckInterval);
+			presetsCheckInterval = null;
+		}
+	}
+
+	function loadPresetsForModal(onuData) {
+		$('#presetsListContainer').html('<div class="text-center"><i class="fa fa-spinner fa-spin fa-2x"></i><p>Loading presets...</p></div>');
+
+		$.ajax({
+			url: '/onu_authorization_presets/get_presets_for_apply',
+			type: 'GET',
+			data: {
+				olt_id: onuData.oltId,
+				pon_type: onuData.ponType,
+				board: onuData.board,
+				port: onuData.port,
+				sn: onuData.sn,
+				onu_type_id: onuData.onuTypeId
+			},
+			success: function(response) {
+				if (response.presets && response.presets.length > 0) {
+					renderPresetsList(response.presets);
+				}
+				else {
+					// Build "Create Preset" URL with pre-filled parameters
+					var createUrl = '/onu_authorization_presets/add?olt_id=' + onuData.oltId + '&pon_type=' + onuData.ponType;
+					if (onuData.board !== null && onuData.board !== undefined && onuData.board !== '') createUrl += '&board=' + onuData.board;
+					if (onuData.port !== null && onuData.port !== undefined && onuData.port !== '') createUrl += '&port=' + onuData.port;
+					// Add ONU type ID if available (only if it's in SmartOLT database)
+					if (currentOnuData.onuTypeId && currentOnuData.onuTypeId !== '0' && currentOnuData.onuTypeId !== 0) {
+						createUrl += '&onu_type_id=' + currentOnuData.onuTypeId;
+					}
+											$('#presetsListContainer').html(
+							'<div class="text-center" style="padding: 20px;">' +
+							'<p class="text-muted">' +
+							'<i class="fa fa-info-circle"></i> No matching presets found for this OLT/Board/Port combination.' +
+							'</p>' +
+							'<a href="' + createUrl + '" target="_blank" class="btn btn-primary" style="margin-top: 10px;">' +
+							'<i class="fa fa-plus"></i> Create New Preset' +
+							'</a>' +
+							'</div>'
+						);
+									}
+			},
+			error: function() {
+				$('#presetsListContainer').html('<div class="alert alert-danger"><i class="fa fa-exclamation-triangle"></i> Error loading presets. Please try again.</div>');
+			}
+		});
+	}
+
+	function renderPresetsList(presets) {
+		var html = '<h5 style="margin-bottom: 15px; font-weight: 600;"><i class="fa fa-list"></i> Available Presets</h5>';
+		html += '<div class="list-group">';
+
+		// Store presets data for later access and find the default preset
+		var defaultPresetId = null;
+		presets.forEach(function(preset) {
+			presetsData[preset.id] = preset;
+			if (preset.is_default == 1 || preset.is_default === '1' || preset.is_default === true) {
+				defaultPresetId = preset.id;
+			}
+		});
+
+		presets.forEach(function(preset) {
+			var presetSummary = buildPresetSummaryForModal(preset);
+			var isDefault = preset.is_default == 1 || preset.is_default === '1' || preset.is_default === true;
+
+			html += '<label class="list-group-item preset-item">';
+			html += '<input type="radio" name="preset_selection" value="' + preset.id + '" class="preset-radio"' + (isDefault ? ' checked' : '') + '>';
+			html += '<span class="preset-radio-custom"></span>';
+			html += '<span class="preset-content">';
+			html += '<strong>' + escapeHtml(preset.name) + '</strong>';
+			if (isDefault) {
+				html += ' <span class="label label-primary"><i class="fa fa-star"></i> Default</span>';
+			}
+			if (preset.description) {
+				html += ' <small class="text-muted">' + escapeHtml(preset.description) + '</small>';
+			}
+			html += '<div style="margin-top: 5px;">' + presetSummary + '</div>';
+			html += '</span>';
+			html += '</label>';
+		});
+
+		html += '</div>';
+		$('#presetsListContainer').html(html);
+
+		// If a default preset was auto-selected and no preset was previously selected, set the selected preset ID
+		if (defaultPresetId && !selectedPresetId) {
+			selectedPresetId = defaultPresetId;
+			$('#applyPresetBtn').prop('disabled', false);
+			// Prefill name from default preset
+			updateNameFieldFromPreset(defaultPresetId);
+		}
+	}
+
+	// Update the name field based on selected preset
+	function updateNameFieldFromPreset(presetId) {
+		var preset = presetsData[presetId];
+		if (preset && preset.location_name) {
+			$('#preset_onu_name').val(preset.location_name);
+			$('#preset_name_hint_text').text('Prefilled from preset pattern: ' + preset.location_name);
+			$('#preset_name_hint').show();
+		} else {
+			// Clear the field when selecting a preset without location_name
+			$('#preset_onu_name').val('');
+			$('#preset_name_hint').hide();
+		}
+	}
+
+function buildPresetSummaryForModal(preset) {
+		var parts = [];
+
+		// Board/Port
+		if (preset.board !== null || preset.port !== null) {
+			var locationParts = [];
+			if (preset.board !== null) locationParts.push('Board ' + preset.board);
+			if (preset.port !== null) locationParts.push('Port ' + preset.port);
+			parts.push('<div><strong>Board/Port:</strong> ' + locationParts.join(', ') + '</div>');
+		}
+
+		// PON Type
+		parts.push('<div><strong>PON:</strong> ' + preset.pon_type.toUpperCase() + '</div>');
+
+		// ONU Type
+		if (preset.onu_type_name) {
+			parts.push('<div><strong>ONU Type:</strong> ' + escapeHtml(preset.onu_type_name) + '</div>');
+		} else {
+			parts.push('<div><strong>ONU Type:</strong> <em>Auto-detect</em></div>');
+		}
+
+		// SN Pattern
+		if (preset.sn_pattern) {
+			parts.push('<div><strong>SN Pattern:</strong> <code>' + escapeHtml(preset.sn_pattern) + '</code></div>');
+		}
+
+		// Fallback ONU Type (when ONU type is auto-detect)
+		if (preset.fallback_onu_type_name) {
+			parts.push('<div><strong>Fallback ONU Type:</strong> ' + escapeHtml(preset.fallback_onu_type_name) + '</div>');
+		}
+
+		// Mode
+		var modeLabel = preset.mode === 'Routing' ? '<span class="label label-info">Routing</span>' : '<span class="label label-default">Bridging</span>';
+		parts.push('<div><strong>Mode:</strong> ' + modeLabel + '</div>');
+
+		// VLAN
+		if (preset.vlan_number) {
+			parts.push('<div><strong>VLAN:</strong> ' + preset.vlan_number + '</div>');
+		}
+
+		// SVLAN
+		if (preset.use_svlan && preset.svlan_number) {
+			var svlanInfo = preset.svlan_number;
+			if (preset.tag_transform_mode) {
+				svlanInfo += ' <small class="text-muted">(' + escapeHtml(preset.tag_transform_mode) + ')</small>';
+			}
+			parts.push('<div><strong>SVLAN:</strong> ' + svlanInfo + '</div>');
+
+			// Use other-all TLS VLAN
+			if (preset.use_other_all_tls_vlan) {
+				parts.push('<div><strong>TLS VLAN:</strong> <span class="label label-info">other-all</span></div>');
+			}
+		}
+
+		// CVLAN
+		if (preset.use_cvlan && preset.cvlan_number) {
+			parts.push('<div><strong>CVLAN:</strong> ' + preset.cvlan_number + '</div>');
+		}
+
+		// Speed profiles
+		if (preset.download_speed_name || preset.upload_speed_name) {
+			var speeds = [];
+			if (preset.download_speed_name) speeds.push('<i class="fa fa-arrow-down text-success"></i> ' + escapeHtml(preset.download_speed_name));
+			if (preset.upload_speed_name) speeds.push('<i class="fa fa-arrow-up text-primary"></i> ' + escapeHtml(preset.upload_speed_name));
+			parts.push('<div><strong>Speed:</strong> ' + speeds.join(' / ') + '</div>');
+		}
+
+		// Zone
+		if (preset.zone_name) {
+			parts.push('<div><strong>Zone:</strong> ' + escapeHtml(preset.zone_name) + '</div>');
+		}
+
+		// ODB
+		if (preset.odb_name) {
+			var odbInfo = escapeHtml(preset.odb_name);
+			if (preset.odb_port) {
+				odbInfo += ' <span class="label label-info">Auto-port</span>';
+			}
+			parts.push('<div><strong>ODB:</strong> ' + odbInfo + '</div>');
+		}
+
+		// Name pattern
+		if (preset.location_name) {
+			var nameDisplay = preset.location_name.length > 30 ? escapeHtml(preset.location_name.substring(0, 30)) + '...' : escapeHtml(preset.location_name);
+			var nameTitle = preset.location_name.length > 30 ? ' title="' + escapeHtml(preset.location_name) + '"' : '';
+			parts.push('<div><strong>Name:</strong> <code' + nameTitle + '>' + nameDisplay + '</code></div>');
+		}
+
+		// Description pattern
+		if (preset.description_pattern) {
+			var descDisplay = preset.description_pattern.length > 30 ? escapeHtml(preset.description_pattern.substring(0, 30)) + '...' : escapeHtml(preset.description_pattern);
+			var descTitle = preset.description_pattern.length > 30 ? ' title="' + escapeHtml(preset.description_pattern) + '"' : '';
+			parts.push('<div><strong>Address:</strong> <code' + descTitle + '>' + descDisplay + '</code></div>');
+		}
+
+		// TR069 Profile
+		if (preset.tr069_profile_name) {
+			parts.push('<div><strong>TR069:</strong> ' + escapeHtml(preset.tr069_profile_name) + '</div>');
+		}
+
+		// Management IP
+		if (preset.mgmt_ip_mode && preset.mgmt_ip_mode !== 'Inactive') {
+			var mgmtLabel = preset.mgmt_ip_mode === 'Static'
+				? '<span class="label label-success">Static IP</span>'
+				: '<span class="label label-info">DHCP</span>';
+			var mgmtInfo = mgmtLabel;
+			if (preset.mgmt_ip_vlan_number) {
+				mgmtInfo += ' <small class="text-muted">(VLAN ' + preset.mgmt_ip_vlan_number + ')</small>';
+			}
+			parts.push('<div><strong>Mgmt IP:</strong> ' + mgmtInfo + '</div>');
+		}
+
+		// WiFi Settings
+		if (preset.wifi_config) {
+			try {
+				var wifiConfig = typeof preset.wifi_config === 'string' ? JSON.parse(preset.wifi_config) : preset.wifi_config;
+				if (wifiConfig && wifiConfig.length > 0) {
+					var wifiInfo = '<span class="label label-info">Enabled</span>';
+					wifiInfo += ' <small class="text-muted">(' + wifiConfig.length + ' port' + (wifiConfig.length !== 1 ? 's' : '') + ')</small>';
+					parts.push('<div><strong>WiFi:</strong> ' + wifiInfo + '</div>');
+
+					// Show details for each port
+					wifiConfig.forEach(function(port) {
+						// Get port name
+						var portName = '';
+						if (port.wifi_port_id && preset.wifi_ports && preset.wifi_ports[port.wifi_port_id]) {
+							portName = preset.wifi_ports[port.wifi_port_id];
+						}
+
+						var portDetails = [];
+						if (port.ssid) portDetails.push('SSID: ' + escapeHtml(port.ssid));
+						if (port.auth_mode) portDetails.push(port.auth_mode.toUpperCase());
+						if (port.mode && port.mode !== 'LAN') portDetails.push(port.mode);
+						// Add VLAN info
+						if (port.vlan_id && preset.wifi_vlans && preset.wifi_vlans[port.vlan_id]) {
+							portDetails.push('VLAN: ' + escapeHtml(preset.wifi_vlans[port.vlan_id]));
+						} else if (port.vlan_id) {
+							portDetails.push('VLAN ID: ' + port.vlan_id);
+						}
+						// Add Allowed VLANs info
+						if (port.extra_vlans && port.extra_vlans.length > 0) {
+							var extraVlanNames = [];
+							port.extra_vlans.forEach(function(vlanId) {
+								if (preset.wifi_vlans && preset.wifi_vlans[vlanId]) {
+									extraVlanNames.push(preset.wifi_vlans[vlanId]);
+								} else {
+									extraVlanNames.push(vlanId);
+								}
+							});
+							if (extraVlanNames.length > 0) {
+								portDetails.push('Allowed VLANs: ' + escapeHtml(extraVlanNames.join(', ')));
+							}
+						}
+						if (portDetails.length > 0) {
+							var bullet = portName ? '&bull; ' + escapeHtml(portName) + ': ' : '&bull; ';
+							parts.push('<div style="margin-left: 15px;"><small class="text-muted">' + bullet + portDetails.join(', ') + '</small></div>');
+						}
+					});
+				}
+			} catch (e) {
+				// Invalid JSON, skip WiFi
+			}
+		}
+
+		// Web User/Password
+		if (preset.web_user) {
+			parts.push('<div><strong>Web User:</strong> ' + escapeHtml(preset.web_user) + '</div>');
+		}
+		if (preset.web_password) {
+			parts.push('<div><strong>Web Pass:</strong> ••••••••</div>');
+		}
+
+		return parts.join('');
+	}
+
+	// Handle radio button change for preset selection
+	$(document).on('change', 'input[name="preset_selection"]', function() {
+		selectedPresetId = $(this).val();
+		$('#applyPresetBtn').prop('disabled', false);
+		// Update name field from selected preset
+		updateNameFieldFromPreset(selectedPresetId);
+	});
+
+	// Handle Apply button click
+	$('#applyPresetBtn').click(function() {
+		if (selectedPresetId) {
+			applyPresetToOnu(selectedPresetId);
+		}
+	});
+
+	function applyPresetToOnu(presetId) {
+		$('#applyPresetModal').modal('hide');
+		showLoadingOverlay();
+
+		// Get name from input field
+		var onuName = $('#preset_onu_name').val().trim();
+
+		$.ajax({
+			url: '/onu_authorization/authorize_with_preset',
+			type: 'POST',
+			data: {
+				preset_id: presetId,
+				board: currentOnuData.board,
+				port: currentOnuData.port,
+				sn: currentOnuData.sn,
+				pon_type: currentOnuData.ponType,
+				onu_type_id: currentOnuData.onuTypeId,
+				olt_id: currentOnuData.oltId,
+				location_name: onuName
+			},
+			success: function(response) {
+				hideLoadingOverlay();
+
+				response = JSON.parse(response);
+				if (response.status) {
+					toast('ONU authorized successfully with preset');
+
+					// Refresh unconfigured list by triggering the refresh button
+					$('#unconfigured_div a.get-unconfigured').trigger('click');
+				}
+				else {
+					toast(response.message || 'Error applying preset');
+				}
+			},
+			error: function() {
+				hideLoadingOverlay();
+				toast('Error applying preset. Please try again.');
+			}
+		});
+	}
+
+	function escapeHtml(text) {
+		if (!text) return '';
+		var div = document.createElement('div');
+		div.appendChild(document.createTextNode(text));
+		return div.innerHTML;
+	}
+
+});
+</script>
+
+<style>
+.preset-item {
+	cursor: pointer;
+	transition: all 0.2s ease;
+	border-left: 3px solid transparent;
+	position: relative;
+	padding-left: 45px !important;
+}
+
+.preset-item:hover {
+	background-color: #f5f5f5;
+	border-left-color: #d0d0d0;
+}
+
+/* Hide default radio button */
+.preset-radio {
+	position: absolute;
+	opacity: 0;
+	cursor: pointer;
+	left: 0;
+	top: 0;
+}
+
+/* Custom radio button circle */
+.preset-radio-custom {
+	position: absolute;
+	left: 15px;
+	top: 50%;
+	transform: translateY(-50%);
+	width: 22px;
+	height: 22px;
+	border: 2px solid #aaa;
+	border-radius: 50%;
+	background: white;
+	transition: all 0.2s ease;
+}
+
+/* Custom radio button inner dot */
+.preset-radio-custom:after {
+	content: '';
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	transform: translate(-50%, -50%) scale(0);
+	width: 10px;
+	height: 10px;
+	border-radius: 50%;
+	background: #5cb85c;
+	transition: transform 0.2s ease;
+}
+
+/* Show inner dot when checked */
+.preset-radio:checked + .preset-radio-custom:after {
+	transform: translate(-50%, -50%) scale(1);
+}
+
+/* Change border color when checked */
+.preset-radio:checked + .preset-radio-custom {
+	border-color: #5cb85c;
+	border-width: 2px;
+}
+
+/* Highlight the entire item when selected */
+.preset-radio:checked ~ .preset-content,
+.preset-item:has(.preset-radio:checked) {
+	background-color: #f0f8f0;
+}
+
+.preset-item:has(.preset-radio:checked) {
+	border-left-color: #5cb85c;
+	border-left-width: 4px;
+}
+
+.preset-content {
+	display: inline-block;
+	vertical-align: top;
+	font-size: 15px;
+	font-weight: normal;
+	width: calc(100% - 10px);
+}
+</style>
+
+
+</div>
+<br>
+<!-- /#page-wrapper -->
+    
+<div id="saveConfigModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="saveConfigModalLabel" aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+		  <div class="modal-header">
+		    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+		    <h3 id="saveConfigModalLabel">Save configuration</h3>
+		  </div>
+		  <div class="modal-body">
+		    <p>This will save the current OLT(s) configuration as startup configuration. It may take up to 5 minutes for the OLT(s) to finish saving the config. Are you sure?</p>
+		  </div>
+		  <div class="modal-footer">
+		    <button class="btn btn-link" data-dismiss="modal" aria-hidden="true">No, cancel</button>
+		    <button class="btn btn-primary save-configuration-button">Yes, save configuration</button>
+		  </div>
+		</div>
+	</div>
+</div>
+
+<div id="importModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="importModalLabel" aria-hidden="true">
+</div>
+
+<div id="rebuildModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="rebuildModalLabel" aria-hidden="true">
+</div>
+
+<div id="deleteAllApiReconciliationModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="deleteAllApiReconciliationModalLabel" aria-hidden="true">
+</div>
+
+<div id="generateSnmpIdsModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="generateSnmpIdsModalLabel" aria-hidden="true">
+</div>
+
+    <!-- Bootstrap Core JavaScript -->
+    <script src="/vendor/bootstrap/js/bootstrap.min.js"></script>
+    <script src="/vendor/bootstrap/js/bootstrap-multiselect.js?v=3.53.0"></script>
+
+    <!-- Metis Menu Plugin JavaScript -->
+    <script src="/vendor/metisMenu/metisMenu.min.js"></script>
+
+    <!-- Custom Theme JavaScript -->
+    <script src="/vendor/sb-admin-2/js/sb-admin-2.js"></script>
+        
+    <!-- Loading overlay -->
+    <script src="/vendor/jquery-loading-overlay-1.5.3/src/loadingoverlay.custom.js?v=2"></script>
+    
+    <!-- Message box -->
+    <script src="/vendor/jquery-message-box-2.2.1/src/messagebox.min.js"></script>
+    
+    
+
+<script type="text/javascript">
+
+$( document ).ready(function() {
+	
+	// Hide new version dot if user has already seen this version
+	var currentVersion = '3.53.0';
+	var lastSeenVersion = localStorage.getItem('lastSeenVersion');
+	if (lastSeenVersion === currentVersion) {
+		$('.new-version-dot').hide();
+	}
+
+	
+	$('#smartolt-update-banner-changelog').on('click', function(e) {
+		e.preventDefault();
+		localStorage.setItem('lastSeenVersion', currentVersion);
+		$('.new-version-dot').hide();
+				window.location.href = '/changelog';
+			});
+
+	$('#smartolt-update-banner-dismiss').on('click', function() {
+		localStorage.setItem('lastSeenVersion', currentVersion);
+		$('.new-version-dot').hide();
+		$('#smartolt-update-banner').slideUp(300);
+	});
+
+	$('#footer-changelog-link').on('click', function() {
+		localStorage.setItem('lastSeenVersion', currentVersion);
+		$('.new-version-dot').hide();
+	});
+
+	//hide alert-success after 5 seconds
+	/*setTimeout(function(){
+		$('.alert-success').not('.nofade').fadeOut();
+	},5000);*/
+	
+	var waitingForOLT   = $("<div>", {
+	    id      : "waitingOLT",
+	    css     : {
+	        "font-size" : "50px",
+			"white-space" : "nowrap"
+	    },
+	    text    : "Waiting for OLT"
+	});
+
+	var loadingOverlaySettings = {
+		    image       : "",
+		    fontawesome : "fa fa-spinner fa-spin",
+		    custom  : waitingForOLT,
+		    resizeInterval : 0
+		};
+
+	$.LoadingOverlay("append", loadingOverlaySettings);
+
+	window.showLoadingOverlay = function(loadingText = null) {
+		if(loadingText != null) {
+			$("#waitingOLT").text(loadingText);
+		}
+		else {
+			$("#waitingOLT").text("Waiting for OLT");
+		}
+		
+		$.LoadingOverlay("show", loadingOverlaySettings);
+	}
+
+	window.hideLoadingOverlay = function() {
+		$.LoadingOverlay("hide");
+	}
+
+	window.isLoadingOverlayVisible = function() {
+		return $('.loadingoverlay').is(":visible");
+	}
+	
+	//hide loading overlay when ajax request finishes
+	/*$(document).ajaxStop(function(){
+		hideLoadingOverlay();
+	});*/
+
+	//show toast with error
+	$(document).ajaxError(function(requestObject, error, errorThrown) {
+		if(error.status != 404 && error != undefined && error.responseJSON != undefined && 
+				error.responseJSON.error != undefined && error.responseJSON.error.length > 0) {
+			toast(error.responseJSON.error);
+		}
+	});
+
+	//confirm message box
+	window.MessageBoxConfirm = function(message){
+	    return $.MessageBox({
+	        buttonDone  : "OK",
+	        buttonFail  : "Cancel",
+	        message     : message
+	    });
+	}
+
+	window.getSelectedText = function() {
+        if (window.getSelection) {
+            return window.getSelection().toString();
+        } 
+        else if (document.selection) {
+            return document.selection.createRange().text;
+        }
+        return '';
+    }
+
+	//close navbar menu when clicking outside of it
+	$(document).click(function (event) {
+		var clickover = $(event.target);
+		var $nav = $("div.navbar-collapse");
+        var _opened = $nav.hasClass("in");
+
+        if (_opened === true && !clickover.hasClass("navbar-toggle")) {
+			$nav.collapse('hide');
+        }
+    });
+
+	/*https://www.quirksmode.org/blog/archives/2014/02/mouse_event_bub.html
+	  Safari on iOS only allows the mouse events, including click, to bubble up in the following situations:
+	  1. The target element of the event is a link or a form field.
+	  2. The target element, or any of its ancestors up to but not including the <body>, has an explicit event handler set for any of the mouse events. This event handler may be an empty function.
+      3. The target element, or any of its ancestors up to and including the document has a cursor: pointer CSS declarations. */
+	$("#content-wrapper").click(function (event) {
+		//this is here only for iOS to allow mouse events to bubble up so we can close navbar menu when clicking outside of it
+    });
+
+	// check navbar menu top offset
+    function closeMenuIfOpened() {
+		var $nav = $("div.navbar-collapse");
+    	var _opened = $nav.hasClass("in");
+
+        if (_opened === true && $(".navbar").offset().top > 50) {
+			$nav.collapse('hide');
+        }
+    }
+
+    //for touch devices, detect zoom in/out events and close the navbar menu if opened
+    var tracks = [];
+    $(window).on("touchmove", function (event) {
+	
+	    //only run code if the user has two fingers touching
+	    if (event.originalEvent.touches.length === 2) {
+	
+	        //track the touches, I'm setting each touch as an array inside the tracks array
+	        //each touch array contains an X and Y coordinate
+	        tracks.push([ [event.originalEvent.touches[0].pageX, event.originalEvent.touches[0].pageY], [event.originalEvent.touches[1].pageX, event.originalEvent.touches[1].pageY] ]);
+	    }
+	}).on("touchstart", function () {
+	    //start-over
+	    tracks = [];
+	}).on("touchend", function () {
+	    if(tracks.length > 0) {
+			var $nav = $("div.navbar-collapse");
+	    	var _opened = $nav.hasClass("in");
+	        if (_opened === true) {
+				$nav.collapse('hide');
+	        }
+	    }
+	});
+
+	// COPY TO CLIPBOARD
+	// Attempts to use .execCommand('copy') on a created text field
+	// Falls back to a selectable alert if not supported
+	// Attempts to display status in Bootstrap tooltip
+	// ------------------------------------------------------------------------------
+
+	function copyToClipboard(text, el) {
+	  var copyTest = document.queryCommandSupported('copy');
+	  var elOriginalText = el.attr('data-original-title');
+
+	  if (copyTest === true) {
+	    var copyTextArea = document.createElement("textarea");
+	    copyTextArea.value = text;
+	    document.body.appendChild(copyTextArea);
+	    copyTextArea.select();
+	    try {
+	      var successful = document.execCommand('copy');
+	      var msg = successful ? "Copied!" : "Whoops, not copied!";
+	      el.attr('data-original-title', msg).tooltip('show');
+	    } 
+	    catch (err) {
+	      console.log("Oops, unable to copy");
+	    }
+	    document.body.removeChild(copyTextArea);
+	    el.attr('data-original-title', elOriginalText);
+	  } 
+	  else {
+	    // Fallback if browser doesn't support .execCommand('copy')
+	    window.prompt("Copy to clipboard", text);
+	  }
+	}
+
+	function copyToClipboard2(text, el) {
+		  if (document.queryCommandSupported('copy') === true) {
+			var elOriginalText = el.attr('data-original-title');
+	 	    var copyTextArea = document.createElement("textarea");
+		    copyTextArea.textContent = text.text();
+		    document.body.appendChild(copyTextArea);
+
+		    var selection = document.getSelection();
+		    var range = document.createRange();
+		    range.selectNode(copyTextArea);
+		    selection.removeAllRanges();
+		    selection.addRange(range);
+		    
+		    try {
+		      var successful = document.execCommand('copy');
+			  var msg;
+
+			  if (successful) {
+				  msg = "Copied!";
+			  } 
+			  else {
+				msg = "Whoops, not copied!";
+				el.removeClass('not-selectable');
+			  }
+		      el.attr('data-original-title', msg).tooltip('show');
+		    } 
+		    catch (err) {
+		      console.log("Oops, unable to copy");
+		    }
+		    selection.removeAllRanges();
+		    document.body.removeChild(copyTextArea);
+		    el.attr('data-original-title', elOriginalText);
+		  } 
+		  else {
+			$('.not-selectable').removeClass('not-selectable');
+		    // Fallback if browser doesn't support .execCommand('copy')
+		    window.prompt("Copy to clipboard", text.text());
+		  }
+		}
+
+	// Initialize
+   // ---------------------------------------------------------------------
+
+   // Tooltips
+   // Requires Bootstrap 3 for functionality
+   $('.js-tooltip').tooltip();
+
+   // Copy to clipboard
+   // Grab any text in the attribute 'data-copy' and pass it to the 
+   // copy function
+   $('.js-copy').click(function() {
+     var text = $(this).attr('data-copy');
+     var el = $(this);
+     copyToClipboard(text, el);
+   });
+
+   $(document).on('click','.comma-copy', function() {
+	   $(this).removeClass('btn-primary').addClass('btn-default');
+	     var el = $('#'+$(this).attr('data-idtag'));
+	     copyToClipboard2(el, $(this));
+	     el.removeClass('text-primary').addClass('text-muted');
+	   });
+
+   //trim white spaces when paste in any input
+   $(document).on('paste', 'input[type=text]', function(e) {
+	  // prevent copying action
+	  e.preventDefault();
+	  
+	  var pastedText = e.originalEvent.clipboardData.getData('Text');
+	  var withoutSpaces = pastedText;
+	  if(pastedText) {
+		  withoutSpaces = pastedText.trim();
+	  }
+
+	  //remove all spaces, including from inside the text
+	  if($(this).hasClass('no_spaces')) {
+		  withoutSpaces = withoutSpaces.replace(/\s/g, '');
+	  }
+	  
+	  $(this).insertAtCaret(withoutSpaces);
+	});
+
+   $.fn.insertAtCaret = function(text) {
+	    return this.each(function() {
+	        if (document.selection && this.tagName == 'TEXTAREA') {
+	            //IE textarea support
+	            this.focus();
+	            sel = document.selection.createRange();
+	            sel.text = text;
+	            this.focus();
+	        } else if (this.selectionStart || this.selectionStart == '0') {
+	            //MOZILLA/NETSCAPE support
+	            startPos = this.selectionStart;
+	            endPos = this.selectionEnd;
+	            scrollTop = this.scrollTop;
+	            this.value = this.value.substring(0, startPos) + text + this.value.substring(endPos, this.value.length);
+	            this.focus();
+	            this.selectionStart = startPos + text.length;
+	            this.selectionEnd = startPos + text.length;
+	            this.scrollTop = scrollTop;
+	        } else {
+	            // IE input[type=text] and other browsers
+	            this.value += text;
+	            this.focus();
+	            this.value = this.value;    // forces cursor to end
+	        }
+	    });
+	};
+    
+	
+  $('.save-configuration-button').click(function (){
+    var button = $('.save-configuration-anchor');
+
+    button.toggleClass('active');
+    button.attr('disabled', true);
+    button.text("Saving...");
+    $('#saveConfigModal').modal('hide');
+
+    $.ajax({
+        method: "GET",
+        beforeSend: function(request) {
+		    request.setRequestHeader("X-Token", config.X_TOKEN);
+		  },
+        url: "/api/system/write",
+      })
+      .done(function( response ) {
+        $.MessageBox((response && response.response) ? response.response : "Save initiated. It could take the OLT up to 5 minutes to write the config!");
+        button.text("Save config");
+        setTimeout(function () {
+          button.toggleClass('active');
+          button.attr('disabled', false);
+          button.text("Save config");
+        }, 1000);
+      })
+      .fail(function(jqXHR, textStatus) {
+    	  if(jqXHR.responseJSON) {
+				$.MessageBox(jqXHR.responseJSON.error);
+			}
+			else {
+				$.MessageBox(jqXHR.responseText);
+			}
+	        setTimeout(function () {
+	        	 button.toggleClass('active');
+	             button.attr('disabled', false);
+	             button.text("Save config");
+	        }, 1000);
+      });
+  });
+
+    
+});
+</script>
+
+</div>
+
+<style>
+.new-version-dot {
+	display: inline-block;
+	width: 8px;
+	height: 8px;
+	background-color: #5cb85c;
+	border-radius: 50%;
+	margin-left: 4px;
+	animation: pulse-green 2s infinite;
+}
+.footer-dot-sep {
+	opacity: 0.5;
+	margin: 0 2px;
+}
+footer {
+	height: auto;
+	padding-bottom: 8px;
+}
+#feature-tour-whatsnew .fa-bullhorn {
+	margin-right: 5px;
+	font-size: 2em;
+	vertical-align: -6px;
+}
+
+@keyframes pulse-green {
+	0% {
+		transform: scale(0.95);
+		box-shadow: 0 0 0 0 rgba(92, 184, 92, 0.7);
+	}
+	70% {
+		transform: scale(1);
+		box-shadow: 0 0 0 6px rgba(92, 184, 92, 0);
+	}
+	100% {
+		transform: scale(0.95);
+		box-shadow: 0 0 0 0 rgba(92, 184, 92, 0);
+	}
+}
+
+</style>
+
+<footer>
+	<div class="text-center row">SmartOLT <a href="/changelog" class="btn-link" id="footer-changelog-link">v3.53.0<span class="new-version-dot" title="New updates"></span></a> © 2026</div>
+</footer>
+
+
+
+
+<div class="loadingoverlay" style="background-color: rgba(255, 255, 255, 0.8); position: fixed; display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; top: 0px; left: 0px; width: 100%; height: 100%; background-size: 100px;"><div class="loadingoverlay_fontawesome fa fa-spinner fa-spin" style="font-size: 100px;"></div><div id="waitingOLT" style="font-size: 50px; white-space: nowrap;">Waiting for OLT</div></div></body></html>

@@ -1184,6 +1184,32 @@ app.all('/modulo', requireAuth, (req, res) => {
       } catch(e) {
         data.olts = db.prepare("SELECT id, nombre, '' as olt_ip, '' as olt_port, '' as olt_username, '' as socks_host FROM olts ORDER BY id").all();
       }
+      // Cargar datos de OLT desde cache DB
+      try {
+        var cachedRow = db.prepare("SELECT value FROM olt_cache WHERE key='dashboard'").get();
+        if (cachedRow) {
+          var cd = JSON.parse(cachedRow.value);
+          console.log('[GPONManager] Cache loaded:', cd.online, 'online,', cd.total, 'total');
+          data.onu_online = cd.online || 0;
+          data.onu_total = cd.total || 0;
+          data.onu_offline = cd.offline || 0;
+          data.onu_pwrfail = cd.pwrfail || 0;
+          data.onu_los = cd.los || 0;
+          data.onu_waiting = (cd.unconfigured || []).length;
+        } else {
+          console.log('[GPONManager] No cache in DB');
+        }
+      } catch(e) { console.log('[GPONManager] Cache error:', e.message); }
+      // Fallback: si no hay cache, mostrar "Cargando..."
+      if (data.onu_online === undefined && data.onu_total === undefined) {
+        data.onu_loading = true;
+        data.onu_online = 0;
+        data.onu_total = 0;
+        data.onu_offline = 0;
+        data.onu_pwrfail = 0;
+        data.onu_los = 0;
+        data.onu_waiting = 0;
+      }
       break;
     }
     case 'SmartoltConfigured': {
@@ -4238,8 +4264,68 @@ var mesesEsp = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto
 
   // SmartOLT modules se renderizan sin layout (standalone)
   var smartoltModules = ['GPONManager', 'SmartoltConfigured', 'SmartoltUnconfigured', 'SmartoltLocations', 'SmartoltOnuTypes', 'SmartoltSpeedProfiles', 'SmartoltSettings', 'SmartoltDashboard'];
+  
+  // Clon pages que necesitan funciones del CDN de SmartOLT
+  var clonePages = ['smartolt_configured_full', 'smartolt_unconfigured_full', 'SmartoltAuthorizeOnu'];
+  
   if (smartoltModules.indexOf(pagina) !== -1) {
     res.render('pages/' + pagina, { ...data, user: req.session.user });
+  } else if (clonePages.indexOf(pagina) !== -1) {
+    // Pasar parametros a la vista
+    data.sn_param = req.query.sn || '';
+    data.board_param = req.query.board || '';
+    data.port_param = req.query.port || '';
+    // Inyectar script con funciones faltantes (sin modificar el .ejs)
+    res.render('pages/' + pagina, { ...data, user: req.session.user }, function(err, html) {
+      if (err) { res.send(err); return; }
+      var injected = '<script>\n' +
+        'window.getOnuStatus = window.getOnuStatus || function(){ return {done:function(fn){fn({});return this;},fail:function(){}}; };\n' +
+        'window.refreshConfiguredData = window.refreshConfiguredData || function(){};\n' +
+        'window.renderConfiguredData = window.renderConfiguredData || function(){};\n' +
+        'window.initFilterActionsNoSubmit = window.initFilterActionsNoSubmit || function(){};\n' +
+        'window.getConfigured = window.getConfigured || function(){};\n' +
+        'window.getConfiguredSelectedOltIds = window.getConfiguredSelectedOltIds || function(){ return []; };\n' +
+        'window.fetchOltUnconfigured = window.fetchOltUnconfigured || function(){};\n' +
+        'window.getUnconfigured = window.getUnconfigured || function(){};\n' +
+        'window.timeoutStopOnuStatus = window.timeoutStopOnuStatus || {};\n' +
+        'window.stopGetOnuStatus = window.stopGetOnuStatus || function(){};\n' +
+        '</script>\n' +
+        '<script>\n' +
+        'function cargarUnconfigured() {\n' +
+        '  var $table = $("table.unconfigured-table, #unconfigured-table, table.table");\n' +
+        '  if ($table.length === 0) {\n' +
+        '    $(".form-group").last().after(\'<table id="unconfigured-table" class="table table-striped table-bordered unconfigured-table"><thead><tr><th>PON</th><th>Board</th><th>Port</th><th>Index</th><th>SN</th><th>Type</th><th>Action</th></tr></thead><tbody><tr><td colspan="7" class="text-center"><i class="fa fa-spinner fa-spin"></i> Loading...</td></tr></tbody></table>\');\n' +
+        '    $table = $("#unconfigured-table");\n' +
+        '  }\n' +
+        '  var $tbody = $table.find("tbody");\n' +
+        '  $.ajax({ url: "/api/olt/unconfigured-onus", method: "GET",\n' +
+        '    success: function(r) {\n' +
+        '      if (!r.success || !r.data || !r.data.length) {\n' +
+        '        $tbody.html(\'<tr><td colspan="7" class="text-center text-muted\">No unconfigured ONUs found</td></tr>\');\n' +
+        '        $(".loading-message").hide();\n' +
+        '        return;\n' +
+        '      }\n' +
+        '      var h = "";\n' +
+        '      r.data.forEach(function(o) {\n' +
+        '        var tipo = "Auto";\n' +
+        '        if (o.sn && o.sn.indexOf("HWTC")===0) tipo = "EG8141A5";\n' +
+        '        else if (o.sn && o.sn.indexOf("ZTEG")===0) tipo = "F679LV9.1";\n' +
+        '        else if (o.sn && o.sn.indexOf("TPLG")===0) tipo = "XN020-G3v";\n' +
+        '        h += \'<tr class="valign-center"><td>GPON</td><td>\' + o.board + \'</td><td>\' + o.port + \'</td><td></td><td>\' + (o.sn||"N/A") + \'</td><td>\' + tipo + \'</td>\' +\n' +
+        '          \'<td class="text-center"><a href="/modulo?pagina=SmartoltAuthorizeOnu&sn=\' + o.sn + \'&board=\' + o.board + \'&port=\' + o.port + \'" class="btn btn-primary btn-xs\">Authorize</a></td></tr>\';\n' +
+        '      });\n' +
+        '      $tbody.html(h);\n' +
+        '      $(".waiting-count").text(r.data.length);\n' +
+        '      $(".loading-message").hide();\n' +
+        '    }\n' +
+        '  });\n' +
+        '}\n' +
+        '$(document).ready(function() { cargarUnconfigured(); setInterval(cargarUnconfigured, 30000); });\n' +
+        '</script>\n';
+      // Insertar despues del primer script de jQuery (que ya cargo)
+      html = html.replace('src="/public/smartolt-files/jquery.min.js"></script>', 'src="/public/smartolt-files/jquery.min.js"></script>' + injected);
+      res.send(html);
+    });
   } else {
     renderPage(req, res, pagina, data);
   }
@@ -11189,4 +11275,198 @@ app.listen(PORT, () => {
 
   // Iniciar background refresh de GPON (cada 3 minutos)
   startGponBackgroundRefresh();
+  
+  // Inicializar cache OLT en DB
+  try { db.exec("CREATE TABLE IF NOT EXISTS olt_cache (key TEXT PRIMARY KEY, value TEXT, updated_at DATETIME)"); } catch(e) {}
+  
+  // Refrescar cache OLT cada 30s (tiempo suficiente para capturar TODOS los datos)
+  async function refreshFullOltCache() {
+    try {
+      var oa = require('./olt-admin');
+      console.log('[OLT-Cache] Refrescando...');
+      
+      // Consultar estado con tiempo suficiente (hasta 60s)
+      var status = await oa.getCachedStatus();
+      
+      // Consultar uncfg con tiempo suficiente
+      var CR = String.fromCharCode(13,10);
+      var net = require('net');
+      var uncfgData = await new Promise(function(resolve) {
+        var sock = new net.Socket();
+        var buf = '';
+        var est = 0;
+        sock.setTimeout(60000);
+        sock.on('connect', function() {
+          var ip = [192,168,20,80];
+          var b = Buffer.alloc(9);
+          b[0]=4;b[1]=1;b.writeUInt16BE(23,2);
+          for(var i=0;i<4;i++)b[4+i]=ip[i];
+          b[8]=0;
+          sock.write(b);
+        });
+        sock.on('data', function(d) {
+          buf += d.toString('ascii');
+          if (est === 0 && d.length >= 8 && d[1] === 90) { est=1; sock.write('zte' + CR); return; }
+          if (est === 1 && buf.indexOf('Username:') >= 0) { est=2; sock.write('zte' + CR); return; }
+          if (est === 2 && buf.indexOf('Password:') >= 0) {
+            est = 3;
+            setTimeout(function() {
+              sock.write('show gpon onu uncfg' + CR);
+              var lastLen = 0, sc = 0;
+              var check = setInterval(function() {
+                if (buf.length === lastLen) sc++;
+                else { sc = 0; lastLen = buf.length; }
+                if (sc >= 6 && buf.indexOf('ZXAN#') >= 0) {
+                  clearInterval(check); clearTimeout(to);
+                  try { sock.destroy(); } catch(e) {}
+                  resolve(buf);
+                }
+              }, 500);
+              var to = setTimeout(function() {
+                clearInterval(check);
+                try { sock.destroy(); } catch(e) {}
+                resolve(buf);
+              }, 45000);
+            }, 2000);
+          }
+        });
+        sock.on('error', function() { resolve(buf); });
+        sock.on('timeout', function() { resolve(buf); });
+        sock.connect(1080, '10.50.255.245');
+      });
+      
+      // Parsear ONUs no configuradas
+      var unconfigured = [];
+      if (uncfgData) {
+        var inT = false;
+        uncfgData.split('\n').forEach(function(l) {
+          if (l.indexOf('OnuIndex') >= 0) inT = true;
+          else if (inT && l.match(/gpon-onu_1\/(\d+)\/(\d+):(\d+)\s+(\S+)/)) {
+            unconfigured.push({ board: parseInt(RegExp.$1), port: parseInt(RegExp.$2), sn: RegExp.$4 });
+          }
+        });
+      }
+      
+      // Guardar en DB
+      var dashboard = {
+        online: status.online || 0,
+        total: status.total || 0,
+        offline: status.offline || 0,
+        pwrfail: status.pwrfail || 0,
+        los: status.los || 0,
+        unconfigured: unconfigured,
+        updated_at: new Date().toISOString()
+      };
+      db.prepare("INSERT OR REPLACE INTO olt_cache (key, value, updated_at) VALUES ('dashboard', ?, datetime('now'))").run(JSON.stringify(dashboard));
+      console.log('[OLT-Cache] Guardado:', dashboard.online, 'online,', dashboard.total, 'total,', dashboard.offline, 'offline');
+    } catch(e) {
+      console.log('[OLT-Cache] Error:', e.message);
+    }
+    setTimeout(refreshFullOltCache, 30000);
+  }
+  
+  // Iniciar refresh
+  setTimeout(refreshFullOltCache, 2000);
+  
+  // API dashboard (responde INSTANTANEO desde DB)
+  app.get('/api/olt/dashboard', requireAuth, function(req, res) {
+    try {
+      var row = db.prepare("SELECT value FROM olt_cache WHERE key='dashboard'").get();
+      if (row) {
+        var d = JSON.parse(row.value);
+        res.json({ success: true, data: {
+          online: d.online || 0, total: d.total || 0, offline: d.offline || 0,
+          pwrfail: d.pwrfail || 0, los: d.los || 0, waiting: (d.unconfigured || []).length
+        }});
+      } else {
+        res.json({ success: true, data: { online: 0, total: 0, offline: 0, pwrfail: 0, los: 0, waiting: 0 } });
+      }
+    } catch(e) {
+      res.json({ success: false, error: e.message });
+    }
+  });
+  
+  // Forzar conexion temprana
+  try {
+    var oa = require('./olt-admin');
+    oa.getCachedStatus().catch(function(){});
+  } catch(e) {}
+  
+  // Redirigir /vendor/ a /public/smartolt-files/ (sin requireAuth para CSS/JS)
+  app.get('/vendor/:folder1/:folder2/:file', function(req, res) {
+    res.redirect('/public/smartolt-files/' + req.params.file);
+  });
+  app.get('/vendor/:folder/:file', function(req, res) {
+    res.redirect('/public/smartolt-files/' + req.params.file);
+  });
+  
+  // ---- ENDPOINTS FALTANTES PARA GPONManager (evitar 404) ----
+  
+  // Graficos de estado de ONUs (series diarias)
+  app.get('/graphs_olt/get_onus_statuses_series/:period/:oltId', requireAuth, function(req, res) {
+    res.json({ success: true, data: [] });
+  });
+  
+  // ONUs en espera de autorizacion
+  app.get('/dashboard/get_waiting_auth/:oltId', requireAuth, function(req, res) {
+    try {
+      var row = db.prepare("SELECT value FROM olt_cache WHERE key='dashboard'").get();
+      var waiting = 0;
+      if (row) { var d = JSON.parse(row.value); waiting = (d.unconfigured || []).length; }
+      res.json({ success: true, data: { waiting: waiting } });
+    } catch(e) { res.json({ success: true, data: { waiting: 0 } }); }
+  });
+  
+  // ONUs autorizadas por dia (historico)
+  app.get('/dashboard/get_onus_auth_per_day/:oltId', requireAuth, function(req, res) {
+    res.json({ success: true, data: [] });
+  });
+  
+  // Seniales de ONUs (señales opticas)
+  app.get('/dashboard/get_onus_signals/:oltId', requireAuth, function(req, res) {
+    res.json({ success: true, data: { low: 0, warning: 0, critical: 0 } });
+  });
+  
+  // Estadisticas de ONUs (contadores)
+  app.get('/dashboard/get_onus_stats/:oltId', requireAuth, function(req, res) {
+    try {
+      var row = db.prepare("SELECT value FROM olt_cache WHERE key='dashboard'").get();
+      if (row) {
+        var d = JSON.parse(row.value);
+        res.json({ success: true, data: { total: d.total||0, authorized: (d.total||0)-((d.unconfigured||[]).length), waiting: (d.unconfigured||[]).length, online: d.online||0, offline: d.offline||0, pwrfail: d.pwrfail||0, los: d.los||0 } });
+      } else {
+        res.json({ success: true, data: { total: 0, authorized: 0, waiting: 0, online: 0, offline: 0, pwrfail: 0, los: 0 } });
+      }
+    } catch(e) { res.json({ success: false, error: e.message }); }
+  });
+  
+  // PONs con outage
+  app.get('/dashboard/get_outage_pons/:oltId', requireAuth, function(req, res) {
+    res.json({ success: true, data: [] });
+  });
+  
+  // Uptime de OLTs (batch) - acepta GET y POST
+  app.all('/olt/get_olt_uptime_batch', requireAuth, function(req, res) {
+    res.json({ success: true, data: { uptime: 'N/A' } });
+  });
+  
+  // ONUs no configuradas (para smartolt_unconfigured_full)
+  app.get('/api/olt/unconfigured-onus', requireAuth, function(req, res) {
+    try {
+      var row = db.prepare("SELECT value FROM olt_cache WHERE key='dashboard'").get();
+      var waiting = [];
+      if (row) {
+        var d = JSON.parse(row.value);
+        waiting = (d.unconfigured || []).map(function(u) {
+          return { board: u.board, port: u.port, sn: u.sn, index: 1, status: 'unknown', type: 'Auto' };
+        });
+      }
+      res.json({ success: true, data: waiting });
+    } catch(e) { res.json({ success: true, data: [] }); }
+  });
+  
+  // Tareas activas en ONUs no configuradas
+  app.get('/onu/get_active_tasks_on_unconfigured', requireAuth, function(req, res) {
+    res.json({ success: true, data: [] });
+  });
 });

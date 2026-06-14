@@ -1629,7 +1629,97 @@
       if (authType === 'pppoe') metodo.value = 'pppoe';
       else metodo.value = 'dhcp';
       nsOnMetodoChange();
-      nsLoadPools();
+      nsLoadPoolsNew();
+    }
+
+    // ====== SELECCION DE IP DESDE POOLS DEL ROUTER (nueva version) ======
+    function nsOnPoolChange() {
+      var poolId = document.getElementById('nsPool').value;
+      var routerId = document.getElementById('nsRouter').value;
+      var ipSelect = document.getElementById('nsIpSelect');
+      var msgEl = document.getElementById('nsIpMsg');
+
+      ipSelect.innerHTML = '<option value="">-- Seleccionar pool --</option>';
+      msgEl.textContent = '';
+
+      if (!poolId || !routerId) return;
+
+      // Obtener IPs disponibles
+      fetch('/api/routers/available-ips', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ router_id: parseInt(routerId), pool_id: parseInt(poolId) })
+      })
+      .then(function(r) { return r.json(); })
+      .then(function(res) {
+        if (res.success && res.data && res.data.disponibles) {
+          var disp = res.data.disponibles;
+          msgEl.textContent = disp.length + ' IPs disponibles (' + res.data.usadas + ' usadas)';
+
+          if (disp.length > 0) {
+            ipSelect.innerHTML = '<option value="">-- Seleccionar IP --</option>';
+            disp.forEach(function(ip) {
+              var opt = document.createElement('option');
+              opt.value = ip;
+              opt.textContent = ip;
+              ipSelect.appendChild(opt);
+            });
+            ipSelect.disabled = false;
+          } else {
+            ipSelect.innerHTML = '<option value="">-- Sin IPs disponibles --</option>';
+            ipSelect.disabled = true;
+          }
+        } else {
+          msgEl.textContent = 'Error al cargar IPs';
+          ipSelect.innerHTML = '<option value="">-- Error --</option>';
+        }
+      })
+      .catch(function() {
+        msgEl.textContent = 'Error de conexión';
+      });
+    }
+
+    function nsOnIpSelectChange() {
+      var ip = document.getElementById('nsIpSelect').value;
+      var msgEl = document.getElementById('nsIpMsg');
+      if (ip) {
+        msgEl.innerHTML = '<span style="color:#059669;font-weight:600;">IP seleccionada: ' + ip + '</span>';
+      }
+    }
+
+    function nsLoadPoolsNew() {
+      var routerId = document.getElementById('nsRouter').value;
+      var poolSelect = document.getElementById('nsPool');
+      var ipSelect = document.getElementById('nsIpSelect');
+
+      // Limpiar
+      poolSelect.innerHTML = '<option value="">-- Seleccionar router --</option>';
+      ipSelect.innerHTML = '<option value="">-- Seleccionar pool --</option>';
+      document.getElementById('nsIpMsg').textContent = '';
+
+      if (!routerId) return;
+
+      // Cargar pools del router
+      fetch('/api/routers/' + routerId + '/pools')
+        .then(function(r) { return r.json(); })
+        .then(function(res) {
+          if (res.success && res.data && res.data.length > 0) {
+            poolSelect.innerHTML = '<option value="">-- Seleccionar pool --</option>';
+            res.data.forEach(function(p) {
+              var opt = document.createElement('option');
+              opt.value = p.id;
+              opt.textContent = p.cidr + (p.descripcion ? ' - ' + p.descripcion : '');
+              poolSelect.appendChild(opt);
+            });
+            poolSelect.disabled = false;
+          } else {
+            poolSelect.innerHTML = '<option value="">-- Sin rangos --</option>';
+            poolSelect.disabled = true;
+          }
+        })
+        .catch(function() {
+          poolSelect.innerHTML = '<option value="">-- Error al cargar --</option>';
+        });
     }
 
     function nsOnMetodoChange() {
@@ -1640,52 +1730,6 @@
       staticFields.style.display = 'none';
       if (metodo === 'pppoe') { pppoeFields.style.display = 'grid'; }
       if (metodo === 'static') { staticFields.style.display = 'grid'; }
-    }
-
-    function nsLoadPools() {
-      const routerId = document.getElementById('nsRouter').value;
-      const poolSel = document.getElementById('nsPool');
-      const ipSel = document.getElementById('nsIpSelect');
-      if (!routerId) {
-        poolSel.innerHTML = '<option value="">-- Seleccionar router --</option>';
-        ipSel.innerHTML = '<option value="">-- Seleccionar pool --</option>';
-        return;
-      }
-      poolSel.innerHTML = '<option value="">Cargando rangos...</option>';
-      fetch('/api/ip-pools/' + routerId)
-        .then(function(r) { return r.json(); })
-        .then(function(pools) {
-          if (pools && pools.length > 0) {
-            poolSel.innerHTML = '<option value="">-- Seleccionar rango --</option>';
-            pools.forEach(function(p) {
-              poolSel.innerHTML += '<option value="' + p.id + '">' + p.red + ' (' + (p.disponibles||0) + ' disp)</option>';
-            });
-            var first = pools.find(function(p) { return (p.disponibles || 0) > 0; });
-            if (first) { poolSel.value = first.id; nsOnPoolChange(); }
-          } else {
-            poolSel.innerHTML = '<option value="">-- Sin rangos --</option>';
-          }
-        });
-    }
-
-    function nsOnPoolChange() {
-      const poolId = document.getElementById('nsPool').value;
-      const ipSel = document.getElementById('nsIpSelect');
-      if (!poolId) { ipSel.innerHTML = '<option value="">-- Seleccionar --</option>'; return; }
-      ipSel.innerHTML = '<option value="">Cargando IPs...</option>';
-      fetch('/api/ip-pools/' + poolId + '/disponibles')
-        .then(function(r) { return r.json(); })
-        .then(function(data) {
-          if (data.success && data.disponibles && data.disponibles.length > 0) {
-            ipSel.innerHTML = '<option value="">-- Seleccionar IP --</option>';
-            data.disponibles.forEach(function(ip) {
-              ipSel.innerHTML += '<option value="' + ip + '">' + ip + '</option>';
-            });
-            ipSel.value = data.disponibles[0];
-          } else {
-            ipSel.innerHTML = '<option value="">No hay IPs disponibles</option>';
-          }
-        });
     }
 
     function nsOnCicloChange() {

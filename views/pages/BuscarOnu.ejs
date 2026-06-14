@@ -1,3 +1,50 @@
+<!DOCTYPE html>
+<html lang="en" class="smartolt-night">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Buscar ONU | ISP Total</title>
+<link href="/public/smartolt-files/bootstrap-custom.css" rel="stylesheet">
+<link href="/public/smartolt-files/styles.css" rel="stylesheet">
+<link href="/public/smartolt-files/toast.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+<link href="/public/smartolt-files/dashboard-smartolt-night.css" rel="stylesheet">
+<script src="/public/smartolt-files/jquery.min.js"></script>
+</head>
+<body class="smartolt-site">
+
+<div class="smartolt-landing-hero-bg" aria-hidden="true"></div>
+<div id="content-wrapper">
+
+  <div class="navbar navbar-default navbar-fixed-top default-menu">
+    <div class="container">
+      <div class="navbar-header">
+        <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#navbar-main" aria-expanded="false" aria-controls="navbar">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand text-ellipsis max-width-250" href="/modulo?pagina=GPONManager" title="GPON Manager">GPON Manager</a>
+      </div>
+      <div class="navbar-collapse collapse" id="navbar-main">
+        <ul class="nav navbar-nav">
+          <li><a href="/modulo?pagina=GPONManager">Dashboard</a></li>
+          <li><a href="/modulo?pagina=SmartoltConfigured">Configuradas</a></li>
+          <li><a href="/modulo?pagina=SmartoltUnconfigured">No configuradas</a></li>
+          <li><a href="/modulo?pagina=SmartoltOnuTypes">Tipos ONU</a></li>
+          <li><a href="/modulo?pagina=SmartoltSpeedProfiles">Velocidad</a></li>
+          <li><a href="/modulo?pagina=SmartoltLocations">Zonas</a></li>
+          <li><a href="/modulo?pagina=SmartoltDashboard">SmartOLT</a></li>
+        </ul>
+        <ul class="nav navbar-nav navbar-right">
+          <li><a href="/logout"></a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="container-fluid content-wrap">
+
 <style>
 :root {
   --bo-primary: #6366f1;
@@ -421,3 +468,9 @@ document.addEventListener('click', function(e) {
   if (e.target.classList.contains('bo-modal-overlay')) e.target.style.display = 'none';
 });
 </script>
+
+
+  </div><!-- content-wrap -->
+</div><!-- content-wrapper -->
+</body>
+</html>

@@ -1,252 +1,1246 @@
-<div class="page-header">
-    <h2 class="page-title">Gestión de Zonas</h2>
-    <button class="btn btn-primary" onclick="zonAbrirModal()" style="background:var(--accent); padding:10px 20px; border-radius:8px; font-weight:600; box-shadow:0 2px 8px rgba(99,102,241,0.3);">
-        <i class="fas fa-plus"></i> Nueva Zona
-    </button>
-</div>
-
-<div class="card">
-    <!-- Buscador -->
-    <div style="padding:15px 20px 10px; border-bottom:1px solid #f1f5f9;">
-        <div style="position:relative; max-width:400px;">
-            <i class="fas fa-search" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:#94a3b8; font-size:0.85rem;"></i>
-            <input type="text" id="buscarZona" placeholder="Buscar por nombre, router, OLT o VLAN..." oninput="filtrarZonas()" style="width:100%; padding:9px 12px 9px 36px; border:1px solid #e2e8f0; border-radius:8px; font-size:0.88rem; box-sizing:border-box; outline:none; transition:border-color 0.15s;" onfocus="this.style.borderColor='#2563eb'; this.style.boxShadow='0 0 0 3px rgba(37,99,235,0.1)'" onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none'">
-        </div>
-    </div>
-    <table>
-        <thead>
-            <tr>
-                <th>Nombre de la Zona</th>
-                <th>Router Asociado</th>
-                <th>OLT</th>
-                <th>Zona en OLT</th>
-                <th>VLAN</th>
-                <th>Activos</th>
-                <th>Suspendidos</th>
-                <th>Total</th>
-                <th style="text-align:right;">Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            <% if (zonas && zonas.length) { zonas.forEach(function(z) { %>
-                <tr>
-                    <td><strong style="font-size:1rem; color:var(--text-main);"><%= z.nombre %></strong></td>
-                    <td>
-                        <% if (z.router_nombre) { %>
-                            <span class="badge" style="background:#f0f9ff; color:#0369a1; border:1px solid #bae6fd;"><i class="fas fa-server"></i> <%= z.router_nombre %></span>
-                        <% } else { %>
-                            <span style="color:#94a3b8;">—</span>
-                        <% } %>
-                    </td>
-                    <td>
-                        <% if (z.olt_nombre) { %>
-                            <span class="badge" style="background:#f3e8ff; color:#7c3aed; border:1px solid #d8b4fe;"><i class="fas fa-cloud"></i> <%= z.olt_nombre %></span>
-                        <% } else { %>
-                            <span style="color:#94a3b8;">—</span>
-                        <% } %>
-                    </td>
-                    <td>
-                        <% if (z.smartolt_zone) { %>
-                            <span class="badge" style="background:#fef3c7; color:#92400e; border:1px solid #fcd34d;"><i class="fas fa-map-marker-alt"></i> <%= z.smartolt_zone %></span>
-                        <% } else { %>
-                            <span style="color:#94a3b8;">—</span>
-                        <% } %>
-                    </td>
-                    <td>
-                        <% if (z.vlan_onu) { %>
-                            <span class="badge" style="background:#e0f2fe; color:#0369a1;">VLAN <%= z.vlan_onu %></span>
-                        <% } else { %>
-                            <span style="color:#94a3b8;">—</span>
-                        <% } %>
-                    </td>
-                    <td><span class="badge badge-success"><%= z.activos || 0 %></span></td>
-                    <td><span class="badge badge-danger"><%= z.suspendidos || 0 %></span></td>
-                    <td><strong><%= (parseInt(z.activos||0) + parseInt(z.suspendidos||0)) %></strong></td>
-                    <td style="text-align:right; white-space:nowrap;">
-                        <button class="btn-icon" style="color:var(--accent-primary);" onclick="zonAbrirModalEditar(<%= z.id %>, '<%= z.nombre.replace(/'/g,"\\'") %>', '<%= z.vlan_onu || '' %>', '<%= z.router_id || '' %>', '<%= z.smartolt_profile_id || '' %>', '<%= z.smartolt_zone || '' %>')" title="Editar"><i class="fas fa-edit"></i></button>
-                        <button class="btn-icon" style="color:var(--accent-danger);" onclick="zonConfirmarEliminar(<%= z.id %>, '<%= z.nombre.replace(/'/g,"\\'") %>', <%= (parseInt(z.activos||0) + parseInt(z.suspendidos||0)) %>)" title="Eliminar"><i class="fas fa-trash"></i></button>
-                    </td>
-                </tr>
-            <% }); } else { %>
-                <tr><td colspan="9" style="padding:30px; text-align:center; color:#94a3b8;">No hay zonas registradas</td></tr>
-            <% } %>
-        </tbody>
-    </table>
-</div>
-
-<!-- MODAL -->
-<div class="modal-overlay" id="modalZona" style="display:none; background:rgba(0,0,0,0.5);">
-    <div class="modal-content" style="width:540px; max-width:540px; padding:24px;">
-        <div style="display:flex; justify-content:space-between; margin-bottom:20px; border-bottom:1px solid var(--border-color,#e2e8f0); padding-bottom:12px;">
-            <h3 style="margin:0;" id="zonModalTitle">Nueva Zona</h3>
-            <button onclick="zonCerrarModal()" style="background:none; border:none; font-size:1.5rem; cursor:pointer; color:#94a3b8;">&times;</button>
-        </div>
-        <form method="POST" action="/modulo?pagina=Zonas" id="zonForm" onsubmit="return guardarZona(event)">
-            <input type="hidden" name="accion" value="guardar_zona">
-            <input type="hidden" name="id_zona" id="zonId" value="">
-            <div class="form-group">
-                <label class="form-label">Nombre del Sector / Zona</label>
-                <input type="text" name="nombre" id="zonNombre" class="form-control" required placeholder="Ej: Centro Ciudad">
-            </div>
-            <div class="form-group">
-                <label class="form-label">Router Asociado (Opcional)</label>
-                <select name="router_id" id="zonRouter" class="form-control">
-                    <option value="">-- Ninguno (Selección Manual) --</option>
-                    <% (routers || []).forEach(function(r) { %>
-                        <option value="<%= r.id %>"><%= r.name %></option>
-                    <% }); %>
-                </select>
-                <small style="color:#64748b; font-size:0.75rem;">Si seleccionas uno, se cargará automáticamente al crear órdenes.</small>
-            </div>
-            <div class="form-group">
-                <label class="form-label">OLT (Opcional)</label>
-                <select name="smartolt_profile_id" id="zonProfile" class="form-control" onchange="">
-                    <option value="">-- Ninguno --</option>
-                    <% (olts || []).forEach(function(o) { %>
-                        <option value="<%= o.id %>"><%= o.nombre %></option>
-                    <% }); %>
-                </select>
-                <small style="color:#64748b; font-size:0.75rem;">Instancia de OLT asociada a esta zona.</small>
-            </div>
-            <div class="form-group" id="zonZoneGroup" style="display:none;">
-                <label class="form-label">Zona en OLT <span style="color:#ef4444;">*</span></label>
-                <div style="position:relative;">
-                    <input type="text" name="smartolt_zone" id="zonZone" class="form-control" placeholder="Nombre de la zona en la OLT (opcional)">
-                </div>
-                <small style="color:#64748b; font-size:0.75rem;">Nombre de la zona configurada en la OLT (opcional).</small>
-            </div>
-            <div class="form-group">
-                <label class="form-label">VLAN ONU <span style="color:#94a3b8; font-size:0.75rem;">(Opcional)</span></label>
-                <input type="number" name="vlan_onu" id="zonVlan" class="form-control" placeholder="Ej: 100" min="1" max="4094">
-                <small style="color:#64748b; font-size:0.75rem; display:block; margin-top:3px;">VLAN asignada a la ONU en esta zona.</small>
-            </div>
-            <button type="submit" class="btn btn-primary" style="width:100%; margin-top:10px; padding:12px; background:var(--accent); font-weight:600; border-radius:8px;">
-                <i class="fas fa-save"></i> Guardar
-            </button>
-        </form>
-    </div>
-</div>
-
-<script>
-function filtrarZonas() {
-    var q = document.getElementById('buscarZona').value.toLowerCase().trim();
-    document.querySelectorAll('.card table tbody tr').forEach(function(row) {
-        row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
-    });
-}
-
-function zonAbrirModal() {
-    document.getElementById('zonModalTitle').textContent = 'Nueva Zona';
-    document.getElementById('zonId').value = '';
-    document.getElementById('zonForm').reset();
-    document.getElementById('zonZoneGroup').style.display = 'none';
-    document.getElementById('modalZona').style.display = 'flex';
-}
-
-function zonAbrirModalEditar(id, nombre, vlan, routerId, profileId, zone) {
-    document.getElementById('zonModalTitle').textContent = 'Editar Zona';
-    document.getElementById('zonId').value = id;
-    document.getElementById('zonNombre').value = nombre;
-    document.getElementById('zonVlan').value = vlan || '';
-    document.getElementById('zonRouter').value = routerId || '';
-    if (profileId) {
-        document.getElementById('zonProfile').value = profileId;
-        document.getElementById('zonZoneGroup').style.display = 'block';
-        document.getElementById('zonZone').value = zone || '';
-    } else {
-        document.getElementById('zonProfile').value = '';
-        document.getElementById('zonZoneGroup').style.display = 'none';
-    }
-    document.getElementById('modalZona').style.display = 'flex';
-}
-
-function zonCerrarModal() {
-    document.getElementById('modalZona').style.display = 'none';
-}
-
-function zonOnProfileChange() {
-    var profileId = document.getElementById('zonProfile').value;
-    var zoneGroup = document.getElementById('zonZoneGroup');
-    if (profileId) {
-        zoneGroup.style.display = 'block';
-        var zoneSelect = document.getElementById('zonZone');
-        zoneSelect.innerHTML = '<option value="">-- Seleccione zona --</option>';
-        fetch('/api/smartolt/zones?profile_id=' + profileId)
-            .then(function(r) { return r.json(); })
-            .then(function(d) {
-                if (d.status === 'success' && d.data) {
-                    d.data.forEach(function(z) {
-                        zoneSelect.innerHTML += '<option value="' + z.replace(/'/g,"\\'") + '">' + z + '</option>';
-                    });
-                }
-            })
-            .catch(function() {});
-    } else {
-        zoneGroup.style.display = 'none';
-    }
-}
-
-function zonConfirmarEliminar(id, nombre, total) {
-    if (total > 0) {
-        if (!confirm('La zona "' + nombre + '" tiene ' + total + ' servicio(s). Se eliminara la zona pero los servicios quedaran sin zona asignada. Continuar?')) return;
-    } else {
-        if (!confirm('Eliminar zona "' + nombre + '"?')) return;
-    }
+<!DOCTYPE html>
+<!-- saved from url=(0047)# -->
+<html lang="en" class="smartolt-night"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <script>window.SMARTOLT_DB_THEME='system';</script>
+    <!-- Paint-blocking: resolve theme before first paint. Precedence: per-device override (smartolt-theme-local, set by the header button) > account/DB pref > device (system). -->
+    <script>try{var k='smartolt-night',lk='smartolt-theme-local',dbTheme=window.SMARTOLT_DB_THEME,local=null,pref,n;try{local=localStorage.getItem(lk);}catch(e){}if(local==='night'||local==='light'||local==='system'){pref=local;}else if(dbTheme==='night'||dbTheme==='light'||dbTheme==='system'){pref=dbTheme;}else{pref='system';}if(pref==='system'){n=!!(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);}else if(pref==='night'){n=true;}else{n=false;}try{localStorage.setItem(k,n?'1':'0');}catch(e){}if(n){document.documentElement.classList.add('smartolt-night');}else{document.documentElement.classList.remove('smartolt-night');}document.cookie=k+'='+(n?'1':'0')+'; path=/; max-age=31536000; SameSite=Lax'+(location.protocol==='https:'?'; Secure':'');}catch(e){}</script>
+        <meta http-equiv="content-type" content="text/html; utf-8">
     
-    fetch('/api/zonas/delete', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: id })
-    })
-    .then(function(r) { return r.json(); })
-    .then(function(res) {
-        if (res.success) {
-            showToast('Zona eliminada');
-            location.reload();
-        } else {
-            showToast('Error al eliminar', 'error');
+    <meta http-equiv="Content-Language" content="en">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="#" type="image/x-icon">
+    <link rel="shortcut icon" href="#" type="image/x-icon">
+    
+  <title>Locations - JOEL WIFI</title>
+
+  <!-- Bootstrap Core CSS -->
+  <link href="/public/smartolt-files/bootstrap-custom.css" rel="stylesheet">
+  <link href="/public/smartolt-files/bootstrap-multiselect.css" rel="stylesheet">
+  <link href="/public/smartolt-files/styles.css" rel="stylesheet">
+  <link href="/public/smartolt-files/toast.css" rel="stylesheet">
+
+  
+  <!-- Custom Fonts -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+  <!-- Message box CSS -->
+  <link href="/public/smartolt-files/messagebox.css" rel="stylesheet" type="text/css">
+
+  <link href="/public/smartolt-files/inter-fonts.css" rel="stylesheet">
+  <link href="/public/smartolt-files/dashboard-smartolt-night.css" rel="stylesheet">
+  <script src="/public/smartolt-files/dashboard-smartolt-night.js" defer=""></script>
+    
+  <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+  <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+  <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+  <!-- jQuery -->
+  <script src="/public/smartolt-files/jquery.min.js"></script>
+
+  
+  
+  <!-- Toast alerts -->
+  <script src="/public/smartolt-files/toast.js"></script>
+
+  <!-- Pauses recurring AJAX polling while the tab is hidden OR the user has been idle, resumes on focus / activity. -->
+  <script src="/public/smartolt-files/polling.js"></script>
+
+  
+  
+</head>
+
+<body class="smartolt-site">
+<script type="text/javascript">
+$( document ).ready(function() {
+	$.ajaxSetup({
+		cache: false
+	});
+	
+	window.jqxhrs = [];
+
+      window.registerJqxhr = function(jqxhr) {
+        jqxhrs.push(jqxhr);
+      }
+
+      window.abortJqxhr = function() {
+        for (var i = jqxhrs.length - 1; i >= 0; i--) {
+          if (jqxhrs[i]) {
+            jqxhrs[i].abort();
+          }
         }
-    })
-    .catch(function() {
-        showToast('Error de conexión', 'error');
+
+        window.jqxhrs = [];
+      }
+
+      $(window).bind("beforeunload", function(event) {
+        abortJqxhr();
+      });
+
+      function unregisterJqxhr(event, jqxhr, settings) {
+        var idx = $.inArray(jqxhr, jqxhrs);
+        if (idx != -1) {
+          jqxhrs.splice(idx, 1);
+        }
+      }
+
+      $(document).ajaxComplete(unregisterJqxhr);
+
+      config = {
+        X_TOKEN: '9C23F19BE06B4BEB93046ECFDF50FF91'
+      }
     });
-}
+  </script>
 
-// Guardar zona via API (fetch en lugar de form POST tradicional)
-function guardarZona(event) {
-  event.preventDefault();
-  var id = document.getElementById('zonId').value;
-  var nombre = document.getElementById('zonNombre').value.trim();
-  var router_id = document.getElementById('zonRouter').value;
-  var vlan_onu = document.getElementById('zonVlan').value;
-  var smartolt_profile_id = document.getElementById('zonProfile').value;
-  var smartolt_zone = document.getElementById('zonZone').value;
-  
-  if (!nombre) { showToast('Ingrese el nombre de la zona', 'error'); return false; }
-  
-  fetch('/api/zonas/save', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ id: id || null, nombre: nombre, router_id: router_id || null, vlan_onu: vlan_onu || null, smartolt_profile_id: smartolt_profile_id || null, smartolt_zone: smartolt_zone || '' })
-  })
-  .then(function(r) { return r.json(); })
-  .then(function(res) {
-    if (res.success) {
-      showToast('Zona guardada');
-      zonCerrarModal();
-      location.reload();
-    } else {
-      showToast('Error: ' + (res.message || 'No se pudo guardar'), 'error');
+  <div class="smartolt-landing-hero-bg" aria-hidden="true"></div>
+
+  <div id="content-wrapper">
+    <div class="smartolt-topbar-network" aria-hidden="true">
+      <div class="smartolt-topbar-network-inner">
+        <svg class="smartolt-topbar-network-lines" viewBox="0 0 100 100" preserveAspectRatio="none">
+          <line x1="8" y1="68" x2="23" y2="78"></line>
+          <line x1="23" y1="78" x2="37" y2="63"></line>
+          <line x1="8" y1="68" x2="37" y2="63"></line>
+          <line x1="37" y1="63" x2="65" y2="18"></line>
+          <line x1="65" y1="18" x2="89" y2="34"></line>
+          <line x1="23" y1="78" x2="65" y2="18"></line>
+          <line x1="37" y1="63" x2="89" y2="34"></line>
+        </svg>
+        <span class="smartolt-topbar-node smartolt-topbar-node-a"></span>
+        <span class="smartolt-topbar-node smartolt-topbar-node-b"></span>
+        <span class="smartolt-topbar-node smartolt-topbar-node-c"></span>
+        <span class="smartolt-topbar-node smartolt-topbar-node-d"></span>
+        <span class="smartolt-topbar-node smartolt-topbar-node-e"></span>
+      </div>
+    </div>
+    <div class="navbar navbar-default navbar-fixed-top default-menu">
+      <div class="container">
+        <div class="navbar-header">
+          <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#navbar-main" aria-expanded="false" aria-controls="navbar">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand text-ellipsis max-width-250" href="#" title="JOEL WIFI">JOEL WIFI</a>
+        </div>
+
+        <div class="navbar-collapse collapse" id="navbar-main">
+          <ul class="nav navbar-nav in">
+
+                        
+              <li><a href="#">Unconfigured</a></li>
+            
+                          <li><a href="#">Configured</a></li>
+            
+            
+                        	                <li><a href="#">Graphs</a></li>
+                                                <li><a href="#">Diagnostics</a></li>
+                
+                                <li><a href="#">Tasks</a></li>
+                                
+                                 <li class="dropdown">
+                  <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="settings">Reports <span class="caret"></span></a>
+                  <ul class="dropdown-menu" aria-labelledby="settings">
+                  	                    <li><a href="#">Authorizations</a></li>
+                                                            <li><a href="#">Export</a></li>
+                                                            <li><a href="#">Import</a></li>
+                                                            <li><a href="#">Find config mismatches (DB vs OLT)</a></li>
+                                      </ul>
+                </li>
+                
+                                    <li><a href="#" class="save-configuration-anchor" data-toggle="modal">Save config</a></li>
+                                
+              <li class="dropdown">
+                <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="settings">Settings <span class="caret"></span></a>
+                <ul class="dropdown-menu in" aria-labelledby="settings">
+
+                                        <li><a href="#" class="active">Zones</a></li>
+                    
+                                        <li><a href="#">ODBs</a></li>
+                    
+                                        <li><a href="#">ONU types</a></li>
+                    
+                                        <li><a href="#">Speed profiles</a></li>
+                    
+                                        <li><a href="#">OLTs</a></li>
+                    
+                                        <li><a href="#">VPN &amp; TR069</a></li>
+                    
+                                        <li><a href="#">Authorization presets</a></li>
+                    
+                    
+                                        <li><a href="#">General</a></li>
+                    
+                                        <li><a href="#">Billing</a></li>
+                                    </ul>
+              </li>
+
+              
+            
+          </ul>
+
+          <ul class="nav navbar-nav navbar-right">
+            <li><a href="#" id="smartolt-night-toggle" class="is-pref-night is-resolved is-night" title="Night mode" aria-label="Night mode" data-title-light="Light mode" data-title-night="Night mode" data-title-system="System"><i class="fa fa-sun-o font-size-20 smartolt-theme-icon-light" aria-hidden="true"></i><i class="fa fa-moon-o font-size-20 smartolt-theme-icon-night" aria-hidden="true"></i><i class="fa fa-adjust font-size-20 smartolt-theme-icon-system" aria-hidden="true"></i></a></li>
+            <li><a href="#" title="Edit user joelr802@gmail.com"><i class="fa fa-user glyphicon-white font-size-20"> </i></a></li>
+            <li><a href="#"><i class="glyphicon glyphicon-off glyphicon glyphicon-white"> </i> Log out</a></li>
+                      </ul>
+          
+        </div>
+      </div>
+    </div>
+
+    <!-- Page Content -->
+    <div class="container">
+
+<div class="container-fluid content-wrap">
+	<h2>Zones</h2>
+			
+	<form action="#" class="form-inline locations" method="get" accept-charset="utf-8">
+	
+    <div class="margin-bottom">
+    	<div class="form-group">
+    		<label class="control-label" for="free_text">Search</label>
+    		<input type="text" class="form-control input-220 input-search" id="free_text" name="free_text" value="" data-old-value="" placeholder="Name">
+    	</div>
+    </div>
+
+    <input type="hidden" name="sort_by" id="sort_by" value="name">
+	<input type="hidden" name="sort_order" id="sort_order" value="asc">
+
+    </form>
+	<div class="clearfix">
+				<div class="pull-left">
+			<a href="#" class="btn btn-success margin-right margin-bottom"><span class="glyphicon glyphicon-plus"> </span> Add Zone</a>
+						<a href="#" id="delete-unused-zones" class="btn btn-danger margin-bottom"><span class="glyphicon glyphicon-trash"> </span> Delete unused zones</a>
+					</div>
+				<div class="pull-right">
+						<a href="#" id="export-selection" class="btn btn-link margin-bottom" title="Export"><i class="fa fa-upload"></i> Export</a>
+									<a href="#" id="import-zones" class="btn btn-link margin-bottom" title="Import zones"><i class="fa fa-download"></i> Import</a>
+					</div>
+	</div>
+
+	<p><span>Use zones to group ONUs per town, neighborhood or village. Zones are simple display separations with no influence on the ONU settings.</span></p>
+	
+	<br>
+
+	<table class="table table-striped">
+		<tbody><tr>
+			<th class="col-md-1"><a href="#" class="sort-link">Name <i class="fa fa-sort-asc" aria-hidden="true"></i></a></th>
+						<th class="col-md-2"><a href="#" class="sort-link">ONUs </a></th>
+						<th></th>
+			<th class="col-md-1 text-center">Action</th>
+		</tr>
+
+				<tr>
+			<td>
+									<a href="#" class="btn btn-link">Bella Vista</a>
+							</td>
+						<td><a href="#" class="btn btn-link">20</a></td>
+						<td></td>
+			<td>
+									<a href="#" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr>
+			<td>
+									<a href="#" class="btn btn-link">default</a>
+							</td>
+						<td><a href="#" class="btn btn-link">16</a></td>
+						<td></td>
+			<td>
+									<a href="#" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr>
+			<td>
+									<a href="#" class="btn btn-link">Los Girasoles</a>
+							</td>
+						<td><a href="#" class="btn btn-link">0</a></td>
+						<td></td>
+			<td>
+									<a href="#" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr>
+			<td>
+									<a href="#" class="btn btn-link">Reparto Peralta</a>
+							</td>
+						<td><a href="#" class="btn btn-link">1</a></td>
+						<td></td>
+			<td>
+									<a href="#" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr>
+			<td>
+									<a href="#" class="btn btn-link">Zone 1</a>
+							</td>
+						<td><a href="#" class="btn btn-link">603</a></td>
+						<td></td>
+			<td>
+									<a href="#" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr>
+			<td>
+									<a href="#" class="btn btn-link">Zone 10</a>
+							</td>
+						<td><a href="#" class="btn btn-link">0</a></td>
+						<td></td>
+			<td>
+									<a href="#" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr>
+			<td>
+									<a href="#" class="btn btn-link">Zone 11</a>
+							</td>
+						<td><a href="#" class="btn btn-link">0</a></td>
+						<td></td>
+			<td>
+									<a href="#" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr>
+			<td>
+									<a href="#" class="btn btn-link">Zone 12</a>
+							</td>
+						<td><a href="#" class="btn btn-link">0</a></td>
+						<td></td>
+			<td>
+									<a href="#" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr>
+			<td>
+									<a href="#" class="btn btn-link">Zone 13</a>
+							</td>
+						<td><a href="#" class="btn btn-link">0</a></td>
+						<td></td>
+			<td>
+									<a href="#" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr>
+			<td>
+									<a href="#" class="btn btn-link">Zone 14</a>
+							</td>
+						<td><a href="#" class="btn btn-link">0</a></td>
+						<td></td>
+			<td>
+									<a href="#" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr>
+			<td>
+									<a href="#" class="btn btn-link">Zone 15</a>
+							</td>
+						<td><a href="#" class="btn btn-link">0</a></td>
+						<td></td>
+			<td>
+									<a href="#" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr>
+			<td>
+									<a href="#" class="btn btn-link">Zone 16</a>
+							</td>
+						<td><a href="#" class="btn btn-link">0</a></td>
+						<td></td>
+			<td>
+									<a href="#" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr>
+			<td>
+									<a href="#" class="btn btn-link">Zone 17</a>
+							</td>
+						<td><a href="#" class="btn btn-link">0</a></td>
+						<td></td>
+			<td>
+									<a href="#" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr>
+			<td>
+									<a href="#" class="btn btn-link">Zone 18</a>
+							</td>
+						<td><a href="#" class="btn btn-link">0</a></td>
+						<td></td>
+			<td>
+									<a href="#" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr>
+			<td>
+									<a href="#" class="btn btn-link">Zone 19</a>
+							</td>
+						<td><a href="#" class="btn btn-link">0</a></td>
+						<td></td>
+			<td>
+									<a href="#" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr>
+			<td>
+									<a href="#" class="btn btn-link">Zone 2</a>
+							</td>
+						<td><a href="#" class="btn btn-link">0</a></td>
+						<td></td>
+			<td>
+									<a href="#" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr>
+			<td>
+									<a href="#" class="btn btn-link">Zone 20</a>
+							</td>
+						<td><a href="#" class="btn btn-link">0</a></td>
+						<td></td>
+			<td>
+									<a href="#" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr>
+			<td>
+									<a href="#" class="btn btn-link">Zone 21</a>
+							</td>
+						<td><a href="#" class="btn btn-link">0</a></td>
+						<td></td>
+			<td>
+									<a href="#" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr>
+			<td>
+									<a href="#" class="btn btn-link">Zone 22</a>
+							</td>
+						<td><a href="#" class="btn btn-link">0</a></td>
+						<td></td>
+			<td>
+									<a href="#" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr>
+			<td>
+									<a href="#" class="btn btn-link">Zone 23</a>
+							</td>
+						<td><a href="#" class="btn btn-link">0</a></td>
+						<td></td>
+			<td>
+									<a href="#" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr>
+			<td>
+									<a href="#" class="btn btn-link">Zone 24</a>
+							</td>
+						<td><a href="#" class="btn btn-link">0</a></td>
+						<td></td>
+			<td>
+									<a href="#" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr>
+			<td>
+									<a href="#" class="btn btn-link">Zone 25</a>
+							</td>
+						<td><a href="#" class="btn btn-link">0</a></td>
+						<td></td>
+			<td>
+									<a href="#" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr>
+			<td>
+									<a href="#" class="btn btn-link">Zone 26</a>
+							</td>
+						<td><a href="#" class="btn btn-link">0</a></td>
+						<td></td>
+			<td>
+									<a href="#" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr>
+			<td>
+									<a href="#" class="btn btn-link">Zone 27</a>
+							</td>
+						<td><a href="#" class="btn btn-link">0</a></td>
+						<td></td>
+			<td>
+									<a href="#" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr>
+			<td>
+									<a href="#" class="btn btn-link">Zone 28</a>
+							</td>
+						<td><a href="#" class="btn btn-link">0</a></td>
+						<td></td>
+			<td>
+									<a href="#" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr>
+			<td>
+									<a href="#" class="btn btn-link">Zone 29</a>
+							</td>
+						<td><a href="#" class="btn btn-link">0</a></td>
+						<td></td>
+			<td>
+									<a href="#" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr>
+			<td>
+									<a href="#" class="btn btn-link">Zone 3</a>
+							</td>
+						<td><a href="#" class="btn btn-link">0</a></td>
+						<td></td>
+			<td>
+									<a href="#" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr>
+			<td>
+									<a href="#" class="btn btn-link">Zone 30</a>
+							</td>
+						<td><a href="#" class="btn btn-link">0</a></td>
+						<td></td>
+			<td>
+									<a href="#" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr>
+			<td>
+									<a href="#" class="btn btn-link">Zone 31</a>
+							</td>
+						<td><a href="#" class="btn btn-link">0</a></td>
+						<td></td>
+			<td>
+									<a href="#" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr>
+			<td>
+									<a href="#" class="btn btn-link">Zone 32</a>
+							</td>
+						<td><a href="#" class="btn btn-link">0</a></td>
+						<td></td>
+			<td>
+									<a href="#" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr>
+			<td>
+									<a href="#" class="btn btn-link">Zone 4</a>
+							</td>
+						<td><a href="#" class="btn btn-link">0</a></td>
+						<td></td>
+			<td>
+									<a href="#" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr>
+			<td>
+									<a href="#" class="btn btn-link">Zone 5</a>
+							</td>
+						<td><a href="#" class="btn btn-link">0</a></td>
+						<td></td>
+			<td>
+									<a href="#" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr>
+			<td>
+									<a href="#" class="btn btn-link">Zone 6</a>
+							</td>
+						<td><a href="#" class="btn btn-link">0</a></td>
+						<td></td>
+			<td>
+									<a href="#" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr>
+			<td>
+									<a href="#" class="btn btn-link">Zone 7</a>
+							</td>
+						<td><a href="#" class="btn btn-link">0</a></td>
+						<td></td>
+			<td>
+									<a href="#" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr>
+			<td>
+									<a href="#" class="btn btn-link">Zone 8</a>
+							</td>
+						<td><a href="#" class="btn btn-link">0</a></td>
+						<td></td>
+			<td>
+									<a href="#" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr>
+			<td>
+									<a href="#" class="btn btn-link">Zone 9</a>
+							</td>
+						<td><a href="#" class="btn btn-link">0</a></td>
+						<td></td>
+			<td>
+									<a href="#" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+		</tbody></table>
+
+<div class="modal fade" id="importZonesModal" tabindex="-1" role="dialog">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+				<h3>Import zones</h3>
+			</div>
+			<div class="modal-body">
+				<div class="form-group">
+					<label class="control-label" for="zonesCsvFile">Zones file</label>
+					<input type="file" name="zonesCsvFile" id="zonesCsvFile">
+					<div class="margin-top"><span class="help-block">Download file template from here: <a href="#">Zones_template.csv</a></span></div>
+					<div class="margin-top"><span class="help-block">The file should include the following header columns: <strong>Name</strong></span></div>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-link" data-dismiss="modal">Cancel</button>
+				<button type="button" class="btn btn-primary import-zones-button">Import zones</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="modal fade" id="deleteUnusedZonesModal" tabindex="-1" role="dialog">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+				<h3>Delete unused zones</h3>
+			</div>
+			<div class="modal-body">
+				<p>This will delete 32 zones that have no ONUs assigned and no ODBs (Splitters) assigned. Are you sure you want to continue?</p>
+				<ul style="max-height: 300px; overflow-y: auto;">
+										<li>Los Girasoles</li>
+										<li>Zone 10</li>
+										<li>Zone 11</li>
+										<li>Zone 12</li>
+										<li>Zone 13</li>
+										<li>Zone 14</li>
+										<li>Zone 15</li>
+										<li>Zone 16</li>
+										<li>Zone 17</li>
+										<li>Zone 18</li>
+										<li>Zone 19</li>
+										<li>Zone 2</li>
+										<li>Zone 20</li>
+										<li>Zone 21</li>
+										<li>Zone 22</li>
+										<li>Zone 23</li>
+										<li>Zone 24</li>
+										<li>Zone 25</li>
+										<li>Zone 26</li>
+										<li>Zone 27</li>
+										<li>Zone 28</li>
+										<li>Zone 29</li>
+										<li>Zone 3</li>
+										<li>Zone 30</li>
+										<li>Zone 31</li>
+										<li>Zone 32</li>
+										<li>Zone 4</li>
+										<li>Zone 5</li>
+										<li>Zone 6</li>
+										<li>Zone 7</li>
+										<li>Zone 8</li>
+										<li>Zone 9</li>
+									</ul>
+			</div>
+			<div class="modal-footer">
+				<form method="post" action="#" style="display:inline">
+					<button type="button" class="btn btn-link" data-dismiss="modal">Cancel</button>
+					<button type="submit" class="btn btn-danger">Delete</button>
+				</form>
+			</div>
+		</div>
+	</div>
+</div>
+
+</div>
+
+<script type="text/javascript">
+
+	$(document).ready(function()  {
+		form_data = {
+				free_text: "",
+				sort_by: "name",
+				sort_order: "asc",
+			};
+
+				$('#export-selection').click(function () {
+			var formData = new FormData();
+			for(var key in form_data) {
+				formData.append(key, form_data[key]);
+			}
+
+			$.ajax({
+				method: "POST",
+				beforeSend: function(request) {
+					request.setRequestHeader("X-Token", config.X_TOKEN);
+				},
+				url: "#",
+				data : formData,
+				processData: false,  // tell jQuery not to process the data
+				contentType: false,  // tell jQuery not to set contentType
+			})
+			.done(function( data ) {
+				if(data && data.export_file) {
+					window.open('#' + data.export_file, "_self");
+				}
+			})
+			.fail(function(jqXHR, textStatus) {
+				if(jqXHR.responseJSON) {
+						$.MessageBox(jqXHR.responseJSON.error);
+					}
+					else {
+						$.MessageBox(jqXHR.responseText);
+					}
+			});
+		});
+		
+				$('#delete-unused-zones').click(function (e) {
+			e.preventDefault();
+			$('#deleteUnusedZonesModal').modal('show');
+		});
+		
+				var IMPORT_ZONES_LANG = {
+			importing: "Importing...",
+			import_complete: "Import complete!",
+			import_zones: "Import zones",
+			select_file: "Please select a file to import"		};
+
+		$('#import-zones').click(function (e) {
+			e.preventDefault();
+			$('#importZonesModal').modal('show');
+		});
+
+		$('.import-zones-button').click(function () {
+			var $button = $('.import-zones-button');
+			var fileInput = $('#zonesCsvFile')[0];
+
+			if (fileInput.files.length == 0) {
+				$.MessageBox(IMPORT_ZONES_LANG.select_file).done(function () {
+					fileInput.click();
+				});
+				return;
+			}
+
+			$button.attr('disabled', true).text(IMPORT_ZONES_LANG.importing);
+
+			var formData = new FormData();
+			formData.append('file', fileInput.files[0]);
+
+			$.ajax({
+				method: "POST",
+				beforeSend: function (request) {
+					request.setRequestHeader("X-Token", config.X_TOKEN);
+				},
+				url: "#",
+				data: formData,
+				processData: false,
+				contentType: false
+			})
+			.done(function (data) {
+				$button.text(IMPORT_ZONES_LANG.import_complete);
+				$.MessageBox(data.response);
+			})
+			.fail(function (jqXHR) {
+				if (jqXHR.responseJSON) {
+					$.MessageBox(jqXHR.responseJSON.error);
+				} else {
+					$.MessageBox(jqXHR.responseText);
+				}
+			})
+			.always(function () {
+				setTimeout(function () {
+					$button.attr('disabled', false).text(IMPORT_ZONES_LANG.import_zones);
+				}, 100);
+			});
+		});
+		
+	});
+	</script>
+
+
+</div>
+<br>
+<!-- /#page-wrapper -->
+    
+<div id="saveConfigModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="saveConfigModalLabel" aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+		  <div class="modal-header">
+		    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+		    <h3 id="saveConfigModalLabel">Save configuration</h3>
+		  </div>
+		  <div class="modal-body">
+		    <p>This will save the current OLT(s) configuration as startup configuration. It may take up to 5 minutes for the OLT(s) to finish saving the config. Are you sure?</p>
+		  </div>
+		  <div class="modal-footer">
+		    <button class="btn btn-link" data-dismiss="modal" aria-hidden="true">No, cancel</button>
+		    <button class="btn btn-primary save-configuration-button">Yes, save configuration</button>
+		  </div>
+		</div>
+	</div>
+</div>
+
+<div id="importModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="importModalLabel" aria-hidden="true">
+</div>
+
+<div id="rebuildModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="rebuildModalLabel" aria-hidden="true">
+</div>
+
+<div id="deleteAllApiReconciliationModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="deleteAllApiReconciliationModalLabel" aria-hidden="true">
+</div>
+
+<div id="generateSnmpIdsModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="generateSnmpIdsModalLabel" aria-hidden="true">
+</div>
+
+    <!-- Bootstrap Core JavaScript -->
+    <script src="/public/smartolt-files/bootstrap.min.js"></script>
+    <script src="/public/smartolt-files/bootstrap-multiselect.js"></script>
+
+    <!-- Metis Menu Plugin JavaScript -->
+    <script src="/public/smartolt-files/metisMenu.min.js"></script>
+
+    <!-- Custom Theme JavaScript -->
+    <script src="/public/smartolt-files/sb-admin-2.js"></script>
+        
+    <!-- Loading overlay -->
+    <script src="/public/smartolt-files/loadingoverlay.custom.js"></script>
+    
+    <!-- Message box -->
+    <script src="/public/smartolt-files/messagebox.min.js"></script>
+    
+    
+
+<script type="text/javascript">
+
+$( document ).ready(function() {
+	
+	// Hide new version dot if user has already seen this version
+	var currentVersion = '3.53.0';
+	var lastSeenVersion = localStorage.getItem('lastSeenVersion');
+	if (lastSeenVersion === currentVersion) {
+		$('.new-version-dot').hide();
+	}
+
+	
+	$('#smartolt-update-banner-changelog').on('click', function(e) {
+		e.preventDefault();
+		localStorage.setItem('lastSeenVersion', currentVersion);
+		$('.new-version-dot').hide();
+				window.location.href = '/changelog';
+			});
+
+	$('#smartolt-update-banner-dismiss').on('click', function() {
+		localStorage.setItem('lastSeenVersion', currentVersion);
+		$('.new-version-dot').hide();
+		$('#smartolt-update-banner').slideUp(300);
+	});
+
+	$('#footer-changelog-link').on('click', function() {
+		localStorage.setItem('lastSeenVersion', currentVersion);
+		$('.new-version-dot').hide();
+	});
+
+	//hide alert-success after 5 seconds
+	/*setTimeout(function(){
+		$('.alert-success').not('.nofade').fadeOut();
+	},5000);*/
+	
+	var waitingForOLT   = $("<div>", {
+	    id      : "waitingOLT",
+	    css     : {
+	        "font-size" : "50px",
+			"white-space" : "nowrap"
+	    },
+	    text    : "Waiting for OLT"
+	});
+
+	var loadingOverlaySettings = {
+		    image       : "",
+		    fontawesome : "fa fa-spinner fa-spin",
+		    custom  : waitingForOLT,
+		    resizeInterval : 0
+		};
+
+	$.LoadingOverlay("append", loadingOverlaySettings);
+
+	window.showLoadingOverlay = function(loadingText = null) {
+		if(loadingText != null) {
+			$("#waitingOLT").text(loadingText);
+		}
+		else {
+			$("#waitingOLT").text("Waiting for OLT");
+		}
+		
+		$.LoadingOverlay("show", loadingOverlaySettings);
+	}
+
+	window.hideLoadingOverlay = function() {
+		$.LoadingOverlay("hide");
+	}
+
+	window.isLoadingOverlayVisible = function() {
+		return $('.loadingoverlay').is(":visible");
+	}
+	
+	//hide loading overlay when ajax request finishes
+	/*$(document).ajaxStop(function(){
+		hideLoadingOverlay();
+	});*/
+
+	//show toast with error
+	$(document).ajaxError(function(requestObject, error, errorThrown) {
+		if(error.status != 404 && error != undefined && error.responseJSON != undefined && 
+				error.responseJSON.error != undefined && error.responseJSON.error.length > 0) {
+			toast(error.responseJSON.error);
+		}
+	});
+
+	//confirm message box
+	window.MessageBoxConfirm = function(message){
+	    return $.MessageBox({
+	        buttonDone  : "OK",
+	        buttonFail  : "Cancel",
+	        message     : message
+	    });
+	}
+
+	window.getSelectedText = function() {
+        if (window.getSelection) {
+            return window.getSelection().toString();
+        } 
+        else if (document.selection) {
+            return document.selection.createRange().text;
+        }
+        return '';
     }
-  })
-  .catch(function(e) {
-    showToast('Error de conexión', 'error');
-  });
-  return false;
-}
 
-// Close modal on overlay click
-document.getElementById('modalZona').addEventListener('click', function(e) {
-    if (e.target === this) zonCerrarModal();
+	//close navbar menu when clicking outside of it
+	$(document).click(function (event) {
+		var clickover = $(event.target);
+		var $nav = $("div.navbar-collapse");
+        var _opened = $nav.hasClass("in");
+
+        if (_opened === true && !clickover.hasClass("navbar-toggle")) {
+			$nav.collapse('hide');
+        }
+    });
+
+	/*https://www.quirksmode.org/blog/archives/2014/02/mouse_event_bub.html
+	  Safari on iOS only allows the mouse events, including click, to bubble up in the following situations:
+	  1. The target element of the event is a link or a form field.
+	  2. The target element, or any of its ancestors up to but not including the <body>, has an explicit event handler set for any of the mouse events. This event handler may be an empty function.
+      3. The target element, or any of its ancestors up to and including the document has a cursor: pointer CSS declarations. */
+	$("#content-wrapper").click(function (event) {
+		//this is here only for iOS to allow mouse events to bubble up so we can close navbar menu when clicking outside of it
+    });
+
+	// check navbar menu top offset
+    function closeMenuIfOpened() {
+		var $nav = $("div.navbar-collapse");
+    	var _opened = $nav.hasClass("in");
+
+        if (_opened === true && $(".navbar").offset().top > 50) {
+			$nav.collapse('hide');
+        }
+    }
+
+    //for touch devices, detect zoom in/out events and close the navbar menu if opened
+    var tracks = [];
+    $(window).on("touchmove", function (event) {
+	
+	    //only run code if the user has two fingers touching
+	    if (event.originalEvent.touches.length === 2) {
+	
+	        //track the touches, I'm setting each touch as an array inside the tracks array
+	        //each touch array contains an X and Y coordinate
+	        tracks.push([ [event.originalEvent.touches[0].pageX, event.originalEvent.touches[0].pageY], [event.originalEvent.touches[1].pageX, event.originalEvent.touches[1].pageY] ]);
+	    }
+	}).on("touchstart", function () {
+	    //start-over
+	    tracks = [];
+	}).on("touchend", function () {
+	    if(tracks.length > 0) {
+			var $nav = $("div.navbar-collapse");
+	    	var _opened = $nav.hasClass("in");
+	        if (_opened === true) {
+				$nav.collapse('hide');
+	        }
+	    }
+	});
+
+	// COPY TO CLIPBOARD
+	// Attempts to use .execCommand('copy') on a created text field
+	// Falls back to a selectable alert if not supported
+	// Attempts to display status in Bootstrap tooltip
+	// ------------------------------------------------------------------------------
+
+	function copyToClipboard(text, el) {
+	  var copyTest = document.queryCommandSupported('copy');
+	  var elOriginalText = el.attr('data-original-title');
+
+	  if (copyTest === true) {
+	    var copyTextArea = document.createElement("textarea");
+	    copyTextArea.value = text;
+	    document.body.appendChild(copyTextArea);
+	    copyTextArea.select();
+	    try {
+	      var successful = document.execCommand('copy');
+	      var msg = successful ? "Copied!" : "Whoops, not copied!";
+	      el.attr('data-original-title', msg).tooltip('show');
+	    } 
+	    catch (err) {
+	      console.log("Oops, unable to copy");
+	    }
+	    document.body.removeChild(copyTextArea);
+	    el.attr('data-original-title', elOriginalText);
+	  } 
+	  else {
+	    // Fallback if browser doesn't support .execCommand('copy')
+	    window.prompt("Copy to clipboard", text);
+	  }
+	}
+
+	function copyToClipboard2(text, el) {
+		  if (document.queryCommandSupported('copy') === true) {
+			var elOriginalText = el.attr('data-original-title');
+	 	    var copyTextArea = document.createElement("textarea");
+		    copyTextArea.textContent = text.text();
+		    document.body.appendChild(copyTextArea);
+
+		    var selection = document.getSelection();
+		    var range = document.createRange();
+		    range.selectNode(copyTextArea);
+		    selection.removeAllRanges();
+		    selection.addRange(range);
+		    
+		    try {
+		      var successful = document.execCommand('copy');
+			  var msg;
+
+			  if (successful) {
+				  msg = "Copied!";
+			  } 
+			  else {
+				msg = "Whoops, not copied!";
+				el.removeClass('not-selectable');
+			  }
+		      el.attr('data-original-title', msg).tooltip('show');
+		    } 
+		    catch (err) {
+		      console.log("Oops, unable to copy");
+		    }
+		    selection.removeAllRanges();
+		    document.body.removeChild(copyTextArea);
+		    el.attr('data-original-title', elOriginalText);
+		  } 
+		  else {
+			$('.not-selectable').removeClass('not-selectable');
+		    // Fallback if browser doesn't support .execCommand('copy')
+		    window.prompt("Copy to clipboard", text.text());
+		  }
+		}
+
+	// Initialize
+   // ---------------------------------------------------------------------
+
+   // Tooltips
+   // Requires Bootstrap 3 for functionality
+   $('.js-tooltip').tooltip();
+
+   // Copy to clipboard
+   // Grab any text in the attribute 'data-copy' and pass it to the 
+   // copy function
+   $('.js-copy').click(function() {
+     var text = $(this).attr('data-copy');
+     var el = $(this);
+     copyToClipboard(text, el);
+   });
+
+   $(document).on('click','.comma-copy', function() {
+	   $(this).removeClass('btn-primary').addClass('btn-default');
+	     var el = $('#'+$(this).attr('data-idtag'));
+	     copyToClipboard2(el, $(this));
+	     el.removeClass('text-primary').addClass('text-muted');
+	   });
+
+   //trim white spaces when paste in any input
+   $(document).on('paste', 'input[type=text]', function(e) {
+	  // prevent copying action
+	  e.preventDefault();
+	  
+	  var pastedText = e.originalEvent.clipboardData.getData('Text');
+	  var withoutSpaces = pastedText;
+	  if(pastedText) {
+		  withoutSpaces = pastedText.trim();
+	  }
+
+	  //remove all spaces, including from inside the text
+	  if($(this).hasClass('no_spaces')) {
+		  withoutSpaces = withoutSpaces.replace(/\s/g, '');
+	  }
+	  
+	  $(this).insertAtCaret(withoutSpaces);
+	});
+
+   $.fn.insertAtCaret = function(text) {
+	    return this.each(function() {
+	        if (document.selection && this.tagName == 'TEXTAREA') {
+	            //IE textarea support
+	            this.focus();
+	            sel = document.selection.createRange();
+	            sel.text = text;
+	            this.focus();
+	        } else if (this.selectionStart || this.selectionStart == '0') {
+	            //MOZILLA/NETSCAPE support
+	            startPos = this.selectionStart;
+	            endPos = this.selectionEnd;
+	            scrollTop = this.scrollTop;
+	            this.value = this.value.substring(0, startPos) + text + this.value.substring(endPos, this.value.length);
+	            this.focus();
+	            this.selectionStart = startPos + text.length;
+	            this.selectionEnd = startPos + text.length;
+	            this.scrollTop = scrollTop;
+	        } else {
+	            // IE input[type=text] and other browsers
+	            this.value += text;
+	            this.focus();
+	            this.value = this.value;    // forces cursor to end
+	        }
+	    });
+	};
+    
+	
+  $('.save-configuration-button').click(function (){
+    var button = $('.save-configuration-anchor');
+
+    button.toggleClass('active');
+    button.attr('disabled', true);
+    button.text("Saving...");
+    $('#saveConfigModal').modal('hide');
+
+    $.ajax({
+        method: "GET",
+        beforeSend: function(request) {
+		    request.setRequestHeader("X-Token", config.X_TOKEN);
+		  },
+        url: "/api/system/write",
+      })
+      .done(function( response ) {
+        $.MessageBox((response && response.response) ? response.response : "Save initiated. It could take the OLT up to 5 minutes to write the config!");
+        button.text("Save config");
+        setTimeout(function () {
+          button.toggleClass('active');
+          button.attr('disabled', false);
+          button.text("Save config");
+        }, 1000);
+      })
+      .fail(function(jqXHR, textStatus) {
+    	  if(jqXHR.responseJSON) {
+				$.MessageBox(jqXHR.responseJSON.error);
+			}
+			else {
+				$.MessageBox(jqXHR.responseText);
+			}
+	        setTimeout(function () {
+	        	 button.toggleClass('active');
+	             button.attr('disabled', false);
+	             button.text("Save config");
+	        }, 1000);
+      });
+  });
+
+    
 });
 </script>
+
+</div>
+
+<style>
+.new-version-dot {
+	display: inline-block;
+	width: 8px;
+	height: 8px;
+	background-color: #5cb85c;
+	border-radius: 50%;
+	margin-left: 4px;
+	animation: pulse-green 2s infinite;
+}
+.footer-dot-sep {
+	opacity: 0.5;
+	margin: 0 2px;
+}
+footer {
+	height: auto;
+	padding-bottom: 8px;
+}
+#feature-tour-whatsnew .fa-bullhorn {
+	margin-right: 5px;
+	font-size: 2em;
+	vertical-align: -6px;
+}
+
+@keyframes pulse-green {
+	0% {
+		transform: scale(0.95);
+		box-shadow: 0 0 0 0 rgba(92, 184, 92, 0.7);
+	}
+	70% {
+		transform: scale(1);
+		box-shadow: 0 0 0 6px rgba(92, 184, 92, 0);
+	}
+	100% {
+		transform: scale(0.95);
+		box-shadow: 0 0 0 0 rgba(92, 184, 92, 0);
+	}
+}
+
+</style>
+
+<footer>
+	<div class="text-center row">SmartOLT <a href="#" class="btn-link" id="footer-changelog-link">v3.53.0<span class="new-version-dot" title="New updates" style="display: none;"></span></a> © 2026</div>
+</footer>
+
+
+
+
+<div class="loadingoverlay" style="background-color: rgba(255, 255, 255, 0.8); position: fixed; display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; top: 0px; left: 0px; width: 100%; height: 100%; background-size: 100px;"><div class="loadingoverlay_fontawesome fa fa-spinner fa-spin" style="font-size: 100px;"></div><div id="waitingOLT" style="font-size: 50px; white-space: nowrap;">Waiting for OLT</div></div>
+<script>
+$(document).ready(function() {
+  function cargarZonas() {
+    $.ajax({url:'/api/smartolt/zones', method:'GET', success:function(r) {
+      if(!r.success) return;
+      var h = '';
+      r.data.forEach(function(z) {
+        h += '<tr><td><a href="#" class="btn btn-link">'+z.name+'</a></td><td><a href="#" class="btn btn-link">'+(z.onus_count||0)+'</a></td><td></td><td><a href="#" class="btn btn-danger">Delete</a></td></tr>';
+      });
+      $('table.table-striped tbody').html(h || '<tr><td colspan="4" class="text-center text-muted">No zones found</td></tr>');
+    }});
+  }
+  cargarZonas();
+});
+</script>
+</body></html>

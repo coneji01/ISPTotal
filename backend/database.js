@@ -262,7 +262,18 @@ if (!_alertCfg) {
     db.prepare('INSERT INTO mon_alerta_wa (id, telefono, activo) VALUES (1, \'\', 0)').run();
   } catch(e) {}
 }
-try { db.exec("CREATE TABLE IF NOT EXISTS routers (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, ip TEXT NOT NULL, port INTEGER DEFAULT 8728, user TEXT, password TEXT, ip_blocks TEXT DEFAULT '[]', connected INTEGER DEFAULT 0, last_sync TEXT, created_at DATETIME DEFAULT CURRENT_TIMESTAMP, interface_wan TEXT DEFAULT 'ether1', auth_type TEXT DEFAULT 'dhcp')"); } catch(e) {}
+try { db.exec("CREATE TABLE IF NOT EXISTS routers (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, ip TEXT NOT NULL, port INTEGER DEFAULT 8728, user TEXT, password TEXT, ip_blocks DEFAULT '[]', connected INTEGER DEFAULT 0, last_sync TEXT, created_at DATETIME DEFAULT CURRENT_TIMESTAMP, interface_wan TEXT DEFAULT 'ether1', auth_type TEXT DEFAULT 'dhcp')"); } catch(e) {}
+// Router column migrations
+try { db.exec("ALTER TABLE routers ADD COLUMN connection_type TEXT DEFAULT 'ip'"); } catch(e) {}
+try { db.exec("ALTER TABLE routers ADD COLUMN vpn_user TEXT"); } catch(e) {}
+try { db.exec("ALTER TABLE routers ADD COLUMN vpn_password TEXT"); } catch(e) {}
+try { db.exec("ALTER TABLE routers ADD COLUMN vpn_ip TEXT"); } catch(e) {}
+try { db.exec("ALTER TABLE routers ADD COLUMN version TEXT DEFAULT 'RouterOS v7'"); } catch(e) {}
+try { db.exec("ALTER TABLE routers ADD COLUMN ipv6_pd TEXT"); } catch(e) {}
+try { db.exec("ALTER TABLE routers ADD COLUMN suspend_ips INTEGER DEFAULT 0"); } catch(e) {}
+
+// Migration: Add payment_day to billing_cycles if not exists
+try { db.exec("ALTER TABLE billing_cycles ADD COLUMN payment_day INTEGER DEFAULT 30"); } catch(e) {}
 
 module.exports = db;
 module.exports.logActivity = logActivity;

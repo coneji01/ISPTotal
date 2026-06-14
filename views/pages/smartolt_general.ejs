@@ -1,0 +1,321 @@
+<!DOCTYPE html><html lang="en" class="smartolt-night"><head>
+        <script>window.SMARTOLT_DB_THEME='system';</script>
+    <!-- Paint-blocking: resolve theme before first paint. Precedence: per-device override (smartolt-theme-local, set by the header button) > account/DB pref > device (system). -->
+    <script>try{var k='smartolt-night',lk='smartolt-theme-local',dbTheme=window.SMARTOLT_DB_THEME,local=null,pref,n;try{local=localStorage.getItem(lk);}catch(e){}if(local==='night'||local==='light'||local==='system'){pref=local;}else if(dbTheme==='night'||dbTheme==='light'||dbTheme==='system'){pref=dbTheme;}else{pref='system';}if(pref==='system'){n=!!(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);}else if(pref==='night'){n=true;}else{n=false;}try{localStorage.setItem(k,n?'1':'0');}catch(e){}if(n){document.documentElement.classList.add('smartolt-night');}else{document.documentElement.classList.remove('smartolt-night');}document.cookie=k+'='+(n?'1':'0')+'; path=/; max-age=31536000; SameSite=Lax'+(location.protocol==='https:'?'; Secure':'');}catch(e){}</script>
+    <script>try{var wk='smartolt-wide-tables',wv=null,m=document.cookie.match(new RegExp('(?:^|; )'+wk+'=([^;]*)'));try{wv=localStorage.getItem(wk);}catch(e){}if(wv!=='1'&&wv!=='0'&&m){wv=decodeURIComponent(m[1]);}if(wv==='1'){document.documentElement.classList.add('smartolt-wide-tables');}}catch(e){}</script>
+        <meta http-equiv="content-type" content="text/html; utf-8">
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Language" content="en">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    
+  <title>General Settings</title>
+
+  <!-- Bootstrap Core CSS -->
+  <link href="/public/smartolt-files/bootstrap-custom.css?v=3.53.0.24" rel="stylesheet">
+  <link href="/public/smartolt-files/bootstrap-multiselect.css?v=3.53.0.20" rel="stylesheet">
+  <link href="/public/smartolt-files/styles.css?v=3.53.0.29" rel="stylesheet">
+  <link href="/public/smartolt-files/toast.css?v=3.53.0.20" rel="stylesheet">
+
+  
+  <!-- Custom Fonts -->
+  <link href="/public/smartolt-files/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+  <!-- Message box CSS -->
+  <link href="/public/smartolt-files/messagebox.css" rel="stylesheet" type="text/css">
+
+  <link href="/public/smartolt-files/inter-fonts.css?v=3.53.0.1" rel="stylesheet">
+  <link href="/public/smartolt-files/dashboard-smartolt-night.css?v=3.53.0.209" rel="stylesheet">
+  <script src="/public/smartolt-files/dashboard-smartolt-night.js?v=3.53.0.63" defer=""></script>
+    
+  <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+  <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+  <!--[if lt IE 9]>
+        <script src="/public/smartolt-files/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="/public/smartolt-files/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+  <!-- jQuery -->
+  <script src="/public/smartolt-files/jquery.min.js"></script>
+
+  
+  
+  <!-- Toast alerts -->
+  <script src="/public/smartolt-files/toast.js"></script>
+
+  <!-- Pauses recurring AJAX polling while the tab is hidden OR the user has been idle, resumes on focus / activity. -->
+  <script src="/public/smartolt-files/polling.js?v=3.53.0.3"></script>
+
+  <!-- Geolocation permission-error → localized message helper (shared by location pickers). -->
+  <script src="/public/smartolt-files/geolocation_helper.js?v=3.53.0.1"></script>
+
+  
+
+</head>
+
+<body class="smartolt-site">
+<script type="text/javascript">
+$( document ).ready(function() {
+	$.ajaxSetup({
+		cache: false
+	});
+	
+	window.jqxhrs = [];
+
+      window.registerJqxhr = function(jqxhr) {
+        jqxhrs.push(jqxhr);
+      }
+
+      window.abortJqxhr = function() {
+        for (var i = jqxhrs.length - 1; i >= 0; i--) {
+          if (jqxhrs[i]) {
+            jqxhrs[i].abort();
+          }
+        }
+
+        window.jqxhrs = [];
+      }
+
+      $(window).bind("beforeunload", function(event) {
+        abortJqxhr();
+      });
+
+      function unregisterJqxhr(event, jqxhr, settings) {
+        var idx = $.inArray(jqxhr, jqxhrs);
+        if (idx != -1) {
+          jqxhrs.splice(idx, 1);
+        }
+      }
+
+      $(document).ajaxComplete(unregisterJqxhr);
+
+      config = {
+        X_TOKEN: '9C23F19BE06B4BEB93046ECFDF50FF91'
+      }
+    });
+  </script>
+
+  <div class="smartolt-landing-hero-bg" aria-hidden="true"></div>
+
+  <div id="content-wrapper">
+    <div class="smartolt-topbar-network" aria-hidden="true">
+      <div class="smartolt-topbar-network-inner">
+        <svg class="smartolt-topbar-network-lines" viewBox="0 0 100 100" preserveAspectRatio="none">
+          <line x1="8" y1="68" x2="23" y2="78"></line>
+          <line x1="23" y1="78" x2="37" y2="63"></line>
+          <line x1="8" y1="68" x2="37" y2="63"></line>
+          <line x1="37" y1="63" x2="65" y2="18"></line>
+          <line x1="65" y1="18" x2="89" y2="34"></line>
+          <line x1="23" y1="78" x2="65" y2="18"></line>
+          <line x1="37" y1="63" x2="89" y2="34"></line>
+        </svg>
+        <span class="smartolt-topbar-node smartolt-topbar-node-a"></span>
+        <span class="smartolt-topbar-node smartolt-topbar-node-b"></span>
+        <span class="smartolt-topbar-node smartolt-topbar-node-c"></span>
+        <span class="smartolt-topbar-node smartolt-topbar-node-d"></span>
+        <span class="smartolt-topbar-node smartolt-topbar-node-e"></span>
+      </div>
+    </div>
+        <div class="navbar navbar-default navbar-fixed-top default-menu">
+    <div class="container">
+      <div class="navbar-header">
+        <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#navbar-main" aria-expanded="false" aria-controls="navbar">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand text-ellipsis max-width-250" href="/modulo?pagina=GPONManager">GPON Manager</a>
+      </div>
+      <div class="navbar-collapse collapse" id="navbar-main">
+        <ul class="nav navbar-nav">
+          <li><a href="/modulo?pagina=GPONManager">Dashboard</a></li>
+          <li><a href="/modulo?pagina=smartolt_configured_full">Configuradas</a></li>
+          <li><a href="/modulo?pagina=smartolt_unconfigured_full">No configuradas</a></li>
+          <li><a href="/modulo?pagina=smartolt_onu_types_full">Tipos ONU</a></li>
+          <li><a href="/modulo?pagina=smartolt_speed_profiles_full">Velocidad</a></li>
+          <li><a href="/modulo?pagina=smartolt_locations_full">Zonas</a></li>
+          <li class="dropdown">
+            <a class="dropdown-toggle" data-toggle="dropdown" href="#">Settings <span class="caret"></span></a>
+            <ul class="dropdown-menu">
+              <li><a href="/modulo?pagina=smartolt_olt">OLTs</a></li>
+              <li><a href="/modulo?pagina=smartolt_general">General</a></li>
+              <li><a href="/modulo?pagina=smartolt_billing">Billing</a></li>
+              <li><a href="/modulo?pagina=smartolt_system_config">VPN &amp; TR069</a></li>
+              <li><a href="/modulo?pagina=smartolt_presets_full">Presets</a></li>
+              <li><a href="/modulo?pagina=smartolt_diagnostics_full">Diagnostics</a></li>
+              <li><a href="/modulo?pagina=smartolt_graphs">Graphs</a></li>
+            </ul>
+          </li>
+        </ul>
+        <ul class="nav navbar-nav navbar-right">
+          <li><a href="/logout"><i class="fa fa-sign-out"></i> Salir</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+    <!-- Page Content -->
+    <div class="container in">
+
+<div class="container-fluid content-wrap">
+	<h2>General Settings</h2>
+		
+	<form id="generalSettingsForm" method="POST" action="/general/save">
+		
+		<!-- Company Info Section -->
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h3 class="panel-title"><i class="fa fa-building"></i> Company Info</h3>
+			</div>
+			<div class="panel-body">
+				<div class="form-horizontal">
+					<div class="form-group">
+						<label class="col-sm-3 control-label" for="companyName">Company Name</label>
+						<div class="col-sm-6">
+							<input type="text" class="form-control" id="companyName" name="companyName" value="<%= typeof companyName !== 'undefined' ? companyName : '' %>" placeholder="Enter company name">
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="col-sm-3 control-label" for="companyEmail">Email</label>
+						<div class="col-sm-6">
+							<input type="email" class="form-control" id="companyEmail" name="companyEmail" value="<%= typeof companyEmail !== 'undefined' ? companyEmail : '' %>" placeholder="Enter email address">
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="col-sm-3 control-label" for="companyPhone">Phone</label>
+						<div class="col-sm-6">
+							<input type="text" class="form-control" id="companyPhone" name="companyPhone" value="<%= typeof companyPhone !== 'undefined' ? companyPhone : '' %>" placeholder="Enter phone number">
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Notifications Section -->
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h3 class="panel-title"><i class="fa fa-bell"></i> Notifications</h3>
+			</div>
+			<div class="panel-body">
+				<div class="form-horizontal">
+					<div class="form-group">
+						<div class="col-sm-offset-3 col-sm-9">
+							<div class="checkbox">
+								<label>
+									<input type="checkbox" name="emailAlert" id="emailAlert" value="1" <%= typeof emailAlert !== 'undefined' && emailAlert == 1 ? 'checked' : '' %>>
+									Email Alert
+								</label>
+							</div>
+							<div class="checkbox">
+								<label>
+									<input type="checkbox" name="whatsappAlert" id="whatsappAlert" value="1" <%= typeof whatsappAlert !== 'undefined' && whatsappAlert == 1 ? 'checked' : '' %>>
+									WhatsApp Alert
+								</label>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Timezone Section -->
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h3 class="panel-title"><i class="fa fa-clock-o"></i> Timezone</h3>
+			</div>
+			<div class="panel-body">
+				<div class="form-horizontal">
+					<div class="form-group">
+						<label class="col-sm-3 control-label" for="timezone">Timezone</label>
+						<div class="col-sm-6">
+							<select class="form-control" id="timezone" name="timezone">
+								<option value="America/New_York" <%= typeof timezone !== 'undefined' && timezone === 'America/New_York' ? 'selected' : '' %>>America/New_York (EST/EDT)</option>
+								<option value="America/Chicago" <%= typeof timezone !== 'undefined' && timezone === 'America/Chicago' ? 'selected' : '' %>>America/Chicago (CST/CDT)</option>
+								<option value="America/Denver" <%= typeof timezone !== 'undefined' && timezone === 'America/Denver' ? 'selected' : '' %>>America/Denver (MST/MDT)</option>
+								<option value="America/Los_Angeles" <%= typeof timezone !== 'undefined' && timezone === 'America/Los_Angeles' ? 'selected' : '' %>>America/Los_Angeles (PST/PDT)</option>
+								<option value="America/Santo_Domingo" <%= typeof timezone !== 'undefined' && timezone === 'America/Santo_Domingo' ? 'selected' : '' %>>America/Santo_Domingo</option>
+								<option value="America/Mexico_City" <%= typeof timezone !== 'undefined' && timezone === 'America/Mexico_City' ? 'selected' : '' %>>America/Mexico_City</option>
+								<option value="America/Argentina/Buenos_Aires" <%= typeof timezone !== 'undefined' && timezone === 'America/Argentina/Buenos_Aires' ? 'selected' : '' %>>America/Argentina/Buenos_Aires</option>
+								<option value="America/Sao_Paulo" <%= typeof timezone !== 'undefined' && timezone === 'America/Sao_Paulo' ? 'selected' : '' %>>America/Sao_Paulo</option>
+								<option value="Europe/London" <%= typeof timezone !== 'undefined' && timezone === 'Europe/London' ? 'selected' : '' %>>Europe/London (GMT/BST)</option>
+								<option value="Europe/Madrid" <%= typeof timezone !== 'undefined' && timezone === 'Europe/Madrid' ? 'selected' : '' %>>Europe/Madrid (CET/CEST)</option>
+								<option value="Europe/Berlin" <%= typeof timezone !== 'undefined' && timezone === 'Europe/Berlin' ? 'selected' : '' %>>Europe/Berlin (CET/CEST)</option>
+								<option value="Asia/Kolkata" <%= typeof timezone !== 'undefined' && timezone === 'Asia/Kolkata' ? 'selected' : '' %>>Asia/Kolkata (IST)</option>
+								<option value="Asia/Shanghai" <%= typeof timezone !== 'undefined' && timezone === 'Asia/Shanghai' ? 'selected' : '' %>>Asia/Shanghai (CST)</option>
+								<option value="Asia/Tokyo" <%= typeof timezone !== 'undefined' && timezone === 'Asia/Tokyo' ? 'selected' : '' %>>Asia/Tokyo (JST)</option>
+								<option value="Australia/Sydney" <%= typeof timezone !== 'undefined' && timezone === 'Australia/Sydney' ? 'selected' : '' %>>Australia/Sydney (AEST/AEDT)</option>
+								<option value="Pacific/Auckland" <%= typeof timezone !== 'undefined' && timezone === 'Pacific/Auckland' ? 'selected' : '' %>>Pacific/Auckland (NZST/NZDT)</option>
+								<option value="UTC" <%= typeof timezone !== 'undefined' && timezone === 'UTC' ? 'selected' : '' %>>UTC</option>
+							</select>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Session Timeout Section -->
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h3 class="panel-title"><i class="fa fa-hourglass-half"></i> Session Timeout</h3>
+			</div>
+			<div class="panel-body">
+				<div class="form-horizontal">
+					<div class="form-group">
+						<label class="col-sm-3 control-label" for="sessionTimeout">Timeout (minutes)</label>
+						<div class="col-sm-3">
+							<input type="number" class="form-control" id="sessionTimeout" name="sessionTimeout" value="<%= typeof sessionTimeout !== 'undefined' ? sessionTimeout : '30' %>" min="1" max="1440">
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Save Button -->
+		<div class="form-group">
+			<div class="col-sm-12 text-center">
+				<button type="submit" class="btn btn-primary btn-lg"><i class="fa fa-floppy-o"></i> Save Settings</button>
+			</div>
+		</div>
+
+	</form>
+
+</div>
+
+</div>
+<br>
+<!-- /#page-wrapper -->
+    
+
+</div>
+
+
+</div>
+
+
+    <!-- Bootstrap Core JavaScript -->
+    <script src="/public/smartolt-files/bootstrap.min.js"></script>
+    <script src="/public/smartolt-files/bootstrap-multiselect.js?v=3.53.0"></script>
+
+    <!-- Metis Menu Plugin JavaScript -->
+    <script src="/public/smartolt-files/metisMenu.min.js"></script>
+
+    <!-- Custom Theme JavaScript -->
+    <script src="/public/smartolt-files/sb-admin-2.js"></script>
+        
+    <!-- Loading overlay -->
+    <script src="/public/smartolt-files/loadingoverlay.custom.js?v=2"></script>
+    
+    <!-- Message box -->
+    <script src="/public/smartolt-files/messagebox.min.js"></script>
+    
+    
+
+
+</div>
+
+</body></html>

@@ -11,7 +11,7 @@
 
 <!-- Modal Crear/Editar Router -->
 <div id="modalRouter" class="modal" style="display:none">
-  <div class="modal-content" style="max-width:700px;">
+  <div class="modal-content" style="max-width:500px;">
     <div class="modal-header">
       <h3 id="modalTitle"><i class="fas fa-plus-circle" style="color:#10b981;"></i> Nuevo Router</h3>
       <span class="modal-close" onclick="cerrarModal()">&times;</span>
@@ -29,18 +29,18 @@
         <!-- Selector de Tipo de Conexión -->
         <div class="form-group">
           <label>Tipo de Conexión</label>
-          <div style="display:flex;gap:15px;margin-top:6px;">
-            <label class="radio-card" onclick="seleccionarTipo('ip')" id="tipoIP" style="flex:1;padding:15px;border:2px solid #e2e8f0;border-radius:10px;cursor:pointer;text-align:center;transition:all .2s;background:#f0fdf4;border-color:#10b981;">
+          <div style="display:flex;gap:10px;margin-top:6px;">
+            <label class="radio-card" onclick="seleccionarTipo('ip')" id="tipoIP" style="flex:1;padding:12px;border:2px solid #e2e8f0;border-radius:10px;cursor:pointer;text-align:center;transition:all .2s;background:#f0fdf4;border-color:#10b981;">
               <input type="radio" name="connection_type" value="ip" checked style="display:none;">
-              <i class="fas fa-globe" style="font-size:1.5rem;color:#10b981;"></i>
-              <div style="font-weight:600;margin-top:6px;">IP Pública</div>
-              <div style="font-size:0.75rem;color:#64748b;">Conexión directa vía API</div>
+              <i class="fas fa-globe" style="font-size:1.2rem;color:#10b981;"></i>
+              <div style="font-weight:600;margin-top:4px;font-size:0.85rem;">IP Pública</div>
+              <div style="font-size:0.7rem;color:#64748b;">Conexión directa</div>
             </label>
-            <label class="radio-card" onclick="seleccionarTipo('vpn')" id="tipoVPN" style="flex:1;padding:15px;border:2px solid #e2e8f0;border-radius:10px;cursor:pointer;text-align:center;transition:all .2s;">
-              <input type="radio" name="connection_type" value="vpn" style="display:none;">
-              <i class="fas fa-lock" style="font-size:1.5rem;color:#6366f1;"></i>
-              <div style="font-weight:600;margin-top:6px;">VPN (SSTP)</div>
-              <div style="font-size:0.75rem;color:#64748b;">El router inicia el túnel</div>
+            <label class="radio-card" onclick="seleccionarTipo('sstp')" id="tipoSSTP" style="flex:1;padding:12px;border:2px solid #e2e8f0;border-radius:10px;cursor:pointer;text-align:center;transition:all .2s;background:#f5f3ff;border-color:#8b5cf6;">
+              <input type="radio" name="connection_type" value="sstp" checked style="display:none;">
+              <i class="fas fa-link" style="font-size:1.2rem;color:#8b5cf6;"></i>
+              <div style="font-weight:600;margin-top:4px;font-size:0.85rem;">SSTP (VPN)</div>
+              <div style="font-size:0.7rem;color:#64748b;">Conexión simple</div>
             </label>
           </div>
         </div>
@@ -69,107 +69,76 @@
           </div>
         </div>
 
-        <!-- Campos para VPN -->
+        <!-- Campos para VPN (WireGuard) - Mínimos -->
         <div id="camposVPN" style="display:none;">
-          <div style="background:#eef2ff;border:1px solid #c7d2fe;border-radius:10px;padding:16px;margin-bottom:16px;">
-            <p style="font-size:0.85rem;color:#4338ca;margin:0 0 10px 0;">
-              <i class="fas fa-info-circle"></i> El router se conectará al servidor SSTP. 
-              Se generará un usuario y script para copiar en el router.
+          <div style="background:#ecfdf5;border:1px solid #6ee7b7;border-radius:10px;padding:16px;">
+            <p style="font-size:0.85rem;color:#047857;margin:0 0 6px 0;">
+              <i class="fas fa-info-circle"></i> Solo necesitas el nombre. El sistema generará automáticamente la IP de túnel, puerto y script completo.
             </p>
-            <div class="row" style="display:flex;gap:10px;">
-              <div class="form-group" style="flex:1;">
-                <label>Router ID (Cliente)</label>
-                <input type="text" id="vpnRouterId" class="form-control" placeholder="Ej: RTR-001" value="RTR-" style="font-family:monospace;">
-              </div>
-              <div class="form-group" style="flex:1;">
-                <label>IP Fija VPN (opcional)</label>
-                <input type="text" id="vpnFija" class="form-control" placeholder="10.50.x.x (dejar vacío = dinámica)" style="font-family:monospace;">
-              </div>
+            <div class="form-group" style="margin-bottom:0;">
+              <label>IP Pública del Cliente <span style="font-weight:400;color:#94a3b8;font-size:0.75rem;">(opcional, mejora detección)</span></label>
+              <input type="text" id="wgClientPublicIp" class="form-control" placeholder="Ej: 200.100.x.x" style="font-family:monospace;">
             </div>
-            <button type="button" class="btn btn-primary" onclick="generarScriptVPN()" id="btnGenScript" style="width:100%;margin-top:10px;">
-              <i class="fas fa-file-code"></i> Generar Script
+          </div>
+        </div>
+
+        <!-- Campos para Pools de IP -->
+        <div id="camposPools" style="margin-top:16px;padding-top:16px;border-top:1px solid #e2e8f0;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+            <label style="font-weight:600;font-size:0.88rem;color:#1e293b;">
+              <i class="fas fa-network-wired" style="color:#2563eb;"></i> Pools de IP
+            </label>
+            <button type="button" class="btn btn-sm btn-success" onclick="agregarPool()" style="font-size:0.75rem;padding:4px 10px;">
+              <i class="fas fa-plus"></i> Agregar Rango
             </button>
           </div>
-
-          <!-- Script Preview -->
-          <div id="scriptPreview" style="display:none;">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-              <label style="font-weight:600;font-size:0.9rem;">Script para el Router</label>
-              <div>
-                <button class="btn btn-sm btn-secondary" onclick="copiarScript()"><i class="fas fa-copy"></i> Copiar</button>
-                <button class="btn btn-sm btn-secondary" onclick="descargarScript()"><i class="fas fa-download"></i> Descargar</button>
-              </div>
-            </div>
-            <textarea id="scriptOutput" style="width:100%;height:350px;font-family:'Consolas','Monaco',monospace;font-size:0.78rem;background:#1e293b;color:#e2e8f0;border:none;border-radius:8px;padding:16px;resize:vertical;tab-size:2;" readonly></textarea>
-            <p style="font-size:0.8rem;color:#64748b;margin-top:6px;">
-              <i class="fas fa-info-circle"></i> Copia este script en la terminal del router MikroTik para conectarlo automáticamente.
-            </p>
+          <div id="poolsContainer">
+            <!-- Los pools se agregan dinámicamente aquí -->
+          </div>
+          <div style="margin-top:8px;">
+            <button type="button" class="btn btn-sm btn-info" onclick="aplicarPoolsRouter()" id="btnAplicarPools" style="font-size:0.75rem;display:none;background:#0ea5e9;color:#fff;border:none;padding:4px 10px;border-radius:6px;">
+              <i class="fas fa-upload"></i> Enviar pools al MikroTik
+            </button>
           </div>
         </div>
 
-        <!-- Campos comunes -->
-        <div style="border-top:1px solid #e2e8f0;padding-top:16px;margin-top:16px;">
-          <div class="row" style="display:flex;gap:10px;">
-            <div class="form-group" style="flex:1;">
-              <label>OS</label>
-              <select name="version" id="routerVersion" class="form-control">
-                <option value="RouterOS v7">RouterOS v7</option>
-                <option value="RouterOS v6">RouterOS v6</option>
-              </select>
-            </div>
-            <div class="form-group" style="flex:1;">
-              <label>Autenticación</label>
-              <select name="auth_type" id="routerAuth" class="form-control">
-                <option value="PPPoE">PPPoE</option>
-                <option value="IP Estática">IP Estática</option>
-                <option value="DHCP (IPoE)">DHCP (IPoE)</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        <!-- WAN Interface (solo IP) -->
-        <div id="wanSection">
-          <div style="display:flex;gap:10px;align-items:end;">
-            <div class="form-group" style="flex:1;margin-bottom:0;">
-              <label>Interfaz a monitorear (WAN)</label>
-              <select name="interface_wan" id="routerWan" class="form-control">
-                <option value="ether1">ether1</option>
-                <option value="">-- Detectar interfaces --</option>
-              </select>
-            </div>
-            <button type="button" class="btn btn-sm btn-secondary" onclick="detectarInterfaces()" id="btnDetectIfaces" style="margin-bottom:1px;height:fit-content;"><i class="fas fa-search"></i> Detectar</button>
-          </div>
-        </div>
-
-        <div style="border-top:1px solid #e2e8f0;padding-top:16px;margin-top:16px;">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-            <label style="font-weight:600;font-size:0.9rem;">Rangos IP</label>
-            <button type="button" class="btn btn-primary btn-sm" onclick="abrirModalPool()" id="btnAgregarRango">+ Agregar Rango</button>
-          </div>
-          <div id="poolList" style="font-size:0.85rem;">
-            <div style="color:var(--text-gray);text-align:center;padding:10px;">Seleccione o guarde el router primero</div>
-          </div>
-        </div>
-
-        <div class="form-group" style="margin-top:16px;">
-          <label>DHCPv6 PD Pool</label>
-          <input type="text" name="ipv6_pd" id="routerIpv6" class="form-control" placeholder="Nombre exacto del PD Pool en MikroTik">
-        </div>
-
-        <div style="border-top:1px solid #e2e8f0;padding-top:16px;margin-top:16px;">
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
-            <input type="checkbox" name="suspend_ips" id="suspendIps" value="1">
-            <label for="suspendIps" style="margin:0;">¿Suspender ip's en este router?</label>
-          </div>
-        </div>
-
-        <div class="btn-group" style="justify-content:flex-end;margin-top:16px;">
+        <!-- Botones del modal -->
+        <div id="modalBotones" style="display:flex;gap:8px;justify-content:flex-end;margin-top:20px;padding-top:16px;border-top:1px solid #e2e8f0;">
           <button type="button" class="btn btn-secondary" onclick="cerrarModal()">Cancelar</button>
-          <button type="button" class="btn btn-secondary" onclick="testConexion()" id="btnTestRouter" style="background:#0ea5e9;color:#fff;border:none;"><i class="fas fa-plug"></i> Probar Conexión</button>
-          <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Guardar Router</button>
+          <div id="btnGroupExtra" style="display:none;gap:8px;">
+            <button type="button" class="btn btn-success" onclick="generarScriptRouterActual()" id="btnGenScript"><i class="fas fa-file-code"></i> Generar Script</button>
+            <button type="button" class="btn btn-info" onclick="probarRouterActual()" id="btnProbarConexion" style="background:#0ea5e9;color:#fff;border:none;"><i class="fas fa-plug"></i> Probar Conexión</button>
+          </div>
+          <button type="submit" class="btn btn-primary" id="btnGuardarRouter"><i class="fas fa-save"></i> Guardar Router</button>
         </div>
       </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Script WireGuard -->
+<div id="modalScriptWG" class="modal" style="display:none">
+  <div class="modal-content" style="max-width:750px;">
+    <div class="modal-header">
+      <h3><i class="fas fa-shield-alt" style="color:#10b981;"></i> Script WireGuard - Listo para pegar</h3>
+      <span class="modal-close" onclick="cerrarModalScriptWG()">&times;</span>
+    </div>
+    <div class="modal-body">
+      <div style="background:#f0fdf4;border:1px solid #6ee7b7;border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:0.82rem;color:#047857;">
+        <i class="fas fa-check-circle"></i> 
+        <strong>Router: <span id="scriptRouterName"></span></strong> &mdash; 
+        IP Túnel: <code id="scriptTunnelIp"></code> &mdash; 
+        Servidor: <code id="scriptServerEndpoint"></code>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <label style="font-weight:600;font-size:0.9rem;">Copia este script en la terminal del MikroTik cliente:</label>
+        <div>
+          <button class="btn btn-sm btn-success" onclick="agregarPeerEnBorde()" id="btnAddPeer"><i class="fas fa-plus-circle"></i> Agregar peer en borde</button>
+          <button class="btn btn-sm btn-secondary" onclick="copiarScriptWG()"><i class="fas fa-copy"></i> Copiar</button>
+          <button class="btn btn-sm btn-secondary" onclick="descargarScriptWG()"><i class="fas fa-download"></i> Descargar</button>
+        </div>
+      </div>
+      <textarea id="scriptOutputWG" style="width:100%;height:350px;font-family:'Consolas','Monaco',monospace;font-size:0.8rem;background:#1e293b;color:#e2e8f0;border:none;border-radius:8px;padding:16px;resize:vertical;tab-size:2;" readonly></textarea>
     </div>
   </div>
 </div>
@@ -244,113 +213,244 @@
   </div>
 </div>
 
+<!-- Modal Script WireGuard -->
+<div id="modalScriptWG" class="modal" style="display:none">
+  <div class="modal-content" style="max-width:800px;">
+    <div class="modal-header">
+      <h3><i class="fas fa-shield-alt" style="color:#10b981;"></i> Script WireGuard</h3>
+      <span class="modal-close" onclick="cerrarModalScriptWG()">&times;</span>
+    </div>
+    <div class="modal-body">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <label style="font-weight:600;font-size:0.9rem;">Copia este script en la terminal del MikroTik cliente (System > Scripts o directamente en CLI):</label>
+        <div>
+          <button class="btn btn-sm btn-secondary" onclick="copiarScriptWG()"><i class="fas fa-copy"></i> Copiar</button>
+          <button class="btn btn-sm btn-secondary" onclick="descargarScriptWG()"><i class="fas fa-download"></i> Descargar</button>
+        </div>
+      </div>
+      <textarea id="scriptOutputWG" style="width:100%;height:400px;font-family:'Consolas','Monaco',monospace;font-size:0.8rem;background:#1e293b;color:#e2e8f0;border:none;border-radius:8px;padding:16px;resize:vertical;tab-size:2;" readonly></textarea>
+    </div>
+  </div>
+</div>
+
 <script>
 let routerActualId = 0;
-let resyncId = null;
-let scriptGenerado = '';
+let scriptGeneradoWG = '';
+var _ultimoScriptData = null; // Guarda datos del último script generado (public key, IP, etc.)
 
+// ====== AUTO-ASIGNAR IP DE TÚNEL ======
+// Cada router VPN recibe automáticamente la próxima IP disponible en 10.10.10.x/24
+// El servidor usa 10.10.10.1, los clientes empiezan en 10.10.10.2
+var _nextTunnelIp = 2;
+
+function obtenerSiguienteTunnelIp() {
+  var id = parseInt(document.getElementById('idRouterInput').value) || 0;
+  // Si es router existente, mantener su IP
+  if (id > 0) {
+    return '10.10.10.' + (id + 1) + '/24';
+  }
+  // Si es nuevo, asignar siguiente disponible
+  var ip = '10.10.10.' + _nextTunnelIp + '/24';
+  _nextTunnelIp++;
+  return ip;
+}
+
+// ====== SELECCIONAR TIPO ======
 function seleccionarTipo(tipo) {
   document.getElementById('tipoIP').style.background = tipo === 'ip' ? '#f0fdf4' : '#fff';
   document.getElementById('tipoIP').style.borderColor = tipo === 'ip' ? '#10b981' : '#e2e8f0';
-  document.getElementById('tipoVPN').style.background = tipo === 'vpn' ? '#eef2ff' : '#fff';
-  document.getElementById('tipoVPN').style.borderColor = tipo === 'vpn' ? '#6366f1' : '#e2e8f0';
+  document.getElementById('tipoSSTP').style.background = tipo === 'sstp' ? '#f5f3ff' : '#fff';
+  document.getElementById('tipoSSTP').style.borderColor = tipo === 'sstp' ? '#8b5cf6' : '#e2e8f0';
   
   document.getElementById('camposIP').style.display = tipo === 'ip' ? 'block' : 'none';
-  document.getElementById('camposVPN').style.display = tipo === 'vpn' ? 'block' : 'none';
-  document.getElementById('wanSection').style.display = tipo === 'ip' ? 'block' : 'none';
+  document.getElementById('camposVPN').style.display = tipo === 'sstp' ? 'block' : 'none';
   
-  // Ocultar boton Probar Conexion para VPN
-  var btnTest = document.getElementById('btnTestRouter');
-  if (btnTest) btnTest.style.display = tipo === 'ip' ? 'inline-block' : 'none';
-  
-  if (tipo === 'ip') {
-    document.getElementById('routerIp').required = true;
-  } else {
-    document.getElementById('routerIp').required = false;
-  }
+  document.getElementById('routerIp').required = tipo === 'ip';
 }
 
-function generarScriptVPN() {
-  var name = document.getElementById('routerName').value.trim();
-  var routerId = document.getElementById('vpnRouterId').value.trim();
-  var ipFija = document.getElementById('vpnFija').value.trim();
+// ====== GUARDAR ROUTER ======
+function guardarRouter(e) {
+  e.preventDefault();
+  var tipo = document.querySelector('input[name="connection_type"]:checked').value;
+  // SSTP se guarda como sstp en DB
+  var tunnelIp = obtenerSiguienteTunnelIp();
   
-  if (!name) { showToast('Primero ingrese el nombre del router', 'error'); return; }
-  if (!routerId) { showToast('Ingrese un ID para el router', 'error'); return; }
-  
-  var btn = document.getElementById('btnGenScript');
-  btn.disabled = true;
-  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generando...';
-  
-  fetch('/api/routers/generate-vpn-script', {
+  const data = {
+    accion: document.getElementById('accionInput').value,
+    id_router_edit: document.getElementById('idRouterInput').value,
+    name: document.getElementById('routerName').value,
+    connection_type: tipo,
+    ip: tipo === 'vpn' ? tunnelIp.split('/')[0] : document.getElementById('routerIp').value,
+    port: tipo === 'vpn' ? 13231 : document.getElementById('routerPort').value,
+    user: tipo === 'ip' ? document.getElementById('routerUser').value : '',
+    password: tipo === 'ip' ? document.getElementById('routerPass').value : '',
+    interface_wan: 'ether1',
+    vpn_user: '',
+    vpn_password: '',
+    vpn_ip: tipo === 'vpn' ? document.getElementById('wgClientPublicIp').value.trim() : ''
+  };
+
+  // Deshabilitar botón guardar
+  var btnGuardar = document.getElementById('btnGuardarRouter');
+  btnGuardar.disabled = true;
+  btnGuardar.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+
+  fetch('/api/routers/save', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name: name, router_id: routerId, ip_fija: ipFija })
+    body: JSON.stringify(data)
   })
-  .then(function(r) { return r.json(); })
-  .then(function(res) {
-    btn.disabled = false;
-    btn.innerHTML = '<i class="fas fa-file-code"></i> Generar Script';
+  .then(r => r.json())
+  .then(res => {
+    btnGuardar.disabled = false;
+    btnGuardar.innerHTML = '<i class="fas fa-save"></i> Guardar Router';
     
     if (res.success) {
-      document.getElementById('scriptPreview').style.display = 'block';
-      document.getElementById('scriptOutput').value = res.script;
-      scriptGenerado = res.script;
+      document.getElementById('idRouterInput').value = res.id;
+      routerActualId = res.id;
       
-      // Auto-llenar campos ocultos
-      document.getElementById('routerIp').value = res.vpn_ip || '';
-      document.getElementById('routerUser').value = res.vpn_user || '';
-      document.getElementById('routerPass').value = res.vpn_password || '';
-      document.getElementById('vpnRouterId').value = res.vpn_user || '';
-      document.getElementById('vpnFija').value = res.vpn_ip || '';
-      
-      // Seleccionar modo VPN
-      document.querySelector('input[name="connection_type"][value="vpn"]').checked = true;
-      seleccionarTipo('vpn');
-      
-      showToast('✅ Script generado exitosamente');
+      if (tipo === 'sstp') {
+          document.getElementById('idRouterInput').value = res.id;
+          routerActualId = res.id;
+          guardarPoolsRouter(res.id);
+          cerrarModal();
+          cargarRouters();
+          // Generar script SSTP automaticamente
+          generarScriptSSTP(res.id);
+        } else {
+          guardarPoolsRouter(res.id);
+          showToast('Router guardado exitosamente');
+          cerrarModal();
+          cargarRouters();
+        }
     } else {
-      showToast('❌ Error: ' + (res.error || 'No se pudo generar'), 'error');
+      showToast('Error: ' + (res.message || 'No se pudo guardar'), 'error');
     }
   })
-  .catch(function(e) {
-    btn.disabled = false;
-    btn.innerHTML = '<i class="fas fa-file-code"></i> Generar Script';
-    showToast('Error de conexión: ' + e.message, 'error');
+  .catch(function() {
+    btnGuardar.disabled = false;
+    btnGuardar.innerHTML = '<i class="fas fa-save"></i> Guardar Router';
+    showToast('Error de conexión', 'error');
   });
 }
 
-function copiarScript() {
-  var textarea = document.getElementById('scriptOutput');
+// ====== GENERAR SCRIPT (desde el modal, después de guardar) ======
+function generarScriptRouterActual() {
+  var id = routerActualId;
+  if (!id) { showToast('Primero guarda el router', 'error'); return; }
+  generarScriptPorId(id);
+}
+
+function generarScriptPorId(id) {
+  fetch('/api/routers/' + id)
+    .then(function(r) { return r.json(); })
+    .then(function(r) {
+      var name = r.name;
+      var tipo = r.connection_type;
+      
+      if (tipo === 'sstp') {
+        generarScriptSSTP(id);
+        return;
+      }
+      
+      // Para IP directa... script no disponible
+      showToast('Este router no tiene script disponible', 'error');
+    });
+}
+
+// ====== PROBAR CONEXIÓN (desde el modal, después de guardar) ======
+function probarRouterActual() {
+  var id = routerActualId;
+  if (!id) { showToast('Primero guarda el router', 'error'); return; }
+  probarConexionRouter(id);
+}
+
+// ====== COPIAR / DESCARGAR SCRIPT ======
+function copiarScriptWG() {
+  var textarea = document.getElementById('scriptOutputWG');
   textarea.select();
-  
-  // Intentar con clipboard API (requiere HTTPS)
   if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
     navigator.clipboard.writeText(textarea.value).then(function() {
-      showToast('✅ Script copiado al portapapeles');
+      showToast('Script copiado al portapapeles');
     }).catch(function() {
       document.execCommand('copy');
-      showToast('✅ Script copiado');
+      showToast('Script copiado');
     });
   } else {
-    // Fallback para HTTP
     document.execCommand('copy');
-    showToast('✅ Script copiado');
+    showToast('Script copiado');
   }
 }
 
-function descargarScript() {
-  var name = document.getElementById('routerName').value.trim() || 'router';
-  var blob = new Blob([scriptGenerado], { type: 'text/plain' });
+function descargarScriptWG() {
+  var name = document.getElementById('scriptRouterName').textContent || 'router';
+  var blob = new Blob([scriptGeneradoWG], { type: 'text/plain' });
   var a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = name.replace(/[^a-zA-Z0-9]/g, '_') + '_script.rsc';
+  a.download = name.replace(/[^a-zA-Z0-9]/g, '_') + '_wireguard.rsc';
   a.click();
   URL.revokeObjectURL(a.href);
 }
 
+function cerrarModalScriptWG() {
+  document.getElementById('modalScriptWG').style.display = 'none';
+}
+
+// ====== AGREGAR PEER EN EL BORDE AUTOMÁTICAMENTE ======
+function agregarPeerEnBorde() {
+  if (!_ultimoScriptData || !_ultimoScriptData.client_tunnel_ip) {
+    showToast('Primero genera el script WireGuard', 'error');
+    return;
+  }
+  
+  // Primero preguntar al usuario la public key del cliente
+  // (aparece en el MikroTik cliente después de pegar el script)
+  var pk = prompt(
+    'Ingresa la Public Key del cliente (aparece al ejecutar: /interface wireguard print detail where name=wg-isptotal):',
+    ''
+  );
+  
+  if (!pk || pk.trim() === '') {
+    showToast('Operación cancelada - ingresa la public key del cliente', 'error');
+    return;
+  }
+  
+  _ultimoScriptData.client_public_key = pk.trim();
+  
+  var btn = document.getElementById('btnAddPeer');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Agregando peer...';
+  
+  fetch('/api/routers/add-peer-to-border', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(_ultimoScriptData)
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(res) {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-plus-circle"></i> Agregar peer en borde';
+    
+    if (res.success) {
+      showToast('✅ Peer agregado en el borde. El túnel debe estar activo ahora.');
+      // Verificar conectividad automáticamente
+      if (routerActualId) {
+        setTimeout(function() { probarConexionRouter(routerActualId); }, 1000);
+      }
+    } else {
+      showToast('❌ Error: ' + (res.error || 'No se pudo agregar peer'), 'error');
+    }
+  })
+  .catch(function(e) {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-plus-circle"></i> Agregar peer en borde';
+    showToast('Error de conexión: ' + e.message, 'error');
+  });
+}
+
+// ====== CARGAR LISTA DE ROUTERS ======
 function cargarRouters() {
-  // Sincronizar estado de routers VPN primero
+  // Refrescar estado de routers VPN en background
   fetch('/api/routers/sync-vpn-status', { method: 'POST' }).catch(function(){});
   
   fetch('/api/routers')
@@ -365,17 +465,17 @@ function cargarRouters() {
       }
       let html = '<div class="table-container"><table><thead><tr><th>#</th><th>Nombre</th><th>Tipo</th><th>IP / Puerto</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>';
       data.forEach((r, i) => {
-        const tipo = r.connection_type === 'vpn' ? '<span style="color:#6366f1;"><i class="fas fa-lock"></i> VPN</span>' : '<span style="color:#10b981;"><i class="fas fa-globe"></i> IP</span>';
+        const tipo = r.connection_type === 'sstp' ? '<span style="color:#8b5cf6;"><i class="fas fa-link"></i> SSTP VPN</span>' : '<span style="color:#10b981;"><i class="fas fa-globe"></i> IP</span>';
         const status = r.connected ? '<span class="badge badge-success">Online</span>' : '<span class="badge badge-danger">Offline</span>';
-        const ipInfo = r.connection_type === 'vpn' ? (r.vpn_ip || '—') : (r.ip + ':' + (r.port || 8728));
+        const ipInfo = r.connection_type === 'sstp' ? (r.vpn_ip || r.ip || '—') : (r.ip + ':' + (r.port || 8728));
         html += '<tr><td>' + (i+1) + '</td><td><strong>' + r.name + '</strong></td><td>' + tipo + '</td><td style="font-family:monospace;font-size:0.85rem;">' + ipInfo + '</td><td>' + status + '</td><td>';
         html += '<div class="btn-group">';
-        if (r.connection_type === 'vpn') {
-          html += '<button class="btn btn-sm btn-primary" onclick="verScript(' + r.id + ')" title="Ver script"><i class="fas fa-file-code"></i></button>';
+        if (r.connection_type === 'sstp') {
+          html += '<button class="btn btn-sm btn-success" onclick="verScript(' + r.id + ')" title="Generar script"><i class="fas fa-file-code"></i></button>';
         }
-        html += '<button class="btn btn-sm btn-primary" onclick="abrirModalResync(' + r.id + ')"><i class="fas fa-sync"></i></button>';
-        html += '<button class="btn btn-sm btn-secondary" onclick="abrirModalEditar(' + r.id + ')"><i class="fas fa-edit"></i></button>';
-        html += '<button class="btn btn-sm btn-danger" onclick="confirmarEliminar(' + r.id + ',\'' + r.name.replace(/'/g, "\\'") + '\')"><i class="fas fa-trash"></i></button>';
+        html += '<button class="btn btn-sm btn-info" onclick="probarConexionRouter(' + r.id + ')" title="Probar conexion"><i class="fas fa-plug"></i></button>';
+        html += '<button class="btn btn-sm btn-secondary" onclick="abrirModalEditar(' + r.id + ')" title="Editar"><i class="fas fa-edit"></i></button>';
+        html += '<button class="btn btn-sm btn-danger" onclick="confirmarEliminar(' + r.id + ',\'' + ('' + r.name).replace(/'/g, '') + '\')" title="Eliminar"><i class="fas fa-trash"></i></button>';
         html += '</div></td></tr>';
       });
       html += '</tbody></table></div>';
@@ -386,26 +486,34 @@ function cargarRouters() {
     });
 }
 
+// ====== ABRIR MODAL CREAR ======
 function abrirModalCrear() {
   document.getElementById('formRouter').reset();
   document.getElementById('accionInput').value = 'guardar';
   document.getElementById('idRouterInput').value = '';
+  routerActualId = 0;
   document.getElementById('modalTitle').innerHTML = '<i class="fas fa-plus-circle" style="color:#10b981;"></i> Nuevo Router';
-  document.getElementById('poolList').innerHTML = '<div style="color:var(--text-gray);text-align:center;padding:10px;">Guarde el router primero</div>';
-  document.getElementById('scriptPreview').style.display = 'none';
-  document.getElementById('camposIP').style.display = 'block';
-  document.getElementById('camposVPN').style.display = 'none';
-  document.getElementById('wanSection').style.display = 'block';
+  
+  // Reset tipo
   document.getElementById('tipoIP').style.background = '#f0fdf4';
   document.getElementById('tipoIP').style.borderColor = '#10b981';
-  document.getElementById('tipoVPN').style.background = '#fff';
-  document.getElementById('tipoVPN').style.borderColor = '#e2e8f0';
-  document.getElementById('vpnRouterId').value = 'RTR-';
-  document.getElementById('vpnFija').value = '';
+  document.getElementById('camposIP').style.display = 'block';
+  document.getElementById('camposVPN').style.display = 'none';
   document.getElementById('routerIp').required = true;
+  
+  // Reset botones extra
+  document.getElementById('btnGroupExtra').style.display = 'none';
+  document.getElementById('btnGuardarRouter').innerHTML = '<i class="fas fa-save"></i> Guardar Router';
+  document.getElementById('btnGuardarRouter').disabled = false;
+  
+  document.getElementById('wgClientPublicIp').value = '';
+  cargarPoolsRouter(0);
+  document.getElementById('btnAplicarPools').style.display = 'none';
+  
   document.getElementById('modalRouter').style.display = 'flex';
 }
 
+// ====== ABRIR MODAL EDITAR ======
 function abrirModalEditar(id) {
   fetch('/api/routers/' + id)
     .then(r => {
@@ -415,204 +523,94 @@ function abrirModalEditar(id) {
     .then(r => {
       document.getElementById('accionInput').value = 'editar';
       document.getElementById('idRouterInput').value = r.id;
-      document.getElementById('routerName').value = r.name;
-      document.getElementById('routerIp').value = r.ip;
-      document.getElementById('routerPort').value = r.port || 8728;
-      document.getElementById('routerUser').value = r.user || '';
-      document.getElementById('routerPass').value = r.password || '';
-      document.getElementById('modalTitle').innerHTML = '<i class="fas fa-edit" style="color:#f59e0b;"></i> Editar Router';
       routerActualId = r.id;
+      cargarPoolsRouter(r.id);
+      document.getElementById('routerName').value = r.name;
       
-      // Set connection type
       var tipo = r.connection_type || 'ip';
+      // Normalizar: wireguard/vpn -> sstp (ya no existe opcion vpn separada)
+      if (tipo !== 'ip' && tipo !== 'sstp') tipo = 'sstp';
       seleccionarTipo(tipo);
       document.querySelector('input[name="connection_type"][value="' + tipo + '"]').checked = true;
-      document.getElementById('vpnRouterId').value = r.vpn_user || '';
-      document.getElementById('vpnFija').value = r.vpn_ip || '';
       
-      try { cargarPools(r.id); } catch(e) {}
-      document.getElementById('modalRouter').style.display = 'flex';
+      document.getElementById('modalTitle').innerHTML = '<i class="fas fa-edit" style="color:#f59e0b;"></i> Editar Router';
       
-      // Detectar interfaces
       if (tipo === 'ip') {
-        setTimeout(function() {
-          var host = r.ip;
-          var port = parseInt(r.port) || 8728;
-          var username = r.user || '';
-          var password = r.password || '';
-          if (host && username) {
-            fetch('/api/routers/interfaces', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ host: host, port: port, username: username, password: password })
-            })
-            .then(function(resp) { return resp.json(); })
-            .then(function(res) {
-              var sel = document.getElementById('routerWan');
-              sel.innerHTML = '';
-              if (res.success && res.interfaces && res.interfaces.length > 0) {
-                res.interfaces.forEach(function(iface) {
-                  var opt = document.createElement('option');
-                  opt.value = iface.name;
-                  opt.textContent = iface.name + ' (' + (iface.type || '') + ') ' + (iface.running === 'true' ? '🟢' : '🔴');
-                  sel.appendChild(opt);
-                });
-              } else {
-                sel.innerHTML = '<option value="ether1">ether1 (por defecto)</option><option value="">-- Detectar interfaces --</option>';
-              }
-              sel.value = r.interface_wan || 'ether1';
-            })
-            .catch(function() {
-              var sel = document.getElementById('routerWan');
-              sel.innerHTML = '<option value="ether1">ether1 (por defecto)</option><option value="">-- Detectar interfaces --</option>';
-              sel.value = r.interface_wan || 'ether1';
-            });
-          }
-        }, 100);
+        document.getElementById('routerIp').value = r.ip;
+        document.getElementById('routerPort').value = r.port || 8728;
+        document.getElementById('routerUser').value = r.user || '';
+        document.getElementById('routerPass').value = r.password || '';
+      } else {
+        document.getElementById('wgClientPublicIp').value = r.vpn_ip || '';
       }
+      
+      // Mostrar botones extra si ya está guardado
+      document.getElementById('btnGroupExtra').style.display = tipo === 'sstp' ? 'flex' : 'none';
+      document.getElementById('btnGuardarRouter').innerHTML = '<i class="fas fa-save"></i> Guardar Router';
+      document.getElementById('btnGuardarRouter').disabled = false;
+      
+      document.getElementById('modalRouter').style.display = 'flex';
     })
     .catch(function(e) {
       showToast('Error al cargar router: ' + e.message, 'error');
     });
 }
 
+// ====== VER SCRIPT DESDE LA TABLA ======
 function verScript(id) {
   fetch('/api/routers/' + id)
     .then(function(r) { return r.json(); })
     .then(function(r) {
-      if (r.connection_type === 'vpn' && r.vpn_user) {
-        document.getElementById('routerName').value = r.name;
-        document.getElementById('vpnRouterId').value = r.vpn_user || '';
-        document.getElementById('vpnFija').value = r.vpn_ip || '';
-        seleccionarTipo('vpn');
-        generarScriptVPN();
-        document.getElementById('modalRouter').style.display = 'flex';
+      if (r.connection_type === 'sstp') {
+        generarScriptSSTP(id);
       } else {
         showToast('Este router no tiene script VPN', 'error');
       }
     });
 }
 
-function cerrarModal() { document.getElementById('modalRouter').style.display = 'none'; }
-
-function testConexion() {
-  var host = document.getElementById('routerIp').value.trim();
-  var port = parseInt(document.getElementById('routerPort').value) || 8728;
-  var username = document.getElementById('routerUser').value.trim();
-  var password = document.getElementById('routerPass').value;
-  
-  if (!host) { showToast('Ingrese la IP del router', 'error'); return; }
-  if (!username) { showToast('Ingrese el usuario', 'error'); return; }
-  
-  var btn = document.getElementById('btnTestRouter');
-  btn.disabled = true;
-  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Probando...';
-  
-  fetch('/api/routers/test', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ host: host, port: port, username: username, password: password })
-  })
-  .then(function(r) { return r.json(); })
-  .then(function(res) {
-    btn.disabled = false;
-    btn.innerHTML = '<i class="fas fa-plug"></i> Probar Conexión';
-    if (res.success) {
-      showToast('✅ Conexión exitosa con ' + host + ' (' + (res.info && res.info.version ? res.info.version : '') + ')');
-    } else {
-      showToast('❌ Error: ' + (res.error || 'No se pudo conectar'), 'error');
-    }
-  })
-  .catch(function(e) {
-    btn.disabled = false;
-    btn.innerHTML = '<i class="fas fa-plug"></i> Probar Conexión';
-    showToast('Error de conexión con el servidor', 'error');
-  });
-}
-
-function detectarInterfaces() {
-  var host = document.getElementById('routerIp').value.trim();
-  var port = parseInt(document.getElementById('routerPort').value) || 8728;
-  var username = document.getElementById('routerUser').value.trim();
-  var password = document.getElementById('routerPass').value;
-  
-  if (!host || !username) { showToast('Primero complete IP y usuario', 'error'); return; }
-  
-  var btn = document.getElementById('btnDetectIfaces');
-  btn.disabled = true;
-  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-  
-  fetch('/api/routers/interfaces', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ host: host, port: port, username: username, password: password })
-  })
-  .then(function(r) { return r.json(); })
-  .then(function(res) {
-    btn.disabled = false;
-    btn.innerHTML = '<i class="fas fa-search"></i> Detectar';
-    var sel = document.getElementById('routerWan');
-    sel.innerHTML = '';
-    if (res.success && res.interfaces && res.interfaces.length > 0) {
-      res.interfaces.forEach(function(iface) {
-        var opt = document.createElement('opt ion');
-        opt.value = iface.name;
-        opt.textContent = iface.name + ' (' + (iface.type || '') + ') ' + (iface.running === 'true' ? '🟢' : '🔴');
-        sel.appendChild(opt);
+// ====== PROBAR CONEXIÓN DESDE LA TABLA ======
+function probarConexionRouter(id) {
+  fetch('/api/routers/' + id)
+    .then(function(r) { return r.json(); })
+    .then(function(r) {
+      var btn = document.getElementById('btnProbarConexion');
+      if (btn) btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Probando ping...';
+      
+      fetch('/api/routers/test', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          host: r.connection_type === 'sstp' ? (r.vpn_ip || r.ip) : r.ip, 
+          port: r.port || 8728, 
+          username: r.user || '', 
+          password: r.password || '',
+          connection_type: r.connection_type || 'ip'
+        })
+      })
+      .then(function(resp) { return resp.json(); })
+      .then(function(res) {
+        if (btn) btn.innerHTML = '<i class="fas fa-plug"></i> Probar Conexión';
+        if (res.success) {
+          showToast('✅ ' + r.name + ' - Online (' + r.ip + ')');
+          cargarRouters(); // Recargar para actualizar estados
+        } else {
+          showToast('❌ ' + r.name + ' - ' + (res.error || 'Sin conexión'), 'error');
+          cargarRouters();
+        }
+      })
+      .catch(function() {
+        if (btn) btn.innerHTML = '<i class="fas fa-plug"></i> Probar Conexión';
+        showToast('Error de conexión con el servidor', 'error');
       });
-      showToast('✅ ' + res.interfaces.length + ' interfaces detectadas');
-    } else {
-      sel.innerHTML = '<option value="ether1">ether1 (por defecto)</option>';
-      showToast('❌ No se pudieron detectar interfaces: ' + (res.error || 'sin datos'), 'error');
-    }
-  })
-  .catch(function(e) {
-    btn.disabled = false;
-    btn.innerHTML = '<i class="fas fa-search"></i> Detectar';
-    showToast('Error al conectar con el router', 'error');
-  });
+    })
+    .catch(function(e) {
+      showToast('Error al cargar router: ' + e.message, 'error');
+    });
 }
 
-function guardarRouter(e) {
-  e.preventDefault();
-  var tipo = document.querySelector('input[name="connection_type"]:checked').value;
-  const data = {
-    accion: document.getElementById('accionInput').value,
-    id_router_edit: document.getElementById('idRouterInput').value,
-    name: document.getElementById('routerName').value,
-    connection_type: tipo,
-    ip: tipo === 'vpn' ? (document.getElementById('vpnFija').value || document.getElementById('vpnRouterId').value) : document.getElementById('routerIp').value,
-    port: document.getElementById('routerPort').value,
-    user: document.getElementById('routerUser').value,
-    password: document.getElementById('routerPass').value,
-    version: document.getElementById('routerVersion').value,
-    auth_type: document.getElementById('routerAuth').value,
-    ip_blocks: '[]',
-    ipv6_pd: document.getElementById('routerIpv6').value,
-    suspend_ips: document.getElementById('suspendIps').checked ? 1 : 0,
-    interface_wan: document.getElementById('routerWan').value || 'ether1',
-    vpn_user: document.getElementById('vpnRouterId').value,
-    vpn_password: document.getElementById('routerPass').value,
-    vpn_ip: document.getElementById('vpnFija').value
-  };
-  fetch('/api/routers/save', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data)
-  })
-  .then(r => r.json())
-  .then(res => {
-    if (res.success) { 
-      document.getElementById('idRouterInput').value = res.id;
-      routerActualId = res.id;
-      showToast('Router guardado'); 
-      cerrarModal(); 
-      cargarRouters();
-    }
-    else showToast('Error: ' + (res.message || 'No se pudo guardar'), 'error');
-  })
-  .catch(() => showToast('Error de conexión', 'error'));
-}
+// ====== MODALES SIMPLES ======
+function cerrarModal() { document.getElementById('modalRouter').style.display = 'none'; }
 
 function confirmarEliminar(id, nombre) {
   document.getElementById('eliminarMsg').innerHTML = 'Está seguro que desea eliminar el router <b>' + nombre + '</b>? Esta acción no se puede deshacer.';
@@ -627,81 +625,128 @@ function confirmarEliminar(id, nombre) {
 }
 function cerrarModalEliminar() { document.getElementById('modalEliminar').style.display = 'none'; }
 
-function abrirModalResync(id) {
-  resyncId = id;
-  document.getElementById('btnConfirmarResync').onclick = function() {
-    showToast('Sincronizando router...');
-    fetch('/api/routers/' + resyncId + '/resync', { method: 'POST' })
-      .then(r => r.json()).then(res => {
-        if (res.success) showToast('Router sincronizado');
-        else showToast('Error: ' + (res.error || 'desconocido'), 'error');
-        cerrarModalResync();
-        cargarRouters();
-      });
-  };
-  document.getElementById('modalResync').style.display = 'flex';
-}
-function cerrarModalResync() { document.getElementById('modalResync').style.display = 'none'; }
+// ====== GESTION DE POOLS DE IP ======
+var poolsEditando = [];
 
-function abrirModalPool() {
-    var id = parseInt(document.getElementById('idRouterInput').value) || 0;
-    if (!id) { showToast('Guarde el router primero', 'error'); return; }
-    routerActualId = id;
-    document.getElementById('poolRouterId').value = id;
-    document.getElementById('poolRed').value = '';
-    document.getElementById('poolTipo').value = 'privada';
-    document.getElementById('poolCalculo').style.display = 'none';
-    document.getElementById('poolError').style.display = 'none';
-    document.getElementById('modalPool').style.display = 'flex';
+function agregarPool(cidr, desc, gw) {
+  var container = document.getElementById('poolsContainer');
+  var idx = poolsEditando.length;
+  poolsEditando.push({ cidr: cidr || '', descripcion: desc || '', gateway: gw || '' });
+  
+  var div = document.createElement('div');
+  div.id = 'pool-row-' + idx;
+  div.style.cssText = 'display:flex;gap:6px;align-items:center;margin-bottom:6px;background:#f8fafc;padding:8px;border-radius:6px;border:1px solid #e2e8f0;';
+  div.innerHTML = `
+    <input type="text" class="form-control pool-cidr" value="${cidr||''}" placeholder="Ej: 172.16.100.0/22" style="flex:2;font-family:monospace;font-size:0.82rem;padding:5px 8px;" onchange="actualizarPool(${idx},'cidr',this.value)">
+    <input type="text" class="form-control pool-desc" value="${desc||''}" placeholder="Descripción" style="flex:1;font-size:0.82rem;padding:5px 8px;" onchange="actualizarPool(${idx},'descripcion',this.value)">
+    <input type="text" class="form-control pool-gw" value="${gw||''}" placeholder="Gateway" style="flex:1;font-family:monospace;font-size:0.82rem;padding:5px 8px;" onchange="actualizarPool(${idx},'gateway',this.value)">
+    <button type="button" class="btn btn-sm btn-danger" onclick="eliminarPool(${idx})" style="padding:4px 8px;font-size:0.75rem;">×</button>
+  `;
+  container.appendChild(div);
 }
-function cerrarModalPool() { document.getElementById('modalPool').style.display = 'none'; }
-function calcularPool() {
-    var red = document.getElementById('poolRed').value.trim();
-    if (!red || red.indexOf('/') === -1) { document.getElementById('poolCalculo').style.display = 'none'; return; }
-    fetch('/api/ip-pools/calcular', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({red:red}) })
-    .then(function(r){return r.json()})
-    .then(function(d){
-        if(d.success){
-            document.getElementById('poolCalculo').style.display='block';
-            document.getElementById('poolTotal').textContent=d.total;
-            document.getElementById('poolRango').textContent=d.first_ip+' - '+d.last_ip;
+
+function actualizarPool(idx, campo, valor) {
+  if (poolsEditando[idx]) poolsEditando[idx][campo] = valor;
+}
+
+function eliminarPool(idx) {
+  var div = document.getElementById('pool-row-' + idx);
+  if (div) div.remove();
+  if (poolsEditando[idx]) poolsEditando[idx] = null;
+}
+
+function cargarPoolsRouter(routerId) {
+  document.getElementById('poolsContainer').innerHTML = '';
+  poolsEditando = [];
+  if (!routerId) return;
+  
+  fetch('/api/routers/' + routerId + '/pools')
+    .then(function(r) { return r.json(); })
+    .then(function(res) {
+      if (res.success && res.data) {
+        res.data.forEach(function(p) {
+          agregarPool(p.cidr, p.descripcion, p.gateway);
+        });
+      }
+      // Mostrar boton de aplicar si hay pools
+      document.getElementById('btnAplicarPools').style.display = poolsEditando.some(function(p){return p&&p.cidr;}) ? 'inline-block' : 'none';
+    })
+    .catch(function(){});
+}
+
+function guardarPoolsRouter(routerId) {
+  var pools = poolsEditando.filter(function(p) { return p && p.cidr && p.cidr.trim(); });
+  return fetch('/api/routers/save-pools', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ router_id: routerId, pools: pools })
+  }).then(function(r) { return r.json(); });
+}
+
+function aplicarPoolsRouter() {
+  var id = routerActualId || document.getElementById('idRouterInput').value;
+  if (!id) { showToast('Primero guarda el router', 'error'); return; }
+  
+  var btn = document.getElementById('btnAplicarPools');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+  
+  // Enviar pools directamente (ya estan en DB)
+  fetch('/api/routers/apply-pools', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ router_id: id })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(res) {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-upload"></i> Enviar pools al MikroTik';
+      if (res.success) {
+        var ok = res.data.filter(function(r){return r.success;}).length;
+        var fail = res.data.filter(function(r){return !r.success;}).length;
+        showToast('✅ ' + ok + ' pools enviados' + (fail ? ', ' + fail + ' fallaron' : ''));
+      } else {
+        showToast('Error: ' + (res.error || ''), 'error');
+      }
+    });
+}
+
+// ====== GENERAR SCRIPT SSTP ======
+function generarScriptSSTP(id) {
+  fetch('/api/routers/' + id)
+    .then(function(r) { return r.json(); })
+    .then(function(r) {
+      var name = r.name;
+      var routerId = r.router_id || '';
+      
+      fetch('/api/routers/generate-vpn-script', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: name,
+          router_id: routerId,
+          ip_fija: '10.50.' + (Math.floor(Math.random() * 255) + 1) + '.' + (Math.floor(Math.random() * 254) + 2)
+        })
+      })
+      .then(function(rr) { return rr.json(); })
+      .then(function(res) {
+        if (res.success) {
+          document.getElementById('scriptOutputWG').value = res.script;
+          document.getElementById('scriptRouterName').textContent = name;
+          document.getElementById('scriptTunnelIp').textContent = res.vpn_ip || '10.50.0.1';
+          document.getElementById('scriptServerEndpoint').textContent = '38.159.230.88:443';
+          scriptGeneradoWG = res.script;
+          
+          document.getElementById('btnAddPeer').style.display = 'none';
+          document.getElementById('modalScriptWG').style.display = 'flex';
+          showToast('✅ Script SSTP generado. Usuario: ' + res.sstp_user);
         } else {
-            document.getElementById('poolCalculo').style.display='none';
-            document.getElementById('poolError').style.display='block';
-            document.getElementById('poolError').textContent=d.message;
+          showToast('Error: ' + (res.error || ''), 'error');
         }
+      });
     });
-}
-function guardarPool() {
-    var rid = parseInt(document.getElementById('poolRouterId').value);
-    var red = document.getElementById('poolRed').value.trim();
-    var tipo = document.getElementById('poolTipo').value;
-    if(!rid||!red){showToast('Complete los datos','error');return;}
-    fetch('/api/ip-pools/guardar',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({router_id:rid,red:red,tipo:tipo})})
-    .then(function(r){return r.json()})
-    .then(function(d){
-        if(d.success){showToast('Rango agregado: '+d.total+' IPs');cerrarModalPool();cargarPools(rid);}
-        else showToast('Error: '+d.message,'error');
-    });
-}
-function cargarPools(rid){
-    if(!rid){document.getElementById('poolList').innerHTML='<div style="color:var(--text-gray);text-align:center;padding:10px;">Seleccione un router</div>';return;}
-    document.getElementById('poolList').innerHTML='<div style="text-align:center;padding:10px;color:var(--text-gray);"><i class="fas fa-spinner fa-spin"></i> Cargando...</div>';
-    fetch('/api/ip-pools/'+rid).then(function(r){return r.json()}).then(function(pools){
-        if(!pools||pools.length===0){document.getElementById('poolList').innerHTML='<div style="color:var(--text-gray);text-align:center;padding:10px;">Sin rangos IP</div>';return;}
-        var h='<table style="width:100%;border-collapse:collapse;font-size:0.82rem;"><tr style="background:#f8fafc;"><th style="padding:6px 8px;text-align:left;">Red</th><th style="padding:6px 8px;">Total</th><th style="padding:6px 8px;">Usadas</th><th style="padding:6px 8px;">Disp.</th><th style="padding:6px 8px;"></th></tr>';
-        for(var i=0;i<pools.length;i++){
-            var p=pools[i];
-            h+='<tr><td style="padding:6px 8px;font-family:monospace;">'+p.red+'</td><td style="padding:6px 8px;text-align:center;">'+p.total+'</td><td style="padding:6px 8px;text-align:center;">'+(p.usadas||0)+'</td><td style="padding:6px 8px;text-align:center;font-weight:700;">'+(p.disponibles||0)+'</td><td style="padding:6px 8px;text-align:center;"><button class="btn btn-sm btn-danger" onclick="eliminarPool('+p.id+')"><i class="fas fa-trash"></i></button></td></tr>';
-        }
-        h+='</table>';
-        document.getElementById('poolList').innerHTML=h;
-    });
-}
-function eliminarPool(id){
-    if(!confirm('Eliminar este rango?'))return;
-    fetch('/api/ip-pools/'+id+'/eliminar',{method:'POST'}).then(function(r){return r.json()}).then(function(d){if(d.success){showToast('Rango eliminado');cargarPools(routerActualId);}});
 }
 
+// ====== INICIALIZAR ======
 cargarRouters();
 </script>

@@ -1,6 +1,7 @@
 // MikroTik RouterOS API Client for Node.js
 // Implements the binary API protocol over TCP
 const net = require('net');
+const { Client } = require('ssh2');
 
 class MikroTikAPI {
   constructor(host, port = 8728, options = {}) {
@@ -505,6 +506,38 @@ class MikroTikAPI {
     }
   }
 
+  // Add IP Pool on router
+  static async addPool(host, port, username, password, poolName, cidr, comment) {
+    var api = null;
+    try {
+      api = new MikroTikAPI(host, port, {timeout: 10000});
+      await api.connect();
+      await api.login(username, password);
+      
+      // Calculate range from CIDR
+      var parts = cidr.split('/');
+      var mask = parseInt(parts[1]) || 24;
+      var ipParts = parts[0].split('.').map(Number);
+      var ipInt = (ipParts[0]<<24)+(ipParts[1]<<16)+(ipParts[2]<<8)+ipParts[3];
+      var network = ipInt & (~((1<<(32-mask))-1));
+      var broadcast = network + Math.pow(2,32-mask) - 1;
+      var ranges = [(network>>>24)&0xFF, (network>>>16)&0xFF, (network>>>8)&0xFF, network&0xFF].join('.')
+        + '-' + [(broadcast>>>24)&0xFF, (broadcast>>>16)&0xFF, (broadcast>>>8)&0xFF, broadcast&0xFF].join('.');
+      
+      // Remove existing pool
+      try { await api.exec('/ip/pool/remove', '=.id=' + poolName); } catch(e) {}
+      
+      // Add pool - pass params as separate arguments
+      var addResult = await api.exec('/ip/pool/add', '=name=' + poolName, '=ranges=' + ranges, '=comment=' + (comment || poolName));
+      
+      api.disconnect();
+      return { success: true, message: 'Pool agregado: ' + poolName };
+    } catch (err) {
+      if (api) try { api.disconnect(); } catch(e) {}
+      return { success: false, error: err.message };
+    }
+  }
+
   // Add Simple Queue for bandwidth control
   static async addSimpleQueue(host, port, username, password, params) {
     const api = new MikroTikAPI(host, port);
@@ -928,6 +961,106 @@ class MikroTikAPI {
       if (api) api.disconnect();
       return { success: false, message: err.message };
     }
+  }
+
+  // Test SSH connection to router (replaces API testConnection when 8728 is blocked)
+  static async testConnectionSSH(host, username, password) {
+    return new Promise((resolve) => {
+      var conn = new Client();
+      conn.on('ready', function() {
+        conn.end();
+        resolve({ success: true, info: { connected: true } });
+      }).on('error', function(err) {
+        resolve({ success: false, error: err.message });
+      }).connect({
+        host: host,
+        port: 22,
+        username: username,
+        password: password,
+        readyTimeout: 8000
+      });
+    });
+  }
+  
+  // Add PPPoE secret via SSH (using ssh2 library)
+  static async addPPPSecretSSH(host, user, password, params) {
+    return new Promise((resolve) => {
+      var cmdArgs = [];
+      if (params.name) cmdArgs.push('name=' + params.name);
+      if (params.password) cmdArgs.push('password=' + params.password);
+      if (params.profile) cmdArgs.push('profile=default-encryption');
+      if (params.service) cmdArgs.push('service=' + params.service);
+      if (params['remote-address']) cmdArgs.push('remote-address=' + params['remote-address']);
+      if (params.comment) cmdArgs.push('comment="' + params.comment + '"');
+      var rosCmd = '/ppp/secret/add ' + cmdArgs.join(' ');
+      
+      var conn = new Client();
+      var output = '';
+      conn.on('ready', function() {
+        conn.exec(rosCmd, function(err, stream) {
+          if (err) {
+            conn.end();
+            return resolve({ success: false, error: err.message });
+          }
+          stream.on('close', function(code, signal) {
+            conn.end();
+            if (code === 0) {
+              resolve({ success: true, message: 'Secreto PPP agregado vía SSH' });
+            } else {
+              resolve({ success: false, error: output || 'Error desconocido (código ' + code + ')' });
+            }
+          }).on('data', function(data) {
+            output += data.toString();
+          }).stderr.on('data', function(data) {
+            output += data.toString();
+          });
+        });
+      }).on('error', function(err) {
+        resolve({ success: false, error: err.message });
+      }).connect({
+        host: host,
+        port: 22,
+        username: user,
+        password: password,
+        readyTimeout: 10000
+      });
+    });
+  }
+  
+  // Execute a single RouterOS command via SSH (using ssh2 library)
+  static async execSSH(host, user, password, command) {
+    return new Promise((resolve) => {
+      var conn = new Client();
+      var output = '';
+      conn.on('ready', function() {
+        conn.exec(command, function(err, stream) {
+          if (err) {
+            conn.end();
+            return resolve({ success: false, error: err.message });
+          }
+          stream.on('close', function(code, signal) {
+            conn.end();
+            if (code === 0) {
+              resolve({ success: true, data: output.trim() });
+            } else {
+              resolve({ success: false, error: output || 'Error código ' + code });
+            }
+          }).on('data', function(data) {
+            output += data.toString();
+          }).stderr.on('data', function(data) {
+            output += data.toString();
+          });
+        });
+      }).on('error', function(err) {
+        resolve({ success: false, error: err.message });
+      }).connect({
+        host: host,
+        port: 22,
+        username: user,
+        password: password,
+        readyTimeout: 10000
+      });
+    });
   }
 }
 

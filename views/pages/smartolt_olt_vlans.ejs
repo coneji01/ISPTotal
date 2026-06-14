@@ -1,0 +1,366 @@
+<!DOCTYPE html><html lang="en" class="smartolt-night"><head>
+        <script>window.SMARTOLT_DB_THEME='system';</script>
+    <!-- Paint-blocking: resolve theme before first paint. Precedence: per-device override (smartolt-theme-local, set by the header button) > account/DB pref > device (system). -->
+    <script>try{var k='smartolt-night',lk='smartolt-theme-local',dbTheme=window.SMARTOLT_DB_THEME,local=null,pref,n;try{local=localStorage.getItem(lk);}catch(e){}if(local==='night'||local==='light'||local==='system'){pref=local;}else if(dbTheme==='night'||dbTheme==='light'||dbTheme==='system'){pref=dbTheme;}else{pref='system';}if(pref==='system'){n=!!(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);}else if(pref==='night'){n=true;}else{n=false;}try{localStorage.setItem(k,n?'1':'0');}catch(e){}if(n){document.documentElement.classList.add('smartolt-night');}else{document.documentElement.classList.remove('smartolt-night');}document.cookie=k+'='+(n?'1':'0')+'; path=/; max-age=31536000; SameSite=Lax'+(location.protocol==='https:'?'; Secure':'');}catch(e){}</script>
+    <script>try{var wk='smartolt-wide-tables',wv=null,m=document.cookie.match(new RegExp('(?:^|; )'+wk+'=([^;]*)'));try{wv=localStorage.getItem(wk);}catch(e){}if(wv!=='1'&&wv!=='0'&&m){wv=decodeURIComponent(m[1]);}if(wv==='1'){document.documentElement.classList.add('smartolt-wide-tables');}}catch(e){}</script>
+        <meta http-equiv="content-type" content="text/html; utf-8">
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Language" content="en">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    
+  <title>VLANs</title>
+
+  <!-- Bootstrap Core CSS -->
+  <link href="/public/smartolt-files/bootstrap-custom.css?v=3.53.0.24" rel="stylesheet">
+  <link href="/public/smartolt-files/bootstrap-multiselect.css?v=3.53.0.20" rel="stylesheet">
+  <link href="/public/smartolt-files/styles.css?v=3.53.0.29" rel="stylesheet">
+  <link href="/public/smartolt-files/toast.css?v=3.53.0.20" rel="stylesheet">
+
+  <!-- Custom Fonts -->
+  <link href="/public/smartolt-files/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+  <!-- Message box CSS -->
+  <link href="/public/smartolt-files/messagebox.css" rel="stylesheet" type="text/css">
+
+  <link href="/public/smartolt-files/inter-fonts.css?v=3.53.0.1" rel="stylesheet">
+  <link href="/public/smartolt-files/dashboard-smartolt-night.css?v=3.53.0.209" rel="stylesheet">
+  <script src="/public/smartolt-files/dashboard-smartolt-night.js?v=3.53.0.63" defer=""></script>
+    
+  <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+  <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+  <!--[if lt IE 9]>
+        <script src="/public/smartolt-files/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="/public/smartolt-files/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+  <!-- jQuery -->
+  <script src="/public/smartolt-files/jquery.min.js"></script>
+
+  <!-- Toast alerts -->
+  <script src="/public/smartolt-files/toast.js"></script>
+
+  <!-- Pauses recurring AJAX polling while the tab is hidden OR the user has been idle, resumes on focus / activity. -->
+  <script src="/public/smartolt-files/polling.js?v=3.53.0.3"></script>
+
+  <style>
+    .smartolt-action-button {
+      box-shadow: 0 2px 5px 0 rgba(0,0,0,.26);
+    }
+    .smartolt-action-button:active:focus {
+      outline: none;
+      outline-offset: 0;
+    }
+    .smartolt-action-button:hover,
+    .smartolt-action-button:focus,
+    .smartolt-action-button:active,
+    .smartolt-action-button.active,
+    .smartolt-action-button:active:hover,
+    .smartolt-action-button:active:focus {
+      border-color: transparent !important;
+    }
+    #vlanTable td {
+      vertical-align: middle;
+    }
+  </style>
+
+</head>
+
+<body class="smartolt-site">
+<script type="text/javascript">
+$( document ).ready(function() {
+  $.ajaxSetup({
+    cache: false
+  });
+  
+  window.jqxhrs = [];
+
+  window.registerJqxhr = function(jqxhr) {
+    jqxhrs.push(jqxhr);
+  }
+
+  window.abortJqxhr = function() {
+    for (var i = jqxhrs.length - 1; i >= 0; i--) {
+      if (jqxhrs[i]) {
+        jqxhrs[i].abort();
+      }
+    }
+    window.jqxhrs = [];
+  }
+
+  $(window).bind("beforeunload", function(event) {
+    abortJqxhr();
+  });
+
+  function unregisterJqxhr(event, jqxhr, settings) {
+    var idx = $.inArray(jqxhr, jqxhrs);
+    if (idx != -1) {
+      jqxhrs.splice(idx, 1);
+    }
+  }
+
+  $(document).ajaxComplete(unregisterJqxhr);
+
+  config = {
+    X_TOKEN: '9C23F19BE06B4BEB93046ECFDF50FF91'
+  }
+
+  // Get OLT ID from URL query param or from data attribute
+  var oltId = parseInt('<%= typeof oltId !== "undefined" ? oltId : "" %>') || getQueryParam('olt_id') || 1;
+
+  function getQueryParam(name) {
+    var urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get(name);
+  }
+
+  // Load VLANs from API
+  function loadVlans() {
+    var jqxhr = $.getJSON('/api/olts/' + oltId + '/vlans', function(data) {
+      if (data.success && data.vlans) {
+        renderVlansTable(data.vlans);
+      } else if (data.vlans) {
+        renderVlansTable(data.vlans);
+      } else {
+        $('#vlanTable tbody').html('<tr><td colspan="5" class="text-center text-muted">No VLANs found</td></tr>');
+      }
+    }).fail(function() {
+      $('#vlanTable tbody').html('<tr><td colspan="5" class="text-center text-danger">Error loading VLANs</td></tr>');
+    });
+    registerJqxhr(jqxhr);
+  }
+
+  function renderVlansTable(vlans) {
+    var tbody = $('#vlanTable tbody');
+    tbody.empty();
+    if (!vlans || vlans.length === 0) {
+      tbody.html('<tr><td colspan="5" class="text-center text-muted">No VLANs found</td></tr>');
+      return;
+    }
+    vlans.forEach(function(vlan) {
+      var row = $('<tr>');
+      row.append($('<td>').text(vlan.id || vlan.ID || ''));
+      row.append($('<td>').text(vlan.vlan || vlan.VLAN || vlan.vlan_id || ''));
+      row.append($('<td>').text(vlan.description || vlan.Description || ''));
+      row.append($('<td>').text(vlan.created || vlan.Created || vlan.created_at || ''));
+      var delBtn = $('<button class="btn btn-danger btn-sm" onclick="deleteVlan(' + (vlan.vlan || vlan.VLAN || vlan.id) + ')">Delete</button>');
+      row.append($('<td>').append(delBtn));
+      tbody.append(row);
+    });
+  }
+
+  // Delete VLAN
+  window.deleteVlan = function(vlanId) {
+    if (confirm('Delete VLAN ' + vlanId + '?')) {
+      $.ajax({
+        url: '/api/olts/' + oltId + '/vlans/' + vlanId,
+        method: 'DELETE',
+        success: function(data) {
+          if (data.success) {
+            $.MessageBox('VLAN ' + vlanId + ' deleted successfully.');
+            loadVlans();
+          } else {
+            $.MessageBox(data.error || 'Failed to delete VLAN.');
+          }
+        },
+        error: function() {
+          $.MessageBox('Error deleting VLAN.');
+        }
+      });
+    }
+  }
+
+  // Add VLAN form submission
+  $('#addVlanForm').on('submit', function(e) {
+    e.preventDefault();
+    var vlanId = $('#vlanId').val();
+    var vlanDesc = $('#vlanDescription').val();
+    var createOnOlt = $('#createOnOlt').is(':checked');
+
+    if (!vlanId) {
+      $.MessageBox('VLAN ID is required.');
+      return;
+    }
+
+    $.ajax({
+      url: '/api/olts/' + oltId + '/vlans',
+      method: 'POST',
+      contentType: 'application/json',
+      data: JSON.stringify({
+        vlan: parseInt(vlanId),
+        description: vlanDesc,
+        create_on_olt: createOnOlt
+      }),
+      success: function(data) {
+        if (data.success) {
+          $.MessageBox('VLAN ' + vlanId + ' added successfully.');
+          closeModal();
+          $('#addVlanForm')[0].reset();
+          loadVlans();
+        } else {
+          $.MessageBox(data.error || 'Failed to add VLAN.');
+        }
+      },
+      error: function() {
+        $.MessageBox('Error adding VLAN.');
+      }
+    });
+  });
+
+  // Initial load
+  loadVlans();
+
+  // Periodically refresh every 30s
+  setInterval(loadVlans, 30000);
+
+});
+
+function closeModal() {
+  document.getElementById('addVlanModal').style.display = 'none';
+}
+
+// Close modal when clicking outside the modal content
+document.addEventListener('DOMContentLoaded', function() {
+  document.getElementById('addVlanModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+      closeModal();
+    }
+  });
+});
+</script>
+
+  <div class="smartolt-landing-hero-bg" aria-hidden="true"></div>
+
+  <div id="content-wrapper">
+    <div class="smartolt-topbar-network" aria-hidden="true">
+      <div class="smartolt-topbar-network-inner">
+        <svg class="smartolt-topbar-network-lines" viewBox="0 0 100 100" preserveAspectRatio="none">
+          <line x1="8" y1="68" x2="23" y2="78"></line>
+          <line x1="23" y1="78" x2="37" y2="63"></line>
+          <line x1="8" y1="68" x2="37" y2="63"></line>
+          <line x1="37" y1="63" x2="65" y2="18"></line>
+          <line x1="65" y1="18" x2="89" y2="34"></line>
+          <line x1="23" y1="78" x2="65" y2="18"></line>
+          <line x1="37" y1="63" x2="89" y2="34"></line>
+        </svg>
+        <span class="smartolt-topbar-node smartolt-topbar-node-a"></span>
+        <span class="smartolt-topbar-node smartolt-topbar-node-b"></span>
+        <span class="smartolt-topbar-node smartolt-topbar-node-c"></span>
+        <span class="smartolt-topbar-node smartolt-topbar-node-d"></span>
+        <span class="smartolt-topbar-node smartolt-topbar-node-e"></span>
+      </div>
+    </div>
+        <div class="navbar navbar-default navbar-fixed-top default-menu">
+    <div class="container">
+      <div class="navbar-header">
+        <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#navbar-main" aria-expanded="false" aria-controls="navbar">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand text-ellipsis max-width-250" href="/modulo?pagina=GPONManager">GPON Manager</a>
+      </div>
+      <div class="navbar-collapse collapse" id="navbar-main">
+        <ul class="nav navbar-nav">
+          <li><a href="/modulo?pagina=GPONManager">Dashboard</a></li>
+          <li><a href="/modulo?pagina=smartolt_configured_full">Configuradas</a></li>
+          <li><a href="/modulo?pagina=smartolt_unconfigured_full">No configuradas</a></li>
+          <li><a href="/modulo?pagina=smartolt_onu_types_full">Tipos ONU</a></li>
+          <li><a href="/modulo?pagina=smartolt_speed_profiles_full">Velocidad</a></li>
+          <li><a href="/modulo?pagina=smartolt_locations_full">Zonas</a></li>
+          <li class="dropdown">
+            <a class="dropdown-toggle" data-toggle="dropdown" href="#">Settings <span class="caret"></span></a>
+            <ul class="dropdown-menu">
+              <li><a href="/modulo?pagina=smartolt_olt">OLTs</a></li>
+              <li><a href="/modulo?pagina=smartolt_general">General</a></li>
+              <li><a href="/modulo?pagina=smartolt_billing">Billing</a></li>
+              <li><a href="/modulo?pagina=smartolt_system_config">VPN &amp; TR069</a></li>
+              <li><a href="/modulo?pagina=smartolt_presets_full">Presets</a></li>
+              <li><a href="/modulo?pagina=smartolt_diagnostics_full">Diagnostics</a></li>
+              <li><a href="/modulo?pagina=smartolt_graphs">Graphs</a></li>
+            </ul>
+          </li>
+        </ul>
+        <ul class="nav navbar-nav navbar-right">
+          <li><a href="/logout"><i class="fa fa-sign-out"></i> Salir</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+    <!-- Page Content -->
+    <div class="container">
+
+<div class="container-fluid content-wrap">
+  <h2>VLANs</h2>
+    
+  <a href="/modulo?pagina=smartolt_olt" class="btn btn-success margin-bottom">Back to OLTs list</a>
+
+  <!-- Add VLAN Button -->
+  <button class="btn btn-primary margin-bottom" onclick="document.getElementById('addVlanModal').style.display='block'">
+    + Add VLAN
+  </button>
+
+  <!-- VLANs Table -->
+  <table class="table table-striped table-bordered" id="vlanTable">
+    <thead class="table-dark">
+      <tr>
+        <th>ID</th>
+        <th>VLAN</th>
+        <th>Description</th>
+        <th>Created</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td colspan="5" class="text-center text-muted">Loading VLANs...</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+</div> <!-- /container -->
+</div> <!-- /content-wrapper -->
+
+<!-- Add VLAN Modal -->
+<div id="addVlanModal" class="modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1050;">
+  <div class="modal-dialog" style="margin:100px auto; max-width:500px;">
+    <div class="modal-content bg-white p-4 rounded shadow">
+      <div class="modal-header border-bottom pb-2 mb-3">
+        <h3 class="modal-title">Add VLAN</h3>
+        <button type="button" class="btn-close" onclick="closeModal()"></button>
+      </div>
+      <form id="addVlanForm">
+        <div class="mb-3">
+          <label for="vlanId" class="form-label">VLAN ID</label>
+          <input type="number" class="form-control" id="vlanId" min="1" max="4094" required>
+        </div>
+        <div class="mb-3">
+          <label for="vlanDescription" class="form-label">Description</label>
+          <input type="text" class="form-control" id="vlanDescription" maxlength="64">
+        </div>
+        <div class="mb-3 form-check">
+          <input type="checkbox" class="form-check-input" id="createOnOlt" disabled>
+          <label class="form-check-label" for="createOnOlt">Create on OLT</label>
+          <div class="form-text text-muted">Select an OLT first to enable this option.</div>
+        </div>
+        <div class="modal-footer border-top pt-3 mt-3">
+          <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+          <button type="submit" class="btn btn-success">Add VLAN</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="text-center row">SmartOLT <a href="/modulo?pagina=GPONManager" class="btn-link" id="footer-changelog-link">v3.53.0</a> &copy; 2026</div>
+</footer>
+
+</body>
+</html>

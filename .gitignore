@@ -12,3 +12,9 @@ PROJECT-MAP.md
 *.db
 *.db-shm
 *.db-wal
+
+# managed
+**.data.json
+**.node-persist**
+**_IGNORE_**
+# end managed

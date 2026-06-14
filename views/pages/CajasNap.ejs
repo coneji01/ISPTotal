@@ -1,813 +1,965 @@
-<!-- Cajas NAP - ISP Total -->
-<style>
-:root {
-  --nap-primary: #6366f1;
-  --nap-success: #16a34a;
-  --nap-warning: #d97706;
-  --nap-danger: #ef4444;
-  --nap-bg: #f8fafc;
-  --nap-border: #e2e8f0;
-  --nap-text: #1e293b;
-  --nap-gray: #64748b;
-}
+<!DOCTYPE html>
+<!-- saved from url=(0042)# -->
+<html lang="en" class="smartolt-night"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <script>window.SMARTOLT_DB_THEME='system';</script>
+    <!-- Paint-blocking: resolve theme before first paint. Precedence: per-device override (smartolt-theme-local, set by the header button) > account/DB pref > device (system). -->
+    <script>try{var k='smartolt-night',lk='smartolt-theme-local',dbTheme=window.SMARTOLT_DB_THEME,local=null,pref,n;try{local=localStorage.getItem(lk);}catch(e){}if(local==='night'||local==='light'||local==='system'){pref=local;}else if(dbTheme==='night'||dbTheme==='light'||dbTheme==='system'){pref=dbTheme;}else{pref='system';}if(pref==='system'){n=!!(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);}else if(pref==='night'){n=true;}else{n=false;}try{localStorage.setItem(k,n?'1':'0');}catch(e){}if(n){document.documentElement.classList.add('smartolt-night');}else{document.documentElement.classList.remove('smartolt-night');}document.cookie=k+'='+(n?'1':'0')+'; path=/; max-age=31536000; SameSite=Lax'+(location.protocol==='https:'?'; Secure':'');}catch(e){}</script>
+        <meta http-equiv="content-type" content="text/html; utf-8">
+    
+    <meta http-equiv="Content-Language" content="en">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="#" type="image/x-icon">
+    <link rel="shortcut icon" href="#" type="image/x-icon">
+    
+  <title>ODBs - JOEL WIFI</title>
 
-/* Port grid */
-.cn-port-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  gap: 12px;
-  padding: 4px;
-}
-.cn-port-item {
-  border: 2px solid var(--nap-border);
-  border-radius: 10px;
-  padding: 12px;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.2s;
-  position: relative;
-  min-height: 100px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-}
-.cn-port-item:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-}
-.cn-port-item.free {
-  border-color: #dbeafe;
-  background: #f0f7ff;
-}
-.cn-port-item.free:hover {
-  border-color: #93c5fd;
-  background: #dbeafe;
-}
-.cn-port-item.occupied {
-  border-color: #bbf7d0;
-  background: #f0fdf4;
-}
-.cn-port-item.occupied:hover {
-  border-color: #4ade80;
-}
-.cn-port-number {
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: var(--nap-text);
-}
-.cn-port-status {
-  font-size: 0.72rem;
-  font-weight: 600;
-  padding: 2px 8px;
-  border-radius: 8px;
-}
-.cn-port-status.free { background: #dbeafe; color: #1e40af; }
-.cn-port-status.occupied { background: #dcfce7; color: #166534; }
-.cn-port-onu-name {
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: var(--nap-text);
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.cn-port-client {
-  font-size: 0.72rem;
-  color: var(--nap-gray);
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.cn-port-signal {
-  font-size: 0.72rem;
-  font-weight: 600;
-}
-.cn-signal-good { color: var(--nap-success); }
-.cn-signal-warn { color: var(--nap-warning); }
-.cn-signal-bad { color: var(--nap-danger); }
-.cn-port-actions {
-  margin-top: 4px;
-  display: flex;
-  gap: 4px;
-  justify-content: center;
-}
+  <!-- Bootstrap Core CSS -->
+  <link href="/public/smartolt-files/bootstrap-custom.css" rel="stylesheet">
+  <link href="/public/smartolt-files/bootstrap-multiselect.css" rel="stylesheet">
+  <link href="/public/smartolt-files/styles.css" rel="stylesheet">
+  <link href="/public/smartolt-files/toast.css" rel="stylesheet">
 
-/* Caja card in list */
-.cn-card {
-  background: #fff;
-  border: 1px solid var(--nap-border);
-  border-radius: 10px;
-  padding: 16px;
-  cursor: pointer;
-  transition: all 0.2s;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-.cn-card:hover {
-  border-color: var(--nap-primary);
-  box-shadow: 0 2px 12px rgba(99,102,241,0.1);
-}
-.cn-card-title {
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: var(--nap-text);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.cn-card-sub {
-  font-size: 0.82rem;
-  color: var(--nap-gray);
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.cn-card-stats {
-  display: flex;
-  gap: 16px;
-  margin-top: 4px;
-}
-.cn-card-stat {
-  font-size: 0.78rem;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  color: var(--nap-text);
-}
-.cn-card-actions {
-  margin-top: 6px;
-  display: flex;
-  gap: 6px;
-  justify-content: flex-end;
-}
+  
+  <!-- Custom Fonts -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
 
-/* Detail header */
-.cn-detail-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 16px 20px;
-  background: #fff;
-  border: 1px solid var(--nap-border);
-  border-radius: 10px;
-  margin-bottom: 16px;
-  flex-wrap: wrap;
-}
-.cn-detail-info {
-  flex: 1;
-  min-width: 200px;
-}
-.cn-detail-title {
-  font-size: 1.1rem;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.cn-detail-meta {
-  font-size: 0.82rem;
-  color: var(--nap-gray);
-  margin-top: 2px;
-}
-.cn-detail-actions {
-  display: flex;
-  gap: 8px;
-}
+  <!-- Message box CSS -->
+  <link href="/public/smartolt-files/messagebox.css" rel="stylesheet" type="text/css">
 
-/* Assigned ONU card inside port */
-.cn-assigned-onu {
-  width: 100%;
-}
+  <link href="/public/smartolt-files/inter-fonts.css" rel="stylesheet">
+  <link href="/public/smartolt-files/dashboard-smartolt-night.css" rel="stylesheet">
+  <script src="/public/smartolt-files/dashboard-smartolt-night.js" defer=""></script>
+    
+  <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+  <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+  <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
 
-/* Responsive grid for caja list */
-.cn-cajas-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 14px;
-}
+  <!-- jQuery -->
+  <script src="/public/smartolt-files/jquery.min.js"></script>
 
-/* Side-by-side layout for detail view */
-.cn-detail-layout {
-  display: flex;
-  gap: 20px;
-  flex-wrap: wrap;
-}
-.cn-detail-main {
-  flex: 1;
-  min-width: 300px;
-}
-.cn-detail-side {
-  width: 320px;
-  flex-shrink: 0;
-}
+  
+  
+  <!-- Toast alerts -->
+  <script src="/public/smartolt-files/toast.js"></script>
 
-/* ONU selection list */
-.cn-onu-list {
-  max-height: 300px;
-  overflow-y: auto;
-  border: 1px solid var(--nap-border);
-  border-radius: 8px;
-}
-.cn-onu-list-item {
-  padding: 10px 12px;
-  border-bottom: 1px solid var(--nap-border);
-  cursor: pointer;
-  transition: background 0.15s;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.cn-onu-list-item:hover {
-  background: #f1f5f9;
-}
-.cn-onu-list-item.selected {
-  background: #eef2ff;
-  border-left: 3px solid var(--nap-primary);
-}
-.cn-onu-list-item:last-child {
-  border-bottom: none;
-}
+  <!-- Pauses recurring AJAX polling while the tab is hidden OR the user has been idle, resumes on focus / activity. -->
+  <script src="/public/smartolt-files/polling.js"></script>
 
-/* Back button */
-.cn-back {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  color: var(--nap-primary);
-  cursor: pointer;
-  font-size: 0.85rem;
-  font-weight: 600;
-  margin-bottom: 12px;
-  transition: opacity 0.2s;
-}
-.cn-back:hover { opacity: 0.7; }
-</style>
+  
+  
+</head>
 
-<div id="cnListView">
-  <div class="page-header">
-    <h2><i class="fas fa-box" style="color:var(--nap-primary)"></i> Cajas NAP</h2>
-    <div class="btn-group">
-      <button class="btn btn-primary btn-sm" onclick="cnOpenCreate()"><i class="fas fa-plus"></i> Nueva Caja</button>
-    </div>
-  </div>
+<body class="smartolt-site">
+<script type="text/javascript">
+$( document ).ready(function() {
+	$.ajaxSetup({
+		cache: false
+	});
+	
+	window.jqxhrs = [];
 
-  <!-- Filters -->
-  <div class="card" style="margin-bottom:16px;">
-    <div class="card-body" style="padding:12px 16px;">
-      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
-        <input type="text" id="cnSearch" class="form-control" style="width:250px;max-width:100%;" placeholder="Buscar por nombre..." oninput="cnFilterList()">
-        <select id="cnFilterZona" class="form-control" style="width:180px;" onchange="cnFilterList()">
-          <option value="">Todas las zonas</option>
-          <% (zonas || []).forEach(function(z) { %>
-          <option value="<%= z.id %>"><%= z.nombre %></option>
-          <% }) %>
-        </select>
-        <span id="cnCount" style="font-size:0.82rem;color:var(--nap-gray);margin-left:auto;"></span>
-      </div>
-    </div>
-  </div>
-
-  <!-- Cajas Grid -->
-  <div class="cn-cajas-grid" id="cnCajasContainer">
-    <% if (cajas && cajas.length > 0) { %>
-      <% cajas.forEach(function(c) { %>
-      <div class="cn-card" data-id="<%= c.id %>" data-zona="<%= c.zona_id || '' %>" data-name="<%= c.nombre.toLowerCase() %>" onclick="cnOpenDetail(<%= c.id %>)" style="<%= pagina !== 'CajasNap' ? 'display:none;' : '' %>">
-        <div class="cn-card-title">
-          <i class="fas fa-box" style="color:var(--nap-primary);font-size:1rem;"></i>
-          <%= c.nombre %>
-        </div>
-        <div class="cn-card-sub">
-          <i class="fas fa-map-marker-alt" style="color:var(--nap-gray);"></i>
-          <%= c.zona_nombre || '<span style="color:#94a3b8;">Sin zona</span>' %>
-          <% if (c.lat) { %><span style="color:#94a3b8;">|</span> <%= parseFloat(c.lat).toFixed(4) %>, <%= parseFloat(c.lng).toFixed(4) %><% } %>
-        </div>
-        <div class="cn-card-stats">
-          <span class="cn-card-stat"><i class="fas fa-plug"></i> <%= c.puertos || 0 %> puertos</span>
-          <span class="cn-card-stat"><i class="fas fa-wifi"></i> <%= c.onus_count || 0 %> ONUs</span>
-        </div>
-        <div class="cn-card-actions">
-          <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();cnOpenEdit(<%= c.id %>,'<%= c.nombre.replace(/'/g,"\\'") %>',<%= c.puertos %>,<%= c.zona_id || 'null' %>,<%= c.lat || 'null' %>,<%= c.lng || 'null' %>)"><i class="fas fa-pencil-alt"></i></button>
-          <button class="btn btn-danger btn-sm" onclick="event.stopPropagation();cnDelete(<%= c.id %>,'<%= c.nombre.replace(/'/g,"\\'") %>')"><i class="fas fa-trash"></i></button>
-        </div>
-      </div>
-      <% }) %>
-    <% } else { %>
-      <div style="grid-column:1/-1;text-align:center;padding:60px 20px;color:var(--nap-gray);">
-        <i class="fas fa-box" style="font-size:3rem;opacity:0.3;margin-bottom:12px;display:block;"></i>
-        <p style="font-size:1rem;font-weight:500;">No hay cajas NAP registradas</p>
-        <p style="font-size:0.85rem;">Cree una nueva caja NAP para comenzar</p>
-      </div>
-    <% } %>
-  </div>
-</div>
-
-<!-- Detail View (hidden initially) -->
-<div id="cnDetailView" style="display:none;">
-  <div class="cn-back" onclick="cnBackToList()"><i class="fas fa-arrow-left"></i> Volver a lista</div>
-
-  <div class="cn-detail-header">
-    <div class="cn-detail-info">
-      <div class="cn-detail-title" id="cnDetailTitle">
-        <i class="fas fa-box" style="color:var(--nap-primary);"></i>
-        <span id="cnDetailName"></span>
-        <span class="badge badge-info" id="cnDetailZone" style="font-size:0.72rem;"></span>
-      </div>
-      <div class="cn-detail-meta">
-        <span id="cnDetailPorts"></span> &middot;
-        <span id="cnDetailOnus"></span>
-        <% if (cajasNap && cajasNap.length > 0) { %> &middot;
-        <span id="cnDetailCoords"></span><% } %>
-      </div>
-    </div>
-    <div class="cn-detail-actions">
-      <button class="btn btn-secondary btn-sm" onclick="cnOpenEditFromDetail()"><i class="fas fa-pencil-alt"></i> Editar</button>
-      <button class="btn btn-danger btn-sm" onclick="cnDeleteFromDetail()"><i class="fas fa-trash"></i> Eliminar</button>
-    </div>
-  </div>
-
-  <!-- Port Grid -->
-  <div class="card">
-    <div class="card-header">
-      <span><i class="fas fa-th"></i> Puertos de la Caja NAP</span>
-      <span id="cnPortSummary" style="font-size:0.8rem;color:var(--nap-gray);"></span>
-    </div>
-    <div class="card-body">
-      <div class="cn-port-grid" id="cnPortGrid">
-        <div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--nap-gray);">
-          <i class="fas fa-spinner fa-spin"></i> Cargando puertos...
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL: Crear/Editar Caja NAP -->
-<div id="cnModalCaja" class="modal" style="display:none;">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h3 id="cnModalCajaTitle"><i class="fas fa-plus"></i> <span>Nueva Caja NAP</span></h3>
-      <span class="modal-close" onclick="closeModal('cnModalCaja')">&times;</span>
-    </div>
-    <form id="cnFormCaja" onsubmit="return cnSaveCaja(event)">
-      <div class="modal-body">
-        <input type="hidden" id="cnCajaId" value="0">
-        <div class="form-group">
-          <label>Nombre de la Caja NAP</label>
-          <input type="text" id="cnCajaNombre" class="form-control" placeholder="Ej: NAP-001" required>
-        </div>
-        <div class="form-group">
-          <label>Zona</label>
-          <select id="cnCajaZona" class="form-control">
-            <option value="">Sin zona</option>
-            <% (zonas || []).forEach(function(z) { %>
-            <option value="<%= z.id %>"><%= z.nombre %></option>
-            <% }) %>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Número de Puertos</label>
-          <select id="cnCajaPuertos" class="form-control">
-            <% for (var p = 4; p <= 64; p *= 2) { %>
-            <option value="<%= p %>" <%= p === 8 ? 'selected' : '' %>><%= p %> puertos</option>
-            <% } %>
-          </select>
-        </div>
-        <div style="display:flex;gap:12px;">
-          <div class="form-group" style="flex:1;">
-            <label>Latitud</label>
-            <input type="number" id="cnCajaLat" class="form-control" step="any" placeholder="18.5000">
-          </div>
-          <div class="form-group" style="flex:1;">
-            <label>Longitud</label>
-            <input type="number" id="cnCajaLng" class="form-control" step="any" placeholder="-69.9000">
-          </div>
-        </div>
-        <div id="cnCajaResult"></div>
-      </div>
-      <div class="modal-footer" style="padding:12px 20px;border-top:1px solid var(--nap-border);display:flex;gap:8px;justify-content:flex-end;">
-        <button type="button" class="btn btn-secondary" onclick="closeModal('cnModalCaja')">Cancelar</button>
-        <button type="submit" class="btn btn-primary" id="cnBtnSaveCaja"><i class="fas fa-save"></i> Guardar</button>
-      </div>
-    </form>
-  </div>
-</div>
-
-<!-- MODAL: Asignar ONU a Puerto -->
-<div id="cnModalAssign" class="modal" style="display:none;">
-  <div class="modal-content" style="max-width:520px;">
-    <div class="modal-header">
-      <h3><i class="fas fa-plug"></i> Asignar ONU al Puerto <span id="cnAssignPuertoLabel"></span></h3>
-      <span class="modal-close" onclick="closeModal('cnModalAssign')">&times;</span>
-    </div>
-    <div class="modal-body">
-      <input type="hidden" id="cnAssignCajaId" value="0">
-      <input type="hidden" id="cnAssignPuerto" value="0">
-      <p style="font-size:0.85rem;color:var(--nap-gray);margin-bottom:12px;">
-        Seleccione una ONU disponible para asignar al puerto <strong>#<span id="cnAssignPuertoNum"></span></strong>:
-      </p>
-      <div class="form-group">
-        <input type="text" id="cnAssignSearch" class="form-control" placeholder="Buscar ONU por SN o cliente..." oninput="cnFilterOnuList()">
-      </div>
-      <div class="cn-onu-list" id="cnAssignOnuList">
-        <div style="padding:20px;text-align:center;color:var(--nap-gray);">
-          <i class="fas fa-spinner fa-spin"></i> Cargando ONUs disponibles...
-        </div>
-      </div>
-      <div id="cnAssignResult"></div>
-    </div>
-    <div class="modal-footer" style="padding:12px 20px;border-top:1px solid var(--nap-border);display:flex;gap:8px;justify-content:flex-end;">
-      <button type="button" class="btn btn-secondary" onclick="closeModal('cnModalAssign')">Cancelar</button>
-      <button type="button" class="btn btn-primary" id="cnBtnAssign" onclick="cnDoAssign()" disabled><i class="fas fa-check"></i> Asignar</button>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL: Confirmar Desasignar ONU -->
-<div id="cnModalUnassign" class="modal" style="display:none;">
-  <div class="modal-content" style="max-width:420px;">
-    <div class="modal-header">
-      <h3><i class="fas fa-unlink"></i> Desasignar ONU</h3>
-      <span class="modal-close" onclick="closeModal('cnModalUnassign')">&times;</span>
-    </div>
-    <div class="modal-body">
-      <p>¿Está seguro de desasignar la ONU del puerto <strong>#<span id="cnUnassignPuerto"></span></strong>?</p>
-      <p style="font-size:0.85rem;color:var(--nap-gray);margin-bottom:12px;">
-        La ONU quedará disponible para ser asignada a otro puerto.
-      </p>
-      <div id="cnUnassignResult"></div>
-    </div>
-    <div class="modal-footer" style="padding:12px 20px;border-top:1px solid var(--nap-border);display:flex;gap:8px;justify-content:flex-end;">
-      <button type="button" class="btn btn-secondary" onclick="closeModal('cnModalUnassign')">Cancelar</button>
-      <button type="button" class="btn btn-danger" onclick="cnDoUnassign()"><i class="fas fa-unlink"></i> Desasignar</button>
-    </div>
-  </div>
-</div>
-
-<script>
-var cnCurrentId = 0;
-var cnOnusDisponibles = [];
-var cnOnuSelectedId = 0;
-
-// ==================== LIST VIEW ====================
-function cnFilterList() {
-  var q = document.getElementById('cnSearch').value.toLowerCase().trim();
-  var z = document.getElementById('cnFilterZona').value;
-  var cards = document.querySelectorAll('#cnCajasContainer .cn-card');
-  var visible = 0;
-  cards.forEach(function(c) {
-    var matchName = !q || c.getAttribute('data-name').includes(q);
-    var matchZona = !z || c.getAttribute('data-zona') === z;
-    var show = matchName && matchZona;
-    c.style.display = show ? '' : 'none';
-    if (show) visible++;
-  });
-  document.getElementById('cnCount').textContent = visible + ' caja' + (visible !== 1 ? 's' : '');
-}
-
-// ==================== CREATE / EDIT MODAL ====================
-function cnOpenCreate() {
-  document.getElementById('cnCajaId').value = '0';
-  document.getElementById('cnModalCajaTitle').querySelector('span').textContent = 'Nueva Caja NAP';
-  document.getElementById('cnCajaNombre').value = '';
-  document.getElementById('cnCajaZona').value = '';
-  document.getElementById('cnCajaPuertos').value = '8';
-  document.getElementById('cnCajaLat').value = '';
-  document.getElementById('cnCajaLng').value = '';
-  document.getElementById('cnCajaResult').innerHTML = '';
-  document.getElementById('cnBtnSaveCaja').innerHTML = '<i class="fas fa-save"></i> Guardar';
-  openModal('cnModalCaja');
-}
-
-function cnOpenEdit(id, nombre, puertos, zona_id, lat, lng) {
-  document.getElementById('cnCajaId').value = id;
-  document.getElementById('cnModalCajaTitle').querySelector('span').textContent = 'Editar Caja NAP';
-  document.getElementById('cnCajaNombre').value = nombre || '';
-  document.getElementById('cnCajaZona').value = zona_id || '';
-  document.getElementById('cnCajaPuertos').value = puertos || 8;
-  document.getElementById('cnCajaLat').value = lat || '';
-  document.getElementById('cnCajaLng').value = lng || '';
-  document.getElementById('cnCajaResult').innerHTML = '';
-  document.getElementById('cnBtnSaveCaja').innerHTML = '<i class="fas fa-save"></i> Guardar Cambios';
-  openModal('cnModalCaja');
-}
-
-function cnSaveCaja(e) {
-  e.preventDefault();
-  var id = document.getElementById('cnCajaId').value;
-  var nombre = document.getElementById('cnCajaNombre').value.trim();
-  var puertos = document.getElementById('cnCajaPuertos').value;
-  var zona_id = document.getElementById('cnCajaZona').value;
-  var lat = document.getElementById('cnCajaLat').value;
-  var lng = document.getElementById('cnCajaLng').value;
-
-  if (!nombre) {
-    document.getElementById('cnCajaResult').innerHTML = '<div style="color:#ef4444;padding:6px 0;font-size:0.88rem;"><i class="fas fa-exclamation-circle"></i> El nombre es obligatorio</div>';
-    return;
-  }
-
-  var btn = document.getElementById('cnBtnSaveCaja');
-  btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
-
-  var data = new URLSearchParams();
-  data.append('id', id);
-  data.append('nombre', nombre);
-  data.append('puertos', puertos);
-  data.append('zona_id', zona_id || '');
-  data.append('lat', lat || '');
-  data.append('lng', lng || '');
-
-  fetch('/modulo?pagina=CajasNap&ajax=save', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: data.toString()
-  })
-  .then(function(r) { return r.json(); })
-  .then(function(d) {
-    btn.disabled = false; btn.innerHTML = id ? '<i class="fas fa-save"></i> Guardar Cambios' : '<i class="fas fa-save"></i> Guardar';
-    if (d.status === 'success') {
-      document.getElementById('cnCajaResult').innerHTML = '<div style="color:#16a34a;padding:8px 10px;background:#f0fdf4;border-radius:6px;font-weight:600;"><i class="fas fa-check-circle"></i> ' + d.msg + '</div>';
-      setTimeout(function() { closeModal('cnModalCaja'); location.reload(); }, 1000);
-    } else {
-      document.getElementById('cnCajaResult').innerHTML = '<div style="color:#ef4444;padding:8px 10px;background:#fef2f2;border-radius:6px;">' + (d.msg || 'Error al guardar') + '</div>';
-    }
-  })
-  .catch(function(e) {
-    btn.disabled = false; btn.innerHTML = id ? '<i class="fas fa-save"></i> Guardar Cambios' : '<i class="fas fa-save"></i> Guardar';
-    document.getElementById('cnCajaResult').innerHTML = '<div style="color:#ef4444;padding:6px 0;">Error: ' + e.message + '</div>';
-  });
-  return false;
-}
-
-// ==================== DELETE ====================
-function cnDelete(id, nombre) {
-  if (!confirm('¿Eliminar la caja NAP "' + nombre + '"?\n\nSe desasignarán todas las ONUs asociadas.')) return;
-  fetch('/modulo?pagina=CajasNap&ajax=delete', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: 'id=' + id
-  })
-  .then(function(r) { return r.json(); })
-  .then(function(d) {
-    if (d.status === 'success') {
-      showToast(d.msg, 'success');
-      location.reload();
-    } else {
-      showToast(d.msg || 'Error al eliminar', 'error');
-    }
-  })
-  .catch(function(e) {
-    showToast('Error: ' + e.message, 'error');
-  });
-}
-
-// ==================== DETAIL VIEW ====================
-function cnOpenDetail(id) {
-  cnCurrentId = id;
-  document.getElementById('cnListView').style.display = 'none';
-  document.getElementById('cnDetailView').style.display = 'block';
-  document.getElementById('cnPortGrid').innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--nap-gray);"><i class="fas fa-spinner fa-spin"></i> Cargando puertos...</div>';
-
-  fetch('/modulo?pagina=CajasNap&ajax=get&id=' + id)
-    .then(function(r) { return r.json(); })
-    .then(function(d) {
-      if (d.status !== 'success') {
-        document.getElementById('cnPortGrid').innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:20px;color:#ef4444;"><i class="fas fa-exclamation-triangle"></i> ' + (d.msg || 'Error al cargar') + '</div>';
-        return;
+      window.registerJqxhr = function(jqxhr) {
+        jqxhrs.push(jqxhr);
       }
 
-      var caja = d.data;
-      var puertos = d.puertos || [];
-      cnOnusDisponibles = d.onusDisponibles || [];
-
-      // Update header
-      document.getElementById('cnDetailName').textContent = caja.nombre;
-      document.getElementById('cnDetailZone').textContent = caja.zona_nombre || 'Sin zona';
-      document.getElementById('cnDetailPorts').textContent = caja.puertos + ' puertos';
-      var ocupados = puertos.filter(function(p) { return !p.libre; }).length;
-      document.getElementById('cnDetailOnus').textContent = ocupados + ' ONU' + (ocupados !== 1 ? 's' : '') + ' conectada' + (ocupados !== 1 ? 's' : '');
-      if (caja.lat && caja.lng) {
-        document.getElementById('cnDetailCoords').textContent = '(' + parseFloat(caja.lat).toFixed(4) + ', ' + parseFloat(caja.lng).toFixed(4) + ')';
-      } else {
-        document.getElementById('cnDetailCoords').textContent = '';
-      }
-      document.getElementById('cnPortSummary').textContent = ocupados + '/' + caja.puertos + ' ocupados';
-
-      // Render port grid
-      var html = '';
-      puertos.forEach(function(p) {
-        html += '<div class="cn-port-item ' + (p.libre ? 'free' : 'occupied') + '" ' + (p.libre ? 'onclick="cnOpenAssign(' + caja.id + ',' + p.numero + ')"' : '') + '>';
-        html += '<div class="cn-port-number">#' + p.numero + '</div>';
-        html += '<div class="cn-port-status ' + (p.libre ? 'free' : 'occupied') + '">' + (p.libre ? 'LIBRE' : 'OCUPADO') + '</div>';
-        if (!p.libre && p.onu) {
-          html += '<div class="cn-assigned-onu">';
-          html += '<div class="cn-port-onu-name" title="' + (p.onu.sn || '') + '"><i class="fas fa-microchip" style="font-size:0.7rem;"></i> ' + (p.onu.onu_nombre || p.onu.sn || 'ONU') + '</div>';
-          if (p.onu.cliente_nombre) {
-            html += '<div class="cn-port-client" title="' + p.onu.cliente_nombre + '"><i class="fas fa-user" style="font-size:0.65rem;"></i> ' + p.onu.cliente_nombre + '</div>';
+      window.abortJqxhr = function() {
+        for (var i = jqxhrs.length - 1; i >= 0; i--) {
+          if (jqxhrs[i]) {
+            jqxhrs[i].abort();
           }
-          if (p.onu.senial !== null && p.onu.senial !== undefined) {
-            var sigVal = parseFloat(p.onu.senial);
-            var sigClass = sigVal >= -20 ? 'cn-signal-good' : (sigVal >= -25 ? 'cn-signal-warn' : 'cn-signal-bad');
-            html += '<div class="cn-port-signal ' + sigClass + '">' + sigVal + ' dBm</div>';
-          }
-          html += '<div class="cn-port-actions">';
-          html += '<button class="btn btn-danger btn-sm" style="font-size:0.7rem;padding:2px 6px;" onclick="event.stopPropagation();cnOpenUnassign(' + caja.id + ',' + p.numero + ')"><i class="fas fa-unlink"></i> Desasignar</button>';
-          html += '</div>';
-          html += '</div>';
         }
-        html += '</div>';
+
+        window.jqxhrs = [];
+      }
+
+      $(window).bind("beforeunload", function(event) {
+        abortJqxhr();
       });
-      document.getElementById('cnPortGrid').innerHTML = html;
-    })
-    .catch(function(e) {
-      document.getElementById('cnPortGrid').innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:20px;color:#ef4444;"><i class="fas fa-exclamation-triangle"></i> Error: ' + e.message + '</div>';
-    });
-}
 
-function cnBackToList() {
-  document.getElementById('cnDetailView').style.display = 'none';
-  document.getElementById('cnListView').style.display = 'block';
-  cnCurrentId = 0;
-}
-
-function cnOpenEditFromDetail() {
-  var nameEl = document.getElementById('cnDetailName');
-  if (!nameEl || !cnCurrentId) return;
-  // Re-fetch to get edit data
-  fetch('/modulo?pagina=CajasNap&ajax=get&id=' + cnCurrentId)
-    .then(function(r) { return r.json(); })
-    .then(function(d) {
-      if (d.status === 'success') {
-        var c = d.data;
-        cnOpenEdit(c.id, c.nombre, c.puertos, c.zona_id, c.lat, c.lng);
+      function unregisterJqxhr(event, jqxhr, settings) {
+        var idx = $.inArray(jqxhr, jqxhrs);
+        if (idx != -1) {
+          jqxhrs.splice(idx, 1);
+        }
       }
-    })
-    .catch(function() {});
-}
 
-function cnDeleteFromDetail() {
-  var nameEl = document.getElementById('cnDetailName');
-  if (nameEl && cnCurrentId) {
-    cnDelete(cnCurrentId, nameEl.textContent);
-  }
-}
+      $(document).ajaxComplete(unregisterJqxhr);
 
-// ==================== ASSIGN ONU ====================
-function cnOpenAssign(cajaId, puerto) {
-  document.getElementById('cnAssignCajaId').value = cajaId;
-  document.getElementById('cnAssignPuerto').value = puerto;
-  document.getElementById('cnAssignPuertoLabel').textContent = '#' + puerto;
-  document.getElementById('cnAssignPuertoNum').textContent = puerto;
-  document.getElementById('cnAssignSearch').value = '';
-  document.getElementById('cnAssignResult').innerHTML = '';
-  document.getElementById('cnBtnAssign').disabled = true;
-  cnOnuSelectedId = 0;
-
-  // Load ONUs
-  var list = document.getElementById('cnAssignOnuList');
-  fetch('/modulo?pagina=CajasNap&ajax=get&id=' + cajaId)
-    .then(function(r) { return r.json(); })
-    .then(function(d) {
-      if (d.status !== 'success') {
-        list.innerHTML = '<div style="padding:20px;text-align:center;color:#ef4444;">Error al cargar ONUs</div>';
-        return;
+      config = {
+        X_TOKEN: '9C23F19BE06B4BEB93046ECFDF50FF91'
       }
-      var onus = d.onusDisponibles || [];
-      cnOnusDisponibles = onus;
-      cnRenderOnuList(onus, '');
-    })
-    .catch(function(e) {
-      list.innerHTML = '<div style="padding:20px;text-align:center;color:#ef4444;">Error: ' + e.message + '</div>';
+    });
+  </script>
+
+  <div class="smartolt-landing-hero-bg" aria-hidden="true"></div>
+
+  <div id="content-wrapper">
+    <div class="smartolt-topbar-network" aria-hidden="true">
+      <div class="smartolt-topbar-network-inner">
+        <svg class="smartolt-topbar-network-lines" viewBox="0 0 100 100" preserveAspectRatio="none">
+          <line x1="8" y1="68" x2="23" y2="78"></line>
+          <line x1="23" y1="78" x2="37" y2="63"></line>
+          <line x1="8" y1="68" x2="37" y2="63"></line>
+          <line x1="37" y1="63" x2="65" y2="18"></line>
+          <line x1="65" y1="18" x2="89" y2="34"></line>
+          <line x1="23" y1="78" x2="65" y2="18"></line>
+          <line x1="37" y1="63" x2="89" y2="34"></line>
+        </svg>
+        <span class="smartolt-topbar-node smartolt-topbar-node-a"></span>
+        <span class="smartolt-topbar-node smartolt-topbar-node-b"></span>
+        <span class="smartolt-topbar-node smartolt-topbar-node-c"></span>
+        <span class="smartolt-topbar-node smartolt-topbar-node-d"></span>
+        <span class="smartolt-topbar-node smartolt-topbar-node-e"></span>
+      </div>
+    </div>
+    <div class="navbar navbar-default navbar-fixed-top default-menu">
+      <div class="container">
+        <div class="navbar-header">
+          <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#navbar-main" aria-expanded="false" aria-controls="navbar">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand text-ellipsis max-width-250" href="#" title="JOEL WIFI">JOEL WIFI</a>
+        </div>
+
+        <div class="navbar-collapse collapse" id="navbar-main">
+          <ul class="nav navbar-nav in">
+
+                        
+              <li><a href="#">Unconfigured</a></li>
+            
+                          <li><a href="#">Configured</a></li>
+            
+            
+                        	                <li><a href="#">Graphs</a></li>
+                                                <li><a href="#">Diagnostics</a></li>
+                
+                                <li><a href="#">Tasks</a></li>
+                                
+                                 <li class="dropdown">
+                  <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="settings">Reports <span class="caret"></span></a>
+                  <ul class="dropdown-menu" aria-labelledby="settings">
+                  	                    <li><a href="#">Authorizations</a></li>
+                                                            <li><a href="#">Export</a></li>
+                                                            <li><a href="#">Import</a></li>
+                                                            <li><a href="#">Find config mismatches (DB vs OLT)</a></li>
+                                      </ul>
+                </li>
+                
+                                    <li><a href="#" class="save-configuration-anchor" data-toggle="modal">Save config</a></li>
+                                
+              <li class="dropdown">
+                <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="settings">Settings <span class="caret"></span></a>
+                <ul class="dropdown-menu in" aria-labelledby="settings">
+
+                                        <li><a href="#">Zones</a></li>
+                    
+                                        <li><a href="#" class="active">ODBs</a></li>
+                    
+                                        <li><a href="#">ONU types</a></li>
+                    
+                                        <li><a href="#">Speed profiles</a></li>
+                    
+                                        <li><a href="#">OLTs</a></li>
+                    
+                                        <li><a href="#">VPN &amp; TR069</a></li>
+                    
+                                        <li><a href="#">Authorization presets</a></li>
+                    
+                    
+                                        <li><a href="#">General</a></li>
+                    
+                                        <li><a href="#">Billing</a></li>
+                                    </ul>
+              </li>
+
+              
+            
+          </ul>
+
+          <ul class="nav navbar-nav navbar-right">
+            <li><a href="#" id="smartolt-night-toggle" class="is-pref-night is-resolved is-night" title="Night mode" aria-label="Night mode" data-title-light="Light mode" data-title-night="Night mode" data-title-system="System"><i class="fa fa-sun-o font-size-20 smartolt-theme-icon-light" aria-hidden="true"></i><i class="fa fa-moon-o font-size-20 smartolt-theme-icon-night" aria-hidden="true"></i><i class="fa fa-adjust font-size-20 smartolt-theme-icon-system" aria-hidden="true"></i></a></li>
+            <li><a href="#" title="Edit user joelr802@gmail.com"><i class="fa fa-user glyphicon-white font-size-20"> </i></a></li>
+            <li><a href="#"><i class="glyphicon glyphicon-off glyphicon glyphicon-white"> </i> Log out</a></li>
+                      </ul>
+          
+        </div>
+      </div>
+    </div>
+
+    <!-- Page Content -->
+    <div class="container">
+
+<div class="container" style="width: 100%">
+	<h2>Odbs</h2>
+			
+	<form action="#" class="form-inline odbs" method="get" accept-charset="utf-8">
+ 
+    
+	<div class="margin-bottom">
+    	<div class="form-group">
+    		<label class="control-label" for="free_text">Search</label>
+    		<input type="text" class="form-control input-220 input-search" id="free_text" name="free_text" value="" data-old-value="" placeholder="Name">
+    	</div>
+    	
+    	<div class="form-group">
+    		<label class="control-label" for="location">Zone</label>
+    		<span class="multiselect-native-select"><select name="zone_id" id="location" class="form-control input-220 select-search" multiple="multiple">
+</select><div class="btn-group input-220"><button type="button" class="multiselect dropdown-toggle overflow-hidden  input-220 form-control select-search" data-toggle="dropdown" title="Any"><span class="multiselect-selected-text">Any</span> <b class="caret"></b></button><ul class="multiselect-container dropdown-menu" style="max-height: 500px; overflow: hidden auto;"></ul></div></span>
+    	</div>
+    	
+    	<div class="form-group">
+    		<label class="control-label" for="olt">OLT</label>
+    		<span class="multiselect-native-select"><select name="olt_id" id="olt" class="form-control input-220 select-search" multiple="multiple">
+</select><div class="btn-group input-220"><button type="button" class="multiselect dropdown-toggle overflow-hidden  input-220 form-control select-search" data-toggle="dropdown" title="Any"><span class="multiselect-selected-text">Any</span> <b class="caret"></b></button><ul class="multiselect-container dropdown-menu" style="max-height: 500px; overflow: hidden auto;"></ul></div></span>
+    	</div>
+    	
+    </div>
+
+    <input type="hidden" name="sort_by" id="sort_by" value="name">
+	<input type="hidden" name="sort_order" id="sort_order" value="asc">
+
+    </form>
+	<div class="clearfix">
+				<div class="pull-left">
+			<a href="#" class="btn btn-success margin-right margin-bottom"><span class="glyphicon glyphicon-plus"> </span> Add ODB (Splitter)</a>
+						<a href="#" id="delete-unused-odbs" class="btn btn-danger margin-bottom"><span class="glyphicon glyphicon-trash"> </span> Delete unused ODBs</a>
+					</div>
+				<div class="pull-right">
+						<a href="#" id="export-selection" class="btn btn-link margin-bottom" title="Export"><i class="fa fa-upload"></i> Export</a>
+									<a href="#" id="import-odbs" class="btn btn-link margin-bottom" title="Import ODBs "><i class="fa fa-download"></i> Import</a>
+					</div>
+	</div>
+
+	<div id="odbs_list" style="min-height: 70vh">	<table class="table table-striped">
+		<tbody><tr>
+			<th class="col-md-3"><a href="#" class="sort-link" data-sort-by="name" data-sort-order="desc">Name <i class="fa fa-sort-asc" aria-hidden="true"></i></a></th>
+			<th class="col-md-2"><a href="#" class="sort-link" data-sort-by="nr_of_ports" data-sort-order="asc">Nr of ports </a></th>
+			<th class="col-md-3"><a href="#" class="sort-link" data-sort-by="zone" data-sort-order="asc">Zone </a></th>
+						<th class="col-md-2"><a href="#" class="sort-link" data-sort-by="onus_count" data-sort-order="asc">ONUs </a></th>
+						<th></th>
+			<th class="col-md-1 text-center">Action</th>
+		</tr>
+
+				<tr>
+			<td>
+									<a href="#" class="btn btn-link">PON12 T1</a>
+							</td>
+			<td>12</td>
+			<td>Zone 1</td>
+						<td><a href="#" class="btn btn-link">0</a></td>
+						<td></td>
+			<td>
+									<a href="#" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+		</tbody></table>
+	
+	<ul class="pagination">
+            </ul> 
+
+<script type="text/javascript">
+$(document).ready(function()  {
+	$(".sort-link").click(function() {
+		$("#sort_by").val($(this).data('sort-by'));
+		$("#sort_order").val($(this).data('sort-order').length > 0 ? $(this).data('sort-order') : 'asc');
+
+		$(".odbs").submit();
+	});	
+});
+</script></div>
+
+		<div class="modal fade" id="importOdbsModal" tabindex="-1" role="dialog">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+					<h3>Import ODBs </h3>
+				</div>
+				<div class="modal-body">
+					<div class="form-group">
+						<label class="control-label" for="odbsCsvFile">ODBs file</label>
+						<input type="file" name="odbsCsvFile" id="odbsCsvFile">
+						<div class="margin-top"><span class="help-block">Download file template from here: <a href="#">Odbs_template.csv</a></span></div>
+						<div class="margin-top"><span class="help-block">The file should include the following header columns: <strong>Name, Nr of ports, Zone, Latitude, Longitude</strong></span></div>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-link" data-dismiss="modal">Cancel</button>
+					<button type="button" class="btn btn-primary import-odbs-button">Import ODBs </button>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+		<div class="modal fade" id="deleteUnusedOdbsModal" tabindex="-1" role="dialog">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+					<h3>Delete unused ODBs</h3>
+				</div>
+				<div class="modal-body">
+					<p>This will delete 1 ODBs (Splitters) that have no ONUs assigned. Are you sure you want to continue?</p>
+					<ul style="max-height: 300px; overflow-y: auto;">
+												<li>PON12 T1</li>
+											</ul>
+				</div>
+				<div class="modal-footer">
+					<form method="post" action="#" style="display:inline">
+						<button type="button" class="btn btn-link" data-dismiss="modal">Cancel</button>
+						<button type="submit" class="btn btn-danger">Delete</button>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+</div>
+
+<script src="/public/smartolt-files/common.js"></script>
+<script src="/public/smartolt-files/odbs.js"></script>
+
+<script type="text/javascript">
+
+	var LANG = {
+		any: 'Any'
+	};
+
+	$(document).ready(function()  {
+		form_data = {
+				page: 1,
+				free_text: "",
+				zone_id: "",
+				olt_id: "",
+				sort_by: "name",
+				sort_order: "asc",
+			};
+
+		update_needed = {};
+
+		overwriteFormDataFromUrlParameters();
+		
+		refreshOdbs();
+
+		dynamicSelectLoadOdbs("location", (form_data.zone_id != ''), "refreshOdbs");
+		dynamicSelectLoadOdbs("olt", (form_data.olt_id != ''), "refreshOdbs");
+	
+		initFilterActionsNoSubmit(getOdbs, '/odbs/get_odbs_list', '#odbs_list');
+
+		$('button.multiselect').on('click', function (event) {
+			var $select = $(this).parent().prev('select');
+			var select_name = $select.attr('name');
+
+			var $button = $(this);
+
+			if (typeof(update_needed[select_name]) == 'undefined' || update_needed[select_name] == true) {
+
+				event.stopPropagation();
+
+				var buttonContent = $button.html();
+				$button.html($('<i class="fa fa-spinner fa-spin margin-left"></i>'));
+
+				var AjaxCall = $.ajax({
+						type: 'POST',
+						beforeSend: function(request) {
+							request.setRequestHeader("X-Token", config.X_TOKEN);
+						},
+						url: '/api/system/fetch_distinct_options/' + select_name,
+						data: {
+							olt_id: form_data.olt_id,
+							zone_id: form_data.zone_id,
+						},
+						timeout: 30000,
+						success: function(data)
+						{
+							$select.empty(); // remove old options
+				
+							$.each(data.response, function(key, value) {
+								if (typeof value == 'object') {
+									$select.append($("<option>").attr("value", value.option_id).html(value.option_name +  
+											(typeof(value.nr) !== 'undefined' ? '<span class="badge badge-light pull-right">' + value.nr + '</span>' : '')));
+								} else {
+									$select.append($("<option>").attr("value", value).text(value));
+								}
+							});
+				
+							$select.val(form_data[select_name]);
+				
+							$select.attr('multiple', true);
+				
+							$select.multiselect('rebuild');
+							
+							update_needed[select_name] = false;
+
+							$button.html(buttonContent);
+
+							$button.click();
+						}
+					});
+
+				registerJqxhr(AjaxCall);
+			}
+		});
+
+				$('#export-selection').click(function () {
+			var formData = new FormData();
+			for(var key in form_data) {
+				formData.append(key, form_data[key]);
+			}
+
+			$.ajax({
+				method: "POST",
+				beforeSend: function(request) {
+					request.setRequestHeader("X-Token", config.X_TOKEN);
+				},
+				url: "#",
+				data : formData,
+				processData: false,  // tell jQuery not to process the data
+				contentType: false,  // tell jQuery not to set contentType
+			})
+			.done(function( data ) {
+				if(data && data.export_file) {
+					window.open('#' + data.export_file, "_self");
+				}
+			})
+			.fail(function(jqXHR, textStatus) {
+				if(jqXHR.responseJSON) {
+						$.MessageBox(jqXHR.responseJSON.error);
+					}
+					else {
+						$.MessageBox(jqXHR.responseText);
+					}
+			});
+		});
+		
+				$('#delete-unused-odbs').click(function (e) {
+			e.preventDefault();
+			$('#deleteUnusedOdbsModal').modal('show');
+		});
+		
+				var IMPORT_ODBS_LANG = {
+			importing: "Importing...",
+			import_complete: "Import complete!",
+			import_odbs: "Import ODBs ",
+			select_file: "Please select a file to import"		};
+
+		$('#import-odbs').click(function (e) {
+			e.preventDefault();
+			$('#importOdbsModal').modal('show');
+		});
+
+		$('.import-odbs-button').click(function () {
+			var $button = $('.import-odbs-button');
+			var fileInput = $('#odbsCsvFile')[0];
+
+			if (fileInput.files.length == 0) {
+				$.MessageBox(IMPORT_ODBS_LANG.select_file).done(function () {
+					fileInput.click();
+				});
+				return;
+			}
+
+			$button.attr('disabled', true).text(IMPORT_ODBS_LANG.importing);
+
+			var formData = new FormData();
+			formData.append('file', fileInput.files[0]);
+
+			$.ajax({
+				method: "POST",
+				beforeSend: function (request) {
+					request.setRequestHeader("X-Token", config.X_TOKEN);
+				},
+				url: "#",
+				data: formData,
+				processData: false,
+				contentType: false
+			})
+			.done(function (data) {
+				$button.text(IMPORT_ODBS_LANG.import_complete);
+				$.MessageBox(data.response);
+			})
+			.fail(function (jqXHR) {
+				if (jqXHR.responseJSON) {
+					$.MessageBox(jqXHR.responseJSON.error);
+				} else {
+					$.MessageBox(jqXHR.responseText);
+				}
+			})
+			.always(function () {
+				setTimeout(function () {
+					$button.attr('disabled', false).text(IMPORT_ODBS_LANG.import_odbs);
+				}, 100);
+			});
+		});
+		
+	});
+	</script>
+
+
+</div>
+<br>
+<!-- /#page-wrapper -->
+    
+<div id="saveConfigModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="saveConfigModalLabel" aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+		  <div class="modal-header">
+		    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+		    <h3 id="saveConfigModalLabel">Save configuration</h3>
+		  </div>
+		  <div class="modal-body">
+		    <p>This will save the current OLT(s) configuration as startup configuration. It may take up to 5 minutes for the OLT(s) to finish saving the config. Are you sure?</p>
+		  </div>
+		  <div class="modal-footer">
+		    <button class="btn btn-link" data-dismiss="modal" aria-hidden="true">No, cancel</button>
+		    <button class="btn btn-primary save-configuration-button">Yes, save configuration</button>
+		  </div>
+		</div>
+	</div>
+</div>
+
+<div id="importModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="importModalLabel" aria-hidden="true">
+</div>
+
+<div id="rebuildModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="rebuildModalLabel" aria-hidden="true">
+</div>
+
+<div id="deleteAllApiReconciliationModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="deleteAllApiReconciliationModalLabel" aria-hidden="true">
+</div>
+
+<div id="generateSnmpIdsModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="generateSnmpIdsModalLabel" aria-hidden="true">
+</div>
+
+    <!-- Bootstrap Core JavaScript -->
+    <script src="/public/smartolt-files/bootstrap.min.js"></script>
+    <script src="/public/smartolt-files/bootstrap-multiselect.js"></script>
+
+    <!-- Metis Menu Plugin JavaScript -->
+    <script src="/public/smartolt-files/metisMenu.min.js"></script>
+
+    <!-- Custom Theme JavaScript -->
+    <script src="/public/smartolt-files/sb-admin-2.js"></script>
+        
+    <!-- Loading overlay -->
+    <script src="/public/smartolt-files/loadingoverlay.custom.js"></script>
+    
+    <!-- Message box -->
+    <script src="/public/smartolt-files/messagebox.min.js"></script>
+    
+    
+
+<script type="text/javascript">
+
+$( document ).ready(function() {
+	
+	// Hide new version dot if user has already seen this version
+	var currentVersion = '3.53.0';
+	var lastSeenVersion = localStorage.getItem('lastSeenVersion');
+	if (lastSeenVersion === currentVersion) {
+		$('.new-version-dot').hide();
+	}
+
+	
+	$('#smartolt-update-banner-changelog').on('click', function(e) {
+		e.preventDefault();
+		localStorage.setItem('lastSeenVersion', currentVersion);
+		$('.new-version-dot').hide();
+				window.location.href = '/changelog';
+			});
+
+	$('#smartolt-update-banner-dismiss').on('click', function() {
+		localStorage.setItem('lastSeenVersion', currentVersion);
+		$('.new-version-dot').hide();
+		$('#smartolt-update-banner').slideUp(300);
+	});
+
+	$('#footer-changelog-link').on('click', function() {
+		localStorage.setItem('lastSeenVersion', currentVersion);
+		$('.new-version-dot').hide();
+	});
+
+	//hide alert-success after 5 seconds
+	/*setTimeout(function(){
+		$('.alert-success').not('.nofade').fadeOut();
+	},5000);*/
+	
+	var waitingForOLT   = $("<div>", {
+	    id      : "waitingOLT",
+	    css     : {
+	        "font-size" : "50px",
+			"white-space" : "nowrap"
+	    },
+	    text    : "Waiting for OLT"
+	});
+
+	var loadingOverlaySettings = {
+		    image       : "",
+		    fontawesome : "fa fa-spinner fa-spin",
+		    custom  : waitingForOLT,
+		    resizeInterval : 0
+		};
+
+	$.LoadingOverlay("append", loadingOverlaySettings);
+
+	window.showLoadingOverlay = function(loadingText = null) {
+		if(loadingText != null) {
+			$("#waitingOLT").text(loadingText);
+		}
+		else {
+			$("#waitingOLT").text("Waiting for OLT");
+		}
+		
+		$.LoadingOverlay("show", loadingOverlaySettings);
+	}
+
+	window.hideLoadingOverlay = function() {
+		$.LoadingOverlay("hide");
+	}
+
+	window.isLoadingOverlayVisible = function() {
+		return $('.loadingoverlay').is(":visible");
+	}
+	
+	//hide loading overlay when ajax request finishes
+	/*$(document).ajaxStop(function(){
+		hideLoadingOverlay();
+	});*/
+
+	//show toast with error
+	$(document).ajaxError(function(requestObject, error, errorThrown) {
+		if(error.status != 404 && error != undefined && error.responseJSON != undefined && 
+				error.responseJSON.error != undefined && error.responseJSON.error.length > 0) {
+			toast(error.responseJSON.error);
+		}
+	});
+
+	//confirm message box
+	window.MessageBoxConfirm = function(message){
+	    return $.MessageBox({
+	        buttonDone  : "OK",
+	        buttonFail  : "Cancel",
+	        message     : message
+	    });
+	}
+
+	window.getSelectedText = function() {
+        if (window.getSelection) {
+            return window.getSelection().toString();
+        } 
+        else if (document.selection) {
+            return document.selection.createRange().text;
+        }
+        return '';
+    }
+
+	//close navbar menu when clicking outside of it
+	$(document).click(function (event) {
+		var clickover = $(event.target);
+		var $nav = $("div.navbar-collapse");
+        var _opened = $nav.hasClass("in");
+
+        if (_opened === true && !clickover.hasClass("navbar-toggle")) {
+			$nav.collapse('hide');
+        }
     });
 
-  openModal('cnModalAssign');
-}
+	/*https://www.quirksmode.org/blog/archives/2014/02/mouse_event_bub.html
+	  Safari on iOS only allows the mouse events, including click, to bubble up in the following situations:
+	  1. The target element of the event is a link or a form field.
+	  2. The target element, or any of its ancestors up to but not including the <body>, has an explicit event handler set for any of the mouse events. This event handler may be an empty function.
+      3. The target element, or any of its ancestors up to and including the document has a cursor: pointer CSS declarations. */
+	$("#content-wrapper").click(function (event) {
+		//this is here only for iOS to allow mouse events to bubble up so we can close navbar menu when clicking outside of it
+    });
 
-function cnRenderOnuList(onus, filter) {
-  var list = document.getElementById('cnAssignOnuList');
-  var q = (filter || '').toLowerCase().trim();
-  if (onus.length === 0) {
-    list.innerHTML = '<div style="padding:30px;text-align:center;color:var(--nap-gray);"><i class="fas fa-microchip" style="font-size:2rem;opacity:0.3;display:block;margin-bottom:8px;"></i>No hay ONUs disponibles<br><small>Todas las ONUs ya están asignadas a cajas NAP</small></div>';
-    return;
-  }
-  var html = '';
-  var count = 0;
-  onus.forEach(function(o) {
-    var texto = ((o.sn || '') + ' ' + (o.onu_nombre || '') + ' ' + (o.cliente_nombre || '')).toLowerCase();
-    if (q && !texto.includes(q)) return;
-    count++;
-    var selected = cnOnuSelectedId === o.id ? ' selected' : '';
-    html += '<div class="cn-onu-list-item' + selected + '" onclick="cnSelectOnu(' + o.id + ', this)">';
-    html += '<i class="fas fa-microchip" style="color:var(--nap-gray);"></i>';
-    html += '<div style="flex:1;">';
-    html += '<div style="font-size:0.85rem;font-weight:600;">' + (o.onu_nombre || o.sn || 'ONU #' + o.id) + '</div>';
-    if (o.sn) html += '<div style="font-size:0.75rem;color:var(--nap-gray);"><code>' + o.sn + '</code></div>';
-    if (o.cliente_nombre) html += '<div style="font-size:0.75rem;color:var(--nap-gray);"><i class="fas fa-user"></i> ' + o.cliente_nombre + '</div>';
-    html += '</div>';
-    html += '</div>';
-  });
-  if (count === 0) {
-    html = '<div style="padding:20px;text-align:center;color:var(--nap-gray);">No se encontraron ONUs con ese criterio</div>';
-  }
-  list.innerHTML = html;
-}
+	// check navbar menu top offset
+    function closeMenuIfOpened() {
+		var $nav = $("div.navbar-collapse");
+    	var _opened = $nav.hasClass("in");
 
-function cnFilterOnuList() {
-  cnRenderOnuList(cnOnusDisponibles, document.getElementById('cnAssignSearch').value);
-}
-
-function cnSelectOnu(id, el) {
-  cnOnuSelectedId = id;
-  document.querySelectorAll('.cn-onu-list-item').forEach(function(e) { e.classList.remove('selected'); });
-  el.classList.add('selected');
-  document.getElementById('cnBtnAssign').disabled = false;
-}
-
-function cnDoAssign() {
-  var cajaId = document.getElementById('cnAssignCajaId').value;
-  var puerto = document.getElementById('cnAssignPuerto').value;
-  if (!cnOnuSelectedId || !cajaId || !puerto) return;
-
-  var btn = document.getElementById('cnBtnAssign');
-  btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Asignando...';
-
-  var data = new URLSearchParams();
-  data.append('caja_nap_id', cajaId);
-  data.append('puerto', puerto);
-  data.append('onu_id', cnOnuSelectedId);
-
-  fetch('/modulo?pagina=CajasNap&ajax=assign_onu', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: data.toString()
-  })
-  .then(function(r) { return r.json(); })
-  .then(function(d) {
-    btn.disabled = false; btn.innerHTML = '<i class="fas fa-check"></i> Asignar';
-    if (d.status === 'success') {
-      document.getElementById('cnAssignResult').innerHTML = '<div style="color:#16a34a;padding:8px 10px;background:#f0fdf4;border-radius:6px;font-weight:600;"><i class="fas fa-check-circle"></i> ' + d.msg + '</div>';
-      setTimeout(function() {
-        closeModal('cnModalAssign');
-        cnOpenDetail(parseInt(cajaId));
-      }, 800);
-    } else {
-      document.getElementById('cnAssignResult').innerHTML = '<div style="color:#ef4444;padding:8px 10px;background:#fef2f2;border-radius:6px;">' + (d.msg || 'Error al asignar') + '</div>';
+        if (_opened === true && $(".navbar").offset().top > 50) {
+			$nav.collapse('hide');
+        }
     }
-  })
-  .catch(function(e) {
-    btn.disabled = false; btn.innerHTML = '<i class="fas fa-check"></i> Asignar';
-    document.getElementById('cnAssignResult').innerHTML = '<div style="color:#ef4444;padding:6px 0;">Error: ' + e.message + '</div>';
+
+    //for touch devices, detect zoom in/out events and close the navbar menu if opened
+    var tracks = [];
+    $(window).on("touchmove", function (event) {
+	
+	    //only run code if the user has two fingers touching
+	    if (event.originalEvent.touches.length === 2) {
+	
+	        //track the touches, I'm setting each touch as an array inside the tracks array
+	        //each touch array contains an X and Y coordinate
+	        tracks.push([ [event.originalEvent.touches[0].pageX, event.originalEvent.touches[0].pageY], [event.originalEvent.touches[1].pageX, event.originalEvent.touches[1].pageY] ]);
+	    }
+	}).on("touchstart", function () {
+	    //start-over
+	    tracks = [];
+	}).on("touchend", function () {
+	    if(tracks.length > 0) {
+			var $nav = $("div.navbar-collapse");
+	    	var _opened = $nav.hasClass("in");
+	        if (_opened === true) {
+				$nav.collapse('hide');
+	        }
+	    }
+	});
+
+	// COPY TO CLIPBOARD
+	// Attempts to use .execCommand('copy') on a created text field
+	// Falls back to a selectable alert if not supported
+	// Attempts to display status in Bootstrap tooltip
+	// ------------------------------------------------------------------------------
+
+	function copyToClipboard(text, el) {
+	  var copyTest = document.queryCommandSupported('copy');
+	  var elOriginalText = el.attr('data-original-title');
+
+	  if (copyTest === true) {
+	    var copyTextArea = document.createElement("textarea");
+	    copyTextArea.value = text;
+	    document.body.appendChild(copyTextArea);
+	    copyTextArea.select();
+	    try {
+	      var successful = document.execCommand('copy');
+	      var msg = successful ? "Copied!" : "Whoops, not copied!";
+	      el.attr('data-original-title', msg).tooltip('show');
+	    } 
+	    catch (err) {
+	      console.log("Oops, unable to copy");
+	    }
+	    document.body.removeChild(copyTextArea);
+	    el.attr('data-original-title', elOriginalText);
+	  } 
+	  else {
+	    // Fallback if browser doesn't support .execCommand('copy')
+	    window.prompt("Copy to clipboard", text);
+	  }
+	}
+
+	function copyToClipboard2(text, el) {
+		  if (document.queryCommandSupported('copy') === true) {
+			var elOriginalText = el.attr('data-original-title');
+	 	    var copyTextArea = document.createElement("textarea");
+		    copyTextArea.textContent = text.text();
+		    document.body.appendChild(copyTextArea);
+
+		    var selection = document.getSelection();
+		    var range = document.createRange();
+		    range.selectNode(copyTextArea);
+		    selection.removeAllRanges();
+		    selection.addRange(range);
+		    
+		    try {
+		      var successful = document.execCommand('copy');
+			  var msg;
+
+			  if (successful) {
+				  msg = "Copied!";
+			  } 
+			  else {
+				msg = "Whoops, not copied!";
+				el.removeClass('not-selectable');
+			  }
+		      el.attr('data-original-title', msg).tooltip('show');
+		    } 
+		    catch (err) {
+		      console.log("Oops, unable to copy");
+		    }
+		    selection.removeAllRanges();
+		    document.body.removeChild(copyTextArea);
+		    el.attr('data-original-title', elOriginalText);
+		  } 
+		  else {
+			$('.not-selectable').removeClass('not-selectable');
+		    // Fallback if browser doesn't support .execCommand('copy')
+		    window.prompt("Copy to clipboard", text.text());
+		  }
+		}
+
+	// Initialize
+   // ---------------------------------------------------------------------
+
+   // Tooltips
+   // Requires Bootstrap 3 for functionality
+   $('.js-tooltip').tooltip();
+
+   // Copy to clipboard
+   // Grab any text in the attribute 'data-copy' and pass it to the 
+   // copy function
+   $('.js-copy').click(function() {
+     var text = $(this).attr('data-copy');
+     var el = $(this);
+     copyToClipboard(text, el);
+   });
+
+   $(document).on('click','.comma-copy', function() {
+	   $(this).removeClass('btn-primary').addClass('btn-default');
+	     var el = $('#'+$(this).attr('data-idtag'));
+	     copyToClipboard2(el, $(this));
+	     el.removeClass('text-primary').addClass('text-muted');
+	   });
+
+   //trim white spaces when paste in any input
+   $(document).on('paste', 'input[type=text]', function(e) {
+	  // prevent copying action
+	  e.preventDefault();
+	  
+	  var pastedText = e.originalEvent.clipboardData.getData('Text');
+	  var withoutSpaces = pastedText;
+	  if(pastedText) {
+		  withoutSpaces = pastedText.trim();
+	  }
+
+	  //remove all spaces, including from inside the text
+	  if($(this).hasClass('no_spaces')) {
+		  withoutSpaces = withoutSpaces.replace(/\s/g, '');
+	  }
+	  
+	  $(this).insertAtCaret(withoutSpaces);
+	});
+
+   $.fn.insertAtCaret = function(text) {
+	    return this.each(function() {
+	        if (document.selection && this.tagName == 'TEXTAREA') {
+	            //IE textarea support
+	            this.focus();
+	            sel = document.selection.createRange();
+	            sel.text = text;
+	            this.focus();
+	        } else if (this.selectionStart || this.selectionStart == '0') {
+	            //MOZILLA/NETSCAPE support
+	            startPos = this.selectionStart;
+	            endPos = this.selectionEnd;
+	            scrollTop = this.scrollTop;
+	            this.value = this.value.substring(0, startPos) + text + this.value.substring(endPos, this.value.length);
+	            this.focus();
+	            this.selectionStart = startPos + text.length;
+	            this.selectionEnd = startPos + text.length;
+	            this.scrollTop = scrollTop;
+	        } else {
+	            // IE input[type=text] and other browsers
+	            this.value += text;
+	            this.focus();
+	            this.value = this.value;    // forces cursor to end
+	        }
+	    });
+	};
+    
+	
+  $('.save-configuration-button').click(function (){
+    var button = $('.save-configuration-anchor');
+
+    button.toggleClass('active');
+    button.attr('disabled', true);
+    button.text("Saving...");
+    $('#saveConfigModal').modal('hide');
+
+    $.ajax({
+        method: "GET",
+        beforeSend: function(request) {
+		    request.setRequestHeader("X-Token", config.X_TOKEN);
+		  },
+        url: "/api/system/write",
+      })
+      .done(function( response ) {
+        $.MessageBox((response && response.response) ? response.response : "Save initiated. It could take the OLT up to 5 minutes to write the config!");
+        button.text("Save config");
+        setTimeout(function () {
+          button.toggleClass('active');
+          button.attr('disabled', false);
+          button.text("Save config");
+        }, 1000);
+      })
+      .fail(function(jqXHR, textStatus) {
+    	  if(jqXHR.responseJSON) {
+				$.MessageBox(jqXHR.responseJSON.error);
+			}
+			else {
+				$.MessageBox(jqXHR.responseText);
+			}
+	        setTimeout(function () {
+	        	 button.toggleClass('active');
+	             button.attr('disabled', false);
+	             button.text("Save config");
+	        }, 1000);
+      });
   });
-}
 
-// ==================== UNASSIGN ONU ====================
-function cnOpenUnassign(cajaId, puerto) {
-  document.getElementById('cnUnassignPuerto').textContent = '#' + puerto;
-  document.getElementById('cnUnassignResult').innerHTML = '';
-  // Store data in data attributes
-  document.getElementById('cnModalUnassign').setAttribute('data-caja-id', cajaId);
-  document.getElementById('cnModalUnassign').setAttribute('data-puerto', puerto);
-  openModal('cnModalUnassign');
-}
-
-function cnDoUnassign() {
-  var modal = document.getElementById('cnModalUnassign');
-  var cajaId = modal.getAttribute('data-caja-id');
-  var puerto = modal.getAttribute('data-puerto');
-  if (!cajaId || !puerto) return;
-
-  var data = new URLSearchParams();
-  data.append('caja_nap_id', cajaId);
-  data.append('puerto', puerto);
-
-  fetch('/modulo?pagina=CajasNap&ajax=unassign_onu', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: data.toString()
-  })
-  .then(function(r) { return r.json(); })
-  .then(function(d) {
-    if (d.status === 'success') {
-      document.getElementById('cnUnassignResult').innerHTML = '<div style="color:#16a34a;padding:8px 10px;background:#f0fdf4;border-radius:6px;font-weight:600;"><i class="fas fa-check-circle"></i> ' + d.msg + '</div>';
-      setTimeout(function() {
-        closeModal('cnModalUnassign');
-        cnOpenDetail(parseInt(cajaId));
-      }, 800);
-    } else {
-      document.getElementById('cnUnassignResult').innerHTML = '<div style="color:#ef4444;padding:8px 10px;background:#fef2f2;border-radius:6px;">' + (d.msg || 'Error al desasignar') + '</div>';
-    }
-  })
-  .catch(function(e) {
-    document.getElementById('cnUnassignResult').innerHTML = '<div style="color:#ef4444;padding:6px 0;">Error: ' + e.message + '</div>';
-  });
-}
-
-// ==================== INIT ====================
-document.addEventListener('DOMContentLoaded', function() {
-  cnFilterList();
+    
 });
 </script>
+
+</div>
+
+<style>
+.new-version-dot {
+	display: inline-block;
+	width: 8px;
+	height: 8px;
+	background-color: #5cb85c;
+	border-radius: 50%;
+	margin-left: 4px;
+	animation: pulse-green 2s infinite;
+}
+.footer-dot-sep {
+	opacity: 0.5;
+	margin: 0 2px;
+}
+footer {
+	height: auto;
+	padding-bottom: 8px;
+}
+#feature-tour-whatsnew .fa-bullhorn {
+	margin-right: 5px;
+	font-size: 2em;
+	vertical-align: -6px;
+}
+
+@keyframes pulse-green {
+	0% {
+		transform: scale(0.95);
+		box-shadow: 0 0 0 0 rgba(92, 184, 92, 0.7);
+	}
+	70% {
+		transform: scale(1);
+		box-shadow: 0 0 0 6px rgba(92, 184, 92, 0);
+	}
+	100% {
+		transform: scale(0.95);
+		box-shadow: 0 0 0 0 rgba(92, 184, 92, 0);
+	}
+}
+
+</style>
+
+<footer>
+	<div class="text-center row">SmartOLT <a href="#" class="btn-link" id="footer-changelog-link">v3.53.0<span class="new-version-dot" title="New updates" style="display: none;"></span></a> © 2026</div>
+</footer>
+
+
+
+
+
+<script>
+$(document).ready(function() {
+  $.ajax({url:'/api/smartolt/odbs', method:'GET', success:function(r) {
+    if(!r.success) return;
+    var h = '';
+    r.data.forEach(function(o) {
+      h += '<tr><td><a href="#" class="btn btn-link">'+(o.name||'')+'</a></td><td>'+(o.nr_ports||'')+'</td><td>'+(o.zone||'')+'</td><td><a href="#" class="btn btn-link">'+(o.onus_count||0)+'</a></td><td></td><td><a href="#" class="btn btn-danger">Delete</a></td></tr>';
+    });
+    $('table.table-striped tbody').html(h || '<tr><td colspan="6" class="text-muted text-center">No ODBs found</td></tr>');
+  }});
+});
+</script><div class="loadingoverlay" style="background-color: rgba(255, 255, 255, 0.8); position: fixed; display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; top: 0px; left: 0px; width: 100%; height: 100%; background-size: 100px;"><div class="loadingoverlay_fontawesome fa fa-spinner fa-spin" style="font-size: 100px;"></div><div id="waitingOLT" style="font-size: 50px; white-space: nowrap;">Waiting for OLT</div></div></body></html>

@@ -1,739 +1,737 @@
-<!-- SmartOLT Module - ISP Total -->
+<!DOCTYPE html>
+<!-- saved from url=(0033)# -->
+<html lang="en" class="smartolt-night"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <script>window.SMARTOLT_DB_THEME='system';</script>
+    <!-- Paint-blocking: resolve theme before first paint. Precedence: per-device override (smartolt-theme-local, set by the header button) > account/DB pref > device (system). -->
+    <script>try{var k='smartolt-night',lk='smartolt-theme-local',dbTheme=window.SMARTOLT_DB_THEME,local=null,pref,n;try{local=localStorage.getItem(lk);}catch(e){}if(local==='night'||local==='light'||local==='system'){pref=local;}else if(dbTheme==='night'||dbTheme==='light'||dbTheme==='system'){pref=dbTheme;}else{pref='system';}if(pref==='system'){n=!!(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);}else if(pref==='night'){n=true;}else{n=false;}try{localStorage.setItem(k,n?'1':'0');}catch(e){}if(n){document.documentElement.classList.add('smartolt-night');}else{document.documentElement.classList.remove('smartolt-night');}document.cookie=k+'='+(n?'1':'0')+'; path=/; max-age=31536000; SameSite=Lax'+(location.protocol==='https:'?'; Secure':'');}catch(e){}</script>
+        <meta http-equiv="content-type" content="text/html; utf-8">
+    
+    <meta http-equiv="Content-Language" content="en">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="#" type="image/x-icon">
+    <link rel="shortcut icon" href="#" type="image/x-icon">
+    
+  <title>OLTs - JOEL WIFI</title>
+
+  <!-- Bootstrap Core CSS -->
+  <link href="/public/smartolt-files/bootstrap-custom.css" rel="stylesheet">
+  <link href="/public/smartolt-files/bootstrap-multiselect.css" rel="stylesheet">
+  <link href="/public/smartolt-files/styles.css" rel="stylesheet">
+  <link href="/public/smartolt-files/toast.css" rel="stylesheet">
+
+  
+  <!-- Custom Fonts -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+  <!-- Message box CSS -->
+  <link href="/public/smartolt-files/messagebox.css" rel="stylesheet" type="text/css">
+
+  <link href="/public/smartolt-files/inter-fonts.css" rel="stylesheet">
+  <link href="/public/smartolt-files/dashboard-smartolt-night.css" rel="stylesheet">
+  <script src="/public/smartolt-files/dashboard-smartolt-night.js" defer=""></script>
+    
+  <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+  <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+  <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+  <!-- jQuery -->
+  <script src="/public/smartolt-files/jquery.min.js"></script>
+
+  
+  
+  <!-- Toast alerts -->
+  <script src="/public/smartolt-files/toast.js"></script>
+
+  <!-- Pauses recurring AJAX polling while the tab is hidden OR the user has been idle, resumes on focus / activity. -->
+  <script src="/public/smartolt-files/polling.js"></script>
+
+  
+  
+</head>
+
+<body class="smartolt-site">
+<script type="text/javascript">
+$( document ).ready(function() {
+	$.ajaxSetup({
+		cache: false
+	});
+	
+	window.jqxhrs = [];
+
+      window.registerJqxhr = function(jqxhr) {
+        jqxhrs.push(jqxhr);
+      }
+
+      window.abortJqxhr = function() {
+        for (var i = jqxhrs.length - 1; i >= 0; i--) {
+          if (jqxhrs[i]) {
+            jqxhrs[i].abort();
+          }
+        }
+
+        window.jqxhrs = [];
+      }
+
+      $(window).bind("beforeunload", function(event) {
+        abortJqxhr();
+      });
+
+      function unregisterJqxhr(event, jqxhr, settings) {
+        var idx = $.inArray(jqxhr, jqxhrs);
+        if (idx != -1) {
+          jqxhrs.splice(idx, 1);
+        }
+      }
+
+      $(document).ajaxComplete(unregisterJqxhr);
+
+      config = {
+        X_TOKEN: '9C23F19BE06B4BEB93046ECFDF50FF91'
+      }
+    });
+  </script>
+
+  <div class="smartolt-landing-hero-bg" aria-hidden="true"></div>
+
+  <div id="content-wrapper">
+    <div class="smartolt-topbar-network" aria-hidden="true">
+      <div class="smartolt-topbar-network-inner">
+        <svg class="smartolt-topbar-network-lines" viewBox="0 0 100 100" preserveAspectRatio="none">
+          <line x1="8" y1="68" x2="23" y2="78"></line>
+          <line x1="23" y1="78" x2="37" y2="63"></line>
+          <line x1="8" y1="68" x2="37" y2="63"></line>
+          <line x1="37" y1="63" x2="65" y2="18"></line>
+          <line x1="65" y1="18" x2="89" y2="34"></line>
+          <line x1="23" y1="78" x2="65" y2="18"></line>
+          <line x1="37" y1="63" x2="89" y2="34"></line>
+        </svg>
+        <span class="smartolt-topbar-node smartolt-topbar-node-a"></span>
+        <span class="smartolt-topbar-node smartolt-topbar-node-b"></span>
+        <span class="smartolt-topbar-node smartolt-topbar-node-c"></span>
+        <span class="smartolt-topbar-node smartolt-topbar-node-d"></span>
+        <span class="smartolt-topbar-node smartolt-topbar-node-e"></span>
+      </div>
+    </div>
+      <div class="navbar navbar-default navbar-fixed-top default-menu">
+    <div class="container">
+      <div class="navbar-header">
+        <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#navbar-main" aria-expanded="false" aria-controls="navbar">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand text-ellipsis max-width-250" href="/modulo?pagina=GPONManager" title="GPON Manager">GPON Manager</a>
+      </div>
+      <div class="navbar-collapse collapse" id="navbar-main">
+        <ul class="nav navbar-nav">
+          <li><a href="/modulo?pagina=GPONManager"><i class="fa fa-tachometer"></i> Dashboard</a></li>
+          <li><a href="/modulo?pagina=SmartoltConfigured"><i class="fa fa-check-circle"></i> Configuradas</a></li>
+          <li><a href="/modulo?pagina=SmartoltUnconfigured"><i class="fa fa-clock-o"></i> No configuradas</a></li>
+          <li><a href="/modulo?pagina=SmartoltOnuTypes"><i class="fa fa-microchip"></i> Tipos ONU</a></li>
+          <li><a href="/modulo?pagina=SmartoltSpeedProfiles"><i class="fa fa-tachometer"></i> Velocidad</a></li>
+          <li><a href="/modulo?pagina=SmartoltLocations"><i class="fa fa-map-marker"></i> Zonas</a></li>
+          <li><a href="/modulo?pagina=SmartoltDashboard"><i class="fa fa-external-link"></i> SmartOLT</a></li>
+        </ul>
+        <ul class="nav navbar-nav navbar-right">
+          <li><a href="#" id="smartolt-night-toggle" class="is-pref-night is-resolved is-night" title="Night mode"><i class="fa fa-adjust"></i></a></li>
+          <li><a href="/logout"><i class="fa fa-sign-out"></i></a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+    <!-- Page Content -->
+    <div class="container">
+
 <style>
-:root {
-  --so-primary: #6366f1;
-  --so-success: #16a34a;
-  --so-warning: #d97706;
-  --so-danger: #ef4444;
-  --so-bg: #f8fafc;
-  --so-border: #e2e8f0;
-  --so-text: #1e293b;
-  --so-gray: #64748b;
-}
-.so-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; flex-wrap:wrap; gap:10px; }
-.so-header h2 { margin:0; font-size:1.3rem; color:var(--so-text); display:flex; align-items:center; gap:8px; }
-.so-actions { display:flex; gap:8px; flex-wrap:wrap; }
-.so-btn { padding:8px 16px; border:none; border-radius:8px; font-size:0.85rem; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:6px; transition:all 0.2s; }
-.so-btn-primary { background:var(--so-primary); color:#fff; }
-.so-btn-primary:hover { opacity:0.9; }
-.so-btn-success { background:var(--so-success); color:#fff; }
-.so-btn-success:hover { opacity:0.9; }
-.so-btn-warning { background:var(--so-warning); color:#fff; }
-.so-btn-warning:hover { opacity:0.9; }
-.so-btn-danger { background:var(--so-danger); color:#fff; }
-.so-btn-danger:hover { opacity:0.9; }
-.so-btn-secondary { background:#e2e8f0; color:var(--so-text); }
-.so-btn-secondary:hover { background:#cbd5e1; }
-.so-btn-sm { padding:5px 10px; font-size:0.78rem; }
-.so-btn-xs { padding:3px 7px; font-size:0.72rem; border-radius:5px; }
-
-/* Cards */
-.so-card { background:#fff; border-radius:12px; border:1px solid var(--so-border); overflow:hidden; margin-bottom:20px; }
-.so-card-header { padding:14px 18px; border-bottom:1px solid var(--so-border); display:flex; align-items:center; justify-content:space-between; background:var(--so-bg); }
-.so-card-header h3 { margin:0; font-size:0.95rem; color:var(--so-text); display:flex; align-items:center; gap:6px; }
-.so-card-body { padding:18px; }
-
-/* Tabs */
-.so-tabs { display:flex; gap:0; border-bottom:1px solid var(--so-border); margin-bottom:0; background:var(--so-bg); }
-.so-tab { padding:10px 20px; cursor:pointer; font-size:0.85rem; font-weight:500; color:var(--so-gray); border-bottom:2px solid transparent; transition:all 0.2s; }
-.so-tab:hover { color:var(--so-text); }
-.so-tab.active { color:var(--so-primary); border-bottom-color:var(--so-primary); }
-
-/* Table */
-.so-table-wrap { overflow-x:auto; }
-.so-table { width:100%; border-collapse:collapse; font-size:0.83rem; }
-.so-table th { padding:10px 12px; text-align:left; font-weight:600; color:var(--so-gray); border-bottom:2px solid var(--so-border); white-space:nowrap; }
-.so-table td { padding:10px 12px; border-bottom:1px solid var(--so-border); color:var(--so-text); }
-.so-table tr:hover td { background:#f1f5f9; }
-.so-table .text-right { text-align:right; }
-.so-badge { display:inline-block; padding:2px 8px; border-radius:10px; font-size:0.72rem; font-weight:600; }
-.so-badge-ok { background:#dcfce7; color:#166534; }
-.so-badge-err { background:#fef2f2; color:#991b1b; }
-.so-badge-pending { background:#fef3c7; color:#92400e; }
-
-/* Form */
-.so-form-group { margin-bottom:14px; }
-.so-form-group label { display:block; font-size:0.82rem; font-weight:600; color:var(--so-text); margin-bottom:4px; }
-.so-input { width:100%; padding:8px 12px; border:1px solid var(--so-border); border-radius:8px; font-size:0.85rem; outline:none; transition:border-color 0.2s; box-sizing:border-box; }
-.so-input:focus { border-color:var(--so-primary); }
-.so-input-group { display:flex; align-items:center; }
-.so-input-group .so-prepend { padding:8px 10px; background:#e0e7ff; border:1px solid #c7d2fe; border-right:none; border-radius:8px 0 0 8px; color:#4338ca; font-size:0.78rem; white-space:nowrap; }
-.so-input-group .so-input { border-radius:0; }
-.so-input-group .so-append { padding:8px 10px; background:#e0e7ff; border:1px solid #c7d2fe; border-left:none; border-radius:0 8px 8px 0; color:#4338ca; font-size:0.78rem; white-space:nowrap; }
-.so-row { display:flex; gap:14px; }
-.so-col-6 { flex:1; }
-
-/* Modal */
-.so-modal-overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.4); z-index:9999; justify-content:center; align-items:center; }
-.so-modal { background:#fff; border-radius:14px; width:520px; max-width:95vw; max-height:90vh; overflow-y:auto; box-shadow:0 20px 40px rgba(0,0,0,0.15); }
-.so-modal-header { padding:16px 20px; border-bottom:1px solid var(--so-border); display:flex; align-items:center; justify-content:space-between; }
-.so-modal-header h3 { margin:0; font-size:1rem; }
-.so-modal-close { background:none; border:none; font-size:1.3rem; cursor:pointer; color:var(--so-gray); padding:0 4px; }
-.so-modal-body { padding:20px; }
-.so-modal-footer { padding:12px 20px; border-top:1px solid var(--so-border); display:flex; gap:8px; justify-content:flex-end; }
-
-/* Status cell */
-.so-status-ok { color:var(--so-success); font-weight:600; }
-.so-status-err { color:var(--so-danger); font-weight:600; cursor:pointer; }
-
-/* Signal */
-.so-signal-bar { display:flex; align-items:center; gap:8px; }
-.so-signal-fill { height:6px; border-radius:3px; flex:1; }
-.so-signal-good { background:var(--so-success); }
-.so-signal-warn { background:var(--so-warning); }
-.so-signal-bad { background:var(--so-danger); }
-.so-signal-val { font-size:0.78rem; font-weight:600; white-space:nowrap; }
+	.olt-status-dot {
+		display: inline-block;
+		width: 12px;
+		height: 12px;
+		border-radius: 50%;
+		vertical-align: middle;
+		position: relative;
+		top: -2px;
+		box-shadow: 0 2px 5px 0 rgba(0, 0, 0, .26);
+	}
+	.olt-status-online { background-color: #5cb85c; }
+	.olt-status-offline { background-color: #95a5a6; }
 </style>
 
-<div class="so-header">
-  <h2><i class="fas fa-cloud" style="color:var(--so-primary)"></i> SmartOLT - Gestión via API</h2>
-  <div class="so-actions">
-    <button class="so-btn so-btn-primary" onclick="openSmartoltConfig()"><i class="fas fa-cog"></i> Configuración</button>
-  </div>
+<div class="container-fluid content-wrap">
+	<h2>OLTs</h2>
+			
+			<a href="#" class="btn btn-success margin-bottom"><span class="glyphicon glyphicon-plus"> </span> Add OLT</a>
+	
+
+	<a class="btn btn-primary margin-left margin-bottom export-button">Export OLTs list</a>
+			<a href="#" id="find-config-mismatches-btn" class="btn btn-yellow margin-left margin-bottom"><i class="fa fa-search"></i> Find config mismatches</a>
+	
+	<div class="table-responsive">
+	<table class="table table-striped">
+		<tbody><tr>
+			<th class="col-md-1 text-center">View</th>
+						<th class="width-25"><a href="#" class="sort-link">ID <i class="fa fa-sort-asc" aria-hidden="true"></i></a></th>
+						<th class="text-center" style="width: 60px;">Status</th>
+			<th><a href="#" class="sort-link">Name </a></th>
+			<th class="col-md-1"><a href="#" class="sort-link">OLT IP </a></th>
+			<th class="col-md-1"><a href="#" class="sort-link">TCP </a></th>
+			<th class="col-md-1"><a href="#" class="sort-link">UDP </a></th>
+			<th class="col-md-2"><a href="#" class="sort-link">OLT hardware version </a></th>
+			<th class="col-md-1"><a href="#" class="sort-link">OLT SW version </a></th>
+
+			
+			<th class="width-120 text-center">Action</th>
+		</tr>
+
+				<tr>
+			<td class="text-center">
+									<a href="#" class="btn btn-success">View</a>
+							</td>
+						<td>1</td>
+						<td class="text-center">
+														<span class="olt-status-dot olt-status-online" title="Online (reached on 08-Jun-2026 05:19)"></span>
+							</td>
+			<td>JOEL WIFI</td>
+			<td>192.168.20.80</td>
+			<td>23</td>
+			<td>161</td>
+			<td>ZTE-C300</td>
+			<td>2.1.0</td>
+						<td class="text-center">
+									<a href="#" data-name="JOEL WIFI" class="disable-olt btn btn-small btn-default margin-right" title="Disable OLT"><i class="glyphicon glyphicon-eye-close glyphicon glyphicon-white"> </i></a>
+																	<a href="#" class="btn btn-small btn-danger" title="Delete"><i class="glyphicon glyphicon-trash glyphicon glyphicon-white"> </i></a>
+							</td>
+		</tr>
+		</tbody></table>
+	</div>
+
 </div>
 
-<!-- Tabs -->
-<div class="so-tabs">
-  <div class="so-tab active" data-tab="onus" onclick="switchSoTab('onus')"><i class="fas fa-satellite-dish"></i> ONUs Sincronizadas</div>
-  <div class="so-tab" data-tab="types" onclick="switchSoTab('types')"><i class="fas fa-microchip"></i> Modelos de ONU</div>
+<script type="text/javascript">
+
+	$(document).ready(function()  {
+		$('.export-button').click(function (){
+			showLoadingOverlay();
+
+			$.ajax({
+				method: "POST",
+				beforeSend: function(request) {
+					request.setRequestHeader("X-Token", config.X_TOKEN);
+				},
+				url: "#",
+				processData: false,
+				contentType: false,
+			})
+			.done(function( data, textStatus, request) {
+				if(data && data.export_file) {
+					window.open('#' + data.export_file, "_self");
+				}
+			})
+			.fail(function(jqXHR, textStatus) {
+				if(jqXHR.responseJSON) {
+						$.MessageBox(jqXHR.responseJSON.error);
+					}
+					else {
+						$.MessageBox(jqXHR.responseText);
+					}
+			})
+			.always(function() {
+				hideLoadingOverlay();
+			});
+		});
+
+		$('.disable-olt').click(function(event) {
+			link = this;
+			event.preventDefault();
+
+			var msg = "Are you sure you want to disable OLT '{name}'?<br>The OLT settings will NOT change, but the OLT will no longer be visible in the application.<br>You can enable it back at any time. This action will NOT have any effect on the subscription.";
+			msg = msg.replace("{name}", $(link).data("name"));
+
+		    $.MessageBox({
+		        buttonDone  : "Yes",
+		        buttonFail  : "No",
+		        message     : msg
+		    }).done(function(){
+		    	window.location = link.href;
+		    });
+		});	
+
+	});
+
+</script>
+
+
+</div>
+<br>
+<!-- /#page-wrapper -->
+    
+<div id="saveConfigModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="saveConfigModalLabel" aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+		  <div class="modal-header">
+		    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+		    <h3 id="saveConfigModalLabel">Save configuration</h3>
+		  </div>
+		  <div class="modal-body">
+		    <p>This will save the current OLT(s) configuration as startup configuration. It may take up to 5 minutes for the OLT(s) to finish saving the config. Are you sure?</p>
+		  </div>
+		  <div class="modal-footer">
+		    <button class="btn btn-link" data-dismiss="modal" aria-hidden="true">No, cancel</button>
+		    <button class="btn btn-primary save-configuration-button">Yes, save configuration</button>
+		  </div>
+		</div>
+	</div>
 </div>
 
-<!-- Tab: ONUs -->
-<div id="soTabOnus" class="so-tab-content">
-  <div class="so-card">
-    <div class="so-card-header">
-      <h3><i class="fas fa-list"></i> ONUs desde SmartOLT</h3>
-      <div class="so-actions">
-        <button class="so-btn so-btn-success so-btn-sm" onclick="syncSmartoltOnus()"><i class="fas fa-sync"></i> Sincronizar</button>
-      </div>
-    </div>
-    <div class="so-card-body" style="padding:12px 18px; border-bottom:1px solid var(--so-border);">
-      <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-        <select id="soFilterOlt" class="so-input" style="width:200px;" onchange="filterSoOnus()">
-          <option value="">Todas las OLTs</option>
-          <% (olts || []).forEach(function(o) { %>
-          <option value="<%= o.nombre %>"><%= o.nombre %></option>
-          <% }) %>
-        </select>
-        <input type="text" id="soSearchOnu" class="so-input" style="width:250px; max-width:100%;" placeholder="Buscar por SN, nombre, cliente..." oninput="filterSoOnus()">
-        <select id="soFilterEstado" class="so-input" style="width:150px;" onchange="filterSoOnus()">
-          <option value="">Todos los estados</option>
-          <option value="active">Activo</option>
-          <option value="inactive">Inactivo</option>
-        </select>
-      </div>
-    </div>
-    <div class="so-table-wrap">
-      <table class="so-table" id="soOnuTable">
-        <thead>
-          <tr>
-            <th>SN</th>
-            <th>Nombre ONU</th>
-            <th>Puerto OLT</th>
-            <th>Cliente</th>
-            <th>Señal</th>
-            <th>Estado</th>
-            <th class="text-right">Acciones</th>
-          </tr>
-        </thead>
-        <tbody id="soOnuBody">
-          <tr><td colspan="7" style="text-align:center;padding:40px;color:var(--so-gray);"><i class="fas fa-spinner fa-spin"></i> Cargando ONUs...</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
+<div id="importModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="importModalLabel" aria-hidden="true">
 </div>
 
-<!-- Tab: ONU Types -->
-<div id="soTabTypes" class="so-tab-content" style="display:none;">
-  <div class="so-card">
-    <div class="so-card-header">
-      <h3><i class="fas fa-microchip"></i> Modelos de ONU Registrados</h3>
-      <div class="so-actions">
-        <button class="so-btn so-btn-primary so-btn-sm" onclick="openAddOnuType()"><i class="fas fa-plus"></i> Agregar Modelo</button>
-      </div>
-    </div>
-    <div class="so-card-body" style="padding:12px 18px; border-bottom:1px solid var(--so-border);">
-      <input type="text" id="soSearchType" class="so-input" style="width:250px; max-width:100%;" placeholder="Buscar por modelo..." oninput="filterSoTypes()">
-    </div>
-    <div class="so-table-wrap">
-      <table class="so-table" id="soTypeTable">
-        <thead><tr><th>Modelo</th><th>Tipo PON</th><th>Ethernet</th><th>WiFi</th><th class="text-right">Acciones</th></tr></thead>
-        <tbody id="soTypeBody">
-          <tr><td colspan="5" style="text-align:center;padding:40px;color:var(--so-gray);"><i class="fas fa-spinner fa-spin"></i> Cargando modelos...</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
+<div id="rebuildModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="rebuildModalLabel" aria-hidden="true">
 </div>
 
-<!-- MODAL: Configuración SmartOLT -->
-<div id="soModalConfig" class="so-modal-overlay">
-  <div class="so-modal">
-    <div class="so-modal-header">
-      <h3><i class="fas fa-cog"></i> <span id="soConfigTitle">Configurar SmartOLT</span></h3>
-      <button class="so-modal-close" onclick="closeSoModal('soModalConfig')">&times;</button>
-    </div>
-    <form id="soConfigForm" onsubmit="return saveSmartoltConfig(event)">
-      <div class="so-modal-body">
-        <div class="so-form-group">
-          <label>Nombre identificativo</label>
-          <input type="text" id="soCfgName" class="so-input" value="SmartOLT" placeholder="Ej: OLT Principal">
-        </div>
-        <div class="so-form-group">
-          <label>Subdominio SmartOLT</label>
-          <div class="so-input-group">
-            <span class="so-prepend">https://</span>
-            <input type="text" id="soCfgSubdomain" class="so-input" placeholder="miwisp" style="border-radius:0;">
-            <span class="so-append">.smartolt.com</span>
-          </div>
-        </div>
-        <div class="so-form-group">
-          <label>API Key</label>
-          <input type="password" id="soCfgApiKey" class="so-input" placeholder="API Key de SmartOLT">
-          <small style="color:var(--so-gray);font-size:0.72rem;">SmartOLT → Settings → API KEY</small>
-        </div>
-        <div class="so-form-group">
-          <label>ID OLT en SmartOLT <small style="color:var(--so-gray);">(dejar vacío para auto-detectar)</small></label>
-          <input type="text" id="soCfgOltId" class="so-input" placeholder="Se detecta al probar conexión">
-        </div>
-        <div id="soConfigResult"></div>
-      </div>
-      <div class="so-modal-footer">
-        <button type="button" class="so-btn so-btn-secondary" onclick="closeSoModal('soModalConfig')">Cancelar</button>
-        <button type="button" class="so-btn so-btn-warning" onclick="testSmartoltConnection()"><i class="fas fa-plug"></i> Probar Conexión</button>
-        <button type="submit" class="so-btn so-btn-primary" id="soBtnSaveConfig" disabled><i class="fas fa-save"></i> Guardar</button>
-      </div>
-    </form>
-  </div>
+<div id="deleteAllApiReconciliationModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="deleteAllApiReconciliationModalLabel" aria-hidden="true">
 </div>
 
-<!-- MODAL: Agregar/Editar Modelo ONU -->
-<div id="soModalOnuType" class="so-modal-overlay">
-  <div class="so-modal">
-    <div class="so-modal-header">
-      <h3><i class="fas fa-microchip"></i> <span id="soTypeModalTitle">Agregar Modelo de ONU</span></h3>
-      <button class="so-modal-close" onclick="closeSoModal('soModalOnuType')">&times;</button>
-    </div>
-    <form id="soTypeForm" onsubmit="return submitSoOnuType(event)">
-      <div class="so-modal-body">
-        <input type="hidden" id="soTypeEditId" value="0">
-        <div class="so-form-group">
-          <label>Modelo de ONU</label>
-          <input type="text" id="soTypeName" class="so-input" placeholder="Ej: ZTE-F660V6.0">
-        </div>
-        <div class="so-row">
-          <div class="so-col-6">
-            <div class="so-form-group">
-              <label>Tipo PON</label>
-              <select id="soTypePon" class="so-input">
-                <option value="gpon">GPON</option>
-                <option value="epon">EPON</option>
-              </select>
-            </div>
-          </div>
-          <div class="so-col-6">
-            <div class="so-form-group">
-              <label>Puertos Ethernet</label>
-              <select id="soTypeEth" class="so-input">
-                <option value="1">1 Puerto</option>
-                <option value="2">2 Puertos</option>
-                <option value="3">3 Puertos</option>
-                <option value="4" selected>4 Puertos</option>
-              </select>
-            </div>
-          </div>
-        </div>
-        <div class="so-form-group">
-          <label>Banda WiFi</label>
-          <div style="display:flex;gap:8px;">
-            <label class="so-btn so-btn-sm" style="cursor:pointer;" onclick="pickSoBand(this,'none')">
-              <input type="radio" name="so_wifi_band" value="none" checked style="display:none;"> <i class="fas fa-ban"></i> Sin WiFi
-            </label>
-            <label class="so-btn so-btn-sm" style="cursor:pointer;" onclick="pickSoBand(this,'2.4ghz')">
-              <input type="radio" name="so_wifi_band" value="2.4ghz" style="display:none;"> <i class="fas fa-wifi"></i> 2.4 GHz
-            </label>
-            <label class="so-btn so-btn-sm" style="cursor:pointer;" onclick="pickSoBand(this,'dual')">
-              <input type="radio" name="so_wifi_band" value="dual" style="display:none;"> <i class="fas fa-broadcast-tower"></i> 2.4+5 GHz
-            </label>
-          </div>
-        </div>
-        <div id="soTypeResult"></div>
-      </div>
-      <div class="so-modal-footer">
-        <button type="button" class="so-btn so-btn-secondary" onclick="closeSoModal('soModalOnuType')">Cancelar</button>
-        <button type="submit" class="so-btn so-btn-primary" id="soBtnSaveType"><i class="fas fa-plus"></i> Agregar</button>
-      </div>
-    </form>
-  </div>
+<div id="generateSnmpIdsModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="generateSnmpIdsModalLabel" aria-hidden="true">
 </div>
 
-<!-- MODAL: Vincular ONU a Cliente -->
-<div id="soModalLink" class="so-modal-overlay">
-  <div class="so-modal" style="width:480px;">
-    <div class="so-modal-header">
-      <h3><i class="fas fa-link"></i> Vincular ONU a Cliente</h3>
-      <button class="so-modal-close" onclick="closeSoModal('soModalLink')">&times;</button>
-    </div>
-    <div class="so-modal-body">
-      <input type="hidden" id="soLinkOnuId">
-      <input type="hidden" id="soLinkOnuSn">
-      <div class="so-form-group">
-        <label>ONU</label>
-        <input type="text" id="soLinkOnuDisplay" class="so-input" disabled>
-      </div>
-      <div class="so-form-group">
-        <label>Buscar Cliente</label>
-        <input type="text" id="soLinkSearch" class="so-input" placeholder="Nombre, cédula o teléfono..." oninput="debounceSearchCliente()">
-      </div>
-      <div class="so-form-group">
-        <label>Cliente seleccionado</label>
-        <select id="soLinkCliente" class="so-input" size="5" style="height:auto;min-height:100px;"></select>
-      </div>
-      <div id="soLinkResult"></div>
-    </div>
-    <div class="so-modal-footer">
-      <button type="button" class="so-btn so-btn-secondary" onclick="closeSoModal('soModalLink')">Cancelar</button>
-      <button type="button" class="so-btn so-btn-primary" onclick="submitSoLink()"><i class="fas fa-link"></i> Vincular</button>
-    </div>
-  </div>
-</div>
+    <!-- Bootstrap Core JavaScript -->
+    <script src="/public/smartolt-files/bootstrap.min.js"></script>
+    <script src="/public/smartolt-files/bootstrap-multiselect.js"></script>
 
-<!-- Error detail modal -->
-<div id="soModalError" class="so-modal-overlay" style="z-index:20000;">
-  <div class="so-modal" style="width:500px;">
-    <div class="so-modal-header">
-      <h3><i class="fas fa-bug"></i> Detalle del Error</h3>
-      <button class="so-modal-close" onclick="closeSoModal('soModalError')">&times;</button>
-    </div>
-    <div class="so-modal-body">
-      <textarea id="soErrorDetail" class="so-input" style="height:120px;resize:vertical;" readonly></textarea>
-    </div>
-    <div class="so-modal-footer">
-      <button class="so-btn so-btn-secondary" onclick="closeSoModal('soModalError')">Cerrar</button>
-    </div>
-  </div>
-</div>
+    <!-- Metis Menu Plugin JavaScript -->
+    <script src="/public/smartolt-files/metisMenu.min.js"></script>
 
-<script>
-let soBandSelected = 'none';
-let soErrorLog = {};
-
-// === UTILITY ===
-function closeSoModal(id) { document.getElementById(id).style.display = 'none'; }
-function openSoModal(id) { document.getElementById(id).style.display = 'flex'; }
-
-function pickSoBand(el, val) {
-  soBandSelected = val;
-  document.querySelectorAll('#soModalOnuType label.so-btn').forEach(function(o) { o.style.background = '#e2e8f0'; o.style.color = '#1e293b'; });
-  el.style.background = 'var(--so-primary)';
-  el.style.color = '#fff';
-}
-
-function showSoError(msg) {
-  document.getElementById('soErrorDetail').value = msg;
-  openSoModal('soModalError');
-}
-
-// === TABS ===
-function switchSoTab(tab) {
-  document.querySelectorAll('.so-tab').forEach(function(t) { t.classList.remove('active'); });
-  document.querySelectorAll('.so-tab-content').forEach(function(tc) { tc.style.display = 'none'; });
-  document.querySelector('.so-tab[data-tab="' + tab + '"]').classList.add('active');
-  document.getElementById('soTab' + tab.charAt(0).toUpperCase() + tab.slice(1)).style.display = 'block';
-  if (tab === 'types') loadSoOnuTypes();
-  if (tab === 'onus') loadSoOnus();
-}
-
-// === CONFIGURATION ===
-function openSmartoltConfig() {
-  document.getElementById('soConfigForm').reset();
-  document.getElementById('soBtnSaveConfig').disabled = true;
-  document.getElementById('soConfigResult').innerHTML = '';
-  // Load existing config
-  fetch('/api/smartolt/config')
-    .then(function(r) { return r.json(); })
-    .then(function(cfg) {
-      if (cfg.subdomain) document.getElementById('soCfgSubdomain').value = cfg.subdomain;
-      if (cfg.api_key) document.getElementById('soCfgApiKey').value = cfg.api_key;
-      if (cfg.olt_id) document.getElementById('soCfgOltId').value = cfg.olt_id;
-      if (cfg.name) document.getElementById('soCfgName').value = cfg.name;
-    })
-    .catch(function() {});
-  openSoModal('soModalConfig');
-}
-
-function saveSmartoltConfig(e) {
-  e.preventDefault();
-  var data = {
-    name: document.getElementById('soCfgName').value.trim(),
-    subdomain: document.getElementById('soCfgSubdomain').value.trim(),
-    api_key: document.getElementById('soCfgApiKey').value.trim(),
-    olt_id: document.getElementById('soCfgOltId').value.trim()
-  };
-  fetch('/api/smartolt/config/save', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data)
-  })
-  .then(function(r) { return r.json(); })
-  .then(function(d) {
-    if (d.success) {
-      document.getElementById('soConfigResult').innerHTML = '<div style="color:#16a34a;padding:8px 10px;background:#f0fdf4;border-radius:6px;font-weight:600;"><i class="fas fa-check-circle"></i> Configuración guardada</div>';
-      setTimeout(function() { closeSoModal('soModalConfig'); }, 1000);
-    } else {
-      document.getElementById('soConfigResult').innerHTML = '<div style="color:#ef4444;padding:8px 10px;background:#fef2f2;border-radius:6px;">' + (d.message || 'Error al guardar') + '</div>';
-    }
-  })
-  .catch(function(e) {
-    document.getElementById('soConfigResult').innerHTML = '<div style="color:#ef4444;padding:6px 0;">Error: ' + e.message + '</div>';
-  });
-  return false;
-}
-
-function testSmartoltConnection() {
-  var btn = document.querySelector('#soModalConfig .so-btn-warning');
-  var res = document.getElementById('soConfigResult');
-  var btnSave = document.getElementById('soBtnSaveConfig');
-  btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Conectando...'; res.innerHTML = '';
-  
-  var data = {
-    subdomain: document.getElementById('soCfgSubdomain').value.trim(),
-    api_key: document.getElementById('soCfgApiKey').value.trim(),
-    olt_id: document.getElementById('soCfgOltId').value.trim()
-  };
-  
-  fetch('/api/smartolt/test', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data)
-  })
-  .then(function(r) { return r.json(); })
-  .then(function(d) {
-    btn.disabled = false; btn.innerHTML = '<i class="fas fa-plug"></i> Probar Conexión';
-    if (d.success) {
-      var h = '<div style="color:#16a34a;font-weight:bold;padding:8px 0;"><i class="fas fa-check-circle"></i> ' + d.message + '</div>';
-      if (d.olts && Array.isArray(d.olts)) {
-        h += '<div style="margin-top:8px;font-size:0.85rem;">';
-        d.olts.forEach(function(o) { h += '<div style="padding:4px 8px;background:#f0fdf4;border-radius:4px;margin:3px 0;">ID: <b>' + (o.id||'?') + '</b> - ' + (o.name||'') + ' (' + (o.olt_type||'') + ')</div>'; });
-        h += '</div>';
-        if (d.olts.length === 1) document.getElementById('soCfgOltId').value = d.olts[0].id;
-      }
-      res.innerHTML = h;
-      btnSave.disabled = false;
-    } else {
-      res.innerHTML = '<div style="color:#ef4444;padding:8px 0;"><i class="fas fa-times-circle"></i> ' + (d.message || d.msg || 'Error de conexión') + '</div>';
-    }
-  })
-  .catch(function(e) {
-    btn.disabled = false; btn.innerHTML = '<i class="fas fa-plug"></i> Probar Conexión';
-    res.innerHTML = '<div style="color:#ef4444;">Error: ' + e.message + '</div>';
-  });
-}
-
-// === ONU TYPES ===
-function loadSoOnuTypes() {
-  var tb = document.getElementById('soTypeBody');
-  tb.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:40px;color:var(--so-gray);"><i class="fas fa-spinner fa-spin"></i> Cargando modelos...</td></tr>';
-  
-  fetch('/api/smartolt/onu-types')
-    .then(function(r) { return r.json(); })
-    .then(function(d) {
-      if (!d.success || !Array.isArray(d.data) || d.data.length === 0) {
-        tb.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:40px;color:var(--so-gray);"><i class="fas fa-microchip" style="font-size:2rem;opacity:0.3;"></i><br><br>No hay modelos de ONU registrados.<br><small>Agregue uno para poder autorizar ONUs.</small></td></tr>';
-        return;
-      }
-      var h = '';
-      d.data.forEach(function(t) {
-        var wifiBadge = '';
-        if (t.wifi_band === 'dual') wifiBadge = '<span class="so-badge" style="background:#e0e7ff;color:#4338ca;"><i class="fas fa-broadcast-tower"></i> 2.4+5 GHz</span>';
-        else if (t.wifi_band === '2.4ghz') wifiBadge = '<span class="so-badge" style="background:#dbeafe;color:#1e40af;"><i class="fas fa-wifi"></i> 2.4 GHz</span>';
-        else wifiBadge = '<span class="so-badge" style="background:#f1f5f9;color:#64748b;"><i class="fas fa-ban"></i> Sin WiFi</span>';
-        h += '<tr>';
-        h += '<td><strong>' + (t.name || '-') + '</strong></td>';
-        h += '<td><span class="so-badge" style="background:#e0e7ff;color:#4338ca;">' + (t.pon_type || 'gpon').toUpperCase() + '</span></td>';
-        h += '<td>' + (t.ethernet_ports || '-') + (t.ethernet_ports != '-' ? ' puertos' : '') + '</td>';
-        h += '<td>' + wifiBadge + '</td>';
-        h += '<td class="text-right"><button class="so-btn so-btn-sm so-btn-secondary" onclick="openEditSoType(' + t.id + ', \'' + (t.name||'').replace(/'/g,"\\'") + '\', \'' + (t.pon_type||'gpon') + '\', ' + (t.ethernet_ports||4) + ', \'' + (t.wifi_band||'none') + '\')"><i class="fas fa-pencil-alt"></i> Editar</button></td>';
-        h += '</tr>';
-      });
-      tb.innerHTML = h;
-    })
-    .catch(function(e) {
-      tb.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:20px;color:#ef4444;"><i class="fas fa-exclamation-triangle"></i> ' + e.message + '</td></tr>';
-    });
-}
-
-function openAddOnuType() {
-  soBandSelected = 'none';
-  document.getElementById('soTypeEditId').value = '0';
-  document.getElementById('soTypeModalTitle').innerHTML = '<i class="fas fa-plus"></i> Agregar Modelo de ONU';
-  document.getElementById('soTypeName').value = '';
-  document.getElementById('soTypePon').value = 'gpon';
-  document.getElementById('soTypeEth').value = '4';
-  document.querySelectorAll('#soModalOnuType label.so-btn').forEach(function(o) { o.style.background = '#e2e8f0'; o.style.color = '#1e293b'; });
-  document.getElementById('soTypeResult').innerHTML = '';
-  document.getElementById('soBtnSaveType').innerHTML = '<i class="fas fa-plus"></i> Agregar';
-  openSoModal('soModalOnuType');
-}
-
-function openEditSoType(id, name, pon, eth, band) {
-  soBandSelected = band;
-  document.getElementById('soTypeEditId').value = id;
-  document.getElementById('soTypeModalTitle').innerHTML = '<i class="fas fa-pencil-alt"></i> Editar: ' + name;
-  document.getElementById('soTypeName').value = name;
-  document.getElementById('soTypePon').value = pon;
-  document.getElementById('soTypeEth').value = eth;
-  document.querySelectorAll('#soModalOnuType label.so-btn').forEach(function(o) {
-    o.style.background = '#e2e8f0';
-    o.style.color = '#1e293b';
-    var inp = o.querySelector('input[type=radio]');
-    if (inp && inp.value === band) { o.style.background = 'var(--so-primary)'; o.style.color = '#fff'; }
-  });
-  document.getElementById('soTypeResult').innerHTML = '';
-  document.getElementById('soBtnSaveType').innerHTML = '<i class="fas fa-save"></i> Guardar';
-  openSoModal('soModalOnuType');
-}
-
-function submitSoOnuType(e) {
-  e.preventDefault();
-  var name = document.getElementById('soTypeName').value.trim();
-  if (!name) { document.getElementById('soTypeResult').innerHTML = '<div style="color:#ef4444;padding:6px 0;font-size:0.88rem;"><i class="fas fa-exclamation-circle"></i> Ingrese el modelo de ONU</div>'; return; }
-  var isEdit = parseInt(document.getElementById('soTypeEditId').value) > 0;
-  var btn = document.getElementById('soBtnSaveType');
-  btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ' + (isEdit ? 'Guardando...' : 'Agregando...');
-  
-  var data = {
-    id: isEdit ? parseInt(document.getElementById('soTypeEditId').value) : 0,
-    name: name,
-    pon_type: document.getElementById('soTypePon').value,
-    ethernet_ports: parseInt(document.getElementById('soTypeEth').value),
-    wifi_band: soBandSelected
-  };
-  
-  fetch('/api/smartolt/onu-types/save', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data)
-  })
-  .then(function(r) { return r.json(); })
-  .then(function(d) {
-    btn.disabled = false; btn.innerHTML = isEdit ? '<i class="fas fa-save"></i> Guardar' : '<i class="fas fa-plus"></i> Agregar';
-    if (d.success) {
-      document.getElementById('soTypeResult').innerHTML = '<div style="color:#16a34a;padding:8px 10px;background:#f0fdf4;border-radius:6px;font-weight:600;"><i class="fas fa-check-circle"></i> ' + (d.message || 'Guardado') + '</div>';
-      setTimeout(function() { closeSoModal('soModalOnuType'); loadSoOnuTypes(); }, 1000);
-    } else {
-      document.getElementById('soTypeResult').innerHTML = '<div style="color:#ef4444;padding:8px 10px;background:#fef2f2;border-radius:6px;">' + (d.message || 'Error') + '</div>';
-    }
-  })
-  .catch(function(e) {
-    btn.disabled = false; btn.innerHTML = isEdit ? '<i class="fas fa-save"></i> Guardar' : '<i class="fas fa-plus"></i> Agregar';
-    document.getElementById('soTypeResult').innerHTML = '<div style="color:#ef4444;padding:6px 0;">Error: ' + e.message + '</div>';
-  });
-  return false;
-}
-
-function filterSoTypes() {
-  var q = document.getElementById('soSearchType').value.toLowerCase().trim();
-  var rows = document.querySelectorAll('#soTypeBody tr');
-  rows.forEach(function(row) {
-    row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
-  });
-}
-
-// === ONUS ===
-function loadSoOnus() {
-  var tb = document.getElementById('soOnuBody');
-  tb.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--so-gray);"><i class="fas fa-spinner fa-spin"></i> Cargando ONUs...</td></tr>';
-  
-  fetch('/api/smartolt/onus')
-    .then(function(r) { return r.json(); })
-    .then(function(d) {
-      if (!d.success) {
-        tb.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:#ef4444;"><i class="fas fa-exclamation-triangle"></i> ' + (d.message || 'Error al cargar ONUs') + '</td></tr>';
-        return;
-      }
-      var onus = d.data || [];
-      if (onus.length === 0) {
-        tb.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--so-gray);"><i class="fas fa-satellite-dish" style="font-size:2rem;opacity:0.3;"></i><br><br>No hay ONUs sincronizadas.<br><small>Use el botón "Sincronizar" para traer las ONUs desde SmartOLT.</small></td></tr>';
-        return;
-      }
-      var h = '';
-      onus.forEach(function(o) {
-        var estadoClass = (o.estado === 'active' || o.estado === 'activo') ? 'so-badge-ok' : 'so-badge-err';
-        var estadoText = (o.estado === 'active' || o.estado === 'activo') ? 'Activo' : 'Inactivo';
-        var sigClass = '';
-        var sigPct = 50;
-        if (o.senial !== null && o.senial !== undefined) {
-          var s = parseFloat(o.senial);
-          if (s >= -20) { sigClass = 'so-signal-good'; sigPct = 90; }
-          else if (s >= -25) { sigClass = 'so-signal-warn'; sigPct = 60; }
-          else { sigClass = 'so-signal-bad'; sigPct = 30; }
-        }
-        var signalHtml = '<span class="so-signal-val" style="color:var(--so-gray);">N/A</span>';
-        if (sigClass) signalHtml = '<div class="so-signal-bar"><div class="so-signal-fill ' + sigClass + '" style="width:' + sigPct + '%"></div><span class="so-signal-val">' + o.senial + ' dBm</span></div>';
+    <!-- Custom Theme JavaScript -->
+    <script src="/public/smartolt-files/sb-admin-2.js"></script>
         
-        h += '<tr class="so-onu-row" data-sn="' + (o.sn || '') + '" data-estado="' + (o.estado || '') + '" data-olt="' + (o.olt_nombre || '') + '">';
-        h += '<td><a href="/modulo?pagina=VerOnu&sn=' + (o.sn || '') + '&olt_id=' + (o.olt_id || '') + '" style="text-decoration:none;"><code style="background:#eef2ff;padding:2px 6px;border-radius:4px;font-size:0.78rem;color:#4338ca;font-weight:600;">' + (o.sn || '-') + '</code></a></td>';
-        h += '<td><strong>' + (o.nombre || 'Sin nombre') + '</strong></td>';
-        h += '<td>' + (o.puerto_olt || '-') + '</td>';
-        h += '<td>' + (o.cliente_nombre || '<span style="color:#94a3b8;">Sin cliente</span>') + '</td>';
-        h += '<td>' + signalHtml + '</td>';
-        h += '<td><span class="so-badge ' + estadoClass + '">' + estadoText + '</span></td>';
-        h += '<td class="text-right"><div style="display:flex;gap:4px;justify-content:flex-end;flex-wrap:wrap;">';
-        h += '<button class="so-btn so-btn-xs so-btn-success" onclick="soOnuAction(' + (o.id||0) + ',\'activate\')" title="Activar"><i class="fas fa-play"></i></button>';
-        h += '<button class="so-btn so-btn-xs so-btn-warning" onclick="soOnuAction(' + (o.id||0) + ',\'deactivate\')" title="Suspender"><i class="fas fa-pause"></i></button>';
-        h += '<button class="so-btn so-btn-xs so-btn-secondary" onclick="soOnuAction(' + (o.id||0) + ',\'reboot\')" title="Reiniciar"><i class="fas fa-sync"></i></button>';
-        h += '<button class="so-btn so-btn-xs so-btn-primary" onclick="openSoLink(' + (o.id||0) + ',\'' + (o.sn||'').replace(/'/g,"\\'") + '\',\'' + (o.nombre||'').replace(/'/g,"\\'") + '\')" title="Vincular a cliente"><i class="fas fa-link"></i></button>';
-        h += '<button class="so-btn so-btn-xs so-btn-danger" onclick="soOnuAction(' + (o.id||0) + ',\'delete\')" title="Eliminar"><i class="fas fa-trash"></i></button>';
-        h += '<button class="so-btn so-btn-xs so-btn-secondary" onclick="soOnuAction(' + (o.id||0) + ',\'resync\')" title="Resincronizar"><i class="fas fa-exchange-alt"></i></button>';
-        h += '</div></td>';
-        h += '</tr>';
-      });
-      tb.innerHTML = h;
-    })
-    .catch(function(e) {
-      tb.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:#ef4444;"><i class="fas fa-exclamation-triangle"></i> ' + e.message + '</td></tr>';
-    });
-}
+    <!-- Loading overlay -->
+    <script src="/public/smartolt-files/loadingoverlay.custom.js"></script>
+    
+    <!-- Message box -->
+    <script src="/public/smartolt-files/messagebox.min.js"></script>
+    
+    
 
-function filterSoOnus() {
-  var q = document.getElementById('soSearchOnu').value.toLowerCase().trim();
-  var estadoFiltro = document.getElementById('soFilterEstado').value;
-  var oltFiltro = document.getElementById('soFilterOlt').value;
-  var rows = document.querySelectorAll('#soOnuBody tr.so-onu-row');
-  rows.forEach(function(row) {
-    var texto = row.textContent.toLowerCase();
-    var estado = row.getAttribute('data-estado') || '';
-    var olt = row.getAttribute('data-olt') || '';
-    var matchSearch = !q || texto.includes(q);
-    var matchEstado = !estadoFiltro || estado === estadoFiltro;
-    var matchOlt = !oltFiltro || olt === oltFiltro;
-    row.style.display = (matchSearch && matchEstado && matchOlt) ? '' : 'none';
-  });
-}
+<script type="text/javascript">
 
-// === SYNC ===
-function syncSmartoltOnus() {
-  var btn = event && event.target ? (event.target.tagName === 'I' ? event.target.parentElement : event.target) : document.querySelector('.so-btn-success');
-  btn.disabled = true;
-  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sincronizando...';
-  
-  fetch('/api/smartolt/sync', { method: 'POST' })
-    .then(function(r) { return r.json(); })
-    .then(function(d) {
-      btn.disabled = false; btn.innerHTML = '<i class="fas fa-sync"></i> Sincronizar';
-      if (d.success) {
-        alert('✅ ' + (d.message || 'ONUs sincronizadas correctamente') + (d.count ? ' (' + d.count + ' ONUs)' : ''));
-        loadSoOnus();
-      } else {
-        alert('❌ ' + (d.message || d.msg || 'Error al sincronizar'));
-      }
-    })
-    .catch(function(e) {
-      btn.disabled = false; btn.innerHTML = '<i class="fas fa-sync"></i> Sincronizar';
-      alert('❌ Error: ' + e.message);
-    });
-}
+$( document ).ready(function() {
+	
+	// Hide new version dot if user has already seen this version
+	var currentVersion = '3.53.0';
+	var lastSeenVersion = localStorage.getItem('lastSeenVersion');
+	if (lastSeenVersion === currentVersion) {
+		$('.new-version-dot').hide();
+	}
 
-// === ONU ACTIONS ===
-function soOnuAction(id, action) {
-  var labels = { activate: 'activar', deactivate: 'suspender', reboot: 'reiniciar', delete: 'eliminar', resync: 'resincronizar' };
-  var msgs = { activate: '¿Activar esta ONU?', deactivate: '¿Suspender esta ONU?', reboot: '¿Reiniciar esta ONU?', delete: '¿Eliminar esta ONU? Se desvinculará del cliente.', resync: '¿Resincronizar esta ONU?' };
-  
-  if (!confirm(msgs[action] || '¿Realizar acción ' + action + '?')) return;
-  
-  fetch('/api/smartolt/onu/' + id + '/action', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ action: action })
-  })
-  .then(function(r) { return r.json(); })
-  .then(function(d) {
-    if (d.success) {
-      alert('✅ ' + (d.message || 'Acción ' + (labels[action] || action) + ' ejecutada'));
-      loadSoOnus();
-    } else {
-      alert('❌ ' + (d.message || d.msg || 'Error al ' + (labels[action] || action)));
+	
+	$('#smartolt-update-banner-changelog').on('click', function(e) {
+		e.preventDefault();
+		localStorage.setItem('lastSeenVersion', currentVersion);
+		$('.new-version-dot').hide();
+				window.location.href = '/changelog';
+			});
+
+	$('#smartolt-update-banner-dismiss').on('click', function() {
+		localStorage.setItem('lastSeenVersion', currentVersion);
+		$('.new-version-dot').hide();
+		$('#smartolt-update-banner').slideUp(300);
+	});
+
+	$('#footer-changelog-link').on('click', function() {
+		localStorage.setItem('lastSeenVersion', currentVersion);
+		$('.new-version-dot').hide();
+	});
+
+	//hide alert-success after 5 seconds
+	/*setTimeout(function(){
+		$('.alert-success').not('.nofade').fadeOut();
+	},5000);*/
+	
+	var waitingForOLT   = $("<div>", {
+	    id      : "waitingOLT",
+	    css     : {
+	        "font-size" : "50px",
+			"white-space" : "nowrap"
+	    },
+	    text    : "Waiting for OLT"
+	});
+
+	var loadingOverlaySettings = {
+		    image       : "",
+		    fontawesome : "fa fa-spinner fa-spin",
+		    custom  : waitingForOLT,
+		    resizeInterval : 0
+		};
+
+	$.LoadingOverlay("append", loadingOverlaySettings);
+
+	window.showLoadingOverlay = function(loadingText = null) {
+		if(loadingText != null) {
+			$("#waitingOLT").text(loadingText);
+		}
+		else {
+			$("#waitingOLT").text("Waiting for OLT");
+		}
+		
+		$.LoadingOverlay("show", loadingOverlaySettings);
+	}
+
+	window.hideLoadingOverlay = function() {
+		$.LoadingOverlay("hide");
+	}
+
+	window.isLoadingOverlayVisible = function() {
+		return $('.loadingoverlay').is(":visible");
+	}
+	
+	//hide loading overlay when ajax request finishes
+	/*$(document).ajaxStop(function(){
+		hideLoadingOverlay();
+	});*/
+
+	//show toast with error
+	$(document).ajaxError(function(requestObject, error, errorThrown) {
+		if(error.status != 404 && error != undefined && error.responseJSON != undefined && 
+				error.responseJSON.error != undefined && error.responseJSON.error.length > 0) {
+			toast(error.responseJSON.error);
+		}
+	});
+
+	//confirm message box
+	window.MessageBoxConfirm = function(message){
+	    return $.MessageBox({
+	        buttonDone  : "OK",
+	        buttonFail  : "Cancel",
+	        message     : message
+	    });
+	}
+
+	window.getSelectedText = function() {
+        if (window.getSelection) {
+            return window.getSelection().toString();
+        } 
+        else if (document.selection) {
+            return document.selection.createRange().text;
+        }
+        return '';
     }
-  })
-  .catch(function(e) {
-    alert('❌ Error: ' + e.message);
-  });
-}
 
-// === LINK ONU TO CLIENT ===
-function openSoLink(id, sn, nombre) {
-  document.getElementById('soLinkOnuId').value = id;
-  document.getElementById('soLinkOnuSn').value = sn;
-  document.getElementById('soLinkOnuDisplay').value = sn + ' - ' + nombre;
-  document.getElementById('soLinkSearch').value = '';
-  document.getElementById('soLinkCliente').innerHTML = '<option value="">--- Busque un cliente ---</option>';
-  document.getElementById('soLinkResult').innerHTML = '';
-  openSoModal('soModalLink');
-  // Load some clients
-  buscarClientes('');
-}
+	//close navbar menu when clicking outside of it
+	$(document).click(function (event) {
+		var clickover = $(event.target);
+		var $nav = $("div.navbar-collapse");
+        var _opened = $nav.hasClass("in");
 
-var soSearchTimeout = null;
-function debounceSearchCliente() {
-  if (soSearchTimeout) clearTimeout(soSearchTimeout);
-  soSearchTimeout = setTimeout(function() {
-    buscarClientes(document.getElementById('soLinkSearch').value.trim());
-  }, 300);
-}
-
-function buscarClientes(q) {
-  var sel = document.getElementById('soLinkCliente');
-  sel.innerHTML = '<option value=""><i class="fas fa-spinner fa-spin"></i> Buscando...</option>';
-  
-  fetch('/api/clientes/buscar?q=' + encodeURIComponent(q))
-    .then(function(r) { return r.json(); })
-    .then(function(clientes) {
-      sel.innerHTML = '';
-      if (!clientes || clientes.length === 0) {
-        sel.innerHTML = '<option value="">No se encontraron clientes</option>';
-        return;
-      }
-      clientes.forEach(function(c) {
-        var opt = document.createElement('option');
-        opt.value = c.id;
-        opt.text = c.nombre + (c.cedula ? ' (' + c.cedula + ')' : '') + ' - ' + (c.telefono || '');
-        sel.appendChild(opt);
-      });
-    })
-    .catch(function() {
-      sel.innerHTML = '<option value="">Error al buscar</option>';
+        if (_opened === true && !clickover.hasClass("navbar-toggle")) {
+			$nav.collapse('hide');
+        }
     });
-}
 
-function submitSoLink() {
-  var onuId = document.getElementById('soLinkOnuId').value;
-  var clienteId = document.getElementById('soLinkCliente').value;
-  if (!clienteId) { document.getElementById('soLinkResult').innerHTML = '<div style="color:#ef4444;padding:6px 0;">Seleccione un cliente</div>'; return; }
-  
-  fetch('/api/smartolt/onu/link', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ onu_id: parseInt(onuId), cliente_id: parseInt(clienteId) })
-  })
-  .then(function(r) { return r.json(); })
-  .then(function(d) {
-    if (d.success) {
-      document.getElementById('soLinkResult').innerHTML = '<div style="color:#16a34a;padding:8px 10px;background:#f0fdf4;border-radius:6px;font-weight:600;"><i class="fas fa-check-circle"></i> ONU vinculada a cliente</div>';
-      setTimeout(function() { closeSoModal('soModalLink'); loadSoOnus(); }, 1000);
-    } else {
-      document.getElementById('soLinkResult').innerHTML = '<div style="color:#ef4444;padding:8px 10px;background:#fef2f2;border-radius:6px;">' + (d.message || 'Error') + '</div>';
+	/*https://www.quirksmode.org/blog/archives/2014/02/mouse_event_bub.html
+	  Safari on iOS only allows the mouse events, including click, to bubble up in the following situations:
+	  1. The target element of the event is a link or a form field.
+	  2. The target element, or any of its ancestors up to but not including the <body>, has an explicit event handler set for any of the mouse events. This event handler may be an empty function.
+      3. The target element, or any of its ancestors up to and including the document has a cursor: pointer CSS declarations. */
+	$("#content-wrapper").click(function (event) {
+		//this is here only for iOS to allow mouse events to bubble up so we can close navbar menu when clicking outside of it
+    });
+
+	// check navbar menu top offset
+    function closeMenuIfOpened() {
+		var $nav = $("div.navbar-collapse");
+    	var _opened = $nav.hasClass("in");
+
+        if (_opened === true && $(".navbar").offset().top > 50) {
+			$nav.collapse('hide');
+        }
     }
-  })
-  .catch(function(e) {
-    document.getElementById('soLinkResult').innerHTML = '<div style="color:#ef4444;padding:6px 0;">Error: ' + e.message + '</div>';
-  });
-}
 
-// === INIT ===
-document.addEventListener('DOMContentLoaded', function() {
-  loadSoOnus();
-  loadSoOnuTypes();
+    //for touch devices, detect zoom in/out events and close the navbar menu if opened
+    var tracks = [];
+    $(window).on("touchmove", function (event) {
+	
+	    //only run code if the user has two fingers touching
+	    if (event.originalEvent.touches.length === 2) {
+	
+	        //track the touches, I'm setting each touch as an array inside the tracks array
+	        //each touch array contains an X and Y coordinate
+	        tracks.push([ [event.originalEvent.touches[0].pageX, event.originalEvent.touches[0].pageY], [event.originalEvent.touches[1].pageX, event.originalEvent.touches[1].pageY] ]);
+	    }
+	}).on("touchstart", function () {
+	    //start-over
+	    tracks = [];
+	}).on("touchend", function () {
+	    if(tracks.length > 0) {
+			var $nav = $("div.navbar-collapse");
+	    	var _opened = $nav.hasClass("in");
+	        if (_opened === true) {
+				$nav.collapse('hide');
+	        }
+	    }
+	});
+
+	// COPY TO CLIPBOARD
+	// Attempts to use .execCommand('copy') on a created text field
+	// Falls back to a selectable alert if not supported
+	// Attempts to display status in Bootstrap tooltip
+	// ------------------------------------------------------------------------------
+
+	function copyToClipboard(text, el) {
+	  var copyTest = document.queryCommandSupported('copy');
+	  var elOriginalText = el.attr('data-original-title');
+
+	  if (copyTest === true) {
+	    var copyTextArea = document.createElement("textarea");
+	    copyTextArea.value = text;
+	    document.body.appendChild(copyTextArea);
+	    copyTextArea.select();
+	    try {
+	      var successful = document.execCommand('copy');
+	      var msg = successful ? "Copied!" : "Whoops, not copied!";
+	      el.attr('data-original-title', msg).tooltip('show');
+	    } 
+	    catch (err) {
+	      console.log("Oops, unable to copy");
+	    }
+	    document.body.removeChild(copyTextArea);
+	    el.attr('data-original-title', elOriginalText);
+	  } 
+	  else {
+	    // Fallback if browser doesn't support .execCommand('copy')
+	    window.prompt("Copy to clipboard", text);
+	  }
+	}
+
+	function copyToClipboard2(text, el) {
+		  if (document.queryCommandSupported('copy') === true) {
+			var elOriginalText = el.attr('data-original-title');
+	 	    var copyTextArea = document.createElement("textarea");
+		    copyTextArea.textContent = text.text();
+		    document.body.appendChild(copyTextArea);
+
+		    var selection = document.getSelection();
+		    var range = document.createRange();
+		    range.selectNode(copyTextArea);
+		    selection.removeAllRanges();
+		    selection.addRange(range);
+		    
+		    try {
+		      var successful = document.execCommand('copy');
+			  var msg;
+
+			  if (successful) {
+				  msg = "Copied!";
+			  } 
+			  else {
+				msg = "Whoops, not copied!";
+				el.removeClass('not-selectable');
+			  }
+		      el.attr('data-original-title', msg).tooltip('show');
+		    } 
+		    catch (err) {
+		      console.log("Oops, unable to copy");
+		    }
+		    selection.removeAllRanges();
+		    document.body.removeChild(copyTextArea);
+		    el.attr('data-original-title', elOriginalText);
+		  } 
+		  else {
+			$('.not-selectable').removeClass('not-selectable');
+		    // Fallback if browser doesn't support .execCommand('copy')
+		    window.prompt("Copy to clipboard", text.text());
+		  }
+		}
+
+	// Initialize
+   // ---------------------------------------------------------------------
+
+   // Tooltips
+   // Requires Bootstrap 3 for functionality
+   $('.js-tooltip').tooltip();
+
+   // Copy to clipboard
+   // Grab any text in the attribute 'data-copy' and pass it to the 
+   // copy function
+   $('.js-copy').click(function() {
+     var text = $(this).attr('data-copy');
+     var el = $(this);
+     copyToClipboard(text, el);
+   });
+
+   $(document).on('click','.comma-copy', function() {
+	   $(this).removeClass('btn-primary').addClass('btn-default');
+	     var el = $('#'+$(this).attr('data-idtag'));
+	     copyToClipboard2(el, $(this));
+	     el.removeClass('text-primary').addClass('text-muted');
+	   });
+
+   //trim white spaces when paste in any input
+   $(document).on('paste', 'input[type=text]', function(e) {
+	  // prevent copying action
+	  e.preventDefault();
+	  
+	  var pastedText = e.originalEvent.clipboardData.getData('Text');
+	  var withoutSpaces = pastedText;
+	  if(pastedText) {
+		  withoutSpaces = pastedText.trim();
+	  }
+
+	  //remove all spaces, including from inside the text
+	  if($(this).hasClass('no_spaces')) {
+		  withoutSpaces = withoutSpaces.replace(/\s/g, '');
+	  }
+	  
+	  $(this).insertAtCaret(withoutSpaces);
+	});
+
+   $.fn.insertAtCaret = function(text) {
+	    return this.each(function() {
+	        if (document.selection && this.tagName == 'TEXTAREA') {
+	            //IE textarea support
+	            this.focus();
+	            sel = document.selection.createRange();
+	            sel.text = text;
+	            this.focus();
+	        } else if (this.selectionStart || this.selectionStart == '0') {
+	            //MOZILLA/NETSCAPE support
+	            startPos = this.selectionStart;
+	            endPos = this.selectionEnd;
+	            scrollTop = this.scrollTop;
+	            this.value = this.value.substring(0, startPos) + text + this.value.substring(endPos, this.value.length);
+	            this.focus();
+	            this.selectionStart = startPos + text.length;
+	            this.selectionEnd = startPos + text.length;
+	            this.scrollTop = scrollTop;
+	        } else {
+	            // IE input[type=text] and other browsers
+	            this.value += text;
+	            this.focus();
+	            this.value = this.value;    // forces cursor to end
+	        }
+	    });
+	};
+    
+	
+  $('.save-configuration-button').click(function (){
+    var button = $('.save-configuration-anchor');
+
+    button.toggleClass('active');
+    button.attr('disabled', true);
+    button.text("Saving...");
+    $('#saveConfigModal').modal('hide');
+
+    $.ajax({
+        method: "GET",
+        beforeSend: function(request) {
+		    request.setRequestHeader("X-Token", config.X_TOKEN);
+		  },
+        url: "/api/system/write",
+      })
+      .done(function( response ) {
+        $.MessageBox((response && response.response) ? response.response : "Save initiated. It could take the OLT up to 5 minutes to write the config!");
+        button.text("Save config");
+        setTimeout(function () {
+          button.toggleClass('active');
+          button.attr('disabled', false);
+          button.text("Save config");
+        }, 1000);
+      })
+      .fail(function(jqXHR, textStatus) {
+    	  if(jqXHR.responseJSON) {
+				$.MessageBox(jqXHR.responseJSON.error);
+			}
+			else {
+				$.MessageBox(jqXHR.responseText);
+			}
+	        setTimeout(function () {
+	        	 button.toggleClass('active');
+	             button.attr('disabled', false);
+	             button.text("Save config");
+	        }, 1000);
+      });
+  });
+
+    
 });
 </script>
+
+</div>
+
+<style>
+.new-version-dot {
+	display: inline-block;
+	width: 8px;
+	height: 8px;
+	background-color: #5cb85c;
+	border-radius: 50%;
+	margin-left: 4px;
+	animation: pulse-green 2s infinite;
+}
+.footer-dot-sep {
+	opacity: 0.5;
+	margin: 0 2px;
+}
+footer {
+	height: auto;
+	padding-bottom: 8px;
+}
+#feature-tour-whatsnew .fa-bullhorn {
+	margin-right: 5px;
+	font-size: 2em;
+	vertical-align: -6px;
+}
+
+@keyframes pulse-green {
+	0% {
+		transform: scale(0.95);
+		box-shadow: 0 0 0 0 rgba(92, 184, 92, 0.7);
+	}
+	70% {
+		transform: scale(1);
+		box-shadow: 0 0 0 6px rgba(92, 184, 92, 0);
+	}
+	100% {
+		transform: scale(0.95);
+		box-shadow: 0 0 0 0 rgba(92, 184, 92, 0);
+	}
+}
+
+</style>
+
+<footer>
+	<div class="text-center row">SmartOLT <a href="#" class="btn-link" id="footer-changelog-link">v3.53.0<span class="new-version-dot" title="New updates" style="display: none;"></span></a> © 2026</div>
+</footer>
+
+
+
+
+<div class="loadingoverlay" style="background-color: rgba(255, 255, 255, 0.8); position: fixed; display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; top: 0px; left: 0px; width: 100%; height: 100%; background-size: 100px;"><div class="loadingoverlay_fontawesome fa fa-spinner fa-spin" style="font-size: 100px;"></div><div id="waitingOLT" style="font-size: 50px; white-space: nowrap;">Waiting for OLT</div></div>
+<script>
+$(document).ready(function() {
+  function cargarOLTs() {
+    $.ajax({url:'/api/smartolt/olts', method:'GET', success:function(r) {
+      if(!r.success) return;
+      var h = '';
+      r.data.forEach(function(o) {
+        h += '<tr><td class="text-center"><a href="/modulo?pagina=SmartoltDashboard" class="btn btn-success">View</a></td>'+
+          '<td>'+o.id+'</td><td class="text-center"><span class="olt-status-dot olt-status-online"></span></td>'+
+          '<td>'+ (o.name||'') +'</td><td>'+ (o.ip||'') +'</td><td>'+(o.telnet_port||23)+'</td><td>'+(o.snmp_port||161)+'</td>'+
+          '<td>'+(o.hardware_version||'ZTE-C300')+'</td><td>'+(o.software_version||'2.1.0')+'</td>'+
+          '<td class="text-center"><a href="#" class="btn btn-small btn-danger" title="Delete"><i class="glyphicon glyphicon-trash"></i></a></td></tr>';
+      });
+      $('table.table-striped tbody').html(h || '<tr><td colspan="10" class="text-center text-muted">No OLTs found</td></tr>');
+    }});
+  }
+  cargarOLTs();
+});
+</script>
+</body></html>
