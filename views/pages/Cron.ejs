@@ -1,0 +1,828 @@
+<style>
+/* ===== CRON PAGE - Rediseño completo ===== */
+.cron-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 24px 16px;
+}
+
+/* Header */
+.cron-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 28px;
+  gap: 12px;
+}
+.cron-title {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.cron-title i { color: var(--accent); }
+.cron-subtitle {
+  font-size: 0.85rem;
+  color: var(--text-gray);
+  margin-top: 3px;
+}
+
+/* Status badge */
+.cron-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.cron-status.ok {
+  background: rgba(22, 163, 74, 0.1);
+  color: #16a34a;
+  border: 1px solid rgba(22, 163, 74, 0.2);
+}
+.cron-status .dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #16a34a;
+  animation: cron-pulse 2s infinite;
+}
+@keyframes cron-pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+/* Back button */
+.cron-btn-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-decoration: none;
+  background: var(--bg-card);
+  color: var(--text-gray);
+  border: 1px solid var(--border-color);
+  transition: all 0.2s;
+}
+.cron-btn-back:hover {
+  background: var(--border-color);
+  color: var(--text-main);
+}
+
+/* Cards */
+.cron-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  margin-bottom: 14px;
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+.cron-card:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+  border-color: #cbd5e1;
+}
+.cron-card.active {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(99,102,241,0.1);
+}
+.cron-card.active:hover {
+  border-color: var(--accent);
+}
+
+.cron-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px;
+  gap: 14px;
+  cursor: pointer;
+  user-select: none;
+}
+.cron-row-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex: 1;
+  min-width: 0;
+}
+.cron-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.15rem;
+  flex-shrink: 0;
+}
+.cron-label {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--text-main);
+}
+.cron-desc {
+  font-size: 0.8rem;
+  color: var(--text-gray);
+  margin-top: 2px;
+  line-height: 1.3;
+}
+
+/* Toggle switch */
+.cron-toggle {
+  position: relative;
+  width: 46px;
+  height: 26px;
+  flex-shrink: 0;
+}
+.cron-toggle input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.cron-toggle .slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: #cbd5e1;
+  border-radius: 26px;
+  transition: 0.25s;
+}
+.cron-toggle .slider:before {
+  content: '';
+  position: absolute;
+  height: 20px;
+  width: 20px;
+  left: 3px;
+  bottom: 3px;
+  background: #fff;
+  border-radius: 50%;
+  transition: 0.25s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+}
+.cron-toggle input:checked + .slider {
+  background: var(--accent);
+}
+.cron-toggle input:checked + .slider:before {
+  transform: translateX(20px);
+}
+
+/* Expandable section */
+.cron-expand {
+  display: none;
+  padding: 0 20px 18px;
+  border-top: 1px solid var(--border-color);
+}
+.cron-card.active .cron-expand { display: block; }
+.cron-expand-inner {
+  padding-top: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* Time controls */
+.cron-time-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.cron-time-group label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-gray);
+  white-space: nowrap;
+}
+.cron-time-group select {
+  padding: 7px 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-main);
+  background: var(--bg-input);
+  cursor: pointer;
+  min-width: 70px;
+  transition: all 0.2s;
+}
+.cron-time-group select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(99,102,241,0.12);
+}
+
+/* Frequency badge (monitoreo) */
+.cron-freq-badge {
+  font-weight: 700;
+  font-size: 0.88rem;
+  color: var(--text-main);
+  padding: 7px 14px;
+  background: rgba(99,102,241,0.06);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+}
+
+/* Saved indicator */
+.cron-saved {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  color: #16a34a;
+  font-weight: 600;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.cron-saved.show { opacity: 1; }
+
+/* Action buttons */
+.cron-actions {
+  display: flex;
+  gap: 6px;
+  margin-left: auto;
+}
+.cron-btn {
+  padding: 7px 14px;
+  border-radius: 8px;
+  border: none;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+.cron-btn:active {
+  transform: scale(0.97);
+}
+.cron-btn-run {
+  background: rgba(37, 99, 235, 0.1);
+  color: #2563eb;
+}
+.cron-btn-run:hover {
+  background: rgba(37, 99, 235, 0.18);
+}
+.cron-btn-log {
+  background: rgba(22, 163, 74, 0.1);
+  color: #16a34a;
+}
+.cron-btn-log:hover {
+  background: rgba(22, 163, 74, 0.18);
+}
+.cron-btn-cancel {
+  background: var(--border-color);
+  color: var(--text-gray);
+}
+.cron-btn-cancel:hover {
+  background: #cbd5e1;
+  color: var(--text-main);
+}
+.cron-btn-confirm {
+  background: #d97706;
+  color: #fff;
+}
+.cron-btn-confirm:hover {
+  background: #b45309;
+}
+
+/* Info box */
+.cron-info-box {
+  margin-top: 24px;
+  padding: 14px 18px;
+  background: rgba(99,102,241,0.04);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  font-size: 0.82rem;
+  color: var(--text-gray);
+  line-height: 1.5;
+}
+.cron-info-box i {
+  color: var(--accent);
+  margin-right: 6px;
+}
+.cron-info-box b {
+  color: var(--text-main);
+}
+
+/* Empty state */
+.cron-empty {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-gray);
+}
+.cron-empty-icon {
+  font-size: 2.5rem;
+  opacity: 0.25;
+  display: block;
+  margin-bottom: 14px;
+}
+
+/* ===== MODALS ===== */
+.cron-modal-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.5);
+  z-index: 99999;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(3px);
+  padding: 16px;
+}
+.cron-modal-overlay.open { display: flex; }
+
+.cron-modal {
+  background: var(--bg-card);
+  width: 100%;
+  max-width: 700px;
+  max-height: 85vh;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 25px 60px rgba(0,0,0,0.2);
+  display: flex;
+  flex-direction: column;
+}
+
+.cron-modal.small {
+  max-width: 420px;
+}
+
+.cron-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 22px;
+  border-bottom: 1px solid var(--border-color);
+}
+.cron-modal-header h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-main);
+}
+.cron-modal-close {
+  background: none;
+  border: none;
+  color: var(--text-gray);
+  cursor: pointer;
+  font-size: 1.3rem;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: all 0.15s;
+  line-height: 1;
+}
+.cron-modal-close:hover {
+  background: rgba(0,0,0,0.06);
+  color: var(--text-main);
+}
+
+.cron-modal-body {
+  padding: 18px 22px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+/* Log output */
+.cron-log-output {
+  background: #0f172a;
+  color: #a5f3fc;
+  padding: 16px;
+  border-radius: 10px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.78rem;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-all;
+  max-height: 55vh;
+  overflow-y: auto;
+}
+
+/* Confirm modal body */
+.cron-confirm-body {
+  padding: 28px 24px 20px;
+  text-align: center;
+}
+.cron-confirm-icon {
+  font-size: 2.5rem;
+  margin-bottom: 16px;
+  color: #d97706;
+}
+.cron-confirm-msg {
+  color: var(--text-gray);
+  font-size: 0.95rem;
+  margin: 0 0 8px;
+  line-height: 1.5;
+}
+.cron-confirm-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 22px;
+}
+
+/* Select in confirm modal */
+.cron-cycle-select {
+  margin-top: 14px;
+  background: var(--bg-body);
+  border-radius: 10px;
+  padding: 14px;
+  border: 1px solid var(--border-color);
+  text-align: left;
+}
+.cron-cycle-select label {
+  font-weight: 600;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  display: block;
+  margin-bottom: 6px;
+}
+.cron-cycle-select select {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 0.85rem;
+  background: var(--bg-card);
+  color: var(--text-main);
+  cursor: pointer;
+}
+
+/* Spinner */
+.cron-spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(0,0,0,0.1);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: cron-spin 0.6s linear infinite;
+}
+@keyframes cron-spin { to { transform: rotate(360deg); } }
+
+/* Responsive */
+@media (max-width: 640px) {
+  .cron-expand-inner { flex-direction: column; align-items: stretch; }
+  .cron-actions { margin-left: 0; }
+  .cron-header { flex-direction: column; }
+  .cron-row { padding: 14px 14px; }
+  .cron-expand { padding: 0 14px 14px; }
+}
+</style>
+
+<div class="cron-container">
+  <div class="cron-header">
+    <div>
+      <div class="cron-title">
+        <i class="fas fa-clock"></i> Tareas Programadas
+      </div>
+      <div class="cron-subtitle">Configura la ejecución automática de tareas del sistema</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;">
+      <div class="cron-status ok">
+        <span class="dot"></span>
+        Cron Activo
+      </div>
+      <a href="/modulo?pagina=Configuracion" class="cron-btn-back">
+        <i class="fas fa-arrow-left"></i> Volver
+      </a>
+    </div>
+  </div>
+
+  <% if (typeof tasks !== 'undefined' && tasks && tasks.length) { %>
+    <% tasks.forEach(function(t) { %>
+      <%
+        var iconStyles = {
+          generar_facturas: 'background:rgba(22,163,74,0.1);color:#16a34a;',
+          suspension: 'background:rgba(220,38,38,0.1);color:#dc2626;',
+          recordatorios: 'background:rgba(217,119,6,0.1);color:#d97706;',
+          backup: 'background:rgba(124,58,237,0.1);color:#7c3aed;',
+          monitoreo: 'background:rgba(8,145,178,0.1);color:#0891b2;'
+        };
+        var iconMap = {
+          generar_facturas: 'fa-file-invoice-dollar',
+          suspension: 'fa-user-slash',
+          recordatorios: 'fa-bell',
+          backup: 'fa-database',
+          monitoreo: 'fa-chart-area'
+        };
+        var nameMap = {
+          generar_facturas: 'Generar Facturas',
+          suspension: 'Suspender Clientes',
+          recordatorios: 'Recordatorios a Clientes',
+          backup: 'Backup',
+          monitoreo: 'Monitoreo de Red'
+        };
+        var descMap = {
+          generar_facturas: 'Crea facturas automáticas y marca vencidas según el ciclo de facturación',
+          suspension: 'Suspende servicios morosos en MikroTik, OLT y base de datos',
+          recordatorios: 'Envía recordatorios de pago a clientes con facturas pendientes',
+          backup: 'Genera respaldo automático de la base de datos y archivos del sistema',
+          monitoreo: 'Recolecta tráfico SNMP y latencia (ping) de equipos cada 5 minutos'
+        };
+        var isActive = t.enabled == 1;
+      %>
+      <div class="cron-card <%= isActive ? 'active' : '' %>" id="card_<%= t.task_name %>">
+        <div class="cron-row" onclick="toggleCard('<%= t.task_name %>')">
+          <div class="cron-row-left">
+            <div class="cron-icon" style="<%= iconStyles[t.task_name] || 'background:rgba(99,102,241,0.1);color:var(--accent);' %>">
+              <i class="fas <%= iconMap[t.task_name] || 'fa-cog' %>"></i>
+            </div>
+            <div>
+              <div class="cron-label"><%= nameMap[t.task_name] || t.task_name %></div>
+              <div class="cron-desc"><%= descMap[t.task_name] || '' %></div>
+            </div>
+          </div>
+          <label class="cron-toggle" onclick="event.stopPropagation()">
+            <input type="checkbox" <%= isActive ? 'checked' : '' %> onchange="toggleCron('<%= t.task_name %>', this.checked)">
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="cron-expand">
+          <div class="cron-expand-inner">
+            <% if (t.task_name === 'monitoreo') { %>
+              <div class="cron-time-group">
+                <label><i class="fas fa-sync-alt"></i> Frecuencia:</label>
+                <span class="cron-freq-badge">Cada 5 minutos</span>
+              </div>
+            <% } else { %>
+              <div class="cron-time-group">
+                <label><i class="fas fa-clock"></i> Hora:</label>
+                <select id="hour_<%= t.task_name %>" onchange="saveCronTime('<%= t.task_name %>')">
+                  <% for(var h = 0; h < 24; h++) { %>
+                    <option value="<%= h %>" <%= t.hour === h ? 'selected' : '' %>><%= ('0' + h).slice(-2) %></option>
+                  <% } %>
+                </select>
+              </div>
+              <div class="cron-time-group">
+                <label>Min:</label>
+                <select id="min_<%= t.task_name %>" onchange="saveCronTime('<%= t.task_name %>')">
+                  <% for(var m = 0; m < 60; m += 5) { %>
+                    <option value="<%= m %>" <%= t.minute === m ? 'selected' : '' %>><%= ('0' + m).slice(-2) %></option>
+                  <% } %>
+                </select>
+              </div>
+            <% } %>
+            <span class="cron-saved" id="saved_<%= t.task_name %>"><i class="fas fa-check-circle"></i> Guardado</span>
+            <div class="cron-actions">
+              <button class="cron-btn cron-btn-run" onclick="runCron('<%= t.task_name %>', this)" title="Ejecutar ahora">
+                <i class="fas fa-play"></i> Ejecutar
+              </button>
+              <button class="cron-btn cron-btn-log" onclick="viewLog('<%= t.task_name %>')" title="Ver registros">
+                <i class="fas fa-file-alt"></i> Log
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    <% }); %>
+  <% } else { %>
+    <div class="cron-empty">
+      <i class="fas fa-clock cron-empty-icon"></i>
+      No hay tareas configuradas
+    </div>
+  <% } %>
+
+  <div class="cron-info-box">
+    <i class="fas fa-info-circle"></i>
+    Los cron se ejecutan diariamente a la hora configurada. Solo actúan si el día coincide con la configuración del ciclo de facturación.
+    <b>Ejecutar</b> lanza la tarea manualmente sin importar la fecha.
+  </div>
+</div>
+
+<!-- Modal Log -->
+<div class="cron-modal-overlay" id="logModal">
+  <div class="cron-modal">
+    <div class="cron-modal-header">
+      <h3><i class="fas fa-terminal"></i> <span id="logModalTitle">Log</span></h3>
+      <button class="cron-modal-close" onclick="closeLogModal()">&times;</button>
+    </div>
+    <div class="cron-modal-body">
+      <div class="cron-log-output" id="logContent">Cargando...</div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Confirmar Ejecución -->
+<div class="cron-modal-overlay" id="confirmRunModal">
+  <div class="cron-modal small">
+    <div class="cron-modal-header" style="background:rgba(217,119,6,0.06);">
+      <h3 style="color:#92400e;"><i class="fas fa-exclamation-triangle" style="color:#d97706;"></i> Confirmar ejecución</h3>
+      <button class="cron-modal-close" onclick="closeConfirmRun()">&times;</button>
+    </div>
+    <div class="cron-confirm-body">
+      <div class="cron-confirm-icon">
+        <i class="fas fa-cogs"></i>
+      </div>
+      <p class="cron-confirm-msg" id="confirmRunMsg">
+        ¿Ejecutar <b>tarea</b> manualmente?
+      </p>
+      <div style="font-size:0.84rem;color:var(--text-gray);">
+        Se ejecutará inmediatamente sin importar la programación.
+      </div>
+      <div id="confirmExtraFields"></div>
+      <div class="cron-confirm-actions">
+        <button class="cron-btn cron-btn-cancel" onclick="closeConfirmRun()">Cancelar</button>
+        <button class="cron-btn cron-btn-confirm" id="confirmRunBtn" onclick="confirmRunExec()">
+          <i class="fas fa-play"></i> Sí, ejecutar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const cronLabels = {
+  generar_facturas: 'Generar Facturas',
+  suspension: 'Suspender Clientes',
+  recordatorios: 'Recordatorios a Clientes',
+  backup: 'Backup',
+  monitoreo: 'Monitoreo de Red'
+};
+const cicloData = <%- JSON.stringify(ciclos || []) %>;
+
+// Toggle expand card on row click (not toggle)
+function toggleCard(task) {
+  var card = document.getElementById('card_' + task);
+  if (event.target.closest('.cron-toggle')) return; // ignore toggle clicks
+  card.classList.toggle('active');
+  // If activating and was inactive, update checkbox
+  var chk = card.querySelector('input[type="checkbox"]');
+  if (chk && card.classList.contains('active') !== chk.checked) {
+    chk.checked = card.classList.contains('active');
+    saveCronTask(task, card.classList.contains('active'));
+  }
+}
+
+function toggleCron(task, enabled) {
+  const card = document.getElementById('card_' + task);
+  if (enabled) card.classList.add('active'); else card.classList.remove('active');
+  saveCronTask(task, enabled);
+}
+
+function saveCronTime(task) {
+  const card = document.getElementById('card_' + task);
+  const enabled = card.classList.contains('active');
+  saveCronTask(task, enabled);
+}
+
+function saveCronTask(task, enabled) {
+  const hourEl = document.getElementById('hour_' + task);
+  const minEl = document.getElementById('min_' + task);
+  const hour = hourEl ? parseInt(hourEl.value) : 0;
+  const minute = minEl ? parseInt(minEl.value) : 0;
+
+  const fd = new FormData();
+  fd.append('task_name', task);
+  fd.append('enabled', enabled ? 1 : 0);
+  fd.append('hour', hour);
+  fd.append('minute', minute);
+
+  fetch('/modulo?pagina=Cron&ajax=save_task', { method: 'POST', body: fd })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (d.status === 'success') {
+        const saved = document.getElementById('saved_' + task);
+        saved.classList.add('show');
+        setTimeout(function() { saved.classList.remove('show'); }, 2500);
+      } else {
+        showCronToast(d.msg || 'Error al guardar', 'error');
+      }
+    })
+    .catch(function() { showCronToast('Error de conexión', 'error'); });
+}
+
+let _pendingRunTask = null;
+let _pendingRunBtn = null;
+
+function runCron(task, btn) {
+  _pendingRunTask = task;
+  _pendingRunBtn = btn;
+  const label = cronLabels[task] || task;
+
+  document.getElementById('confirmRunMsg').innerHTML = '¿Ejecutar <b>' + label + '</b> manualmente?';
+
+  var extraHtml = '';
+  if (task === 'generar_facturas' && cicloData && cicloData.length > 0) {
+    extraHtml = '<div class="cron-cycle-select">';
+    extraHtml += '<label>Ciclo de Facturación:</label>';
+    extraHtml += '<select id="runCicloSelect">';
+    extraHtml += '<option value="-1">—— Todos los ciclos ——</option>';
+    for (var ci = 0; ci < cicloData.length; ci++) {
+      var cc = cicloData[ci];
+      extraHtml += '<option value="' + cc.id + '">' + (cc.name || 'Ciclo #' + cc.id) + ' (Día factura: ' + cc.invoice_day + ')</option>';
+    }
+    extraHtml += '</select></div>';
+  }
+  document.getElementById('confirmExtraFields').innerHTML = extraHtml;
+  document.getElementById('confirmRunModal').classList.add('open');
+}
+
+function closeConfirmRun() {
+  document.getElementById('confirmRunModal').classList.remove('open');
+  _pendingRunTask = null;
+  _pendingRunBtn = null;
+}
+
+function confirmRunExec() {
+  const task = _pendingRunTask;
+  const btn = _pendingRunBtn;
+  closeConfirmRun();
+  if (!task || !btn) return;
+
+  const originalHtml = btn.innerHTML;
+  btn.innerHTML = '<span class="cron-spinner"></span> Ejecutando...';
+  btn.disabled = true;
+
+  const fd = new FormData();
+  fd.append('task', task);
+  if (task === 'generar_facturas') {
+    var cicloSel = document.getElementById('runCicloSelect');
+    if (cicloSel) fd.append('ciclo_id', cicloSel.value);
+  }
+
+  fetch('/modulo?pagina=Cron&ajax=run_task', { method: 'POST', body: fd })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      btn.innerHTML = originalHtml;
+      btn.disabled = false;
+
+      if (d.status === 'success') {
+        var output = (d.data && d.data.output) || (d.msg || 'Tarea ejecutada');
+        document.getElementById('logModalTitle').textContent = 'Resultado de ejecución';
+        document.getElementById('logContent').textContent = output;
+        document.getElementById('logModal').classList.add('open');
+      } else {
+        showCronToast(d.msg || 'Error al ejecutar', 'error');
+      }
+    })
+    .catch(function() {
+      btn.innerHTML = originalHtml;
+      btn.disabled = false;
+      showCronToast('Error de conexión', 'error');
+    });
+}
+
+function viewLog(task) {
+  document.getElementById('logContent').textContent = 'Cargando...';
+  document.getElementById('logModalTitle').textContent = 'Log: ' + (cronLabels[task] || task);
+  document.getElementById('logModal').classList.add('open');
+
+  fetch('/modulo?pagina=Cron&ajax=get_log&task=' + encodeURIComponent(task))
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (d.status === 'success' && d.data) {
+        document.getElementById('logContent').textContent = d.data.output || '(Sin salida)';
+        var el = document.getElementById('logContent');
+        el.scrollTop = el.scrollHeight;
+      } else {
+        document.getElementById('logContent').textContent = 'Error: ' + (d.msg || 'desconocido');
+      }
+    })
+    .catch(function() {
+      document.getElementById('logContent').textContent = 'Error de conexión';
+    });
+}
+
+function closeLogModal() {
+  document.getElementById('logModal').classList.remove('open');
+}
+
+document.getElementById('logModal').addEventListener('click', function(e) {
+  if (e.target === this) closeLogModal();
+});
+
+document.getElementById('confirmRunModal').addEventListener('click', function(e) {
+  if (e.target === this) closeConfirmRun();
+});
+
+function showCronToast(msg, type) {
+  type = type || 'success';
+  var bg = type === 'success' ? '#16a34a' : '#dc2626';
+  var icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+  var t = document.createElement('div');
+  t.className = 'cron-toast';
+  t.style.cssText = 'position:fixed;top:20px;right:20px;z-index:999999;padding:12px 20px;border-radius:10px;font-size:0.88rem;font-weight:600;color:#fff;box-shadow:0 6px 20px rgba(0,0,0,0.18);background:' + bg + ';display:flex;align-items:center;gap:8px;animation:cronSlideIn 0.3s ease;';
+  t.innerHTML = '<i class="fas ' + icon + '"></i> ' + msg;
+  document.body.appendChild(t);
+  setTimeout(function() { t.style.opacity = '0'; t.style.transform = 'translateX(20px)'; t.style.transition = 'all 0.3s'; setTimeout(function() { t.remove(); }, 300); }, 3000);
+}
+
+// Inject toast animation if not exists
+if (!document.getElementById('cron-toast-style')) {
+  var s = document.createElement('style');
+  s.id = 'cron-toast-style';
+  s.textContent = '@keyframes cronSlideIn { from { opacity:0; transform:translateX(20px); } to { opacity:1; transform:translateX(0); } }';
+  document.head.appendChild(s);
+}
+</script>

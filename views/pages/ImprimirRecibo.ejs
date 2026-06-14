@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Recibo de Pago</title>
+<style>
+  body { font-family: 'Courier New', monospace; font-size: 12px; width: 80mm; margin: 0 auto; padding: 10px; }
+  .header { text-align: center; margin-bottom: 10px; border-bottom: 1px dashed #000; padding-bottom: 10px; }
+  .header h2 { margin: 0; font-size: 14px; }
+  .header p { margin: 2px 0; font-size: 11px; }
+  .detalle { margin: 10px 0; border-bottom: 1px dashed #000; padding-bottom: 10px; }
+  .detalle div { display: flex; justify-content: space-between; padding: 2px 0; }
+  .total { font-weight: bold; font-size: 13px; margin-top: 5px; }
+  .footer { text-align: center; margin-top: 10px; font-size: 10px; }
+  @media print { @page { margin: 0; } body { margin: 5mm; } }
+</style>
+</head>
+<body>
+  <div class="header">
+    <h2><%= empresa_nombre || 'Recibo de Pago' %></h2>
+    <p><%= empresa_direccion || '' %></p>
+    <p>Tel: <%= empresa_telefono || '' %></p>
+    <p><%= new Date().toLocaleDateString('es-DO', { day:'2-digit', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit' }) %></p>
+    <p style="font-size:16px;font-weight:bold;">RECIBO #<%= recibo_id %></p>
+  </div>
+  <div class="detalle">
+    <div><span>Cliente:</span><span style="text-align:right;"><%= cliente_nombre %></span></div>
+    <% if (plan_nombre) { %><div><span>Plan:</span><span><%= plan_nombre %></span></div><% } %>
+    <div style="margin-top:8px;"><span>Monto:</span><span style="font-weight:bold;">$<%= monto.toFixed(2) %></span></div>
+    <div><span>Método:</span><span><%= metodo_pago %></span></div>
+    <% if (transaccion) { %><div><span>Transacción:</span><span><%= transaccion %></span></div><% } %>
+    <div class="total" style="margin-top:8px;padding-top:8px;border-top:1px solid #000;">
+      <span>TOTAL PAGADO:</span><span>$<%= monto.toFixed(2) %></span>
+    </div>
+  </div>
+  <div class="footer">
+    <p>¡Gracias por tu pago!</p>
+    <p><%= empresa_nombre || '' %></p>
+  </div>
+  <script>window.print();</script>
+</body>
+</html>

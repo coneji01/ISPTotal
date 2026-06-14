@@ -1,0 +1,434 @@
+<style>
+.fac-animation { animation:facSlideIn 0.2s ease; }
+@keyframes facSlideIn { from{opacity:0;transform:translateY(15px)} to{opacity:1;transform:translateY(0)} }
+</style>
+
+<div class="page-header">
+    <h2 class="page-title"><i class="fas fa-file-invoice"></i> Plantillas de Facturaci&oacute;n</h2>
+    <button class="btn-primary" onclick="abrirModal()">
+        <i class="fas fa-plus-circle"></i> Nueva Plantilla
+    </button>
+</div>
+
+<div class="card">
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th style="min-width:180px;">Nombre</th>
+                <th>Tipo</th>
+                <th>Generaci&oacute;n</th>
+                <th>Suspensi&oacute;n</th>
+                <th>Tolerancia</th>
+                <th>Reconexi&oacute;n</th>
+                <th>Fact. Susp.</th>
+                <th>Primera Factura</th>
+                <th>Clientes</th>
+                <th style="text-align:right;">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% if (ciclos && ciclos.length) { %>
+                <% ciclos.forEach(function(c) { %>
+                    <tr>
+                        <td>#<%= c.id %></td>
+                        <td style="font-weight:600;"><%= c.name || 'Plantilla #' + c.id %></td>
+                        <td>
+                            <% if (c.billing_type === 'postpago') { %>
+                                <span class="badge" style="background:#fef3c7; color:#92400e; white-space:nowrap; padding:3px 8px; border-radius:4px; font-weight:600; font-size:0.78rem;">POSTPAGO</span>
+                            <% } else { %>
+                                <span class="badge" style="background:#dcfce7; color:#166534; white-space:nowrap; padding:3px 8px; border-radius:4px; font-weight:600; font-size:0.78rem;">PREPAGO</span>
+                            <% } %>
+                        </td>
+                        <td>
+                            <span class="badge" style="background:#e0f2fe; color:#0369a1; white-space:nowrap;">
+                                D&iacute;a <%= c.invoice_day %> del mes
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge" style="background:#fee2e2; color:#991b1b; white-space:nowrap;">
+                                D&iacute;a <%= c.suspend_day %> del mes
+                            </span>
+                        </td>
+                        <td>
+                            <%= c.tolerance_months %> mes(es) vencido(s)<br>
+                            <small style="color:#666;">
+                                (<%= c.suspend_weekends ? 'Incluye Fines de Semana' : 'NO Suspende Fines de Semana' %>)
+                            </small>
+                        </td>
+                        <td>
+                            <% if (c.reconnection_fee_active) { %>
+                                SI ($<%= parseFloat(c.reconnection_amount).toFixed(2) %>)
+                            <% } else { %>
+                                <span style="color:#999;">NO</span>
+                            <% } %>
+                        </td>
+                        <td>
+                            <% if (c.invoice_suspended) { %>
+                                <span style="color:#16a34a; font-weight:600;">SI</span>
+                            <% } else { %>
+                                <span style="color:#999;">NO</span>
+                            <% } %>
+                        </td>
+                        <td style="font-size:0.82rem; line-height:1.6;">
+                            <% if (c.prorate_first_invoice) { %>
+                                <span style="background:#e0e7ff; color:#3730a3; padding:2px 8px; border-radius:4px; font-weight:600; white-space:nowrap;">
+                                    <i class="fas fa-calculator" style="font-size:0.7rem;"></i> Prorateo
+                                </span><br>
+                            <% } %>
+                            <% if (c.grace_days && c.grace_days > 0) { %>
+                                <span style="background:#fef3c7; color:#92400e; padding:2px 8px; border-radius:4px; font-weight:600; white-space:nowrap;">
+                                    <i class="fas fa-hourglass-half" style="font-size:0.7rem;"></i> <%= c.grace_days %> d&iacute;as gracia
+                                </span>
+                            <% } else { %>
+                                <span style="color:#999;">-</span>
+                            <% } %>
+                        </td>
+                        <td>
+                            <i class="fas fa-users"></i> <strong><%= c.total_clientes || 0 %></strong>
+                        </td>
+                        <td style="text-align:right; white-space:nowrap;">
+                            <% if (c.is_default) { %>
+                                <span class="badge" style="background:#fef3c7; color:#92400e;">Por defecto</span>
+                            <% } else { %>
+                                <button class="btn-default-inactive" onclick="setDefault(<%= c.id %>, this)" title="Establecer como por defecto">
+                                    <i class="far fa-star"></i> Por defecto
+                                </button>
+                            <% } %>
+                            <button class="btn-icon" style="color:var(--accent);" onclick="abrirModal(<%= JSON.stringify(c).replace(/'/g, "&#39;") %>)">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn-icon" style="color:#dc2626;" onclick="facConfirmarEliminar(<%= c.id %>, '<%= (c.name || 'Plantilla #' + c.id).replace(/'/g, "\\'") %>')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                <% }); %>
+            <% } else { %>
+                <tr><td colspan="11" style="text-align:center; padding:30px; color:#94a3b8;">
+                    <i class="fas fa-file-invoice" style="font-size:2rem; display:block; margin-bottom:10px; opacity:0.4;"></i>
+                    No hay plantillas de facturaci&oacute;n. Cree la primera.
+                </td></tr>
+            <% } %>
+        </tbody>
+    </table>
+</div>
+
+<!-- Modal -->
+<div class="modal" id="modalFacturacion" style="display:none;">
+    <div class="modal-content" style="width: 750px; max-height:90vh; overflow-y:auto;">
+        <div style="display:flex; justify-content:space-between; margin-bottom:15px; border-bottom:1px solid #eee; padding-bottom:10px;">
+            <h3 style="margin:0;" id="modalTitle">Nueva Plantilla</h3>
+            <button onclick="document.getElementById('modalFacturacion').style.display='none'" style="background:none; border:none; font-size:1.5rem; cursor:pointer;">&times;</button>
+        </div>
+
+        <form method="POST">
+            <input type="hidden" name="accion" value="guardar_ciclo">
+            <input type="hidden" name="id_ciclo" id="idCiclo">
+
+            <div class="form-group">
+                <label class="form-label">Nombre de la Plantilla <span style="color:red">*</span></label>
+                <input type="text" name="name" id="nameCiclo" class="form-control" placeholder="Ej: POST | Gen: Dia 25 | Corte: Dia 11" style="font-weight:600;">
+                <small style="color:#64748b;font-size:0.75rem;">Un nombre descriptivo para identificar esta plantilla f&aacute;cilmente.</small>
+            </div>
+
+            <h4 style="margin-top:0; color:var(--primary); font-size:0.95rem;">Tipo de Facturaci&oacute;n</h4>
+            <div class="form-group" style="background:#f0f9ff; padding:15px; border-radius:6px; margin-bottom:15px;">
+                <div style="display:flex; gap:15px;">
+                    <label style="cursor:pointer; display:flex; align-items:center; gap:8px; padding:10px 18px; border:2px solid #d97706; border-radius:8px; flex:1; transition:all 0.2s; background:#fffbeb;" id="labelPostpago" onclick="selectBillingType('postpago')">
+                        <input type="radio" name="billing_type" value="postpago" checked style="accent-color:#d97706;">
+                        <div>
+                            <strong style="color:#92400e;">Postpago <small style="color:#16a34a; font-weight:600;">(Recomendado)</small></strong><br>
+                            <small style="color:#64748b;">Factura del mes consumido</small>
+                        </div>
+                    </label>
+                    <label style="cursor:pointer; display:flex; align-items:center; gap:8px; padding:10px 18px; border:2px solid #e2e8f0; border-radius:8px; flex:1; transition:all 0.2s;" id="labelPrepago" onclick="selectBillingType('prepago')">
+                        <input type="radio" name="billing_type" value="prepago" style="accent-color:#16a34a;">
+                        <div>
+                            <strong style="color:#166534;">Prepago</strong><br>
+                            <small style="color:#64748b;">Factura del mes a consumir</small>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <h4 style="margin-top:0; color:var(--primary); font-size:0.95rem;">Ciclo de Facturaci&oacute;n y Corte</h4>
+            <div style="background:#f8fafc; padding:20px; border-radius:6px; margin-bottom:15px;">
+                <div class="form-group" style="margin-bottom:12px;">
+                    <label class="form-label">Fecha para crear factura</label>
+                    <select name="invoice_day" id="invoiceDay" class="form-control" required>
+                        <% for (var d = 1; d <= 31; d++) { %>
+                            <option value='<%= d %>' <%= d === 25 ? 'selected' : '' %>>D&iacute;a <%= d %> del mes</option>
+                        <% } %>
+                    </select>
+                </div>
+                <div class="form-group" style="margin-bottom:12px;">
+                    <label class="form-label">D&iacute;a de pago <small style="color:#6366f1;font-weight:400;">(usado para el prorrateo)</small></label>
+                    <select name="payment_day" id="paymentDay" class="form-control" required>
+                        <% for (var d = 1; d <= 31; d++) { %>
+                            <option value='<%= d %>' <%= d === 30 ? 'selected' : '' %>>D&iacute;a <%= d %> del mes</option>
+                        <% } %>
+                    </select>
+                </div>
+                <div class="form-group" style="margin-bottom:12px;">
+                    <label class="form-label">Fecha de suspensi&oacute;n (corte)</label>
+                    <select name="suspend_day" id="suspendDay" class="form-control" required>
+                        <% for (var d = 1; d <= 31; d++) { %>
+                            <option value='<%= d %>' <%= d === 15 ? 'selected' : '' %>>D&iacute;a <%= d %> del mes</option>
+                        <% } %>
+                    </select>
+                </div>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label class="form-label">&iquest;Suspender con cu&aacute;ntos meses vencidos?</label>
+                        <input type="number" name="tolerance_months" id="toleranceMonths" class="form-control" min="1" max="12" value="2" required>
+                    </div>
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label class="form-label">&iquest;Suspender fines de semana?</label>
+                        <div style="display:flex; gap:20px; margin-top:5px;">
+                            <label style="cursor:pointer; display:flex; align-items:center; gap:5px;">
+                                <input type="radio" name="suspend_weekends" value="si" checked> SI
+                            </label>
+                            <label style="cursor:pointer; display:flex; align-items:center; gap:5px;">
+                                <input type="radio" name="suspend_weekends" value="no"> NO
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <hr style="margin: 15px 0; border:0; border-top:1px solid #eee;">
+            <h4 style="margin-top:0; color:var(--primary); font-size:0.95rem;">Notificaciones Autom&aacute;ticas</h4>
+            <div style="background:#fff7ed; padding:15px; border-radius:6px; margin-bottom:15px;">
+                <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px;">
+                    <% for (var n = 1; n <= 3; n++) { %>
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label class="form-label">Aviso <%= n %> (D&iacute;a)</label>
+                            <select name="notify_<%= n %>" id="notify<%= n %>" class="form-control">
+                                <option value='0' selected>-- No Notificar --</option>
+                                <% for (var d = 1; d <= 31; d++) { %>
+                                    <option value='<%= d %>'>D&iacute;a <%= d %></option>
+                                <% } %>
+                            </select>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+
+            <hr style="margin: 15px 0; border:0; border-top:1px solid #eee;">
+            <h4 style="margin-top:0; color:var(--primary); font-size:0.95rem;">Cobro de Reconexi&oacute;n</h4>
+            <div class="form-group" style="background:#f0fdf4; padding:15px; border-radius:6px;">
+                <label class="form-label" style="display:block; margin-bottom:10px;">&iquest;Cobrar Reconexi&oacute;n al suspender?</label>
+                <div style="display:flex; gap:20px; margin-bottom:10px;">
+                    <label style="cursor:pointer; display:flex; align-items:center; gap:5px;">
+                        <input type="radio" name="reconnection_option" value="no" checked onchange="toggleRecon(false)"> NO
+                    </label>
+                    <label style="cursor:pointer; display:flex; align-items:center; gap:5px;">
+                        <input type="radio" name="reconnection_option" value="si" id="radioReconSi" onchange="toggleRecon(true)"> SI
+                    </label>
+                </div>
+                <div id="divReconAmount" style="display:none;">
+                    <label class="form-label">Monto de Reconexi&oacute;n</label>
+                    <div style="position:relative;">
+                        <span style="position:absolute; left:10px; top:50%; transform:translateY(-50%);">$</span>
+                        <input type="number" step="0.01" name="reconnection_amount" id="reconAmount" class="form-control" style="padding-left:25px;">
+                    </div>
+                </div>
+            </div>
+
+            <hr style="margin: 15px 0; border:0; border-top:1px solid #eee;">
+            <h4 style="margin-top:0; color:var(--primary); font-size:0.95rem;">Facturar Suspendidos</h4>
+            <div class="form-group" style="background:#fefce8; padding:15px; border-radius:6px;">
+                <label style="display:block; margin-bottom:10px;">&iquest;Generar facturas a servicios suspendidos?</label>
+                <div style="display:flex; gap:20px;">
+                    <label style="cursor:pointer; display:flex; align-items:center; gap:5px;">
+                        <input type="radio" name="invoice_suspended" value="no" checked> NO
+                    </label>
+                    <label style="cursor:pointer; display:flex; align-items:center; gap:5px;">
+                        <input type="radio" name="invoice_suspended" value="si" id="radioInvSusp"> SI
+                    </label>
+                </div>
+                <small style="color:#92400e; margin-top:6px; display:block;">Si est&aacute; en NO, los servicios suspendidos no recibir&aacute;n nuevas facturas mensuales.</small>
+            </div>
+
+            <hr style="margin: 15px 0; border:0; border-top:1px solid #eee;">
+            <h4 style="margin-top:0; color:var(--primary); font-size:0.95rem;">Notificar al Suspender</h4>
+            <div class="form-group" style="background:#fef2f2; padding:15px; border-radius:6px;">
+                <label style="display:block; margin-bottom:10px;">&iquest;Enviar mensaje al cliente cuando se suspenda su servicio?</label>
+                <div style="display:flex; gap:20px;">
+                    <label style="cursor:pointer; display:flex; align-items:center; gap:5px;">
+                        <input type="radio" name="notify_on_suspend" value="no" checked> NO
+                    </label>
+                    <label style="cursor:pointer; display:flex; align-items:center; gap:5px;">
+                        <input type="radio" name="notify_on_suspend" value="si" id="radioNotifSusp"> SI
+                    </label>
+                </div>
+                <small style="color:#991b1b; margin-top:6px; display:block;">Usa la plantilla "Notificaci&oacute;n Suspensi&oacute;n". Se env&iacute;a por el canal activo (WhatsApp/SMS).</small>
+            </div>
+
+            <div class="form-group" style="background:#f0fdf4; padding:15px; border-radius:6px; margin-top:10px;">
+                <label style="display:block; margin-bottom:10px;">&iquest;Enviar confirmaci&oacute;n al cliente cuando registre un pago?</label>
+                <div style="display:flex; gap:20px;">
+                    <label style="cursor:pointer; display:flex; align-items:center; gap:5px;">
+                        <input type="radio" name="notify_on_payment" value="no" checked> NO
+                    </label>
+                    <label style="cursor:pointer; display:flex; align-items:center; gap:5px;">
+                        <input type="radio" name="notify_on_payment" value="si" id="radioNotifPago"> SI
+                    </label>
+                </div>
+                <small style="color:#166534; margin-top:6px; display:block;">Usa la plantilla "Confirmaci&oacute;n de Pago". Se env&iacute;a por el canal activo (WhatsApp/SMS).</small>
+            </div>
+
+            <hr style="margin: 15px 0; border:0; border-top:1px solid #eee;">
+            <h4 style="margin-top:0; color:var(--primary); font-size:0.95rem;">
+                <i class="fas fa-baby" style="font-size:0.85rem;"></i> Primera Factura de Servicio
+            </h4>
+            <div style="background:#eef2ff; padding:15px; border-radius:6px; margin-bottom:15px;">
+                <small style="color:#4338ca; display:block; margin-bottom:12px;">
+                    <i class="fas fa-info-circle"></i> Estas opciones solo aplican a la primera factura de servicio (mensualidad).
+                </small>
+                <div style="background:white; padding:12px 15px; border-radius:6px; margin-bottom:10px; border:1px solid #c7d2fe;">
+                    <label style="display:block; margin-bottom:8px; font-weight:600; color:#475569;">
+                        <i class="fas fa-calculator" style="color:#4f46e5;"></i> Prorateo de la primera factura
+                    </label>
+                    <div style="display:flex; gap:20px; margin-bottom:6px;">
+                        <label style="cursor:pointer; display:flex; align-items:center; gap:5px;">
+                            <input type="radio" name="prorate_first_invoice" value="no" checked> NO
+                        </label>
+                        <label style="cursor:pointer; display:flex; align-items:center; gap:5px;">
+                            <input type="radio" name="prorate_first_invoice" value="si" id="radioProrateYes"> SI
+                        </label>
+                    </div>
+                    <small style="color:#64748b;">La primera factura se calcula proporcionalmente desde el d&iacute;a de instalaci&oacute;n.</small>
+                </div>
+                <div style="background:white; padding:12px 15px; border-radius:6px; border:1px solid #c7d2fe;">
+                    <label style="display:block; margin-bottom:8px; font-weight:600; color:#475569;">
+                        <i class="fas fa-hourglass-half" style="color:#d97706;"></i> D&iacute;as de gracia de la primera factura
+                    </label>
+                    <div style="display:flex; gap:20px;">
+                        <label style="cursor:pointer; display:flex; align-items:center; gap:5px;">
+                            <input type="radio" name="grace_days_option" value="no" checked onchange="toggleGraceDays(false)"> NO
+                        </label>
+                        <label style="cursor:pointer; display:flex; align-items:center; gap:5px;">
+                            <input type="radio" name="grace_days_option" value="si" id="radioGraceYes" onchange="toggleGraceDays(true)"> SI
+                        </label>
+                    </div>
+                    <div id="divGraceDays" style="display:none; margin-top:8px;">
+                        <label style="font-size:0.88rem; font-weight:600; color:#475569;">Cantidad de d&iacute;as</label>
+                        <input type="number" name="grace_days" id="graceDays" class="form-control" min="1" max="60" value="7" style="max-width:150px;">
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-primary" style="width:100%; margin-top:15px;">
+                <i class="fas fa-save"></i> Guardar Plantilla
+            </button>
+        </form>
+    </div>
+</div>
+
+<script>
+function abrirModal(data) {
+    document.getElementById('modalFacturacion').style.display = 'flex';
+    if (data) {
+        document.getElementById('modalTitle').innerText = 'Editar Plantilla #' + data.id;
+        document.getElementById('idCiclo').value = data.id;
+        document.getElementById('nameCiclo').value = data.name || '';
+        selectBillingType(data.billing_type || 'prepago');
+        document.getElementById('invoiceDay').value = data.invoice_day;
+        document.getElementById('paymentDay').value = data.payment_day || data.invoice_day;
+        document.getElementById('suspendDay').value = data.suspend_day;
+        document.getElementById('toleranceMonths').value = data.tolerance_months;
+        if (data.suspend_weekends == 1)
+            document.querySelector('input[name="suspend_weekends"][value="si"]').checked = true;
+        else
+            document.querySelector('input[name="suspend_weekends"][value="no"]').checked = true;
+        document.getElementById('notify1').value = data.notify_day_1;
+        document.getElementById('notify2').value = data.notify_day_2;
+        document.getElementById('notify3').value = data.notify_day_3;
+        if (data.reconnection_fee_active == 1) {
+            document.getElementById('radioReconSi').checked = true;
+            toggleRecon(true);
+            document.getElementById('reconAmount').value = data.reconnection_amount;
+        } else {
+            document.querySelector('input[name="reconnection_option"][value="no"]').checked = true;
+            toggleRecon(false);
+        }
+        if (data.invoice_suspended == 1)
+            document.querySelector('input[name="invoice_suspended"][value="si"]').checked = true;
+        else
+            document.querySelector('input[name="invoice_suspended"][value="no"]').checked = true;
+        if (data.prorate_first_invoice == 1)
+            document.querySelector('input[name="prorate_first_invoice"][value="si"]').checked = true;
+        else
+            document.querySelector('input[name="prorate_first_invoice"][value="no"]').checked = true;
+        if (data.grace_days && parseInt(data.grace_days) > 0) {
+            document.querySelector('input[name="grace_days_option"][value="si"]').checked = true;
+            toggleGraceDays(true);
+            document.getElementById('graceDays').value = data.grace_days;
+        } else {
+            document.querySelector('input[name="grace_days_option"][value="no"]').checked = true;
+            toggleGraceDays(false);
+        }
+        if (data.notify_on_suspend == 1)
+            document.querySelector('input[name="notify_on_suspend"][value="si"]').checked = true;
+        else
+            document.querySelector('input[name="notify_on_suspend"][value="no"]').checked = true;
+        if (data.notify_on_payment == 1)
+            document.querySelector('input[name="notify_on_payment"][value="si"]').checked = true;
+        else
+            document.querySelector('input[name="notify_on_payment"][value="no"]').checked = true;
+    } else {
+        document.getElementById('modalTitle').innerText = 'Nueva Plantilla';
+        document.getElementById('idCiclo').value = '';
+        document.querySelector('form').reset();
+        document.getElementById('nameCiclo').value = '';
+        selectBillingType('postpago');
+        document.querySelector('input[name="suspend_weekends"][value="si"]').checked = true;
+        toggleRecon(false);
+        toggleGraceDays(false);
+    }
+}
+
+function toggleRecon(show) {
+    document.getElementById('divReconAmount').style.display = show ? 'block' : 'none';
+    if (!show) { document.getElementById('reconAmount').value = '0.00'; }
+}
+function toggleGraceDays(show) {
+    document.getElementById('divGraceDays').style.display = show ? 'block' : 'none';
+}
+function selectBillingType(type) {
+    document.querySelector('input[name="billing_type"][value="' + type + '"]').checked = true;
+    var post = document.getElementById('labelPostpago');
+    var pre = document.getElementById('labelPrepago');
+    if (type === 'postpago') {
+        post.style.borderColor = '#d97706'; post.style.background = '#fffbeb';
+        pre.style.borderColor = '#e2e8f0'; pre.style.background = 'transparent';
+    } else {
+        pre.style.borderColor = '#16a34a'; pre.style.background = '#f0fdf4';
+        post.style.borderColor = '#e2e8f0'; post.style.background = 'transparent';
+    }
+}
+
+function setDefault(cycleId, btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    fetch('/api/facturacion/set_default?cycle_id=' + cycleId)
+    .then(r => r.json()).then(d => {
+        if (d.status === 'success') window.location.reload();
+        else { btn.disabled = false; btn.innerHTML = '<i class="far fa-star"></i> Por defecto'; }
+    }).catch(() => {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="far fa-star"></i> Por defecto';
+    });
+}
+
+function facConfirmarEliminar(id, nombre) {
+    if (!confirm('¿Eliminar la plantilla "' + nombre + '"? Esta acción no se puede deshacer.')) return;
+    var form = document.createElement('form');
+    form.method = 'POST';
+    form.innerHTML = '<input type="hidden" name="accion" value="eliminar"><input type="hidden" name="id_ciclo" value="' + id + '">';
+    document.body.appendChild(form);
+    form.submit();
+}
+</script>

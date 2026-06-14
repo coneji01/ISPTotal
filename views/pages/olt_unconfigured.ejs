@@ -1,0 +1,96 @@
+<!DOCTYPE html><html lang="en" class="smartolt-night"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ONUs No Configuradas - JOEL WIFI</title>
+<link href="/public/smartolt-files/bootstrap-custom.css" rel="stylesheet">
+<link href="/public/smartolt-files/styles.css" rel="stylesheet">
+<link href="/public/smartolt-files/toast.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+<link href="/public/smartolt-files/inter-fonts.css" rel="stylesheet">
+<link href="/public/smartolt-files/dashboard-smartolt-night.css" rel="stylesheet">
+<script src="/public/smartolt-files/jquery.min.js"></script>
+<style>
+body { font-family: 'Inter', -apple-system, sans-serif; background: #1a1d23; color: #e0e0e0; }
+.table th { font-weight: 600; background: #2a2d35; border-color: #3a3d45; color: #ccc; }
+.table td { border-color: #3a3d45; vertical-align: middle; }
+.table-hover tbody tr:hover { background: #2a2d35; }
+.badge-onu { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 11px; }
+.badge-working { background: #28a745; color: #fff; }
+.badge-offline { background: #dc3545; color: #fff; }
+.badge-pending { background: #ffc107; color: #000; }
+.uptime-box { background: #2a2d35; border-radius: 8px; padding: 12px; margin-bottom: 10px; }
+.nav-tabs>li.active>a { background: #2a2d35 !important; border-color: #3a3d45 !important; color: #fff !important; }
+.nav-tabs>li>a { color: #999; }
+.spinner { text-align: center; padding: 40px; }
+.spinner i { font-size: 32px; color: #666; }
+</style>
+</head>
+<body class="smartolt-site">
+<div class="navbar navbar-default navbar-fixed-top" style="background:#1a1d23;border-color:#2a2d35;">
+  <div class="container">
+    <div class="navbar-header">
+      <a class="navbar-brand" href="/modulo?pagina=GPONManager" style="color:#e0e0e0;">GPON Manager</a>
+    </div>
+    <ul class="nav navbar-nav">
+      <li><a href="/modulo?pagina=GPONManager" style="color:#999;">Dashboard</a></li>
+      <li><a href="/modulo?pagina=olt_configured" style="color:#999;">Configuradas</a></li>
+      <li class="active"><a href="/modulo?pagina=olt_unconfigured" style="color:#fff;">No configuradas</a></li>
+    </ul>
+  </div>
+</div>
+
+<div class="container-fluid content-wrap" style="margin-top:60px;padding:20px;">
+  <h2 style="margin-top:0;"><i class="fa fa-exclamation-triangle text-warning"></i> ONUs No Configuradas</h2>
+  <p class="text-muted">Datos obtenidos directamente de la OLT ZTE C300. <span id="last-update"></span></p>
+  
+  <div id="unconfigured-content">
+    <div class="spinner"><i class="fa fa-spinner fa-spin"></i><p>Cargando ONUs no configuradas...</p></div>
+  </div>
+</div>
+
+<script>
+function loadUnconfigured() {
+  var now = new Date();
+  document.getElementById('last-update').textContent = 'Actualizado: ' + now.toLocaleTimeString();
+  
+  fetch('/api/olt/dashboard', { credentials: 'same-origin' })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      var data = d.data || {};
+      var onus = data.unconfigured || [];
+      var html = '';
+      
+      if (onus.length === 0) {
+        html = '<div class="alert alert-success"><i class="fa fa-check-circle"></i> No hay ONUs pendientes de autorización.</div>';
+      } else {
+        html = '<div class="alert alert-warning"><i class="fa fa-info-circle"></i> Se encontraron <strong>' + onus.length + '</strong> ONU(s) sin configurar.</div>';
+        html += '<div class="table-responsive"><table class="table table-striped table-hover">' +
+          '<thead><tr><th>PON type</th><th>Board</th><th>Port</th><th>SN</th><th>Type</th><th>Action</th></tr></thead><tbody>';
+        
+        onus.forEach(function(o) {
+          html += '<tr>' +
+            '<td><span class="badge badge-pending">GPON</span></td>' +
+            '<td><strong>' + o.board + '</strong></td>' +
+            '<td><strong>' + o.port + '</strong></td>' +
+            '<td><code>' + o.sn + '</code></td>' +
+            '<td>' + (o.type || '-') + '</td>' +
+            '<td><a href="/modulo?pagina=SmartoltAuthorizeOnu&board=' + o.board + '&port=' + o.port + '&sn=' + o.sn + '" class="btn btn-primary btn-xs"><i class="fa fa-check"></i> Authorize</a></td>' +
+          '</tr>';
+        });
+        html += '</tbody></table></div>';
+      }
+      
+      document.getElementById('unconfigured-content').innerHTML = html;
+    })
+    .catch(function(e) {
+      document.getElementById('unconfigured-content').innerHTML = '<div class="alert alert-danger"><i class="fa fa-exclamation-circle"></i> Error: ' + e.message + '</div>';
+    });
+}
+
+$(document).ready(function() {
+  loadUnconfigured();
+  setInterval(loadUnconfigured, 5000);
+});
+</script>
+</body>
+</html>

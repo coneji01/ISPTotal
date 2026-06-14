@@ -1,0 +1,543 @@
+<style>
+.tpl-layout {
+  display: flex;
+  gap: 20px;
+  min-height: calc(100vh - 120px);
+  margin-top: 20px;
+}
+.tpl-sidebar { width: 240px; flex-shrink: 0; background: var(--card-bg, #fff); border-radius: 12px; border: 1px solid var(--border, #e2e8f0); padding: 10px 0; }
+.tpl-sidebar-title { padding: 10px 16px 6px; font-size: .72rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: .5px; }
+.tpl-menu-item { display: flex; align-items: center; gap: 10px; padding: 9px 16px; cursor: pointer; border-left: 3px solid transparent; transition: all .15s; }
+.tpl-menu-item:hover { background: var(--hover-bg, #f8fafc); }
+.tpl-menu-item.active { background: rgba(99,102,241,.06); border-left-color: var(--primary, #6366f1); }
+.tpl-menu-icon { width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: .8rem; flex-shrink: 0; }
+.tpl-menu-label { font-size: .82rem; font-weight: 600; color: var(--text, #1e293b); line-height: 1.2; }
+.tpl-menu-type { display: block; font-size: .7rem; font-weight: 400; color: #94a3b8; margin-top: 1px; }
+.tpl-editor-area { flex: 1; display: flex; flex-direction: column; background: var(--card-bg, #fff); border-radius: 12px; border: 1px solid var(--border, #e2e8f0); overflow: hidden; }
+.tpl-editor-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; border-bottom: 1px solid var(--border, #e2e8f0); }
+.tpl-editor-title { display: flex; align-items: center; gap: 8px; font-size: .95rem; font-weight: 700; color: var(--text, #1e293b); }
+.tpl-editor-actions { display: flex; align-items: center; gap: 8px; }
+.tpl-save-msg { display: none; align-items: center; gap: 5px; font-size: .78rem; color: #16a34a; font-weight: 600; background: #f0fdf4; padding: 4px 12px; border-radius: 20px; }
+.tpl-btn { display: inline-flex; align-items: center; gap: 5px; padding: 7px 14px; border-radius: 8px; font-size: .82rem; font-weight: 600; border: none; cursor: pointer; transition: all .15s; }
+.tpl-btn-save { background: var(--primary, #6366f1); color: #fff; }
+.tpl-btn-save:hover { opacity: .9; }
+.tpl-btn-reset { background: #fef3c7; color: #d97706; }
+.tpl-btn-reset:hover { background: #fde68a; }
+.tpl-editor-body { flex: 1; display: flex; flex-direction: column; }
+.tpl-tabs { display: flex; border-bottom: 1px solid var(--border, #e2e8f0); background: #f8fafc; }
+.tpl-tab { padding: 10px 20px; font-size: .82rem; font-weight: 600; color: #64748b; cursor: pointer; border-bottom: 2px solid transparent; transition: all .15s; }
+.tpl-tab.active { color: var(--primary, #6366f1); border-bottom-color: var(--primary, #6366f1); }
+.tpl-tab:hover { color: var(--text, #1e293b); }
+.tpl-tab-content { display: none; flex: 1; }
+.tpl-tab-content.active { display: flex; flex-direction: column; }
+.wysiwyg-toolbar { display: flex; align-items: center; gap: 4px; padding: 8px 12px; border-bottom: 1px solid var(--border, #e2e8f0); background: #fff; flex-wrap: wrap; }
+.wysiwyg-toolbar select { padding: 4px 6px; border: 1px solid #e2e8f0; border-radius: 4px; font-size: .75rem; background: #fff; }
+.wysiwyg-toolbar button { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border: none; background: transparent; border-radius: 4px; cursor: pointer; color: #475569; font-size: .8rem; }
+.wysiwyg-toolbar button:hover { background: #f1f5f9; }
+.wysiwyg-toolbar input[type=color] { width: 22px; height: 22px; padding: 0; border: 1px solid #e2e8f0; border-radius: 4px; cursor: pointer; }
+.tb-sep { width: 1px; height: 18px; background: #e2e8f0; margin: 0 4px; }
+.wysiwyg-editor { flex: 1; padding: 16px 20px; min-height: 300px; outline: none; font-size: .85rem; line-height: 1.6; color: var(--text, #1e293b); background: #fff; }
+.wysiwyg-editor:empty:before { content: attr(data-placeholder); color: #cbd5e1; }
+.sms-editor-wrap { padding: 20px; flex: 1; }
+.sms-counter { font-size: .78rem; color: #94a3b8; margin-bottom: 8px; }
+.sms-counter.warning { color: #f59e0b; }
+.sms-counter.danger { color: #dc2626; }
+.sms-textarea { width: 100%; min-height: 150px; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: .9rem; line-height: 1.5; resize: vertical; outline: none; font-family: inherit; }
+.sms-textarea:focus { border-color: var(--primary, #6366f1); }
+.tpl-textarea { width: 100%; flex: 1; min-height: 300px; padding: 16px 20px; border: none; font-family: 'Courier New', monospace; font-size: .82rem; line-height: 1.5; resize: vertical; outline: none; background: #1e293b; color: #e2e8f0; }
+.tpl-preview { flex: 1; padding: 20px; background: #f8fafc; display: flex; justify-content: center; }
+.tpl-preview-pos { width: 280px; background: #fff; padding: 10px; border-radius: 4px; font-family: monospace; font-size: 12px; box-shadow: 0 1px 3px rgba(0,0,0,.1); }
+.tpl-preview-full { width: 100%; max-width: 700px; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,.1); }
+.tpl-preview-sms { max-width: 360px; background: #fff; padding: 16px; border-radius: 8px; font-size: .85rem; box-shadow: 0 1px 3px rgba(0,0,0,.1); }
+.tpl-preview-a4 { width: 720px; background: #fff; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,.1); }
+.tpl-keys-panel { border-top: 1px solid var(--border, #e2e8f0); }
+.tpl-keys-header { display: flex; align-items: center; gap: 8px; padding: 10px 16px; font-size: .8rem; font-weight: 600; color: #475569; cursor: pointer; user-select: none; }
+.tpl-keys-header:hover { background: #f8fafc; }
+.tpl-keys-header .chevron { transition: transform .2s; font-size: .7rem; color: #94a3b8; }
+.tpl-keys-grid { padding: 6px 16px 14px; display: flex; flex-wrap: wrap; gap: 5px; }
+.tpl-keys-grid.collapsed { display: none; }
+.tpl-key-group-title { width: 100%; font-size: .72rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: .4px; padding: 6px 0 3px; }
+.tpl-key-chip { display: inline-flex; padding: 3px 8px; background: #fef3c7; color: #92400e; border-radius: 4px; font-size: .75rem; font-family: monospace; cursor: pointer; border: 1px solid #fde68a; }
+.tpl-key-chip:hover { background: #fde68a; }
+.tpl-alert-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 2000; align-items: center; justify-content: center; }
+.tpl-alert-box { background: #fff; border-radius: 14px; width: 380px; max-width: 90vw; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,.15); }
+.tpl-alert-header { display: flex; align-items: center; gap: 10px; padding: 18px 20px 0; }
+.tpl-alert-header.warning .tpl-alert-icon { background: #fef3c7; color: #d97706; }
+.tpl-alert-header.error .tpl-alert-icon { background: #fef2f2; color: #dc2626; }
+.tpl-alert-header.success .tpl-alert-icon { background: #f0fdf4; color: #16a34a; }
+.tpl-alert-icon { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
+.tpl-alert-title { font-size: 1rem; font-weight: 700; color: #1e293b; }
+.tpl-alert-body { padding: 14px 20px; font-size: .88rem; color: #475569; line-height: 1.5; }
+.tpl-alert-footer { display: flex; gap: 8px; justify-content: flex-end; padding: 12px 20px 18px; }
+.tpl-alert-btn { padding: 8px 20px; border-radius: 8px; font-size: .85rem; font-weight: 600; border: none; cursor: pointer; background: var(--primary, #6366f1); color: #fff; }
+.tpl-alert-btn-cancel { background: #f1f5f9; color: #475569; }
+/* Fix for sidebar */
+.tpl-logo-preview-box { text-align:center; margin-bottom:10px; min-height:40px; }
+.tpl-logo-placeholder { border:2px dashed #cbd5e1; border-radius:8px; padding:20px; color:#94a3b8; font-size:.82rem; }
+.tpl-logo-placeholder i { font-size:1.5rem; display:block; margin-bottom:4px; }
+</style>
+
+<div class="page-header">
+  <h1 class="page-title"><i class="fas fa-edit" style="color:#2563eb;"></i> Editor de Plantillas</h1>
+  <a href="/modulo?pagina=Configuracion" class="btn-primary" style="background:var(--text-muted,#64748b);text-decoration:none;padding:8px 16px;border-radius:8px;color:#fff;font-weight:600;font-size:.85rem;display:inline-flex;align-items:center;gap:6px;"><i class="fas fa-arrow-left"></i> Volver</a>
+</div>
+
+<div class="tpl-layout">
+  <div class="tpl-sidebar">
+    <div class="tpl-sidebar-title">Plantillas</div>
+    <div class="tpl-menu-item active" onclick="selectTemplate('recibo_pos',this)"><div class="tpl-menu-icon" style="background:#fef3c7;color:#d97706;"><i class="fas fa-receipt"></i></div><div class="tpl-menu-label">Recibo POS<span class="tpl-menu-type">Impresora 80mm</span></div></div>
+    <div class="tpl-menu-item" onclick="selectTemplate('recibo_libre',this)"><div class="tpl-menu-icon" style="background:#f3e8ff;color:#7c3aed;"><i class="fas fa-file-alt"></i></div><div class="tpl-menu-label">Recibo Factura Libre<span class="tpl-menu-type">Impresora 80mm</span></div></div>
+    <div class="tpl-menu-item" onclick="selectTemplate('factura',this)"><div class="tpl-menu-icon" style="background:#dbeafe;color:#2563eb;"><i class="fas fa-file-invoice-dollar"></i></div><div class="tpl-menu-label">Factura<span class="tpl-menu-type">Documento completo</span></div></div>
+    <div class="tpl-menu-item" onclick="selectTemplate('recordatorio_sms',this)"><div class="tpl-menu-icon" style="background:#fce7f3;color:#db2777;"><i class="fas fa-sms"></i></div><div class="tpl-menu-label">Recordatorio Pago<span class="tpl-menu-type">SMS</span></div></div>
+    <div class="tpl-menu-item" onclick="selectTemplate('recordatorio_email',this)"><div class="tpl-menu-icon" style="background:#fee2e2;color:#dc2626;"><i class="fas fa-envelope"></i></div><div class="tpl-menu-label">Recordatorio Pago<span class="tpl-menu-type">Correo</span></div></div>
+    <div class="tpl-menu-item" onclick="selectTemplate('notif_suspension',this)"><div class="tpl-menu-icon" style="background:#fef2f2;color:#991b1b;"><i class="fas fa-ban"></i></div><div class="tpl-menu-label">Notificación Suspensión<span class="tpl-menu-type">SMS/WhatsApp</span></div></div>
+    <div class="tpl-menu-item" onclick="selectTemplate('reactivar_servicio',this)"><div class="tpl-menu-icon" style="background:#dcfce7;color:#16a34a;"><i class="fas fa-play-circle"></i></div><div class="tpl-menu-label">Reactivar Servicio<span class="tpl-menu-type">WhatsApp</span></div></div>
+    <div class="tpl-menu-item" onclick="selectTemplate('confirmacion_pago',this)"><div class="tpl-menu-icon" style="background:#dcfce7;color:#16a34a;"><i class="fas fa-check-circle"></i></div><div class="tpl-menu-label">Confirmación de Pago<span class="tpl-menu-type">SMS/WhatsApp</span></div></div>
+    <div class="tpl-menu-item" onclick="selectTemplate('bienvenida_sms',this)"><div class="tpl-menu-icon" style="background:#d1fae5;color:#059669;"><i class="fas fa-comment-dots"></i></div><div class="tpl-menu-label">Bienvenida - Pago<span class="tpl-menu-type">WhatsApp</span></div></div>
+    <div class="tpl-menu-item" onclick="selectTemplate('detalles_servicio',this)"><div class="tpl-menu-icon" style="background:#dbeafe;color:#2563eb;"><i class="fas fa-info-circle"></i></div><div class="tpl-menu-label">Detalles del Servicio<span class="tpl-menu-type">WhatsApp</span></div></div>
+    <div style="padding:10px 20px 5px;font-size:.72rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;">Documentos</div>
+    <div class="tpl-menu-item" onclick="selectTemplate('contrato',this)"><div class="tpl-menu-icon" style="background:#fef3c7;color:#b45309;"><i class="fas fa-file-contract"></i></div><div class="tpl-menu-label">Contrato<span class="tpl-menu-type">Documento A4</span></div></div>
+    <div class="tpl-menu-item" onclick="selectTemplate('orden_instalacion',this)"><div class="tpl-menu-icon" style="background:#dbeafe;color:#1d4ed8;"><i class="fas fa-clipboard-check"></i></div><div class="tpl-menu-label">Orden de Instalación<span class="tpl-menu-type">Documento A4</span></div></div>
+    <div style="padding:10px 20px 5px;font-size:.72rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;">Órdenes / Personal</div>
+    <div class="tpl-menu-item" onclick="selectTemplate('asignacion_orden',this)"><div class="tpl-menu-icon" style="background:#ede9fe;color:#7c3aed;"><i class="fas fa-user-tag"></i></div><div class="tpl-menu-label">Asignación de Orden<span class="tpl-menu-type">Mensaje</span></div></div>
+    <div class="tpl-menu-item" onclick="selectTemplate('desvinculacion_orden',this)"><div class="tpl-menu-icon" style="background:#fef2f2;color:#dc2626;"><i class="fas fa-user-minus"></i></div><div class="tpl-menu-label">Desvinculación de Orden<span class="tpl-menu-type">Mensaje</span></div></div>
+  </div>
+
+  <div class="tpl-editor-area">
+    <div class="tpl-editor-header">
+      <div class="tpl-editor-title"><i class="fas fa-receipt" id="editorIcon" style="color:#d97706;"></i><span id="editorTitle">Recibo POS</span></div>
+      <div class="tpl-editor-actions">
+        <span class="tpl-save-msg" id="saveMsg"><i class="fas fa-check-circle"></i> Guardado</span>
+        <button class="tpl-btn tpl-btn-reset" onclick="resetTemplate()"><i class="fas fa-undo"></i> Restaurar</button>
+        <button class="tpl-btn tpl-btn-save" onclick="saveTemplate()"><i class="fas fa-save"></i> Guardar</button>
+      </div>
+    </div>
+    <div class="tpl-editor-body">
+      <div class="tpl-tabs">
+        <div class="tpl-tab active" data-tab="visual" onclick="switchTab('visual',this)"><i class="fas fa-pen"></i>&nbsp; Visual</div>
+        <div class="tpl-tab" data-tab="code" onclick="switchTab('code',this)"><i class="fas fa-code"></i>&nbsp; HTML</div>
+        <div class="tpl-tab" data-tab="preview" onclick="switchTab('preview',this)"><i class="fas fa-eye"></i>&nbsp; Vista Previa</div>
+      </div>
+      <div class="tpl-tab-content active" id="tabVisual">
+        <div class="wysiwyg-toolbar" id="wysiwygToolbar">
+          <select onchange="execFmt('formatBlock',this.value);this.value='';" title="Formato"><option value="">Formato</option><option value="h1">Título 1</option><option value="h2">Título 2</option><option value="h3">Título 3</option><option value="h4">Título 4</option><option value="p">Párrafo</option><option value="blockquote">Cita</option><option value="pre">Código</option></select>
+          <select onchange="execCmd('fontName',this.value);" title="Fuente"><option value="">Fuente</option><option style="font-family:Arial">Arial</option><option style="font-family:Helvetica">Helvetica</option><option style="font-family:Verdana">Verdana</option><option style="font-family:Tahoma">Tahoma</option><option style="font-family:'Trebuchet MS'">Trebuchet MS</option><option style="font-family:Georgia">Georgia</option><option style="font-family:'Times New Roman'">Times New Roman</option><option style="font-family:'Palatino Linotype'">Palatino</option><option style="font-family:Garamond">Garamond</option><option style="font-family:'Courier New'">Courier New</option><option style="font-family:Calibri">Calibri</option><option style="font-family:'Segoe UI'">Segoe UI</option></select>
+          <select onchange="execCmd('fontSize',this.value);this.value='';" title="Tamaño"><option value="">Tamaño</option><option value="1">8px</option><option value="2">10px</option><option value="3">12px</option><option value="4">14px</option><option value="5">18px</option><option value="6">24px</option><option value="7">32px</option></select>
+          <select onchange="applyLineHeight(this.value);this.value='';" title="Interlineado"><option value="">Interlineado</option><option value="1">Simple (1.0)</option><option value="1.2">Compacto (1.2)</option><option value="1.5">Normal (1.5)</option><option value="1.8">Amplio (1.8)</option><option value="2">Doble (2.0)</option><option value="2.5">Extra (2.5)</option><option value="3">Triple (3.0)</option></select>
+          <select onchange="applyLetterSpacing(this.value);this.value='';" title="Espaciado letras"><option value="">Espaciado</option><option value="normal">Normal</option><option value="0.5px">Ligero</option><option value="1px">Medio</option><option value="2px">Amplio</option><option value="3px">Muy amplio</option></select>
+          <div class="tb-sep"></div>
+          <button onclick="execCmd('bold')" title="Negrita"><i class="fas fa-bold"></i></button>
+          <button onclick="execCmd('italic')" title="Cursiva"><i class="fas fa-italic"></i></button>
+          <button onclick="execCmd('underline')" title="Subrayado"><i class="fas fa-underline"></i></button>
+          <button onclick="execCmd('strikeThrough')" title="Tachado"><i class="fas fa-strikethrough"></i></button>
+          <button onclick="execCmd('superscript')" title="Superíndice"><i class="fas fa-superscript"></i></button>
+          <button onclick="execCmd('subscript')" title="Subíndice"><i class="fas fa-subscript"></i></button>
+          <div class="tb-sep"></div>
+          <button onclick="execCmd('justifyLeft')" title="Izquierda"><i class="fas fa-align-left"></i></button>
+          <button onclick="execCmd('justifyCenter')" title="Centrar"><i class="fas fa-align-center"></i></button>
+          <button onclick="execCmd('justifyRight')" title="Derecha"><i class="fas fa-align-right"></i></button>
+          <button onclick="execCmd('justifyFull')" title="Justificar"><i class="fas fa-align-justify"></i></button>
+          <div class="tb-sep"></div>
+          <button onclick="execCmd('insertUnorderedList')" title="Lista"><i class="fas fa-list-ul"></i></button>
+          <button onclick="execCmd('insertOrderedList')" title="Lista numerada"><i class="fas fa-list-ol"></i></button>
+          <button onclick="execCmd('indent')" title="Aumentar sangría"><i class="fas fa-indent"></i></button>
+          <button onclick="execCmd('outdent')" title="Reducir sangría"><i class="fas fa-outdent"></i></button>
+          <div class="tb-sep"></div>
+          <input type="color" value="#000000" onchange="execCmd('foreColor',this.value)" title="Color texto">
+          <input type="color" value="#ffffff" onchange="execCmd('hiliteColor',this.value)" title="Resaltar">
+          <div class="tb-sep"></div>
+          <button onclick="insertHR()" title="Línea horizontal"><i class="fas fa-minus"></i></button>
+          <button onclick="doInsertLink()" title="Insertar enlace"><i class="fas fa-link"></i></button>
+          <button onclick="doInsertTable()" title="Insertar tabla"><i class="fas fa-table"></i></button>
+          <div class="tb-sep"></div>
+          <button onclick="execCmd('removeFormat')" title="Quitar formato"><i class="fas fa-eraser"></i></button>
+          <button onclick="execCmd('undo')" title="Deshacer"><i class="fas fa-undo"></i></button>
+          <button onclick="execCmd('redo')" title="Rehacer"><i class="fas fa-redo"></i></button>
+        </div>
+        <div class="wysiwyg-editor" id="wysiwygEditor" contenteditable="true" data-placeholder="Escriba aquí el contenido de la plantilla..."></div>
+      </div>
+      <div class="tpl-tab-content" id="tabCode">
+        <textarea class="tpl-textarea" id="tplTextarea" placeholder="Edite el código HTML..."></textarea>
+        <textarea class="sms-textarea" id="smsTextarea" placeholder="Escriba aquí el mensaje..." style="display:none;"></textarea>
+      </div>
+      <div class="tpl-tab-content" id="tabPreview">
+        <div class="tpl-preview"><div id="previewContainer"></div></div>
+      </div>
+      <!-- LOGO PANEL -->
+      <div class="tpl-keys-panel" id="logoPanel">
+        <div class="tpl-keys-header" onclick="toggleLogoPanel()" style="background:#f0fdf4;">
+          <i class="fas fa-image" style="color:#16a34a;"></i> Logo de Empresa
+          <i class="fas fa-chevron-down chevron" id="logoChevron" style="margin-left:auto;"></i>
+        </div>
+        <div id="logoContent" style="padding:12px 16px;">
+          <div class="tpl-logo-preview-box" id="logoPreviewBox">
+            <div class="tpl-logo-placeholder" id="logoPlaceholder">
+              <i class="fas fa-cloud-upload-alt"></i>
+              Sin logo cargado
+            </div>
+            <img id="logoPreviewImg" src="" style="display:none;max-width:100%;border-radius:6px;border:1px solid #e2e8f0;">
+          </div>
+          <input type="file" id="logoFileInput" accept="image/png,image/jpeg,image/gif,image/webp,image/svg+xml" style="display:none;" onchange="onLogoFileSelected(this)">
+          <div style="display:flex;gap:6px;margin-bottom:10px;">
+            <button type="button" onclick="document.getElementById('logoFileInput').click()" style="flex:1;padding:7px;background:#2563eb;color:#fff;border:none;border-radius:6px;font-size:.82rem;font-weight:600;cursor:pointer;">
+              <i class="fas fa-upload"></i> Subir Logo
+            </button>
+            <button type="button" id="btnDeleteLogo" onclick="deleteLogo()" style="padding:7px 12px;background:#fee2e2;color:#dc2626;border:none;border-radius:6px;font-size:.82rem;font-weight:600;cursor:pointer;display:none;">
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>
+          <div id="logoSizeControls" style="display:none;">
+            <div style="font-size:.78rem;font-weight:600;color:#64748b;margin-bottom:6px;">Tamaño del logo (px)</div>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <div style="flex:1;">
+                <label style="font-size:.75rem;color:#94a3b8;">Ancho</label>
+                <input type="number" id="logoWidth" value="120" min="20" max="300" style="width:100%;padding:5px 8px;border:1px solid #e2e8f0;border-radius:4px;font-size:.85rem;" onchange="onLogoSizeChange()">
+              </div>
+              <div style="padding-top:14px;">
+                <label style="font-size:.75rem;display:flex;align-items:center;gap:3px;cursor:pointer;">
+                  <input type="checkbox" id="logoLockRatio" checked> <i class="fas fa-lock" style="color:#94a3b8;font-size:.75rem;"></i>
+                </label>
+              </div>
+              <div style="flex:1;">
+                <label style="font-size:.75rem;color:#94a3b8;">Alto</label>
+                <input type="number" id="logoHeight" value="60" min="20" max="300" style="width:100%;padding:5px 8px;border:1px solid #e2e8f0;border-radius:4px;font-size:.85rem;" onchange="onLogoSizeChange()">
+              </div>
+            </div>
+            <button type="button" onclick="saveLogoSize()" style="margin-top:8px;width:100%;padding:6px;background:#16a34a;color:#fff;border:none;border-radius:6px;font-size:.82rem;font-weight:600;cursor:pointer;">
+              <i class="fas fa-save"></i> Guardar Tamaño
+            </button>
+            <div id="logoSizeMsg" style="font-size:.78rem;color:#10b981;font-weight:600;text-align:center;margin-top:4px;display:none;">
+              <i class="fas fa-check-circle"></i> Guardado
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- END LOGO -->
+      <div class="tpl-keys-panel">
+        <div class="tpl-keys-header" onclick="toggleKeysPanel()"><i class="fas fa-key" style="color:#f59e0b;"></i> Variables Disponibles - Click para insertar <i class="fas fa-chevron-down chevron" style="margin-left:auto;"></i></div>
+        <div class="tpl-keys-grid" id="keysGrid"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="tpl-alert-overlay" id="modalConfirmReset">
+  <div class="tpl-alert-box">
+    <div class="tpl-alert-header warning">
+      <div class="tpl-alert-icon"><i class="fas fa-exclamation-triangle"></i></div>
+      <div class="tpl-alert-title">Restaurar Plantilla</div>
+    </div>
+    <div class="tpl-alert-body">Se restaurará al contenido original. Los cambios se perderán. ¿Continuar?</div>
+    <div class="tpl-alert-footer">
+      <button class="tpl-alert-btn tpl-alert-btn-cancel" onclick="document.getElementById('modalConfirmReset').style.display='none'">Cancelar</button>
+      <button class="tpl-alert-btn" style="background:#f59e0b;" onclick="confirmReset()">Restaurar</button>
+    </div>
+  </div>
+</div>
+<div class="tpl-alert-overlay" id="modalAlert">
+  <div class="tpl-alert-box">
+    <div class="tpl-alert-header" id="alertHeader">
+      <div class="tpl-alert-icon" id="alertIconBox"><i class="fas fa-check"></i></div>
+      <div class="tpl-alert-title" id="alertTitle">Mensaje</div>
+    </div>
+    <div class="tpl-alert-body" id="alertBody"></div>
+    <div class="tpl-alert-footer">
+      <button class="tpl-alert-btn" onclick="document.getElementById('modalAlert').style.display='none'">Aceptar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const templatesData = <%- templatesData %>;
+const templateKeysMap = <%- templateKeysMap %>;
+
+let currentKey = 'recibo_pos', keysCollapsed = false, activeTab = 'visual', logoCollapsed = false, logoOrigRatio = 2;
+
+const tplMeta = {
+  recibo_pos:{icon:'fa-receipt',color:'#d97706',title:'Recibo POS (80mm)',previewType:'pos',type:'html'},
+  recibo_libre:{icon:'fa-file-alt',color:'#7c3aed',title:'Recibo Factura Libre (80mm)',previewType:'pos',type:'html'},
+  factura:{icon:'fa-file-invoice-dollar',color:'#2563eb',title:'Factura',previewType:'full',type:'html'},
+  recordatorio_sms:{icon:'fa-sms',color:'#db2777',title:'Recordatorio de Pago (SMS)',previewType:'sms',type:'sms'},
+  recordatorio_email:{icon:'fa-envelope',color:'#dc2626',title:'Recordatorio de Pago (Correo)',previewType:'full',type:'html'},
+  notif_suspension:{icon:'fa-ban',color:'#991b1b',title:'Notificación de Suspensión',previewType:'sms',type:'sms'},
+  reactivar_servicio:{icon:'fa-play-circle',color:'#16a34a',title:'Reactivar Servicio',previewType:'sms',type:'sms'},
+  confirmacion_pago:{icon:'fa-check-circle',color:'#16a34a',title:'Confirmación de Pago',previewType:'sms',type:'sms'},
+  bienvenida_sms:{icon:'fa-comment-dots',color:'#059669',title:'Bienvenida - Métodos de Pago (WhatsApp)',previewType:'sms',type:'html'},
+  detalles_servicio:{icon:'fa-info-circle',color:'#2563eb',title:'Detalles del Servicio (WhatsApp)',previewType:'sms',type:'html'},
+  bienvenida_email:{icon:'fa-envelope-open-text',color:'#7c3aed',title:'Bienvenida al Cliente (Correo)',previewType:'full',type:'html'},
+  contrato:{icon:'fa-file-contract',color:'#b45309',title:'Contrato de Servicio',previewType:'a4',type:'html'},
+  orden_instalacion:{icon:'fa-clipboard-check',color:'#1d4ed8',title:'Orden de Instalación',previewType:'a4',type:'html'},
+  asignacion_orden:{icon:'fa-user-tag',color:'#7c3aed',title:'Asignación de Orden (Mensaje)',previewType:'sms',type:'sms'},
+  desvinculacion_orden:{icon:'fa-user-minus',color:'#dc2626',title:'Desvinculación de Orden (Mensaje)',previewType:'sms',type:'sms'}
+};
+
+const sampleData = {
+  '{company_logo}':'<img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwIiBoZWlnaHQ9IjQwIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSIxMjAiIGhlaWdodD0iNDAiIGZpbGw9IiNlMmU4ZjAiIHJ4PSI2Ii8+PHRleHQgeD0iNjAiIHk9IjI1IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk0YTNiOCI+TE9HTzwvdGV4dD48L3N2Zz4=" style="display:block;margin:0 auto;">',
+  '{company_name}':'NetVision ISP','{company_rnc}':'RNC: 130-456789-1','{company_phone}':'809-555-1234','{company_email}':'info@netvision.com','{company_address}':'Calle Principal #10, Puerto Plata',
+  '{client_name}':'Juan Pérez','{client_alias}':'Juanito','{client_cedula}':'001-1234567-8','{client_phone}':'809-555-9876','{client_email}':'juan@email.com','{client_address}':'Av. Las Américas #25','{client_balance}':'1,500.00',
+  '{service_address}':'Calle 5, Residencial Los Pinos','{service_ip}':'10.0.0.25','{service_pppoe}':'juan_pppoe','{service_status}':'active','{service_obs}':'Instalación nueva','{zone_name}':'Zona Norte','{router_name}':'MikroTik-Core-01',
+  '{plan_name}':'Fibra 100 Mbps','{plan_price}':'1,500.00','{plan_download}':'100M','{plan_upload}':'50M',
+  '{tax_base}':'1,355.93','{tax_total}':'244.07','{tax_breakdown}':'ITBIS, CDT','{tax_breakdown_html}':'<tr><td>ITBIS 18%</td><td style="text-align:right;">$244.07</td></tr><tr><td>CDT 2%</td><td style="text-align:right;">$27.12</td></tr>','{tax_itbis}':'244.07','{tax_cdt}':'27.12','{tax_isc}':'0.00',
+  '{invoice_id}':'1042','{invoice_date}':'01/02/2026','{invoice_due_date}':'15/02/2026','{invoice_total}':'1,500.00','{invoice_paid_amount}':'0.00','{invoice_remaining}':'1,500.00','{invoice_status}':'Pendiente','{invoice_notes}':'Mensualidad Febrero 2026','{invoice_items}':'<tr><td style="padding:10px;border-bottom:1px solid #eee;">Mensualidad Febrero 2026 - Fibra 100 Mbps</td><td style="padding:10px;border-bottom:1px solid #eee;text-align:right;">$1,500.00</td></tr>','{invoice_items_libre}':'<div style="text-align:left;padding:2px 0;"><font size="3" face="Arial"><b>Cable UTP Cat6 x2 - $350.00RD$</b></font></div><div style="text-align:left;padding:2px 0;"><font size="3" face="Arial"><b>Conector RJ45 x5 - $150.00RD$</b></font></div><div style="text-align:left;padding:2px 0;"><font size="3" face="Arial"><b>Mano de obra instalación - $1,000.00RD$</b></font></div>','{collected_by}':'María Rodríguez',
+  '{payment_id}':'528','{payment_amount}':'1,500.00','{payment_concept}':'PAGO: 1 FACTURA(S) SALDADA(S)','{payment_date}':'06/02/2026 09:30 AM','{payment_months}':'1',
+  '{order_id}':'1085','{current_date}':'07/02/2026','{service_nic}':'915554','{invoice_month}':'Febrero 2026',
+  '{staff_name}':'Carlos Martínez','{staff_phone}':'809-555-4321','{staff_role}':'Técnico',
+  '{order_type}':'Instalación','{order_details}':'Instalación - Plan: Fibra 100 Mbps',
+  '{barcode_receipt}':'<svg class="barcode-svg" viewBox="0 0 200 50" style="display:block;margin:4px auto;width:180px;height:45px;"><rect x="5" y="0" width="2" height="40" fill="#000"/><rect x="9" y="0" width="1" height="40" fill="#000"/><rect x="12" y="0" width="3" height="40" fill="#000"/><rect x="17" y="0" width="1" height="40" fill="#000"/><rect x="20" y="0" width="2" height="40" fill="#000"/><rect x="24" y="0" width="3" height="40" fill="#000"/><rect x="29" y="0" width="1" height="40" fill="#000"/><rect x="32" y="0" width="2" height="40" fill="#000"/><rect x="36" y="0" width="1" height="40" fill="#000"/><rect x="39" y="0" width="3" height="40" fill="#000"/><rect x="44" y="0" width="2" height="40" fill="#000"/><rect x="48" y="0" width="1" height="40" fill="#000"/><rect x="51" y="0" width="2" height="40" fill="#000"/><rect x="55" y="0" width="3" height="40" fill="#000"/><rect x="60" y="0" width="1" height="40" fill="#000"/><rect x="63" y="0" width="2" height="40" fill="#000"/><rect x="67" y="0" width="1" height="40" fill="#000"/><rect x="70" y="0" width="3" height="40" fill="#000"/><rect x="75" y="0" width="2" height="40" fill="#000"/><rect x="79" y="0" width="1" height="40" fill="#000"/><text x="100" y="48" text-anchor="middle" font-family="monospace" font-size="9">528</text></svg>',
+  '{encf}':'E320000000015','{ecf_tipo}':'FACTURA DE CONSUMO','{ecf_qr}':'[QR DGII]','{total_pendiente}':'0.00',
+  // Variables de pago y bancos
+  '{bancos_listado}':'🏦 Banco Popular\n   Titular: Joel Wifi Dominicana\n   Cuenta Corriente: 123-456-789-0\n   Cédula/RNC: 130-123456-7\n\n🏦 Banreservas\n   Titular: Joel Wifi Dominicana\n   Cuenta Ahorros: 987-654-321-0\n   Cédula/RNC: 130-123456-7',
+  '{oficina_direccion}':'Calle Principal #10, Puerto Plata','{oficina_horario}':'8:00 AM - 5:00 PM','{no_cobro_msg}':'No realizamos cobros los días domingos.',
+  '{payment_day}':'10','{grace_days}':'7','{promise_extra_days}':'3','{promesa_por_mes}':'1',
+  '{promesa_msg}':'⏳ Tu servicio fue reactivado por una promesa de pago. Tienes hasta el 25 de mayo para pagar antes de que se suspenda nuevamente.',
+  '{promesa_fecha}':'25 de mayo',
+  '{proximo_pago}':'30 de mayo','{monto_prorrateado}':'RD$533.33','{dias_facturados}':'20','{dias_hasta_corte}':'15',
+  '{primer_pago_gratis}':'✅ Este primer período no tiene costo, está dentro de los días de gracia.',
+  '{speed}':'100Mbps'
+};
+
+function execCmd(c,v){document.getElementById('wysiwygEditor').focus();document.execCommand(c,false,v||null);}
+function execFmt(c,v){if(!v)return;document.getElementById('wysiwygEditor').focus();document.execCommand(c,false,v);}
+function doInsertLink(){const u=prompt('Ingrese la URL:','https://');if(u)execCmd('createLink',u);}
+function applyLineHeight(v){
+  if(!v)return;var sel=window.getSelection();if(!sel.rangeCount)return;
+  var ed=document.getElementById('wysiwygEditor');ed.focus();
+  var range=sel.getRangeAt(0);var node=range.commonAncestorContainer;
+  if(node.nodeType===3)node=node.parentNode;
+  var block=node.closest('div,p,h1,h2,h3,h4,li,blockquote,td,pre');
+  if(block&&ed.contains(block)){block.style.lineHeight=v;}
+  else{var wrapper=document.createElement('div');wrapper.style.lineHeight=v;range.surroundContents(wrapper);}
+}
+function applyLetterSpacing(v){
+  if(!v)return;var sel=window.getSelection();if(!sel.rangeCount)return;
+  var ed=document.getElementById('wysiwygEditor');ed.focus();
+  var range=sel.getRangeAt(0);var node=range.commonAncestorContainer;
+  if(node.nodeType===3)node=node.parentNode;
+  var block=node.closest('div,p,h1,h2,h3,h4,li,blockquote,td,span,pre');
+  if(block&&ed.contains(block)){block.style.letterSpacing=v;}
+  else{var span=document.createElement('span');span.style.letterSpacing=v;range.surroundContents(span);}
+}
+function insertHR(){document.getElementById('wysiwygEditor').focus();document.execCommand('insertHTML',false,'<hr style="border:none;border-top:1px solid #ccc;margin:10px 0;">');}
+function doInsertTable(){
+  var c=prompt('Columnas:','3');var r=prompt('Filas:','3');
+  if(!c||!r)return;c=parseInt(c);r=parseInt(r);if(isNaN(c)||isNaN(r)||c<1||r<1)return;
+  var h='<table style="width:100%;border-collapse:collapse;margin:10px 0;">';
+  for(var i=0;i<r;i++){h+='<tr>';for(var j=0;j<c;j++){var tag=i===0?'th':'td';var st='border:1px solid #cbd5e1;padding:6px 10px;'+(i===0?'background:#f1f5f9;font-weight:bold;':'');h+='<'+tag+' style="'+st+'">'+(i===0?'Col '+(j+1):'&nbsp;')+'</'+tag+'>';}h+='</tr>';}
+  h+='</table><p><br></p>';document.getElementById('wysiwygEditor').focus();document.execCommand('insertHTML',false,h);
+}
+
+function getCurrentContent(){
+  const m=tplMeta[currentKey];
+  if(m.type==='sms') return document.getElementById('smsTextarea').value;
+  if(activeTab==='code') return document.getElementById('tplTextarea').value;
+  return document.getElementById('wysiwygEditor').innerHTML;
+}
+function setAllEditors(content){
+  const m=tplMeta[currentKey];
+  if(m.type==='sms'){document.getElementById('smsTextarea').value=content;}
+  else{document.getElementById('wysiwygEditor').innerHTML=content;document.getElementById('tplTextarea').value=content;}
+}
+function syncV2C(){document.getElementById('tplTextarea').value=document.getElementById('wysiwygEditor').innerHTML;}
+function syncC2V(){document.getElementById('wysiwygEditor').innerHTML=document.getElementById('tplTextarea').value;}
+
+function switchTab(tab,el){
+  const m=tplMeta[currentKey],prev=activeTab;
+  if(m.type==='html'){if(prev==='visual'&&(tab==='code'||tab==='preview'))syncV2C();if(prev==='code'&&tab==='visual')syncC2V();}
+  activeTab=tab;
+  document.querySelectorAll('.tpl-tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');
+  ['tabVisual','tabCode','tabPreview'].forEach(id=>document.getElementById(id).classList.remove('active'));
+  if(tab==='visual'){document.getElementById('tabVisual').classList.add('active');}
+  else if(tab==='code'){document.getElementById('tabCode').classList.add('active');}
+  else if(tab==='preview'){document.getElementById('tabPreview').classList.add('active');updatePreview();}
+}
+
+function selectTemplate(key,el){
+  if(tplMeta[currentKey]&&tplMeta[currentKey].type==='html'&&activeTab==='visual')syncV2C();
+  currentKey=key;const m=tplMeta[key];
+  document.querySelectorAll('.tpl-menu-item').forEach(i=>i.classList.remove('active'));el.classList.add('active');
+  document.getElementById('editorIcon').className='fas '+m.icon;document.getElementById('editorIcon').style.color=m.color;document.getElementById('editorTitle').innerText=m.title;
+  const content=templatesData[key]?templatesData[key].content:'';setAllEditors(content);renderKeys(key);
+  // Mostrar/ocultar editores según el tipo
+  var isSms=m.type==='sms';
+  var smsTa=document.getElementById('smsTextarea');
+  var wysiwyg=document.getElementById('wysiwygEditor');
+  var htmlTa=document.getElementById('tplTextarea');
+  if(smsTa) smsTa.style.display=isSms?'block':'none';
+  if(wysiwyg) wysiwyg.style.display=isSms?'none':'block';
+  if(htmlTa) htmlTa.style.display=isSms?'none':'block';
+  // Ocultar/mostrar botón Visual según el tipo
+  document.querySelectorAll('.tpl-tab').forEach(function(t){
+    if(t.getAttribute('data-tab')==='visual') t.style.display=isSms?'none':'inline-block';
+  });
+  // SMS va a la pestaña de código, HTML a visual
+  var tabName=isSms?'code':'visual';
+  var tabEl=document.querySelector('.tpl-tab[data-tab="' + tabName + '"]');
+  if(tabEl) switchTab(tabName, tabEl);
+}
+
+function renderKeys(key){
+  const grid=document.getElementById('keysGrid'),groups=templateKeysMap[key]||{};
+  const labels={empresa:'Empresa',cliente:'Cliente',servicio:'Servicio',plan:'Plan',impuestos:'Impuestos',factura:'Factura',pago:'Pago',libre:'Factura Libre',ecf:'Facturación Electrónica',orden:'Orden',personal:'Personal Asignado',asignacion:'Datos de Orden'};
+  let h='';
+  Object.keys(groups).forEach(gk=>{
+    h+='<div class="tpl-key-group-title">'+(labels[gk]||gk)+'</div>';
+    const ks=groups[gk];
+    Object.keys(ks).forEach(k=>{
+      h+='<span class="tpl-key-chip" data-desc="'+ks[k]+'" onclick="insertKey(\''+k+'\')">'+k+'</span>';
+    });
+  });
+  grid.innerHTML=h;
+}
+
+function insertKey(key){
+  const m=tplMeta[currentKey];
+  if(activeTab==='code'){const ta=document.getElementById('tplTextarea');if(ta.readOnly)return;const s=ta.selectionStart,e=ta.selectionEnd;ta.value=ta.value.substring(0,s)+key+ta.value.substring(e);ta.selectionStart=ta.selectionEnd=s+key.length;ta.focus();return;}
+  const ed=document.getElementById('wysiwygEditor');if(ed.getAttribute('contenteditable')!=='true')return;ed.focus();document.execCommand('insertText',false,key);
+}
+
+function updatePreview(){
+  const m=tplMeta[currentKey];
+  let content=m.type==='sms'?'':(document.getElementById('tplTextarea').value||document.getElementById('wysiwygEditor').innerHTML);
+  let preview=content;Object.keys(sampleData).forEach(k=>{preview=preview.split(k).join(sampleData[k]);});
+  const c=document.getElementById('previewContainer');c.className=m.previewType==='pos'?'tpl-preview-pos':(m.previewType==='sms'?'tpl-preview-sms':(m.previewType==='a4'?'tpl-preview-a4':'tpl-preview-full'));c.innerHTML=preview;
+}
+
+function toggleKeysPanel(){keysCollapsed=!keysCollapsed;document.querySelector('.tpl-keys-header').classList.toggle('collapsed',keysCollapsed);document.getElementById('keysGrid').classList.toggle('collapsed',keysCollapsed);}
+
+function saveTemplate(){
+  const m=tplMeta[currentKey];if(m.type==='html'&&activeTab==='visual')syncV2C();
+  const content=getCurrentContent(),fd=new FormData();fd.append('template_key',currentKey);fd.append('content',content);
+  fetch('/modulo?pagina=Plantillas&ajax=save_template',{method:'POST',body:fd}).then(r=>r.json()).then(d=>{
+    if(d.status==='success'){if(templatesData[currentKey])templatesData[currentKey].content=content;const msg=document.getElementById('saveMsg');msg.style.display='inline-flex';setTimeout(()=>{msg.style.display='none';},3000);}
+    else showAlert('error','Error',d.msg);
+  }).catch(e=>showAlert('error','Error',e.message));
+}
+function resetTemplate(){document.getElementById('modalConfirmReset').style.display='flex';}
+function confirmReset(){
+  document.getElementById('modalConfirmReset').style.display='none';const fd=new FormData();fd.append('template_key',currentKey);
+  fetch('/modulo?pagina=Plantillas&ajax=reset_template',{method:'POST',body:fd}).then(r=>r.json()).then(d=>{
+    if(d.status==='success'){setAllEditors(d.content);document.getElementById('tplTextarea').value=d.content;if(templatesData[currentKey])templatesData[currentKey].content=d.content;showAlert('success','Restaurado','Plantilla restaurada al contenido original.');}
+    else showAlert('error','Error',d.msg);
+  }).catch(e=>showAlert('error','Error',e.message));
+}
+function showAlert(type,title,msg){document.getElementById('alertHeader').className='tpl-alert-header '+type;const icons={success:'fa-check',error:'fa-times',warning:'fa-exclamation-triangle'};document.getElementById('alertIconBox').innerHTML='<i class="fas '+(icons[type]||'fa-info')+'"></i>';document.getElementById('alertTitle').innerText=title;document.getElementById('alertBody').innerHTML=msg;document.getElementById('modalAlert').style.display='flex';}
+
+// ============ LOGO MANAGER ============
+function toggleLogoPanel(){
+  logoCollapsed=!logoCollapsed;
+  document.getElementById('logoContent').style.display=logoCollapsed?'none':'block';
+  document.getElementById('logoChevron').style.transform=logoCollapsed?'rotate(-90deg)':'';
+}
+
+function onLogoFileSelected(input){
+  if(!input.files||!input.files[0])return;
+  const file=input.files[0];
+  const reader=new FileReader();
+  reader.onload=function(e){
+    const b64=e.target.result;
+    const img=new Image();
+    img.onload=function(){
+      logoOrigRatio=img.width/img.height;
+      const w=Math.min(120,img.width);
+      const h=Math.round(w/logoOrigRatio);
+      document.getElementById('logoWidth').value=w;
+      document.getElementById('logoHeight').value=h;
+      
+      // Send as base64 data URL directly
+      fetch('/modulo?pagina=Plantillas&ajax=upload_logo',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          logo:b64,
+          logo_width:document.getElementById('logoWidth').value,
+          logo_height:document.getElementById('logoHeight').value
+        })
+      }).then(r=>r.json()).then(d=>{
+        if(d.status==='success'){
+          showLogoPreview(d.logo,d.width,d.height);
+          showAlert('success','Logo','Logo subido correctamente.');
+        }else{
+          showAlert('error','Error',d.msg);
+        }
+      }).catch(e=>showAlert('error','Error',e.message));
+    };
+    img.src=b64;
+  };
+  reader.readAsDataURL(file);
+  input.value='';
+}
+
+function showLogoPreview(src,w,h){
+  const img=document.getElementById('logoPreviewImg');
+  const ph=document.getElementById('logoPlaceholder');
+  if(src){
+    img.src=src;img.style.display='block';img.style.width=w+'px';img.style.height=h+'px';
+    ph.style.display='none';
+    document.getElementById('logoSizeControls').style.display='block';
+    document.getElementById('btnDeleteLogo').style.display='block';
+    document.getElementById('logoWidth').value=w;
+    document.getElementById('logoHeight').value=h;
+    if(w>0&&h>0)logoOrigRatio=w/h;
+  }else{
+    img.style.display='none';img.src='';
+    ph.style.display='block';
+    document.getElementById('logoSizeControls').style.display='none';
+    document.getElementById('btnDeleteLogo').style.display='none';
+  }
+}
+
+function onLogoSizeChange(){
+  const locked=document.getElementById('logoLockRatio').checked;
+  const w=parseInt(document.getElementById('logoWidth').value)||120;
+  const h=parseInt(document.getElementById('logoHeight').value)||60;
+  if(locked){
+    const img=document.getElementById('logoPreviewImg');
+    const oldW=parseInt(img.style.width)||120;
+    if(w!==oldW){document.getElementById('logoHeight').value=Math.round(w/logoOrigRatio);}
+    else{document.getElementById('logoWidth').value=Math.round(h*logoOrigRatio);}
+  }
+  const finalW=parseInt(document.getElementById('logoWidth').value);
+  const finalH=parseInt(document.getElementById('logoHeight').value);
+  const img=document.getElementById('logoPreviewImg');
+  img.style.width=finalW+'px';img.style.height=finalH+'px';
+}
+
+function saveLogoSize(){
+  const fd=new FormData();
+  fd.append('logo_width',document.getElementById('logoWidth').value);
+  fd.append('logo_height',document.getElementById('logoHeight').value);
+  fetch('/modulo?pagina=Plantillas&ajax=save_logo_size',{method:'POST',body:fd}).then(r=>r.json()).then(d=>{
+    if(d.status==='success'){
+      const msg=document.getElementById('logoSizeMsg');
+      msg.style.display='block';
+      setTimeout(()=>{msg.style.display='none';},2000);
+    }
+  });
+}
+
+function deleteLogo(){
+  if(!confirm('¿Eliminar el logo?'))return;
+  fetch('/modulo?pagina=Plantillas&ajax=delete_logo',{method:'POST'}).then(r=>r.json()).then(d=>{
+    if(d.status==='success'){showLogoPreview(null);showAlert('success','Logo','Logo eliminado.');}
+  });
+}
+
+function loadLogo(){
+  fetch('/modulo?pagina=Plantillas&ajax=get_logo').then(r=>r.json()).then(d=>{
+    if(d.status==='success'&&d.logo){showLogoPreview(d.logo,d.width,d.height);}
+  }).catch(()=>{});
+}
+
+// INIT
+loadLogo();
+// Initialize the first template on page load
+(function() {
+  var firstKey = 'recibo_pos';
+  var firstEl = document.querySelector('.tpl-menu-item[onclick*="' + firstKey + '"]');
+  if (firstEl) {
+    selectTemplate(firstKey, firstEl);
+  } else {
+    renderKeys(firstKey);
+  }
+})();
+</script>

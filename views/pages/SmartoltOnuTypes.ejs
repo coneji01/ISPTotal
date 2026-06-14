@@ -1,0 +1,1469 @@
+<!DOCTYPE html>
+<!-- saved from url=(0047)# -->
+<html lang="en" class="smartolt-night"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <script>window.SMARTOLT_DB_THEME='system';</script>
+    <!-- Paint-blocking: resolve theme before first paint. Precedence: per-device override (smartolt-theme-local, set by the header button) > account/DB pref > device (system). -->
+    <script>try{var k='smartolt-night',lk='smartolt-theme-local',dbTheme=window.SMARTOLT_DB_THEME,local=null,pref,n;try{local=localStorage.getItem(lk);}catch(e){}if(local==='night'||local==='light'||local==='system'){pref=local;}else if(dbTheme==='night'||dbTheme==='light'||dbTheme==='system'){pref=dbTheme;}else{pref='system';}if(pref==='system'){n=!!(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);}else if(pref==='night'){n=true;}else{n=false;}try{localStorage.setItem(k,n?'1':'0');}catch(e){}if(n){document.documentElement.classList.add('smartolt-night');}else{document.documentElement.classList.remove('smartolt-night');}document.cookie=k+'='+(n?'1':'0')+'; path=/; max-age=31536000; SameSite=Lax'+(location.protocol==='https:'?'; Secure':'');}catch(e){}</script>
+        <meta http-equiv="content-type" content="text/html; utf-8">
+    
+    <meta http-equiv="Content-Language" content="en">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="#" type="image/x-icon">
+    <link rel="shortcut icon" href="#" type="image/x-icon">
+    
+  <title>ONU types - JOEL WIFI</title>
+
+  <!-- Bootstrap Core CSS -->
+  <link href="/public/smartolt-files/bootstrap-custom.css" rel="stylesheet">
+  <link href="/public/smartolt-files/bootstrap-multiselect.css" rel="stylesheet">
+  <link href="/public/smartolt-files/styles.css" rel="stylesheet">
+  <link href="/public/smartolt-files/toast.css" rel="stylesheet">
+
+  
+  <!-- Custom Fonts -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+  <!-- Message box CSS -->
+  <link href="/public/smartolt-files/messagebox.css" rel="stylesheet" type="text/css">
+
+  <link href="/public/smartolt-files/inter-fonts.css" rel="stylesheet">
+  <link href="/public/smartolt-files/dashboard-smartolt-night.css" rel="stylesheet">
+  <script src="/public/smartolt-files/dashboard-smartolt-night.js" defer=""></script>
+    
+  <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+  <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+  <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+  <!-- jQuery -->
+  <script src="/public/smartolt-files/jquery.min.js"></script>
+
+  
+  
+  <!-- Toast alerts -->
+  <script src="/public/smartolt-files/toast.js"></script>
+
+  <!-- Pauses recurring AJAX polling while the tab is hidden OR the user has been idle, resumes on focus / activity. -->
+  <script src="/public/smartolt-files/polling.js"></script>
+
+  
+  
+</head>
+
+<body class="smartolt-site">
+<script type="text/javascript">
+$( document ).ready(function() {
+	$.ajaxSetup({
+		cache: false
+	});
+	
+	window.jqxhrs = [];
+
+      window.registerJqxhr = function(jqxhr) {
+        jqxhrs.push(jqxhr);
+      }
+
+      window.abortJqxhr = function() {
+        for (var i = jqxhrs.length - 1; i >= 0; i--) {
+          if (jqxhrs[i]) {
+            jqxhrs[i].abort();
+          }
+        }
+
+        window.jqxhrs = [];
+      }
+
+      $(window).bind("beforeunload", function(event) {
+        abortJqxhr();
+      });
+
+      function unregisterJqxhr(event, jqxhr, settings) {
+        var idx = $.inArray(jqxhr, jqxhrs);
+        if (idx != -1) {
+          jqxhrs.splice(idx, 1);
+        }
+      }
+
+      $(document).ajaxComplete(unregisterJqxhr);
+
+      config = {
+        X_TOKEN: '9C23F19BE06B4BEB93046ECFDF50FF91'
+      }
+    });
+  </script>
+
+  <div class="smartolt-landing-hero-bg" aria-hidden="true"></div>
+
+  <div id="content-wrapper">
+    <div class="smartolt-topbar-network" aria-hidden="true">
+      <div class="smartolt-topbar-network-inner">
+        <svg class="smartolt-topbar-network-lines" viewBox="0 0 100 100" preserveAspectRatio="none">
+          <line x1="8" y1="68" x2="23" y2="78"></line>
+          <line x1="23" y1="78" x2="37" y2="63"></line>
+          <line x1="8" y1="68" x2="37" y2="63"></line>
+          <line x1="37" y1="63" x2="65" y2="18"></line>
+          <line x1="65" y1="18" x2="89" y2="34"></line>
+          <line x1="23" y1="78" x2="65" y2="18"></line>
+          <line x1="37" y1="63" x2="89" y2="34"></line>
+        </svg>
+        <span class="smartolt-topbar-node smartolt-topbar-node-a"></span>
+        <span class="smartolt-topbar-node smartolt-topbar-node-b"></span>
+        <span class="smartolt-topbar-node smartolt-topbar-node-c"></span>
+        <span class="smartolt-topbar-node smartolt-topbar-node-d"></span>
+        <span class="smartolt-topbar-node smartolt-topbar-node-e"></span>
+      </div>
+    </div>
+      <div class="navbar navbar-default navbar-fixed-top default-menu">
+    <div class="container">
+      <div class="navbar-header">
+        <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#navbar-main" aria-expanded="false" aria-controls="navbar">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand text-ellipsis max-width-250" href="/modulo?pagina=GPONManager" title="GPON Manager">GPON Manager</a>
+      </div>
+      <div class="navbar-collapse collapse" id="navbar-main">
+        <ul class="nav navbar-nav">
+          <li><a href="/modulo?pagina=GPONManager"><i class="fa fa-tachometer"></i> Dashboard</a></li>
+          <li><a href="/modulo?pagina=SmartoltConfigured"><i class="fa fa-check-circle"></i> Configuradas</a></li>
+          <li><a href="/modulo?pagina=SmartoltUnconfigured"><i class="fa fa-clock-o"></i> No configuradas</a></li>
+          <li><a href="/modulo?pagina=SmartoltOnuTypes"><i class="fa fa-microchip"></i> Tipos ONU</a></li>
+          <li><a href="/modulo?pagina=SmartoltSpeedProfiles"><i class="fa fa-tachometer"></i> Velocidad</a></li>
+          <li><a href="/modulo?pagina=SmartoltLocations"><i class="fa fa-map-marker"></i> Zonas</a></li>
+          <li><a href="/modulo?pagina=SmartoltDashboard"><i class="fa fa-external-link"></i> SmartOLT</a></li>
+        </ul>
+        <ul class="nav navbar-nav navbar-right">
+          <li><a href="#" id="smartolt-night-toggle" class="is-pref-night is-resolved is-night" title="Night mode"><i class="fa fa-adjust"></i></a></li>
+          <li><a href="/logout"><i class="fa fa-sign-out"></i></a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+    <!-- Page Content -->
+    <div class="container">
+
+<div class="container-fluid content-wrap">
+	<h2>ONU types</h2>
+		
+			<a href="#" class="btn btn-success margin-bottom"><span class="glyphicon glyphicon-plus"> </span> Add ONU type</a>
+	
+
+	<table class="table table-striped">
+		<tbody><tr>
+			<th class="col-md-1"><a href="#" class="sort-link">PON type </a></th>
+			<th class="col-md-1 text-center"><a href="#" class="sort-link">Channels </a></th>
+			<th class="col-md-2"><a href="#" class="sort-link">ONU type <i class="fa fa-sort-asc" aria-hidden="true"></i></a></th>
+			<th class="col-md-2"><a href="#" class="sort-link">Ethernet ports </a></th>
+			<th class="col-md-1"><a href="#" class="sort-link">WiFi </a></th>
+			<th class="col-md-2"><a href="#" class="sort-link">VoIP ports </a></th>
+			<th class="col-md-1"><a href="#" class="sort-link">CATV </a></th>
+						<th class="col-md-2"><a href="#" class="sort-link">Allow custom profiles </a></th>
+						<th class="col-md-2"><a href="#" class="sort-link">Capability </a></th>
+			<th></th>
+			<th class="col-md-1 text-center">Action</th>
+		</tr>
+
+				<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="#" class="btn btn-link">EG8021V5</a>
+							</td>
+			<td>4</td>
+			<td>8</td>
+			<td>0</td>
+			<td>0</td>
+						<td>Yes</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="#" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="#" class="btn btn-link">EG8041V5</a>
+							</td>
+			<td>4</td>
+			<td>1</td>
+			<td>0</td>
+			<td>0</td>
+						<td>Yes</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="#" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="#" class="btn btn-link">EG8141A5</a>
+							</td>
+			<td>4</td>
+			<td>1</td>
+			<td>0</td>
+			<td>0</td>
+						<td>Yes</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="#" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="#" class="btn btn-link">EG8145V5</a>
+							</td>
+			<td>4</td>
+			<td>0</td>
+			<td>0</td>
+			<td>0</td>
+						<td>Yes</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="#" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="#" class="btn btn-link">ET8145V5CUS</a>
+							</td>
+			<td>4</td>
+			<td>10</td>
+			<td>0</td>
+			<td>0</td>
+						<td>Yes</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="#" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="#" class="btn btn-link">F670LV1.1.01</a>
+							</td>
+			<td>4</td>
+			<td>0</td>
+			<td>0</td>
+			<td>0</td>
+						<td>Yes</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="#" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="#" class="btn btn-link">F670LV9.0</a>
+							</td>
+			<td>4</td>
+			<td>3</td>
+			<td>0</td>
+			<td>0</td>
+						<td>Yes</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="#" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="#" class="btn btn-link">F673AV9</a>
+							</td>
+			<td>4</td>
+			<td>0</td>
+			<td>1</td>
+			<td>0</td>
+						<td>Yes</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="#" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="#" class="btn btn-link">F679LV9.1</a>
+							</td>
+			<td>4</td>
+			<td>4</td>
+			<td>0</td>
+			<td>0</td>
+						<td>Yes</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="#" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="#" class="btn btn-link">FD504GW</a>
+							</td>
+			<td>4</td>
+			<td>1</td>
+			<td>0</td>
+			<td>0</td>
+						<td>Yes</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="#" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="#" class="btn btn-link">GPON_ONUV7.1</a>
+							</td>
+			<td>4</td>
+			<td>8</td>
+			<td>0</td>
+			<td>0</td>
+						<td>Yes</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="#" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="#" class="btn btn-link">HG8010H</a>
+							</td>
+			<td>1</td>
+			<td>0</td>
+			<td>0</td>
+			<td>0</td>
+						<td>Yes</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="#" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="#" class="btn btn-link">HG8120C</a>
+							</td>
+			<td>2</td>
+			<td>0</td>
+			<td>1</td>
+			<td>0</td>
+						<td>Yes</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="#" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="#" class="btn btn-link">HG8145V5</a>
+							</td>
+			<td>4</td>
+			<td>2</td>
+			<td>1</td>
+			<td>1</td>
+						<td>Yes</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="#" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="#" class="btn btn-link">HG8145X6---10</a>
+							</td>
+			<td>4</td>
+			<td>4</td>
+			<td>0</td>
+			<td>0</td>
+						<td>Yes</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="#" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="#" class="btn btn-link">HG8145X6--10</a>
+							</td>
+			<td>4</td>
+			<td>4</td>
+			<td>0</td>
+			<td>0</td>
+						<td>Yes</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="#" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="#" class="btn btn-link">HG8145X6-10</a>
+							</td>
+			<td>4</td>
+			<td>1</td>
+			<td>0</td>
+			<td>0</td>
+						<td>Yes</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="#" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="#" class="btn btn-link">HG8240H</a>
+							</td>
+			<td>4</td>
+			<td>4</td>
+			<td>2</td>
+			<td>0</td>
+						<td>Yes</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="#" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="#" class="btn btn-link">HG8242H</a>
+							</td>
+			<td>4</td>
+			<td>4</td>
+			<td>2</td>
+			<td>1</td>
+						<td>Yes</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="#" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="#" class="btn btn-link">HG8245H</a>
+							</td>
+			<td>4</td>
+			<td>4</td>
+			<td>2</td>
+			<td>0</td>
+						<td>Yes</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="#" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="#" class="btn btn-link">HG8340M</a>
+							</td>
+			<td>4</td>
+			<td>0</td>
+			<td>0</td>
+			<td>0</td>
+						<td>Yes</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="#" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="#" class="btn btn-link">HG8347R</a>
+							</td>
+			<td>4</td>
+			<td>4</td>
+			<td>1</td>
+			<td>0</td>
+						<td>Yes</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="#" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="#" class="btn btn-link">HG8545M</a>
+							</td>
+			<td>4</td>
+			<td>4</td>
+			<td>1</td>
+			<td>0</td>
+						<td>Yes</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="#" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="#" class="btn btn-link">HG8546M</a>
+							</td>
+			<td>4</td>
+			<td>4</td>
+			<td>1</td>
+			<td>0</td>
+						<td>Yes</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="#" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="#" class="btn btn-link">HS8145V</a>
+							</td>
+			<td>4</td>
+			<td>4</td>
+			<td>1</td>
+			<td>0</td>
+						<td>Yes</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="#" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="#" class="btn btn-link">HS8545M5</a>
+							</td>
+			<td>4</td>
+			<td>1</td>
+			<td>0</td>
+			<td>0</td>
+						<td>Yes</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="#" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="#" class="btn btn-link">HS8546V</a>
+							</td>
+			<td>4</td>
+			<td>4</td>
+			<td>1</td>
+			<td>0</td>
+						<td>Yes</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="#" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="#" class="btn btn-link">HSGQ-X100W2</a>
+							</td>
+			<td>1</td>
+			<td>1</td>
+			<td>0</td>
+			<td>0</td>
+						<td>Yes</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="#" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="#" class="btn btn-link">R2</a>
+							</td>
+			<td>4</td>
+			<td>0</td>
+			<td>0</td>
+			<td>0</td>
+						<td>Yes</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="#" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="#" class="btn btn-link">XC220-G3v</a>
+							</td>
+			<td>4</td>
+			<td>0</td>
+			<td>1</td>
+			<td>0</td>
+						<td>Yes</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="#" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="#" class="btn btn-link">XN020-G3</a>
+							</td>
+			<td>1</td>
+			<td>0</td>
+			<td>0</td>
+			<td>0</td>
+						<td>Yes</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="#" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="#" class="btn btn-link">XN020-G3v</a>
+							</td>
+			<td>2</td>
+			<td>0</td>
+			<td>1</td>
+			<td>0</td>
+						<td>Yes</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="#" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="#" class="btn btn-link">XN020G3</a>
+							</td>
+			<td>1</td>
+			<td>2</td>
+			<td>0</td>
+			<td>0</td>
+						<td>No</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="#" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="#" class="btn btn-link">ZTE-F600</a>
+							</td>
+			<td>4</td>
+			<td>0</td>
+			<td>0</td>
+			<td>0</td>
+						<td>Yes</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="#" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="#" class="btn btn-link">ZTE-F601</a>
+							</td>
+			<td>1</td>
+			<td>0</td>
+			<td>0</td>
+			<td>0</td>
+						<td>Yes</td>
+						<td>Bridging</td>
+			<td></td>
+			<td>
+									<a href="#" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="#" class="btn btn-link">ZTE-F601V6.0</a>
+							</td>
+			<td>1</td>
+			<td>0</td>
+			<td>0</td>
+			<td>0</td>
+						<td>Yes</td>
+						<td>Bridging</td>
+			<td></td>
+			<td>
+									<a href="#" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="#" class="btn btn-link">ZTE-F620</a>
+							</td>
+			<td>4</td>
+			<td>0</td>
+			<td>2</td>
+			<td>0</td>
+						<td>Yes</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="#" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="#" class="btn btn-link">ZTE-F623</a>
+							</td>
+			<td>4</td>
+			<td>4</td>
+			<td>1</td>
+			<td>0</td>
+						<td>Yes</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="#" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="#" class="btn btn-link">ZTE-F625</a>
+							</td>
+			<td>4</td>
+			<td>0</td>
+			<td>2</td>
+			<td>1</td>
+						<td>Yes</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="#" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="#" class="btn btn-link">ZTE-F625G</a>
+							</td>
+			<td>4</td>
+			<td>0</td>
+			<td>2</td>
+			<td>1</td>
+						<td>Yes</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="#" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="#" class="btn btn-link">ZTE-F627</a>
+							</td>
+			<td>4</td>
+			<td>4</td>
+			<td>2</td>
+			<td>0</td>
+						<td>Yes</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="#" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="#" class="btn btn-link">ZTE-F643</a>
+							</td>
+			<td>4</td>
+			<td>4</td>
+			<td>2</td>
+			<td>0</td>
+						<td>Yes</td>
+						<td>Bridging</td>
+			<td></td>
+			<td>
+									<a href="#" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="#" class="btn btn-link">ZTE-F643V6.0</a>
+							</td>
+			<td>1</td>
+			<td>0</td>
+			<td>0</td>
+			<td>0</td>
+						<td>Yes</td>
+						<td>Bridging</td>
+			<td></td>
+			<td>
+									<a href="#" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="#" class="btn btn-link">ZTE-F660</a>
+							</td>
+			<td>4</td>
+			<td>4</td>
+			<td>2</td>
+			<td>0</td>
+						<td>Yes</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="#" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="#" class="btn btn-link">ZTE-F660V5.0</a>
+							</td>
+			<td>4</td>
+			<td>4</td>
+			<td>2</td>
+			<td>0</td>
+						<td>Yes</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="#" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="#" class="btn btn-link">ZTE-F660V5.2</a>
+							</td>
+			<td>4</td>
+			<td>4</td>
+			<td>2</td>
+			<td>0</td>
+						<td>Yes</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="#" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="#" class="btn btn-link">ZTE-F660V6.0</a>
+							</td>
+			<td>4</td>
+			<td>4</td>
+			<td>2</td>
+			<td>0</td>
+						<td>Yes</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="#" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="#" class="btn btn-link">ZTE-F668</a>
+							</td>
+			<td>4</td>
+			<td>4</td>
+			<td>2</td>
+			<td>1</td>
+						<td>Yes</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="#" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr class="valign-center">
+			<td>GPON</td>
+			<td class="text-center">G</td>
+			<td>
+									<a href="#" class="btn btn-link">ZXHN-F670L</a>
+							</td>
+			<td>4</td>
+			<td>2</td>
+			<td>0</td>
+			<td>0</td>
+						<td>Yes</td>
+						<td>Bridging/Routing</td>
+			<td></td>
+			<td>
+									<a href="#" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+		</tbody></table>
+
+</div>
+
+
+</div>
+<br>
+<!-- /#page-wrapper -->
+    
+<div id="saveConfigModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="saveConfigModalLabel" aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+		  <div class="modal-header">
+		    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+		    <h3 id="saveConfigModalLabel">Save configuration</h3>
+		  </div>
+		  <div class="modal-body">
+		    <p>This will save the current OLT(s) configuration as startup configuration. It may take up to 5 minutes for the OLT(s) to finish saving the config. Are you sure?</p>
+		  </div>
+		  <div class="modal-footer">
+		    <button class="btn btn-link" data-dismiss="modal" aria-hidden="true">No, cancel</button>
+		    <button class="btn btn-primary save-configuration-button">Yes, save configuration</button>
+		  </div>
+		</div>
+	</div>
+</div>
+
+<div id="importModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="importModalLabel" aria-hidden="true">
+</div>
+
+<div id="rebuildModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="rebuildModalLabel" aria-hidden="true">
+</div>
+
+<div id="deleteAllApiReconciliationModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="deleteAllApiReconciliationModalLabel" aria-hidden="true">
+</div>
+
+<div id="generateSnmpIdsModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="generateSnmpIdsModalLabel" aria-hidden="true">
+</div>
+
+    <!-- Bootstrap Core JavaScript -->
+    <script src="/public/smartolt-files/bootstrap.min.js"></script>
+    <script src="/public/smartolt-files/bootstrap-multiselect.js"></script>
+
+    <!-- Metis Menu Plugin JavaScript -->
+    <script src="/public/smartolt-files/metisMenu.min.js"></script>
+
+    <!-- Custom Theme JavaScript -->
+    <script src="/public/smartolt-files/sb-admin-2.js"></script>
+        
+    <!-- Loading overlay -->
+    <script src="/public/smartolt-files/loadingoverlay.custom.js"></script>
+    
+    <!-- Message box -->
+    <script src="/public/smartolt-files/messagebox.min.js"></script>
+    
+    
+
+<script type="text/javascript">
+
+$( document ).ready(function() {
+	
+	// Hide new version dot if user has already seen this version
+	var currentVersion = '3.53.0';
+	var lastSeenVersion = localStorage.getItem('lastSeenVersion');
+	if (lastSeenVersion === currentVersion) {
+		$('.new-version-dot').hide();
+	}
+
+	
+	$('#smartolt-update-banner-changelog').on('click', function(e) {
+		e.preventDefault();
+		localStorage.setItem('lastSeenVersion', currentVersion);
+		$('.new-version-dot').hide();
+				window.location.href = '/changelog';
+			});
+
+	$('#smartolt-update-banner-dismiss').on('click', function() {
+		localStorage.setItem('lastSeenVersion', currentVersion);
+		$('.new-version-dot').hide();
+		$('#smartolt-update-banner').slideUp(300);
+	});
+
+	$('#footer-changelog-link').on('click', function() {
+		localStorage.setItem('lastSeenVersion', currentVersion);
+		$('.new-version-dot').hide();
+	});
+
+	//hide alert-success after 5 seconds
+	/*setTimeout(function(){
+		$('.alert-success').not('.nofade').fadeOut();
+	},5000);*/
+	
+	var waitingForOLT   = $("<div>", {
+	    id      : "waitingOLT",
+	    css     : {
+	        "font-size" : "50px",
+			"white-space" : "nowrap"
+	    },
+	    text    : "Waiting for OLT"
+	});
+
+	var loadingOverlaySettings = {
+		    image       : "",
+		    fontawesome : "fa fa-spinner fa-spin",
+		    custom  : waitingForOLT,
+		    resizeInterval : 0
+		};
+
+	$.LoadingOverlay("append", loadingOverlaySettings);
+
+	window.showLoadingOverlay = function(loadingText = null) {
+		if(loadingText != null) {
+			$("#waitingOLT").text(loadingText);
+		}
+		else {
+			$("#waitingOLT").text("Waiting for OLT");
+		}
+		
+		$.LoadingOverlay("show", loadingOverlaySettings);
+	}
+
+	window.hideLoadingOverlay = function() {
+		$.LoadingOverlay("hide");
+	}
+
+	window.isLoadingOverlayVisible = function() {
+		return $('.loadingoverlay').is(":visible");
+	}
+	
+	//hide loading overlay when ajax request finishes
+	/*$(document).ajaxStop(function(){
+		hideLoadingOverlay();
+	});*/
+
+	//show toast with error
+	$(document).ajaxError(function(requestObject, error, errorThrown) {
+		if(error.status != 404 && error != undefined && error.responseJSON != undefined && 
+				error.responseJSON.error != undefined && error.responseJSON.error.length > 0) {
+			toast(error.responseJSON.error);
+		}
+	});
+
+	//confirm message box
+	window.MessageBoxConfirm = function(message){
+	    return $.MessageBox({
+	        buttonDone  : "OK",
+	        buttonFail  : "Cancel",
+	        message     : message
+	    });
+	}
+
+	window.getSelectedText = function() {
+        if (window.getSelection) {
+            return window.getSelection().toString();
+        } 
+        else if (document.selection) {
+            return document.selection.createRange().text;
+        }
+        return '';
+    }
+
+	//close navbar menu when clicking outside of it
+	$(document).click(function (event) {
+		var clickover = $(event.target);
+		var $nav = $("div.navbar-collapse");
+        var _opened = $nav.hasClass("in");
+
+        if (_opened === true && !clickover.hasClass("navbar-toggle")) {
+			$nav.collapse('hide');
+        }
+    });
+
+	/*https://www.quirksmode.org/blog/archives/2014/02/mouse_event_bub.html
+	  Safari on iOS only allows the mouse events, including click, to bubble up in the following situations:
+	  1. The target element of the event is a link or a form field.
+	  2. The target element, or any of its ancestors up to but not including the <body>, has an explicit event handler set for any of the mouse events. This event handler may be an empty function.
+      3. The target element, or any of its ancestors up to and including the document has a cursor: pointer CSS declarations. */
+	$("#content-wrapper").click(function (event) {
+		//this is here only for iOS to allow mouse events to bubble up so we can close navbar menu when clicking outside of it
+    });
+
+	// check navbar menu top offset
+    function closeMenuIfOpened() {
+		var $nav = $("div.navbar-collapse");
+    	var _opened = $nav.hasClass("in");
+
+        if (_opened === true && $(".navbar").offset().top > 50) {
+			$nav.collapse('hide');
+        }
+    }
+
+    //for touch devices, detect zoom in/out events and close the navbar menu if opened
+    var tracks = [];
+    $(window).on("touchmove", function (event) {
+	
+	    //only run code if the user has two fingers touching
+	    if (event.originalEvent.touches.length === 2) {
+	
+	        //track the touches, I'm setting each touch as an array inside the tracks array
+	        //each touch array contains an X and Y coordinate
+	        tracks.push([ [event.originalEvent.touches[0].pageX, event.originalEvent.touches[0].pageY], [event.originalEvent.touches[1].pageX, event.originalEvent.touches[1].pageY] ]);
+	    }
+	}).on("touchstart", function () {
+	    //start-over
+	    tracks = [];
+	}).on("touchend", function () {
+	    if(tracks.length > 0) {
+			var $nav = $("div.navbar-collapse");
+	    	var _opened = $nav.hasClass("in");
+	        if (_opened === true) {
+				$nav.collapse('hide');
+	        }
+	    }
+	});
+
+	// COPY TO CLIPBOARD
+	// Attempts to use .execCommand('copy') on a created text field
+	// Falls back to a selectable alert if not supported
+	// Attempts to display status in Bootstrap tooltip
+	// ------------------------------------------------------------------------------
+
+	function copyToClipboard(text, el) {
+	  var copyTest = document.queryCommandSupported('copy');
+	  var elOriginalText = el.attr('data-original-title');
+
+	  if (copyTest === true) {
+	    var copyTextArea = document.createElement("textarea");
+	    copyTextArea.value = text;
+	    document.body.appendChild(copyTextArea);
+	    copyTextArea.select();
+	    try {
+	      var successful = document.execCommand('copy');
+	      var msg = successful ? "Copied!" : "Whoops, not copied!";
+	      el.attr('data-original-title', msg).tooltip('show');
+	    } 
+	    catch (err) {
+	      console.log("Oops, unable to copy");
+	    }
+	    document.body.removeChild(copyTextArea);
+	    el.attr('data-original-title', elOriginalText);
+	  } 
+	  else {
+	    // Fallback if browser doesn't support .execCommand('copy')
+	    window.prompt("Copy to clipboard", text);
+	  }
+	}
+
+	function copyToClipboard2(text, el) {
+		  if (document.queryCommandSupported('copy') === true) {
+			var elOriginalText = el.attr('data-original-title');
+	 	    var copyTextArea = document.createElement("textarea");
+		    copyTextArea.textContent = text.text();
+		    document.body.appendChild(copyTextArea);
+
+		    var selection = document.getSelection();
+		    var range = document.createRange();
+		    range.selectNode(copyTextArea);
+		    selection.removeAllRanges();
+		    selection.addRange(range);
+		    
+		    try {
+		      var successful = document.execCommand('copy');
+			  var msg;
+
+			  if (successful) {
+				  msg = "Copied!";
+			  } 
+			  else {
+				msg = "Whoops, not copied!";
+				el.removeClass('not-selectable');
+			  }
+		      el.attr('data-original-title', msg).tooltip('show');
+		    } 
+		    catch (err) {
+		      console.log("Oops, unable to copy");
+		    }
+		    selection.removeAllRanges();
+		    document.body.removeChild(copyTextArea);
+		    el.attr('data-original-title', elOriginalText);
+		  } 
+		  else {
+			$('.not-selectable').removeClass('not-selectable');
+		    // Fallback if browser doesn't support .execCommand('copy')
+		    window.prompt("Copy to clipboard", text.text());
+		  }
+		}
+
+	// Initialize
+   // ---------------------------------------------------------------------
+
+   // Tooltips
+   // Requires Bootstrap 3 for functionality
+   $('.js-tooltip').tooltip();
+
+   // Copy to clipboard
+   // Grab any text in the attribute 'data-copy' and pass it to the 
+   // copy function
+   $('.js-copy').click(function() {
+     var text = $(this).attr('data-copy');
+     var el = $(this);
+     copyToClipboard(text, el);
+   });
+
+   $(document).on('click','.comma-copy', function() {
+	   $(this).removeClass('btn-primary').addClass('btn-default');
+	     var el = $('#'+$(this).attr('data-idtag'));
+	     copyToClipboard2(el, $(this));
+	     el.removeClass('text-primary').addClass('text-muted');
+	   });
+
+   //trim white spaces when paste in any input
+   $(document).on('paste', 'input[type=text]', function(e) {
+	  // prevent copying action
+	  e.preventDefault();
+	  
+	  var pastedText = e.originalEvent.clipboardData.getData('Text');
+	  var withoutSpaces = pastedText;
+	  if(pastedText) {
+		  withoutSpaces = pastedText.trim();
+	  }
+
+	  //remove all spaces, including from inside the text
+	  if($(this).hasClass('no_spaces')) {
+		  withoutSpaces = withoutSpaces.replace(/\s/g, '');
+	  }
+	  
+	  $(this).insertAtCaret(withoutSpaces);
+	});
+
+   $.fn.insertAtCaret = function(text) {
+	    return this.each(function() {
+	        if (document.selection && this.tagName == 'TEXTAREA') {
+	            //IE textarea support
+	            this.focus();
+	            sel = document.selection.createRange();
+	            sel.text = text;
+	            this.focus();
+	        } else if (this.selectionStart || this.selectionStart == '0') {
+	            //MOZILLA/NETSCAPE support
+	            startPos = this.selectionStart;
+	            endPos = this.selectionEnd;
+	            scrollTop = this.scrollTop;
+	            this.value = this.value.substring(0, startPos) + text + this.value.substring(endPos, this.value.length);
+	            this.focus();
+	            this.selectionStart = startPos + text.length;
+	            this.selectionEnd = startPos + text.length;
+	            this.scrollTop = scrollTop;
+	        } else {
+	            // IE input[type=text] and other browsers
+	            this.value += text;
+	            this.focus();
+	            this.value = this.value;    // forces cursor to end
+	        }
+	    });
+	};
+    
+	
+  $('.save-configuration-button').click(function (){
+    var button = $('.save-configuration-anchor');
+
+    button.toggleClass('active');
+    button.attr('disabled', true);
+    button.text("Saving...");
+    $('#saveConfigModal').modal('hide');
+
+    $.ajax({
+        method: "GET",
+        beforeSend: function(request) {
+		    request.setRequestHeader("X-Token", config.X_TOKEN);
+		  },
+        url: "/api/system/write",
+      })
+      .done(function( response ) {
+        $.MessageBox((response && response.response) ? response.response : "Save initiated. It could take the OLT up to 5 minutes to write the config!");
+        button.text("Save config");
+        setTimeout(function () {
+          button.toggleClass('active');
+          button.attr('disabled', false);
+          button.text("Save config");
+        }, 1000);
+      })
+      .fail(function(jqXHR, textStatus) {
+    	  if(jqXHR.responseJSON) {
+				$.MessageBox(jqXHR.responseJSON.error);
+			}
+			else {
+				$.MessageBox(jqXHR.responseText);
+			}
+	        setTimeout(function () {
+	        	 button.toggleClass('active');
+	             button.attr('disabled', false);
+	             button.text("Save config");
+	        }, 1000);
+      });
+  });
+
+    
+});
+</script>
+
+</div>
+
+<style>
+.new-version-dot {
+	display: inline-block;
+	width: 8px;
+	height: 8px;
+	background-color: #5cb85c;
+	border-radius: 50%;
+	margin-left: 4px;
+	animation: pulse-green 2s infinite;
+}
+.footer-dot-sep {
+	opacity: 0.5;
+	margin: 0 2px;
+}
+footer {
+	height: auto;
+	padding-bottom: 8px;
+}
+#feature-tour-whatsnew .fa-bullhorn {
+	margin-right: 5px;
+	font-size: 2em;
+	vertical-align: -6px;
+}
+
+@keyframes pulse-green {
+	0% {
+		transform: scale(0.95);
+		box-shadow: 0 0 0 0 rgba(92, 184, 92, 0.7);
+	}
+	70% {
+		transform: scale(1);
+		box-shadow: 0 0 0 6px rgba(92, 184, 92, 0);
+	}
+	100% {
+		transform: scale(0.95);
+		box-shadow: 0 0 0 0 rgba(92, 184, 92, 0);
+	}
+}
+
+</style>
+
+<footer>
+	<div class="text-center row">SmartOLT <a href="#" class="btn-link" id="footer-changelog-link">v3.53.0<span class="new-version-dot" title="New updates" style="display: none;"></span></a> © 2026</div>
+</footer>
+
+
+
+
+
+<script>
+$(document).ready(function() {
+  $.ajax({url:'/api/smartolt/onu-types', method:'GET', success:function(r) {
+    if(!r.success) return;
+    var h = '';
+    r.data.forEach(function(o) {
+      h += '<tr class="valign-center"><td>GPON</td><td class="text-center">G</td><td><a href="#" class="btn btn-link">'+(o.name||'')+'</a></td><td>4</td><td>0</td><td>0</td><td>0</td><td>Yes</td><td>Bridging/Routing</td><td></td><td><a href="#" class="btn btn-danger">Delete</a></td></tr>';
+    });
+    $('table.table-striped tbody').html(h || '<tr><td colspan="11" class="text-muted text-center">No ONU types found</td></tr>');
+  }});
+});
+</script><div class="loadingoverlay" style="background-color: rgba(255, 255, 255, 0.8); position: fixed; display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; top: 0px; left: 0px; width: 100%; height: 100%; background-size: 100px;"><div class="loadingoverlay_fontawesome fa fa-spinner fa-spin" style="font-size: 100px;"></div><div id="waitingOLT" style="font-size: 50px; white-space: nowrap;">Waiting for OLT</div></div></body></html>

@@ -1,0 +1,1044 @@
+<style>
+/* Mensajería Module - ISP Total */
+.msg-container { max-width: 1100px; margin: 0 auto; padding: 20px 10px; padding-top: 50px; }
+
+.msg-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
+.msg-title { font-size: 1.3rem; font-weight: 700; color: var(--text-primary, #1e293b); display: flex; align-items: center; gap: 10px; }
+.msg-title i { color: var(--accent-color, #8b5cf6); }
+
+.msg-tabs { display: flex; gap: 5px; background: #f1f5f9; border-radius: 8px; padding: 4px; margin-bottom: 20px; }
+.msg-tab { padding: 8px 18px; border-radius: 6px; border: none; background: transparent; font-size: 0.85rem; font-weight: 600; color: #64748b; cursor: pointer; transition: all 0.2s; }
+.msg-tab.active { background: #fff; color: var(--accent-color, #8b5cf6); box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+.msg-tab:hover:not(.active) { color: #334155; }
+
+.msg-panel { display: none; }
+.msg-panel.active { display: block; }
+
+/* Gateway Card */
+.gw-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 20px; margin-bottom: 15px; transition: box-shadow 0.2s; }
+.gw-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
+.gw-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px; }
+.gw-card-title { font-weight: 700; font-size: 1rem; color: var(--text-primary, #1e293b); display: flex; align-items: center; gap: 8px; }
+.gw-card-actions { display: flex; gap: 8px; }
+.gw-badge { padding: 3px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; }
+.gw-badge-active { background: #dcfce7; color: #166534; }
+.gw-badge-inactive { background: #fee2e2; color: #991b1b; }
+.gw-badge-method { background: #ede9fe; color: var(--accent-color, #6d28d9); }
+
+.gw-detail { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+.gw-detail-item { font-size: 0.82rem; color: #64748b; }
+.gw-detail-item strong { color: #334155; }
+.gw-url { font-family: monospace; font-size: 0.78rem; background: #f8fafc; padding: 6px 10px; border-radius: 4px; border: 1px solid #e2e8f0; word-break: break-all; margin-top: 6px; color: #475569; }
+.gw-params { font-family: monospace; font-size: 0.78rem; background: #fefce8; padding: 6px 10px; border-radius: 4px; border: 1px solid #fef08a; word-break: break-all; margin-top: 4px; color: #854d0e; }
+
+/* Buttons */
+.gw-btn { padding: 6px 14px; border-radius: 6px; border: 1px solid #e2e8f0; background: #fff; font-size: 0.78rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 5px; transition: all 0.15s; }
+.gw-btn:hover { background: #f8fafc; }
+.gw-btn-test { border-color: var(--accent-color, #8b5cf6); color: var(--accent-color, #8b5cf6); }
+.gw-btn-test:hover { background: #f5f3ff; }
+.gw-btn-edit { border-color: #3b82f6; color: #3b82f6; }
+.gw-btn-edit:hover { background: #eff6ff; }
+.gw-btn-del { border-color: #ef4444; color: #ef4444; }
+.gw-btn-del:hover { background: #fef2f2; }
+
+.gw-empty { text-align: center; padding: 50px 20px; color: #94a3b8; }
+.gw-empty i { font-size: 2.5rem; margin-bottom: 10px; display: block; color: #cbd5e1; }
+
+/* Modal */
+.msg-modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.4); z-index: 9999; justify-content: center; align-items: center; }
+.msg-modal-overlay.show { display: flex; }
+.msg-modal { background: #fff; border-radius: 12px; padding: 25px; width: 580px; max-width: 95vw; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.15); }
+.msg-modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid #e2e8f0; }
+.msg-modal-title { font-size: 1.1rem; font-weight: 700; color: var(--text-primary, #1e293b); }
+.msg-modal-close { background: none; border: none; font-size: 1.4rem; cursor: pointer; color: #94a3b8; padding: 0 5px; }
+.msg-modal-close:hover { color: var(--text-primary, #1e293b); }
+
+.msg-form-group { margin-bottom: 14px; }
+.msg-form-label { font-size: 0.82rem; font-weight: 600; color: #334155; margin-bottom: 5px; display: block; }
+.msg-form-hint { font-size: 0.72rem; color: #94a3b8; margin-top: 3px; }
+.msg-form-input { width: 100%; padding: 9px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.88rem; transition: border-color 0.15s; box-sizing: border-box; }
+.msg-form-input:focus { outline: none; border-color: var(--accent-color, #8b5cf6); box-shadow: 0 0 0 3px rgba(139,92,246,0.1); }
+.msg-form-select { width: 100%; padding: 9px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.88rem; background: #fff; cursor: pointer; box-sizing: border-box; }
+.msg-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+.msg-btn-primary { background: var(--accent-color, #8b5cf6); color: #fff; border: none; padding: 10px 22px; border-radius: 8px; font-size: 0.88rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: background 0.15s; }
+.msg-btn-primary:hover { opacity: 0.9; }
+
+.msg-log-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.msg-log-table th { background: #f8fafc; padding: 10px; text-align: left; font-weight: 600; color: #64748b; border-bottom: 2px solid #e2e8f0; }
+.msg-log-table td { padding: 9px 10px; border-bottom: 1px solid #f1f5f9; color: #334155; }
+.msg-log-table tr:hover { background: #fafafe; }
+.log-status-sent { color: #16a34a; font-weight: 600; }
+.log-status-failed { color: #dc2626; font-weight: 600; }
+
+/* WhatsApp status */
+.wa-status-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 30px; text-align: center; }
+.wa-loading { padding: 30px; }
+.wa-connected { border-color: #bbf7d0; background: linear-gradient(135deg, #f0fdf4 0%, #fff 100%); }
+.wa-disconnected { border-color: #fecaca; background: linear-gradient(135deg, #fef2f2 0%, #fff 100%); }
+.wa-qr-state { border-color: #25D366; }
+.wa-service-down { border-color: #fed7aa; background: linear-gradient(135deg, #fffbeb 0%, #fff 100%); }
+.wa-icon-big { font-size: 3.5rem; margin-bottom: 15px; }
+.wa-phone-number { font-size: 1.5rem; font-weight: 700; color: var(--text-primary, #1e293b); margin: 8px 0; }
+.wa-phone-name { font-size: 0.95rem; color: #64748b; margin-bottom: 15px; }
+.wa-status-badge { display: inline-flex; align-items: center; gap: 6px; padding: 6px 16px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; }
+.wa-badge-connected { background: #dcfce7; color: #166534; }
+.wa-badge-qr { background: #fef3c7; color: #92400e; }
+.wa-badge-down { background: #fee2e2; color: #991b1b; }
+.wa-qr-container { margin: 20px auto; padding: 15px; background: #fff; border-radius: 12px; display: inline-block; border: 3px solid #25D366; }
+.wa-qr-container img { display: block; width: 280px; height: 280px; }
+.wa-qr-hint { color: #64748b; font-size: 0.85rem; margin-top: 15px; line-height: 1.5; }
+.wa-stats { display: flex; gap: 20px; justify-content: center; margin-top: 20px; flex-wrap: wrap; }
+.wa-stat { text-align: center; }
+.wa-stat-val { font-size: 1.2rem; font-weight: 700; color: var(--text-primary, #1e293b); }
+.wa-stat-label { font-size: 0.75rem; color: #94a3b8; margin-top: 2px; }
+.wa-actions { display: flex; gap: 10px; justify-content: center; margin-top: 20px; flex-wrap: wrap; }
+.wa-btn { padding: 8px 20px; border-radius: 8px; border: none; font-size: 0.85rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s; }
+.wa-btn-green { background: #25D366; color: #fff; }
+.wa-btn-green:hover { background: #1da851; }
+.wa-btn-red { background: #ef4444; color: #fff; }
+.wa-btn-red:hover { background: #dc2626; }
+.wa-btn-gray { background: #e2e8f0; color: #475569; }
+.wa-btn-gray:hover { background: #cbd5e1; }
+
+@media (max-width: 640px) {
+  .msg-form-row { grid-template-columns: 1fr; }
+  .gw-detail { grid-template-columns: 1fr; }
+  .gw-card-header { flex-direction: column; align-items: flex-start; }
+  .gw-card-actions { width: 100%; }
+  .gw-card-actions .gw-btn { flex: 1; justify-content: center; }
+  .wa-qr-container img { width: 220px; height: 220px; }
+}
+</style>
+
+<div class="msg-container">
+  <div class="msg-header">
+    <div class="msg-title">
+      <i class="fas fa-paper-plane"></i> Mensajería
+    </div>
+    <button class="msg-btn-primary" id="btnNuevoGw" onclick="openGatewayModal()">
+      <i class="fas fa-plus"></i> Nuevo Gateway API
+    </button>
+  </div>
+
+  <!-- Active channel selector -->
+  <div id="channelSelector" style="background:#fff; border:1px solid #e2e8f0; border-radius:10px; padding:14px 20px; margin-bottom:16px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
+    <div style="display:flex; align-items:center; gap:10px;">
+      <span style="font-size:0.82rem; font-weight:600; color:#64748b;"><i class="fas fa-broadcast-tower"></i> Canal activo:</span>
+      <span id="channelLabel" style="font-weight:700; font-size:0.9rem; color:#6d28d9;">
+        <i class="fas fa-sms" style="color:#8b5cf6;"></i> Gateway API
+      </span>
+    </div>
+    <div style="display:flex; gap:8px;">
+      <button id="btnChSms" class="wa-btn" onclick="switchChannel('sms')" style="font-size:0.78rem; padding:6px 14px; background:#8b5cf6; color:#fff; border:2px solid #8b5cf6;">
+        <i class="fas fa-sms"></i> Gateway API
+      </button>
+      <button id="btnChWa" class="wa-btn" onclick="switchChannel('whatsapp')" style="font-size:0.78rem; padding:6px 14px; background:#f1f5f9; color:#64748b; border:1px solid #e2e8f0;">
+        <i class="fab fa-whatsapp"></i> WhatsApp
+      </button>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="msg-tabs">
+    <button class="msg-tab active" onclick="switchTab('gateways', this)"><i class="fas fa-server"></i> Gateway API</button>
+    <button class="msg-tab" onclick="switchTab('whatsapp', this)"><i class="fab fa-whatsapp"></i> WhatsApp DomISP</button>
+    <button class="msg-tab" onclick="switchTab('masivos', this)"><i class="fas fa-bullhorn"></i> Mensajes Masivos</button>
+    <button class="msg-tab" onclick="switchTab('logs', this)"><i class="fas fa-history"></i> Historial</button>
+  </div>
+
+  <!-- Panel: Gateways -->
+  <div class="msg-panel active" id="panelGateways">
+    <div id="gatewayList">
+      <div class="gw-empty">
+        <i class="fas fa-satellite-dish"></i>
+        No hay Gateway API configurado<br>
+        <small style="color:#94a3b8;">Cree uno con el botón "Nuevo Gateway API"</small>
+      </div>
+    </div>
+  </div>
+
+  <!-- Panel: WhatsApp -->
+  <div class="msg-panel" id="panelWhatsapp">
+    <div id="waContent">
+      <div class="wa-status-card" id="waStatusCard">
+        <div class="wa-loading">
+          <i class="fas fa-spinner fa-spin" style="font-size:2rem; color:#25D366;"></i>
+          <p style="margin-top:10px; color:#64748b;">Consultando servicio WhatsApp...</p>
+        </div>
+      </div>
+    </div>
+
+    <div id="waTestSection" style="display:none; margin-top:20px;">
+      <div style="background:#fff; border:1px solid #e2e8f0; border-radius:10px; padding:20px;">
+        <h4 style="margin:0 0 15px; font-size:0.95rem; color:var(--text-primary, #1e293b);">
+          <i class="fab fa-whatsapp" style="color:#25D366;"></i> Enviar mensaje de prueba
+        </h4>
+        <div class="msg-form-group">
+          <label class="msg-form-label">Número (con código país)</label>
+          <input type="text" class="msg-form-input" id="waTestPhone" placeholder="Ej: 18095551234">
+        </div>
+        <div class="msg-form-group">
+          <label class="msg-form-label">Mensaje</label>
+          <textarea class="msg-form-input" id="waTestMsg" rows="3" style="resize:vertical;">Mensaje de prueba desde ISP Total</textarea>
+        </div>
+        <div id="waTestResult" style="display:none; margin-bottom:12px; padding:12px; border-radius:6px; font-size:0.82rem;"></div>
+        <button class="msg-btn-primary" id="btnWaSend" onclick="waSendTest()" style="background:#25D366!important;">
+          <i class="fab fa-whatsapp"></i> Enviar por WhatsApp
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Panel: Mensajes Masivos -->
+  <div class="msg-panel" id="panelMasivos">
+    <div style="background:#fff; border:1px solid #e2e8f0; border-radius:10px; padding:20px;">
+      <h4 style="margin:0 0 16px; font-size:0.95rem; color:var(--text-primary, #1e293b);">
+        <i class="fas fa-bullhorn" style="color:var(--accent-color, #8b5cf6);"></i> Envío Masivo
+      </h4>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-bottom:16px;">
+        <div>
+          <label style="font-size:0.78rem; font-weight:600; color:#64748b; display:block; margin-bottom:4px;">Zona</label>
+          <select class="msg-form-input" id="msZona" onchange="msPreview()" style="width:100%;">
+            <option value="">-- Zona --</option>
+            <option value="all">Todas las zonas</option>
+            <% (typeof zonas !== 'undefined' ? zonas : []).forEach(function(z) { %>
+              <option value="<%= z.id %>"><%= z.nombre %></option>
+            <% }); %>
+          </select>
+        </div>
+        <div>
+          <label style="font-size:0.78rem; font-weight:600; color:#64748b; display:block; margin-bottom:4px;">Plan</label>
+          <select class="msg-form-input" id="msPlan" onchange="msPreview()" style="width:100%;">
+            <option value="">-- Plan --</option>
+            <option value="all">Todos los planes</option>
+            <% (typeof planes !== 'undefined' ? planes : []).forEach(function(p) { %>
+              <option value="<%= p.id %>"><%= p.nombre %> ($<%= parseFloat(p.precio).toFixed(2) %>)</option>
+            <% }); %>
+          </select>
+        </div>
+        <div>
+          <label style="font-size:0.78rem; font-weight:600; color:#64748b; display:block; margin-bottom:4px;">Estado</label>
+          <select class="msg-form-input" id="msEstado" onchange="msPreview()" style="width:100%;">
+            <option value="">-- Estado --</option>
+            <option value="all">Activos y Suspendidos</option>
+            <option value="active">Solo Activos</option>
+            <option value="suspended">Solo Suspendidos</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="margin-bottom:16px; position:relative;">
+        <label style="font-size:0.78rem; font-weight:600; color:#64748b; display:block; margin-bottom:4px;">O buscar cliente específico</label>
+        <div style="display:flex; gap:8px;">
+          <input type="text" class="msg-form-input" id="msClientSearch" placeholder="Nombre, cédula o teléfono..." style="flex:1;" oninput="msSearchClient()">
+          <button onclick="msClearClient()" style="padding:6px 12px; border:1px solid #e2e8f0; border-radius:8px; background:#fff; cursor:pointer; font-size:0.8rem; color:#ef4444;" title="Limpiar"><i class="fas fa-times"></i></button>
+        </div>
+        <div id="msClientResults" style="display:none; position:absolute; left:0; right:50px; top:100%; background:#fff; border:1px solid #e2e8f0; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.1); z-index:100; max-height:200px; overflow-y:auto;"></div>
+        <input type="hidden" id="msClientId" value="0">
+      </div>
+
+      <div id="msPreviewBox" style="margin-bottom:16px; padding:12px; background:#f8fafc; border-radius:8px; border:1px solid #e2e8f0;">
+        <div style="font-size:0.82rem; color:#64748b;"><i class="fas fa-users" style="margin-right:4px;"></i> Destinatarios: <strong id="msPreviewCount" style="color:var(--text-primary, #1e293b);">0</strong></div>
+      </div>
+
+      <div style="margin-bottom:16px;">
+        <label style="font-size:0.78rem; font-weight:600; color:#64748b; display:block; margin-bottom:8px;">Tipo de mensaje</label>
+        <div style="display:flex; gap:8px;">
+          <label style="display:flex; align-items:center; gap:6px; padding:8px 16px; border:2px solid var(--accent-color, #8b5cf6); border-radius:8px; cursor:pointer; font-size:0.85rem; font-weight:600; color:#475569; background:#f5f3ff;" id="msTypeManualLabel">
+            <input type="radio" name="msTipo" value="manual" checked onchange="msToggleTipo()"> <i class="fas fa-pen"></i> Texto Manual
+          </label>
+          <label style="display:flex; align-items:center; gap:6px; padding:8px 16px; border:2px solid #e2e8f0; border-radius:8px; cursor:pointer; font-size:0.85rem; font-weight:600; color:#475569;" id="msTypeRecLabel">
+            <input type="radio" name="msTipo" value="recordatorio" onchange="msToggleTipo()"> <i class="fas fa-bell"></i> Recordatorio de Pago
+          </label>
+        </div>
+      </div>
+
+      <div id="msManualBox">
+        <label style="font-size:0.78rem; font-weight:600; color:#64748b; display:block; margin-bottom:4px;">Mensaje</label>
+        <textarea class="msg-form-input" id="msMensaje" rows="4" style="width:100%; resize:vertical;" placeholder="Escribe tu mensaje... Puedes usar: {client_name}, {plan_name}, {company_name}, {total_deuda}"></textarea>
+        <div style="font-size:0.72rem; color:#94a3b8; margin-top:4px;">Variables: {client_name}, {plan_name}, {total_deuda}, {company_name}, {company_phone}, {current_date}</div>
+      </div>
+
+      <div id="msRecBox" style="display:none;">
+        <div style="padding:14px; background:#fef3c7; border-radius:8px; border:1px solid #fbbf24; font-size:0.84rem; color:#92400e;">
+          <i class="fas fa-info-circle" style="margin-right:4px;"></i> Se enviará el mensaje usando la plantilla <strong>"Recordatorio de Pago"</strong> configurada en Plantillas. Solo se enviará a clientes <strong>con deuda pendiente</strong>.
+        </div>
+      </div>
+
+      <div id="msResultBox" style="display:none; margin-top:16px; padding:14px; border-radius:8px; font-size:0.85rem;"></div>
+
+      <div style="margin-top:16px; display:flex; gap:10px; align-items:center;">
+        <button class="msg-btn-primary" id="msBtnSend" onclick="msEnviar()">
+          <i class="fas fa-paper-plane"></i> Enviar Masivo
+        </button>
+        <span id="msSending" style="display:none; font-size:0.82rem; color:#64748b;"><i class="fas fa-spinner fa-spin"></i> Enviando...</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Panel: Historial -->
+  <div class="msg-panel" id="panelLogs">
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:12px;">
+      <div style="position:relative; flex:1; min-width:220px; max-width:420px;">
+        <i class="fas fa-search" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:#94a3b8; font-size:0.85rem;"></i>
+        <input type="text" id="logSearch" placeholder="Buscar por teléfono, mensaje o gateway..." oninput="logSearchDebounce()" style="width:100%; padding:9px 12px 9px 34px; border:1px solid #e2e8f0; border-radius:8px; font-size:0.88rem; outline:none; box-sizing:border-box;">
+        <i id="logClearBtn" class="fas fa-times" onclick="logClearSearch()" style="display:none; position:absolute; right:10px; top:50%; transform:translateY(-50%); color:#94a3b8; cursor:pointer; font-size:0.8rem; padding:4px;"></i>
+      </div>
+      <div id="logTotal" style="font-size:0.78rem; color:#64748b;"></div>
+    </div>
+    <div style="overflow-x:auto;">
+      <table class="msg-log-table" id="logTable">
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Canal</th>
+            <th>Gateway</th>
+            <th>Destino</th>
+            <th>Mensaje</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+        <tbody id="logBody">
+          <tr><td colspan="6" style="text-align:center; color:#94a3b8; padding:30px;">Cargando...</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div id="logPagination" style="display:flex; align-items:center; justify-content:center; padding:14px 0; gap:4px;"></div>
+  </div>
+</div>
+
+<!-- Modal: Crear/Editar Gateway API -->
+<div class="msg-modal-overlay" id="modalGateway">
+  <div class="msg-modal">
+    <div class="msg-modal-header">
+      <div class="msg-modal-title" id="modalGwTitle">Nuevo Gateway API</div>
+      <button class="msg-modal-close" onclick="closeModal('modalGateway')">×</button>
+    </div>
+
+    <input type="hidden" id="gwId">
+
+    <div class="msg-form-group">
+      <label class="msg-form-label">Nombre</label>
+      <input type="text" class="msg-form-input" id="gwName" placeholder="Ej: Mi Gateway SMS">
+    </div>
+
+    <div class="msg-form-group">
+      <label class="msg-form-label">URL del Gateway</label>
+      <input type="text" class="msg-form-input" id="gwUrl" placeholder="https://api.ejemplo.com/sms/send">
+    </div>
+
+    <div class="msg-form-group">
+      <label class="msg-form-label">Parámetros</label>
+      <input type="text" class="msg-form-input" id="gwParams" placeholder="to={destinatario}&amp;message={mensaje}" style="font-family:monospace;">
+      <div class="msg-form-hint">
+        <i class="fas fa-info-circle"></i> Use <code style="background:#ede9fe; padding:1px 5px; border-radius:3px; color:#6d28d9;">{destinatario}</code> para el número y
+        <code style="background:#ede9fe; padding:1px 5px; border-radius:3px; color:#6d28d9;">{mensaje}</code> para el texto.
+        <br>Ej: <code style="background:#fefce8; padding:1px 5px; border-radius:3px; color:#854d0e;">to={destinatario}&amp;text={mensaje}&amp;apikey=abc123</code>
+      </div>
+    </div>
+
+    <div class="msg-form-row">
+      <div class="msg-form-group">
+        <label class="msg-form-label">Método HTTP</label>
+        <select class="msg-form-select" id="gwMethod">
+          <option value="POST">POST</option>
+          <option value="GET">GET</option>
+        </select>
+      </div>
+      <div class="msg-form-group">
+        <label class="msg-form-label">Pausa entre mensajes (ms)</label>
+        <input type="number" class="msg-form-input" id="gwPause" value="1000" min="0" step="100">
+        <div class="msg-form-hint">1000ms = 1 seg entre cada envío</div>
+      </div>
+    </div>
+
+    <div class="msg-form-group">
+      <label class="msg-form-label">Token (Bearer) <small style="color:#94a3b8;">- opcional</small></label>
+      <input type="text" class="msg-form-input" id="gwToken" placeholder="Tu token de autorización..." style="font-family:monospace;">
+    </div>
+
+    <div class="msg-form-group">
+      <label class="msg-form-label">Estado</label>
+      <select class="msg-form-select" id="gwActive">
+        <option value="1">Activo</option>
+        <option value="0">Inactivo</option>
+      </select>
+    </div>
+
+    <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:20px; padding-top:15px; border-top:1px solid #e2e8f0;">
+      <button class="gw-btn" onclick="closeModal('modalGateway')">Cancelar</button>
+      <button class="msg-btn-primary" onclick="saveGateway()">
+        <i class="fas fa-save"></i> Guardar
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Probar Gateway API -->
+<div class="msg-modal-overlay" id="modalTest">
+  <div class="msg-modal" style="width:440px;">
+    <div class="msg-modal-header">
+      <div class="msg-modal-title"><i class="fas fa-flask" style="color:var(--accent-color, #8b5cf6);"></i> Probar Gateway API</div>
+      <button class="msg-modal-close" onclick="closeModal('modalTest')">×</button>
+    </div>
+
+    <input type="hidden" id="testGwId">
+
+    <div class="msg-form-group">
+      <label class="msg-form-label">Número de teléfono</label>
+      <input type="text" class="msg-form-input" id="testPhone" placeholder="Ej: 8095551234">
+    </div>
+
+    <div class="msg-form-group">
+      <label class="msg-form-label">Mensaje de prueba</label>
+      <textarea class="msg-form-input" id="testMessage" rows="3" style="resize:vertical;">Mensaje de prueba desde ISP Total</textarea>
+    </div>
+
+    <div id="testResult" style="display:none; margin-top:12px; padding:12px; border-radius:6px; font-size:0.82rem;"></div>
+
+    <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:20px; padding-top:15px; border-top:1px solid #e2e8f0;">
+      <button class="gw-btn" onclick="closeModal('modalTest')">Cerrar</button>
+      <button class="msg-btn-primary" id="btnSendTest" onclick="sendTest()">
+        <i class="fas fa-paper-plane"></i> Enviar Prueba
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Confirmación -->
+<div class="msg-modal-overlay" id="modalConfirm">
+  <div class="msg-modal" style="width:420px;">
+    <div class="msg-modal-header">
+      <div class="msg-modal-title" id="confirmTitle"><i class="fas fa-question-circle" style="color:#f59e0b;"></i> Confirmar</div>
+      <button class="msg-modal-close" onclick="closeModal('modalConfirm')">×</button>
+    </div>
+    <p id="confirmMsg" style="color:#475569; font-size:0.9rem; line-height:1.6; margin:0 0 20px;"></p>
+    <div style="display:flex; gap:10px; justify-content:flex-end; padding-top:15px; border-top:1px solid #e2e8f0;">
+      <button class="gw-btn" onclick="closeModal('modalConfirm')">Cancelar</button>
+      <button class="msg-btn-primary" id="confirmOkBtn" onclick="">Aceptar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const baseUrl = '/modulo?pagina=Mensajeria';
+
+// ============ CONFIRM ============
+function msgConfirm(title, message, onOk) {
+  document.getElementById('confirmTitle').innerHTML = '<i class="fas fa-question-circle" style="color:#f59e0b;"></i> ' + title;
+  document.getElementById('confirmMsg').innerHTML = message;
+  var btn = document.getElementById('confirmOkBtn');
+  btn.onclick = function() { closeModal('modalConfirm'); onOk(); };
+  document.getElementById('modalConfirm').classList.add('show');
+}
+
+// ============ TABS ============
+function switchTab(tab, btn) {
+  document.querySelectorAll('.msg-tab').forEach(function(t) { t.classList.remove('active'); });
+  document.querySelectorAll('.msg-panel').forEach(function(p) { p.classList.remove('active'); });
+  btn.classList.add('active');
+  if (tab === 'gateways') { document.getElementById('panelGateways').classList.add('active'); }
+  else if (tab === 'whatsapp') { document.getElementById('panelWhatsapp').classList.add('active'); waLoadStatus(); }
+  else if (tab === 'masivos') { document.getElementById('panelMasivos').classList.add('active'); msInit(); }
+  else { document.getElementById('panelLogs').classList.add('active'); loadLogs(); }
+}
+
+// ============ GATEWAYS ============
+function loadGateways() {
+  fetch(baseUrl + '&ajax=list_gateways')
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      var container = document.getElementById('gatewayList');
+      var btnNuevo = document.getElementById('btnNuevoGw');
+      if (d.status !== 'success' || !d.data || d.data.length === 0) {
+        container.innerHTML = '<div class="gw-empty"><i class="fas fa-satellite-dish"></i> No hay Gateway API configurado<br><small style="color:#94a3b8;">Cree uno con el botón "Nuevo Gateway API"</small></div>';
+        btnNuevo.style.display = '';
+        return;
+      }
+      container.innerHTML = d.data.map(function(gw) { return renderGatewayCard(gw); }).join('');
+      btnNuevo.style.display = 'none';
+    });
+}
+
+function renderGatewayCard(gw) {
+  var active = gw.is_active == 1;
+  var badgeClass = active ? 'gw-badge-active' : 'gw-badge-inactive';
+  var badgeText = active ? 'Activo' : 'Inactivo';
+  var tokenDisplay = gw.token ? (gw.token.substring(0, 12) + '...') : 'Sin token';
+  var pauseSec = (gw.pause_ms / 1000).toFixed(1);
+  return '<div class="gw-card">' +
+    '<div class="gw-card-header">' +
+      '<div class="gw-card-title"><i class="fas fa-broadcast-tower" style="color:var(--accent-color, #8b5cf6);"></i> ' + esc(gw.name) +
+      ' <span class="gw-badge ' + badgeClass + '">' + badgeText + '</span>' +
+      ' <span class="gw-badge gw-badge-method">' + esc(gw.method) + '</span></div>' +
+      '<div class="gw-card-actions">' +
+        '<button class="gw-btn gw-btn-test" onclick="openTestModal(' + gw.id + ')"><i class="fas fa-flask"></i> Probar</button>' +
+        '<button class="gw-btn gw-btn-edit" onclick="editGateway(' + gw.id + ')"><i class="fas fa-pen"></i> Editar</button>' +
+        '<button class="gw-btn gw-btn-del" onclick="deleteGateway(' + gw.id + ', \'' + esc(gw.name) + '\')"><i class="fas fa-trash"></i></button>' +
+      '</div></div>' +
+    '<div class="gw-url"><i class="fas fa-link" style="color:#94a3b8; margin-right:5px;"></i>' + esc(gw.url) + '</div>' +
+    '<div class="gw-params"><i class="fas fa-code" style="color:#ca8a04; margin-right:5px;"></i>' + esc(gw.parameters) + '</div>' +
+    '<div class="gw-detail">' +
+      '<div class="gw-detail-item"><strong>Token:</strong> ' + esc(tokenDisplay) + '</div>' +
+      '<div class="gw-detail-item"><strong>Pausa:</strong> ' + pauseSec + 's entre mensajes</div>' +
+    '</div></div>';
+}
+
+function esc(str) {
+  if (!str) return '';
+  var d = document.createElement('div');
+  d.textContent = str;
+  return d.innerHTML;
+}
+
+function openGatewayModal(data) {
+  document.getElementById('gwId').value = data ? data.id : '';
+  document.getElementById('gwName').value = data ? data.name : '';
+  document.getElementById('gwUrl').value = data ? data.url : '';
+  document.getElementById('gwParams').value = data ? data.parameters : '';
+  document.getElementById('gwMethod').value = data ? data.method : 'POST';
+  document.getElementById('gwToken').value = data ? (data.token || '') : '';
+  document.getElementById('gwPause').value = data ? data.pause_ms : 1000;
+  document.getElementById('gwActive').value = data ? data.is_active : 1;
+  document.getElementById('modalGwTitle').textContent = data ? 'Editar Gateway API' : 'Nuevo Gateway API';
+  document.getElementById('modalGateway').classList.add('show');
+}
+
+function editGateway(id) {
+  fetch(baseUrl + '&ajax=list_gateways')
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (d.status !== 'success') return;
+      var gw = d.data.find(function(g) { return g.id == id; });
+      if (gw) openGatewayModal(gw);
+    });
+}
+
+function saveGateway() {
+  var fd = new FormData();
+  fd.append('id', document.getElementById('gwId').value);
+  fd.append('name', document.getElementById('gwName').value);
+  fd.append('url', document.getElementById('gwUrl').value);
+  fd.append('params', document.getElementById('gwParams').value);
+  fd.append('method', document.getElementById('gwMethod').value);
+  fd.append('token', document.getElementById('gwToken').value);
+  fd.append('pause_ms', document.getElementById('gwPause').value);
+  fd.append('is_active', document.getElementById('gwActive').value);
+
+  fetch(baseUrl + '&ajax=save_gateway', { method: 'POST', body: fd })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (d.status === 'success') {
+        closeModal('modalGateway');
+        loadGateways();
+        showToast(d.msg, 'success');
+      } else {
+        showToast(d.msg, 'error');
+      }
+    });
+}
+
+function deleteGateway(id, name) {
+  msgConfirm('Eliminar Gateway API', '¿Eliminar el gateway <strong>' + esc(name) + '</strong>?<br><br>Esta acción no se puede deshacer.', function() {
+    var fd = new FormData();
+    fd.append('id', id);
+    fetch(baseUrl + '&ajax=delete_gateway', { method: 'POST', body: fd })
+      .then(function(r) { return r.json(); })
+      .then(function(d) {
+        if (d.status === 'success') { loadGateways(); showToast(d.msg, 'success'); }
+        else { showToast(d.msg, 'error'); }
+      });
+  });
+}
+
+// ============ TEST ============
+function openTestModal(id) {
+  document.getElementById('testGwId').value = id;
+  document.getElementById('testPhone').value = '';
+  document.getElementById('testMessage').value = 'Mensaje de prueba desde ISP Total';
+  document.getElementById('testResult').style.display = 'none';
+  document.getElementById('btnSendTest').disabled = false;
+  document.getElementById('modalTest').classList.add('show');
+  setTimeout(function() { document.getElementById('testPhone').focus(); }, 200);
+}
+
+function sendTest() {
+  var phone = document.getElementById('testPhone').value.trim();
+  var message = document.getElementById('testMessage').value.trim();
+  var gwId = document.getElementById('testGwId').value;
+  if (!phone) { showToast('Ingrese un número de teléfono', 'error'); return; }
+
+  var btn = document.getElementById('btnSendTest');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+
+  var fd = new FormData();
+  fd.append('gateway_id', gwId);
+  fd.append('phone', phone);
+  fd.append('message', message);
+
+  fetch(baseUrl + '&ajax=test_gateway', { method: 'POST', body: fd })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      var result = document.getElementById('testResult');
+      result.style.display = 'block';
+      if (d.status === 'success') {
+        result.style.background = '#f0fdf4'; result.style.border = '1px solid #bbf7d0'; result.style.color = '#166534';
+        result.innerHTML = '<i class="fas fa-check-circle"></i> <strong>' + esc(d.msg) + '</strong>';
+        if (d.response) { result.innerHTML += '<div style="margin-top:8px; padding:8px; background:#fff; border-radius:4px; font-family:monospace; font-size:0.75rem; max-height:100px; overflow:auto; color:#475569;">' + esc(d.response) + '</div>'; }
+      } else {
+        result.style.background = '#fef2f2'; result.style.border = '1px solid #fecaca'; result.style.color = '#991b1b';
+        result.innerHTML = '<i class="fas fa-times-circle"></i> <strong>Error:</strong> ' + esc(d.msg);
+      }
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-paper-plane"></i> Enviar Prueba';
+    })
+    .catch(function() {
+      showToast('Error de conexión', 'error');
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-paper-plane"></i> Enviar Prueba';
+    });
+}
+
+// ============ LOGS ============
+var _logCurrentPage = 1;
+var _logSearchTerm = '';
+var _logSearchTimer = null;
+
+function logSearchDebounce() {
+  clearTimeout(_logSearchTimer);
+  var val = document.getElementById('logSearch').value;
+  document.getElementById('logClearBtn').style.display = val ? 'block' : 'none';
+  _logSearchTimer = setTimeout(function() {
+    _logSearchTerm = val.trim();
+    _logCurrentPage = 1;
+    loadLogs();
+  }, 350);
+}
+
+function logClearSearch() {
+  document.getElementById('logSearch').value = '';
+  document.getElementById('logClearBtn').style.display = 'none';
+  _logSearchTerm = '';
+  _logCurrentPage = 1;
+  loadLogs();
+}
+
+function loadLogs(page) {
+  if (page) _logCurrentPage = page;
+  var url = baseUrl + '&ajax=get_log&page=' + _logCurrentPage;
+  if (_logSearchTerm) url += '&search=' + encodeURIComponent(_logSearchTerm);
+
+  fetch(url)
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      var tbody = document.getElementById('logBody');
+      var pag = document.getElementById('logPagination');
+      var totalEl = document.getElementById('logTotal');
+
+      if (d.status !== 'success' || !d.data || d.data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#94a3b8; padding:30px;"><i class="fas fa-inbox"></i> ' + (_logSearchTerm ? 'Sin resultados para "' + esc(_logSearchTerm) + '"' : 'Sin registros de envío') + '</td></tr>';
+        pag.innerHTML = '';
+        totalEl.textContent = '';
+        return;
+      }
+
+      totalEl.innerHTML = '<strong>' + d.total + '</strong> ' + (d.total === 1 ? 'registro' : 'registros') + (_logSearchTerm ? ' (filtrado)' : '');
+
+      tbody.innerHTML = d.data.map(function(log) {
+        var statusClass = log.status === 'sent' ? 'log-status-sent' : 'log-status-failed';
+        var statusIcon = log.status === 'sent' ? 'fa-check-circle' : 'fa-times-circle';
+        var statusText = log.status === 'sent' ? 'Enviado' : 'Fallido';
+        var fecha = log.created_at ? new Date(log.created_at).toLocaleString('es-DO') : '';
+        var msgShort = log.message && log.message.length > 50 ? log.message.substring(0, 50) + '...' : (log.message || '');
+        var ch = log.channel || 'sms';
+        var chBadge = ch === 'whatsapp'
+          ? '<span style="background:#dcfce7;color:#166534;padding:2px 8px;border-radius:10px;font-size:0.7rem;font-weight:700;"><i class="fab fa-whatsapp"></i> WA</span>'
+          : '<span style="background:#ede9fe;color:#6d28d9;padding:2px 8px;border-radius:10px;font-size:0.7rem;font-weight:700;"><i class="fas fa-sms"></i> SMS</span>';
+        return '<tr><td>' + fecha + '</td><td>' + chBadge + '</td><td>' + esc(log.gateway_name || '-') + '</td><td><strong>' + esc(log.phone) + '</strong></td><td title="' + esc(log.message) + '">' + esc(msgShort) + '</td><td class="' + statusClass + '"><i class="fas ' + statusIcon + '"></i> ' + statusText + '</td></tr>';
+      }).join('');
+
+      if (d.pages > 1) {
+        var html = '';
+        var btnStyle = 'padding:6px 11px;border:1px solid #e2e8f0;border-radius:6px;background:#fff;cursor:pointer;font-size:0.78rem;color:#475569;';
+        var btnActive = 'padding:6px 11px;border:1px solid #6d28d9;border-radius:6px;background:#6d28d9;color:#fff;font-weight:700;font-size:0.78rem;';
+        if (d.page > 1) html += '<button onclick="loadLogs(' + (d.page-1) + ')" style="' + btnStyle + '">&laquo;</button>';
+        var sp = Math.max(1, d.page - 2), ep = Math.min(d.pages, d.page + 2);
+        if (sp > 1) {
+          html += '<button onclick="loadLogs(1)" style="' + btnStyle + '">1</button>';
+          if (sp > 2) html += '<span style="padding:0 6px;color:#94a3b8;">...</span>';
+        }
+        for (var p = sp; p <= ep; p++) {
+          html += '<button ' + (p === d.page ? '' : 'onclick="loadLogs(' + p + ')"') + ' style="' + (p === d.page ? btnActive : btnStyle) + '">' + p + '</button>';
+        }
+        if (ep < d.pages) {
+          if (ep < d.pages - 1) html += '<span style="padding:0 6px;color:#94a3b8;">...</span>';
+          html += '<button onclick="loadLogs(' + d.pages + ')" style="' + btnStyle + '">' + d.pages + '</button>';
+        }
+        if (d.page < d.pages) html += '<button onclick="loadLogs(' + (d.page+1) + ')" style="' + btnStyle + '">&raquo;</button>';
+        pag.innerHTML = html;
+      } else {
+        pag.innerHTML = '';
+      }
+    });
+}
+
+// ============ WHATSAPP ============
+var waPolling = null;
+
+function waLoadStatus() {
+  fetch(baseUrl + '&ajax=wa_status')
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (d.status !== 'success') return;
+      waRender(d.data);
+      clearInterval(waPolling);
+      if (d.data.status === 'qr' || d.data.status === 'connecting') {
+        waPolling = setInterval(function() {
+          fetch(baseUrl + '&ajax=wa_status').then(function(r) { return r.json(); }).then(function(d2) {
+            if (d2.status === 'success') waRender(d2.data);
+          });
+        }, 3000);
+      }
+    })
+    .catch(function() { waRender({ status: 'service_down', error: 'No se pudo conectar' }); });
+}
+
+function waRender(data) {
+  var card = document.getElementById('waStatusCard');
+  var testSection = document.getElementById('waTestSection');
+  var s = data.status;
+
+  if (s === 'connected') {
+    var upH = Math.floor(data.uptime / 3600);
+    var upM = Math.floor((data.uptime % 3600) / 60);
+    card.className = 'wa-status-card wa-connected';
+    card.innerHTML = '<div class="wa-icon-big" style="color:#25D366;"><i class="fab fa-whatsapp"></i></div>' +
+      '<span class="wa-status-badge wa-badge-connected"><i class="fas fa-circle" style="font-size:0.5rem;"></i> Conectado</span>' +
+      '<div class="wa-phone-number">' + esc(data.phone || 'N/A') + '</div>' +
+      '<div class="wa-phone-name">' + esc(data.name || '') + '</div>' +
+      '<div class="wa-stats">' +
+        '<div class="wa-stat"><div class="wa-stat-val">' + (data.messages_sent || 0) + '</div><div class="wa-stat-label">Mensajes enviados</div></div>' +
+        '<div class="wa-stat"><div class="wa-stat-val">' + upH + 'h ' + upM + 'm</div><div class="wa-stat-label">Tiempo activo</div></div>' +
+      '</div>' +
+      '<div class="wa-actions"><button class="wa-btn wa-btn-red" onclick="waDisconnect()"><i class="fas fa-power-off"></i> Desconectar</button></div>';
+    testSection.style.display = 'block';
+    clearInterval(waPolling);
+  } else if (s === 'qr') {
+    card.className = 'wa-status-card wa-qr-state';
+    card.innerHTML = '<div class="wa-icon-big" style="color:#25D366;"><i class="fab fa-whatsapp"></i></div>' +
+      '<span class="wa-status-badge wa-badge-qr"><i class="fas fa-qrcode"></i> Esperando escaneo</span>' +
+      '<div class="wa-qr-container"><img src="' + data.qr + '" alt="QR WhatsApp"></div>' +
+      '<div class="wa-qr-hint"><strong>Para conectar:</strong><br>1. Abre WhatsApp en tu celular<br>2. Ve a <strong>Dispositivos vinculados</strong><br>3. Toca <strong>Vincular dispositivo</strong><br>4. Escanea este código QR</div>' +
+      '<div class="wa-actions" style="margin-top:15px;"><button class="wa-btn wa-btn-gray" onclick="waRestart()"><i class="fas fa-sync"></i> Generar nuevo QR</button></div>';
+    testSection.style.display = 'none';
+  } else if (s === 'connecting') {
+    card.className = 'wa-status-card';
+    card.innerHTML = '<div class="wa-loading"><i class="fas fa-spinner fa-spin" style="font-size:2.5rem; color:#25D366;"></i><p style="margin-top:15px; color:#64748b; font-weight:600;">Conectando a WhatsApp...</p><p style="color:#94a3b8; font-size:0.82rem;">Esto puede tomar unos segundos</p></div>';
+    testSection.style.display = 'none';
+  } else if (s === 'service_down') {
+    card.className = 'wa-status-card wa-service-down';
+    card.innerHTML = '<div class="wa-icon-big" style="color:#f59e0b;"><i class="fas fa-exclamation-triangle"></i></div>' +
+      '<span class="wa-status-badge wa-badge-down"><i class="fas fa-times-circle"></i> Servicio no disponible</span>' +
+      '<p style="color:#64748b; margin:15px 0 5px; font-size:0.9rem;">El servicio WhatsApp no está corriendo</p>' +
+      '<p style="font-size:0.82rem; color:#92400e; margin-top:10px;">Verifique que OpenWa esté configurado en <a href="/modulo?pagina=Configuracion&section=mensajeria">Configuración</a></p>' +
+      '<div class="wa-actions" style="margin-top:15px;"><button class="wa-btn wa-btn-gray" onclick="waLoadStatus()"><i class="fas fa-sync"></i> Reintentar</button></div>';
+    testSection.style.display = 'none';
+    clearInterval(waPolling);
+  } else {
+    card.className = 'wa-status-card wa-disconnected';
+    card.innerHTML = '<div class="wa-icon-big" style="color:#94a3b8;"><i class="fab fa-whatsapp"></i></div>' +
+      '<span class="wa-status-badge wa-badge-down"><i class="fas fa-unlink"></i> Desconectado</span>' +
+      (data.error ? '<p style="color:#ef4444; font-size:0.82rem; margin:10px 0;">' + esc(data.error) + '</p>' : '') +
+      '<p style="color:#64748b; margin:15px 0; font-size:0.9rem;">Presiona conectar para generar un código QR</p>' +
+      '<div class="wa-actions"><button class="wa-btn wa-btn-green" onclick="waRestart()"><i class="fab fa-whatsapp"></i> Conectar</button></div>';
+    testSection.style.display = 'none';
+    clearInterval(waPolling);
+  }
+}
+
+function waDisconnect() {
+  msgConfirm('Desconectar WhatsApp', '¿Desconectar WhatsApp?<br><br>Deberás escanear el código QR nuevamente para reconectar.', function() {
+    fetch(baseUrl + '&ajax=wa_disconnect', { method: 'POST' })
+      .then(function(r) { return r.json(); })
+      .then(function() { showToast('WhatsApp desconectado', 'success'); waLoadStatus(); });
+  });
+}
+
+function waRestart() {
+  fetch(baseUrl + '&ajax=wa_restart', { method: 'POST' })
+    .then(function(r) { return r.json(); })
+    .then(function() { showToast('Generando QR...', 'success'); setTimeout(function() { waLoadStatus(); }, 2000); });
+}
+
+function waSendTest() {
+  var phone = document.getElementById('waTestPhone').value.trim();
+  var message = document.getElementById('waTestMsg').value.trim();
+  if (!phone) { showToast('Ingrese un número', 'error'); return; }
+  if (!message) { showToast('Ingrese un mensaje', 'error'); return; }
+
+  var btn = document.getElementById('btnWaSend');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+
+  var fd = new FormData();
+  fd.append('phone', phone);
+  fd.append('message', message);
+
+  fetch(baseUrl + '&ajax=wa_send', { method: 'POST', body: fd })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      var result = document.getElementById('waTestResult');
+      result.style.display = 'block';
+      if (d.status === 'success') {
+        result.style.background = '#f0fdf4'; result.style.border = '1px solid #bbf7d0'; result.style.color = '#166534';
+        result.innerHTML = '<i class="fas fa-check-circle"></i> ' + esc(d.msg);
+      } else {
+        result.style.background = '#fef2f2'; result.style.border = '1px solid #fecaca'; result.style.color = '#991b1b';
+        result.innerHTML = '<i class="fas fa-times-circle"></i> ' + esc(d.msg);
+      }
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fab fa-whatsapp"></i> Enviar por WhatsApp';
+    })
+    .catch(function() {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fab fa-whatsapp"></i> Enviar por WhatsApp';
+      showToast('Error de conexión', 'error');
+    });
+}
+
+// ============ MASSIVE MESSAGES ============
+var msFiltersLoaded = false;
+var msSearchTimer = null;
+
+function msInit() {
+  if (msFiltersLoaded) return;
+  fetch(baseUrl + '&ajax=masivos_filters')
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (d.status !== 'success') return;
+      var selZ = document.getElementById('msZona');
+      d.zonas.forEach(function(z) { selZ.innerHTML += '<option value="' + z.id + '">' + esc(z.nombre) + '</option>'; });
+      var selP = document.getElementById('msPlan');
+      d.planes.forEach(function(p) { selP.innerHTML += '<option value="' + p.id + '">' + esc(p.nombre) + ' ($' + parseFloat(p.precio).toFixed(2) + ')</option>'; });
+      msFiltersLoaded = true;
+      msPreview();
+    });
+}
+
+function msPreview() {
+  var zona = document.getElementById('msZona').value;
+  var plan = document.getElementById('msPlan').value;
+  var estado = document.getElementById('msEstado').value;
+  var clienteId = document.getElementById('msClientId').value;
+
+  if (!zona && !plan && !estado && (!clienteId || clienteId === '0')) {
+    document.getElementById('msPreviewCount').textContent = '0';
+    return;
+  }
+
+  var fd = new FormData();
+  fd.append('zona', zona);
+  fd.append('plan', plan);
+  fd.append('estado', estado);
+  fd.append('cliente_id', clienteId);
+  fetch(baseUrl + '&ajax=masivos_preview', { method: 'POST', body: fd })
+    .then(function(r) { return r.json(); })
+    .then(function(d) { document.getElementById('msPreviewCount').textContent = d.total || 0; });
+}
+
+function msSearchClient() {
+  if (msSearchTimer) clearTimeout(msSearchTimer);
+  var q = document.getElementById('msClientSearch').value.trim();
+  var box = document.getElementById('msClientResults');
+  if (q.length < 2) { box.style.display = 'none'; return; }
+  msSearchTimer = setTimeout(function() {
+    fetch(baseUrl + '&ajax=masivos_search_client&q=' + encodeURIComponent(q))
+      .then(function(r) { return r.json(); })
+      .then(function(d) {
+        if (!d.data || !d.data.length) { box.style.display = 'none'; return; }
+        var html = '';
+        d.data.forEach(function(c) {
+          html += '<div style="padding:8px 12px; cursor:pointer; border-bottom:1px solid #f1f5f9; font-size:0.84rem;" onmouseover="this.style.background=\'#f8fafc\'" onmouseout="this.style.background=\'#fff\'" onclick="msSelectClient(' + c.id + ',\'' + c.name.replace(/'/g, "\\'") + '\')">';
+          html += '<strong>' + esc(c.name) + '</strong> <span style="color:#94a3b8;">' + (c.cedula || '') + '</span>';
+          html += '<div style="font-size:0.75rem; color:#64748b;">' + (c.phone || 'Sin tel') + '</div></div>';
+        });
+        box.innerHTML = html;
+        box.style.display = 'block';
+      });
+  }, 300);
+}
+
+function msSelectClient(id, name) {
+  document.getElementById('msClientId').value = id;
+  document.getElementById('msClientSearch').value = name;
+  document.getElementById('msClientResults').style.display = 'none';
+  document.getElementById('msZona').disabled = true;
+  document.getElementById('msPlan').disabled = true;
+  document.getElementById('msEstado').disabled = true;
+  msPreview();
+}
+
+function msClearClient() {
+  document.getElementById('msClientId').value = '0';
+  document.getElementById('msClientSearch').value = '';
+  document.getElementById('msClientResults').style.display = 'none';
+  document.getElementById('msZona').disabled = false;
+  document.getElementById('msPlan').disabled = false;
+  document.getElementById('msEstado').disabled = false;
+  msPreview();
+}
+
+function msToggleTipo() {
+  var tipo = document.querySelector('input[name="msTipo"]:checked').value;
+  document.getElementById('msManualBox').style.display = tipo === 'manual' ? '' : 'none';
+  document.getElementById('msRecBox').style.display = tipo === 'recordatorio' ? '' : 'none';
+  document.getElementById('msTypeManualLabel').style.borderColor = tipo === 'manual' ? 'var(--accent-color, #8b5cf6)' : '#e2e8f0';
+  document.getElementById('msTypeManualLabel').style.background = tipo === 'manual' ? '#f5f3ff' : '#fff';
+  document.getElementById('msTypeRecLabel').style.borderColor = tipo === 'recordatorio' ? '#f59e0b' : '#e2e8f0';
+  document.getElementById('msTypeRecLabel').style.background = tipo === 'recordatorio' ? '#fffbeb' : '#fff';
+}
+
+function msEnviar() {
+  var count = parseInt(document.getElementById('msPreviewCount').textContent) || 0;
+  if (count === 0) { alert('No hay destinatarios'); return; }
+  var tipo = document.querySelector('input[name="msTipo"]:checked').value;
+  if (tipo === 'manual' && !document.getElementById('msMensaje').value.trim()) { alert('Escribe un mensaje'); return; }
+  if (!confirm('Enviar mensaje a ' + count + ' destinatario(s)?')) return;
+
+  document.getElementById('msBtnSend').disabled = true;
+  document.getElementById('msSending').style.display = '';
+  document.getElementById('msResultBox').style.display = 'none';
+
+  // Progress bar
+  var progressWrap = document.getElementById('msProgressWrap');
+  if (!progressWrap) {
+    progressWrap = document.createElement('div');
+    progressWrap.id = 'msProgressWrap';
+    progressWrap.style.cssText = 'margin-top:10px;';
+    progressWrap.innerHTML = '<div style="display:flex;justify-content:space-between;font-size:0.8rem;color:#64748b;margin-bottom:4px;"><span id="msProgressLabel">Iniciando...</span></div>' +
+      '<div style="background:#e2e8f0;border-radius:4px;height:8px;overflow:hidden;"><div id="msProgressBar" style="height:100%;width:0%;background:var(--accent-color, #8b5cf6);transition:width 0.5s;border-radius:4px;"></div></div>';
+    document.getElementById('msSending').appendChild(progressWrap);
+  }
+  progressWrap.style.display = '';
+
+  var msPolling = null;
+
+  function msActualizarProgreso(job) {
+    var total = parseInt(job.total) || 0;
+    var proc = parseInt(job.procesados) || 0;
+    var env = parseInt(job.enviados) || 0;
+    var err = parseInt(job.errores) || 0;
+    var pct = total > 0 ? Math.min(100, Math.round(proc / total * 100)) : (job.status === 'running' ? 5 : 0);
+    document.getElementById('msProgressBar').style.width = pct + '%';
+    document.getElementById('msProgressLabel').textContent = (job.status === 'done' ? 'Completado' : 'Enviando...') + ' ' + proc + (total > 0 ? '/' + total : '') + '   OK: ' + env + (err > 0 ? ' | Error: ' + err : '');
+  }
+
+  function msFinalizar(job) {
+    clearInterval(msPolling);
+    document.getElementById('msBtnSend').disabled = false;
+    document.getElementById('msSending').style.display = 'none';
+    if (progressWrap) progressWrap.style.display = 'none';
+    var box = document.getElementById('msResultBox');
+    box.style.background = '#dcfce7'; box.style.color = '#166534'; box.style.border = '1px solid #86efac';
+    var html = '<strong><i class="fas fa-check-circle"></i> Envío completado</strong><br>';
+    html += 'Enviados: <strong>' + (job.enviados || 0) + '</strong>';
+    if (parseInt(job.errores) > 0) html += ' | Errores: <strong style="color:#dc2626;">' + job.errores + '</strong>';
+    if (parseInt(job.sin_telefono) > 0) html += ' | Sin teléfono/deuda: ' + job.sin_telefono;
+    box.innerHTML = html;
+    box.style.display = '';
+  }
+
+  var fd = new FormData();
+  fd.append('tipo', tipo);
+  fd.append('mensaje', document.getElementById('msMensaje').value.trim());
+  fd.append('zona', document.getElementById('msZona').value);
+  fd.append('plan', document.getElementById('msPlan').value);
+  fd.append('estado', document.getElementById('msEstado').value);
+  fd.append('cliente_id', document.getElementById('msClientId').value);
+
+  fetch(baseUrl + '&ajax=masivos_send', { method: 'POST', body: fd })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (d.status !== 'success') { alert(d.msg || 'Error al iniciar'); document.getElementById('msBtnSend').disabled = false; document.getElementById('msSending').style.display = 'none'; return; }
+      var job_id = d.job_id;
+      msPolling = setInterval(function() {
+        fetch(baseUrl + '&ajax=masivos_status&job_id=' + job_id)
+          .then(function(r) { return r.json(); })
+          .then(function(s) {
+            if (s.status !== 'success') return;
+            msActualizarProgreso(s.job);
+            if (s.job.status === 'done') msFinalizar(s.job);
+          });
+      }, 1500);
+    })
+    .catch(function(e) {
+      document.getElementById('msBtnSend').disabled = false;
+      document.getElementById('msSending').style.display = 'none';
+      alert('Error de red: ' + e.message);
+    });
+}
+
+// ============ CHANNEL ============
+var currentChannel = '<%= typeof messagingChannel !== "undefined" ? messagingChannel : "sms" %>';
+
+function updateChannelUI() {
+  var lblEl = document.getElementById('channelLabel');
+  var btnSms = document.getElementById('btnChSms');
+  var btnWa = document.getElementById('btnChWa');
+  if (currentChannel === 'whatsapp') {
+    lblEl.innerHTML = '<i class="fab fa-whatsapp" style="color:#25D366;"></i> WhatsApp DomISP';
+    lblEl.style.color = '#166534';
+    btnWa.style.background = '#25D366'; btnWa.style.color = '#fff'; btnWa.style.border = '2px solid #25D366';
+    btnSms.style.background = '#f1f5f9'; btnSms.style.color = '#64748b'; btnSms.style.border = '1px solid #e2e8f0';
+  } else {
+    lblEl.innerHTML = '<i class="fas fa-sms" style="color:var(--accent-color, #8b5cf6);"></i> Gateway API';
+    lblEl.style.color = '#6d28d9';
+    btnSms.style.background = 'var(--accent-color, #8b5cf6)'; btnSms.style.color = '#fff'; btnSms.style.border = '2px solid var(--accent-color, #8b5cf6)';
+    btnWa.style.background = '#f1f5f9'; btnWa.style.color = '#64748b'; btnWa.style.border = '1px solid #e2e8f0';
+  }
+}
+
+function switchChannel(ch) {
+  if (ch === currentChannel) return;
+  var label = ch === 'whatsapp' ? 'WhatsApp DomISP' : 'Gateway API';
+  msgConfirm('Cambiar canal', '¿Activar <strong>' + label + '</strong> como canal de mensajería?<br><br>Todos los mensajes del sistema usarán este canal.', function() {
+    var fd = new FormData();
+    fd.append('channel', ch);
+    fetch(baseUrl + '&ajax=switch_channel', { method: 'POST', body: fd })
+      .then(function(r) { return r.json(); })
+      .then(function(d) {
+        if (d.status === 'success') { currentChannel = ch; updateChannelUI(); showToast(d.msg, 'success'); }
+        else { showToast(d.msg, 'error'); }
+      });
+  });
+}
+
+// ============ UTILITIES ============
+function closeModal(id) {
+  document.getElementById(id).classList.remove('show');
+}
+
+function showToast(msg, type) {
+  var toast = document.createElement('div');
+  toast.style.cssText = 'position:fixed; top:20px; right:20px; z-index:99999; padding:12px 20px; border-radius:8px; font-size:0.88rem; font-weight:600; color:#fff; box-shadow:0 4px 15px rgba(0,0,0,0.15); transition:opacity 0.3s; display:flex; align-items:center; gap:8px;';
+  toast.style.background = type === 'success' ? '#16a34a' : '#dc2626';
+  var icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+  toast.innerHTML = '<i class="fas ' + icon + '"></i> ' + msg;
+  document.body.appendChild(toast);
+  setTimeout(function() { toast.style.opacity = '0'; setTimeout(function() { toast.remove(); }, 300); }, 3500);
+}
+
+// Close modals on overlay click
+document.querySelectorAll('.msg-modal-overlay').forEach(function(m) {
+  m.addEventListener('click', function(e) { if (e.target === this) this.classList.remove('show'); });
+});
+
+// Init
+document.addEventListener('DOMContentLoaded', function() {
+  loadGateways();
+  updateChannelUI();
+});
+</script>

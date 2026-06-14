@@ -1,0 +1,466 @@
+<!DOCTYPE html><html lang="en" class="smartolt-night"><head>
+        <script>window.SMARTOLT_DB_THEME='system';</script>
+    <!-- Paint-blocking: resolve theme before first paint. Precedence: per-device override (smartolt-theme-local, set by the header button) > account/DB pref > device (system). -->
+    <script>try{var k='smartolt-night',lk='smartolt-theme-local',dbTheme=window.SMARTOLT_DB_THEME,local=null,pref,n;try{local=localStorage.getItem(lk);}catch(e){}if(local==='night'||local==='light'||local==='system'){pref=local;}else if(dbTheme==='night'||dbTheme==='light'||dbTheme==='system'){pref=dbTheme;}else{pref='system';}if(pref==='system'){n=!!(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);}else if(pref==='night'){n=true;}else{n=false;}try{localStorage.setItem(k,n?'1':'0');}catch(e){}if(n){document.documentElement.classList.add('smartolt-night');}else{document.documentElement.classList.remove('smartolt-night');}document.cookie=k+'='+(n?'1':'0')+'; path=/; max-age=31536000; SameSite=Lax'+(location.protocol==='https:'?'; Secure':'');}catch(e){}</script>
+    <script>try{var wk='smartolt-wide-tables',wv=null,m=document.cookie.match(new RegExp('(?:^|; )'+wk+'=([^;]*)'));try{wv=localStorage.getItem(wk);}catch(e){}if(wv!=='1'&&wv!=='0'&&m){wv=decodeURIComponent(m[1]);}if(wv==='1'){document.documentElement.classList.add('smartolt-wide-tables');}}catch(e){}</script>
+        <meta http-equiv="content-type" content="text/html; utf-8">
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Language" content="en">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    
+  <title>PON Ports</title>
+
+  <!-- Bootstrap Core CSS -->
+  <link href="/public/smartolt-files/bootstrap-custom.css?v=3.53.0.24" rel="stylesheet">
+  <link href="/public/smartolt-files/bootstrap-multiselect.css?v=3.53.0.20" rel="stylesheet">
+  <link href="/public/smartolt-files/styles.css?v=3.53.0.29" rel="stylesheet">
+  <link href="/public/smartolt-files/toast.css?v=3.53.0.20" rel="stylesheet">
+
+  <!-- Custom Fonts -->
+  <link href="/public/smartolt-files/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+  <!-- Message box CSS -->
+  <link href="/public/smartolt-files/messagebox.css" rel="stylesheet" type="text/css">
+
+  <link href="/public/smartolt-files/inter-fonts.css?v=3.53.0.1" rel="stylesheet">
+  <link href="/public/smartolt-files/dashboard-smartolt-night.css?v=3.53.0.209" rel="stylesheet">
+  <script src="/public/smartolt-files/dashboard-smartolt-night.js?v=3.53.0.63" defer=""></script>
+    
+  <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+  <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+  <!--[if lt IE 9]>
+        <script src="/public/smartolt-files/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="/public/smartolt-files/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+  <!-- jQuery -->
+  <script src="/public/smartolt-files/jquery.min.js"></script>
+
+  <!-- Toast alerts -->
+  <script src="/public/smartolt-files/toast.js"></script>
+
+  <!-- Pauses recurring AJAX polling while the tab is hidden OR the user has been idle, resumes on focus / activity. -->
+  <script src="/public/smartolt-files/polling.js?v=3.53.0.3"></script>
+
+  <!-- Geolocation permission-error -> localized message helper (shared by location pickers). -->
+  <script src="/public/smartolt-files/geolocation_helper.js?v=3.53.0.1"></script>
+
+  <style>
+    .smartolt-action-button {
+      box-shadow: 0 2px 5px 0 rgba(0,0,0,.26);
+    }
+    .smartolt-action-button:active:focus {
+      outline: none;
+      outline-offset: 0;
+    }
+    .smartolt-action-button:hover,
+    .smartolt-action-button:focus,
+    .smartolt-action-button:active,
+    .smartolt-action-button.active,
+    .smartolt-action-button:active:hover,
+    .smartolt-action-button:active:focus {
+      border-color: transparent !important;
+    }
+    .signal-good {
+      color: #5cb85c;
+    }
+    .signal-fair {
+      color: #f0ad4e;
+    }
+    .signal-poor {
+      color: #d9534f;
+    }
+    .pon-load-bar {
+      width: 8px;
+      height: 30px;
+      border-radius: 2px;
+      background: rgba(127,127,127,0.25);
+      position: relative;
+      flex: 0 0 auto;
+      display: inline-block;
+      vertical-align: middle;
+    }
+    .pon-load-fill {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      border-radius: 0 0 2px 2px;
+    }
+    .pon-load-text {
+      font-size: 12px;
+      color: #555;
+      white-space: nowrap;
+    }
+    .nav-tabs > li > a {
+      cursor: pointer;
+    }
+    .tab-pane {
+      padding-top: 15px;
+    }
+  </style>
+
+</head>
+
+<body class="smartolt-site">
+<script type="text/javascript">
+$( document ).ready(function() {
+  $.ajaxSetup({
+    cache: false
+  });
+  
+  window.jqxhrs = [];
+
+  window.registerJqxhr = function(jqxhr) {
+    jqxhrs.push(jqxhr);
+  }
+
+  window.abortJqxhr = function() {
+    for (var i = jqxhrs.length - 1; i >= 0; i--) {
+      if (jqxhrs[i]) {
+        jqxhrs[i].abort();
+      }
+    }
+    window.jqxhrs = [];
+  }
+
+  $(window).bind("beforeunload", function(event) {
+    abortJqxhr();
+  });
+
+  function unregisterJqxhr(event, jqxhr, settings) {
+    var idx = $.inArray(jqxhr, jqxhrs);
+    if (idx != -1) {
+      jqxhrs.splice(idx, 1);
+    }
+  }
+
+  $(document).ajaxComplete(unregisterJqxhr);
+
+  config = {
+    X_TOKEN: '9C23F19BE06B4BEB93046ECFDF50FF91'
+  }
+
+  // Get OLT ID from URL query params (e.g., ?olt_id=123)
+  function getOltId() {
+    var params = new URLSearchParams(window.location.search);
+    var id = params.get('olt_id') || params.get('id');
+    if (id) return id;
+    // Fallback: try to extract from the path
+    var m = window.location.pathname.match(/\/olts?\/(\d+)/);
+    return m ? m[1] : null;
+  }
+
+  var oltId = getOltId();
+  if (!oltId) {
+    // Try to get from a data attribute on the page
+    oltId = $('#olt-data').data('olt-id');
+  }
+
+  // Load PON port data from API
+  function loadPonPorts() {
+    if (!oltId) {
+      $('.tab-pane tbody').html('<tr><td colspan="7" class="text-center text-muted">OLT ID not found in URL</td></tr>');
+      return;
+    }
+
+    $.ajax({
+      url: '/api/olts/' + oltId + '/pon-ports',
+      method: 'GET',
+      headers: { 'X-Token': config.X_TOKEN },
+      success: function(data) {
+        renderPonPorts(data);
+      },
+      error: function(xhr) {
+        var msg = 'Failed to load PON port data';
+        if (xhr.responseJSON && xhr.responseJSON.message) {
+          msg = xhr.responseJSON.message;
+        }
+        $('.tab-pane tbody').html('<tr><td colspan="7" class="text-center text-danger">' + msg + '</td></tr>');
+        $.MessageBox(msg, 'error');
+      }
+    });
+  }
+
+  // Render PON port data into board tabs
+  function renderPonPorts(data) {
+    var boards = data.boards || data;
+    // boards is expected to be an object keyed by board number, e.g. { "2": [...], "3": [...], "4": [...] }
+    // or an array of board objects.
+
+    // Normalise: if it's an array, index by board number
+    if (Array.isArray(boards)) {
+      var indexed = {};
+      boards.forEach(function(b) {
+        indexed[b.board] = b.ports || b;
+      });
+      boards = indexed;
+    }
+
+    var boardIds = [2, 3, 4];
+    boardIds.forEach(function(boardId) {
+      var ports = boards[boardId];
+      var tbody = $('#board-' + boardId + ' tbody');
+      tbody.empty();
+
+      if (!ports || !Array.isArray(ports) || ports.length === 0) {
+        tbody.html('<tr><td colspan="7" class="text-center text-muted">No PON port data available for Board ' + boardId + '</td></tr>');
+        return;
+      }
+
+      // Generate 16 port rows (fill missing ports with empty rows)
+      for (var i = 1; i <= 16; i++) {
+        var port = null;
+        // Find port data matching this port number
+        for (var j = 0; j < ports.length; j++) {
+          if (ports[j].port === i || ports[j].port_number === i || ports[j].portId === i || ports[j].index === i) {
+            port = ports[j];
+            break;
+          }
+        }
+
+        var tr = $('<tr></tr>');
+
+        if (port) {
+          var portLabel = port.port || port.port_number || port.portId || port.index || i;
+          var portType = port.type || port.port_type || 'GPON';
+          var status = port.status || 'Down';
+          var onlineOnus = port.online_onus || port.online || port.onlineOnus || 0;
+          var totalOnus = port.total_onus || port.total || port.totalOnus || 0;
+          var signal = port.signal != null ? parseFloat(port.signal) : null;
+
+          // Board/Port
+          tr.append('<td>' + boardId + '/' + portLabel + '</td>');
+          // Type
+          tr.append('<td>' + portType + '</td>');
+          // Status
+          var statusLabel = status === 'Up' ? 'success' : (status === 'Down' ? 'danger' : 'warning');
+          tr.append('<td><span class="label label-' + statusLabel + '">' + status + '</span></td>');
+          // Online ONUs
+          tr.append('<td><a href="#" class="btn btn-link no-padding-left">' + onlineOnus + '</a></td>');
+          // Total ONUs
+          tr.append('<td><a href="#" class="btn btn-link no-padding-left">' + totalOnus + '</a></td>');
+          // Signal
+          if (signal !== null) {
+            var signalClass = signal < -30 ? 'signal-poor' : (signal < -28 ? 'signal-fair' : 'signal-good');
+            tr.append('<td class="' + signalClass + '">' + signal.toFixed(1) + ' <i class="fa fa-signal fa-fw"></i></td>');
+          } else {
+            tr.append('<td class="text-muted">N/A</td>');
+          }
+          // Action
+          tr.append('<td><a href="#" class="btn btn-xs btn-primary"><i class="glyphicon glyphicon-cog"></i> Config</a></td>');
+        } else {
+          // Empty port row
+          tr.append('<td>' + boardId + '/' + i + '</td>');
+          tr.append('<td>&mdash;</td>');
+          tr.append('<td><span class="label label-default">N/A</span></td>');
+          tr.append('<td>0</td>');
+          tr.append('<td>0</td>');
+          tr.append('<td class="text-muted">N/A</td>');
+          tr.append('<td>&mdash;</td>');
+        }
+
+        tbody.append(tr);
+      }
+    });
+  }
+
+  // Tab switching
+  $('.board-tab a').on('click', function(e) {
+    e.preventDefault();
+    $(this).tab('show');
+  });
+
+  // Activate first tab by default
+  $('.board-tab:first a').tab('show');
+
+  // Refresh PON ports button
+  $('#refreshPonPortsBtn').on('click', function(e) {
+    e.preventDefault();
+    var btn = $(this);
+    btn.html('<i class="fa fa-spinner fa-spin"></i> Refreshing...');
+    loadPonPorts();
+    setTimeout(function() {
+      btn.html('<i class="glyphicon glyphicon-refresh"></i> Refresh');
+      $.MessageBox('PON ports data refreshed successfully.');
+    }, 1500);
+  });
+
+  // Initial load
+  loadPonPorts();
+});
+</script>
+
+  <div class="smartolt-landing-hero-bg" aria-hidden="true"></div>
+
+  <div id="content-wrapper">
+    <div class="smartolt-topbar-network" aria-hidden="true">
+      <div class="smartolt-topbar-network-inner">
+        <svg class="smartolt-topbar-network-lines" viewBox="0 0 100 100" preserveAspectRatio="none">
+          <line x1="8" y1="68" x2="23" y2="78"></line>
+          <line x1="23" y1="78" x2="37" y2="63"></line>
+          <line x1="8" y1="68" x2="37" y2="63"></line>
+          <line x1="37" y1="63" x2="65" y2="18"></line>
+          <line x1="65" y1="18" x2="89" y2="34"></line>
+          <line x1="23" y1="78" x2="65" y2="18"></line>
+          <line x1="37" y1="63" x2="89" y2="34"></line>
+        </svg>
+        <span class="smartolt-topbar-node smartolt-topbar-node-a"></span>
+        <span class="smartolt-topbar-node smartolt-topbar-node-b"></span>
+        <span class="smartolt-topbar-node smartolt-topbar-node-c"></span>
+        <span class="smartolt-topbar-node smartolt-topbar-node-d"></span>
+        <span class="smartolt-topbar-node smartolt-topbar-node-e"></span>
+      </div>
+    </div>
+    <div class="navbar navbar-default navbar-fixed-top default-menu">
+    <div class="container">
+      <div class="navbar-header">
+        <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#navbar-main" aria-expanded="false" aria-controls="navbar">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand text-ellipsis max-width-250" href="/modulo?pagina=GPONManager">GPON Manager</a>
+      </div>
+      <div class="navbar-collapse collapse" id="navbar-main">
+        <ul class="nav navbar-nav">
+          <li><a href="/modulo?pagina=GPONManager">Dashboard</a></li>
+          <li><a href="/modulo?pagina=smartolt_configured_full">Configuradas</a></li>
+          <li><a href="/modulo?pagina=smartolt_unconfigured_full">No configuradas</a></li>
+          <li><a href="/modulo?pagina=smartolt_onu_types_full">Tipos ONU</a></li>
+          <li><a href="/modulo?pagina=smartolt_speed_profiles_full">Velocidad</a></li>
+          <li><a href="/modulo?pagina=smartolt_locations_full">Zonas</a></li>
+          <li class="dropdown">
+            <a class="dropdown-toggle" data-toggle="dropdown" href="#">Settings <span class="caret"></span></a>
+            <ul class="dropdown-menu">
+              <li><a href="/modulo?pagina=smartolt_olt">OLTs</a></li>
+              <li><a href="/modulo?pagina=smartolt_general">General</a></li>
+              <li><a href="/modulo?pagina=smartolt_billing">Billing</a></li>
+              <li><a href="/modulo?pagina=smartolt_system_config">VPN &amp; TR069</a></li>
+              <li><a href="/modulo?pagina=smartolt_presets_full">Presets</a></li>
+              <li><a href="/modulo?pagina=smartolt_diagnostics_full">Diagnostics</a></li>
+              <li><a href="/modulo?pagina=smartolt_graphs">Graphs</a></li>
+            </ul>
+          </li>
+        </ul>
+        <ul class="nav navbar-nav navbar-right">
+          <li><a href="/logout"><i class="fa fa-sign-out"></i> Salir</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+    <!-- Page Content -->
+    <div class="container">
+
+<div class="container-fluid content-wrap">
+  <h2>PON Ports <small>OLT PON Ports</small></h2>
+    
+  <a href="/modulo?pagina=smartolt_olt" class="btn btn-success margin-bottom">Back to OLTs list</a>
+
+  <div class="col-xs-12 margin-top margin-bottom">
+    <button class="btn btn-success margin-bottom" id="refreshPonPortsBtn">
+      <i class="glyphicon glyphicon-refresh"></i> Refresh
+    </button>
+  </div>
+
+  <!-- Hidden data container for OLT ID -->
+  <div id="olt-data" data-olt-id="<%= typeof oltId !== 'undefined' ? oltId : '' %>" style="display:none;"></div>
+
+  <!-- Board tabs -->
+  <ul class="nav nav-tabs" role="tablist">
+    <li role="presentation" class="board-tab active">
+      <a href="#board-2" aria-controls="board-2" role="tab" data-toggle="tab">Board 2</a>
+    </li>
+    <li role="presentation" class="board-tab">
+      <a href="#board-3" aria-controls="board-3" role="tab" data-toggle="tab">Board 3</a>
+    </li>
+    <li role="presentation" class="board-tab">
+      <a href="#board-4" aria-controls="board-4" role="tab" data-toggle="tab">Board 4</a>
+    </li>
+  </ul>
+
+  <!-- Tab panes -->
+  <div class="tab-content">
+
+    <!-- Board 2 -->
+    <div role="tabpanel" class="tab-pane active" id="board-2">
+      <h4>Board 2 &mdash; GPON</h4>
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>Board/Port</th>
+            <th>Type</th>
+            <th>Status</th>
+            <th>Online ONUs</th>
+            <th>Total ONUs</th>
+            <th>Signal (dBm)</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td colspan="7" class="text-center text-muted">Loading...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Board 3 -->
+    <div role="tabpanel" class="tab-pane" id="board-3">
+      <h4>Board 3 &mdash; GPON</h4>
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>Board/Port</th>
+            <th>Type</th>
+            <th>Status</th>
+            <th>Online ONUs</th>
+            <th>Total ONUs</th>
+            <th>Signal (dBm)</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td colspan="7" class="text-center text-muted">Loading...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Board 4 -->
+    <div role="tabpanel" class="tab-pane" id="board-4">
+      <h4>Board 4 &mdash; GPON</h4>
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>Board/Port</th>
+            <th>Type</th>
+            <th>Status</th>
+            <th>Online ONUs</th>
+            <th>Total ONUs</th>
+            <th>Signal (dBm)</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td colspan="7" class="text-center text-muted">Loading...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+</div> <!-- /container -->
+</div> <!-- /content-wrapper -->
+
+<footer>
+  <div class="text-center row">SmartOLT <a href="/modulo?pagina=GPONManager" class="btn-link" id="footer-changelog-link">v3.53.0</a> &copy; 2026</div>
+</footer>
+
+</body>
+</html>

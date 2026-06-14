@@ -1,0 +1,1340 @@
+<!DOCTYPE html><html lang="en" class="smartolt-night"><head>
+        <script>window.SMARTOLT_DB_THEME='system';</script>
+    <!-- Paint-blocking: resolve theme before first paint. Precedence: per-device override (smartolt-theme-local, set by the header button) > account/DB pref > device (system). -->
+    <script>try{var k='smartolt-night',lk='smartolt-theme-local',dbTheme=window.SMARTOLT_DB_THEME,local=null,pref,n;try{local=localStorage.getItem(lk);}catch(e){}if(local==='night'||local==='light'||local==='system'){pref=local;}else if(dbTheme==='night'||dbTheme==='light'||dbTheme==='system'){pref=dbTheme;}else{pref='system';}if(pref==='system'){n=!!(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);}else if(pref==='night'){n=true;}else{n=false;}try{localStorage.setItem(k,n?'1':'0');}catch(e){}if(n){document.documentElement.classList.add('smartolt-night');}else{document.documentElement.classList.remove('smartolt-night');}document.cookie=k+'='+(n?'1':'0')+'; path=/; max-age=31536000; SameSite=Lax'+(location.protocol==='https:'?'; Secure':'');}catch(e){}</script>
+    <script>try{var wk='smartolt-wide-tables',wv=null,m=document.cookie.match(new RegExp('(?:^|; )'+wk+'=([^;]*)'));try{wv=localStorage.getItem(wk);}catch(e){}if(wv!=='1'&&wv!=='0'&&m){wv=decodeURIComponent(m[1]);}if(wv==='1'){document.documentElement.classList.add('smartolt-wide-tables');}}catch(e){}</script>
+        <meta http-equiv="content-type" content="text/html; utf-8">
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Language" content="en">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    
+  <title>ODBs - JOEL WIFI</title>
+
+  <!-- Bootstrap Core CSS -->
+  <link href="/public/smartolt-files/bootstrap-custom.css?v=3.53.0.24" rel="stylesheet">
+  <link href="/public/smartolt-files/bootstrap-multiselect.css?v=3.53.0.20" rel="stylesheet">
+  <link href="/public/smartolt-files/styles.css?v=3.53.0.29" rel="stylesheet">
+  <link href="/public/smartolt-files/toast.css?v=3.53.0.20" rel="stylesheet">
+
+  
+  <!-- Custom Fonts -->
+  <link href="/public/smartolt-files/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+  <!-- Message box CSS -->
+  <link href="/public/smartolt-files/messagebox.css" rel="stylesheet" type="text/css">
+
+  <link href="/public/smartolt-files/inter-fonts.css?v=3.53.0.1" rel="stylesheet">
+  <link href="/public/smartolt-files/dashboard-smartolt-night.css?v=3.53.0.209" rel="stylesheet">
+  <script src="/public/smartolt-files/dashboard-smartolt-night.js?v=3.53.0.63" defer=""></script>
+    
+  <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+  <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+  <!--[if lt IE 9]>
+        <script src="/public/smartolt-files/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="/public/smartolt-files/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+  <!-- jQuery -->
+  <script src="/public/smartolt-files/jquery.min.js"></script>
+
+  
+  
+  <!-- Toast alerts -->
+  <script src="/public/smartolt-files/toast.js"></script>
+
+  <!-- Pauses recurring AJAX polling while the tab is hidden OR the user has been idle, resumes on focus / activity. -->
+  <script src="/public/smartolt-files/polling.js?v=3.53.0.3"></script>
+
+  <!-- Geolocation permission-error → localized message helper (shared by location pickers). -->
+  <script src="/public/smartolt-files/geolocation_helper.js?v=3.53.0.1"></script>
+
+  
+  
+</head>
+
+<body class="smartolt-site">
+<script type="text/javascript">
+$( document ).ready(function() {
+	$.ajaxSetup({
+		cache: false
+	});
+	
+	window.jqxhrs = [];
+
+      window.registerJqxhr = function(jqxhr) {
+        jqxhrs.push(jqxhr);
+      }
+
+      window.abortJqxhr = function() {
+        for (var i = jqxhrs.length - 1; i >= 0; i--) {
+          if (jqxhrs[i]) {
+            jqxhrs[i].abort();
+          }
+        }
+
+        window.jqxhrs = [];
+      }
+
+      $(window).bind("beforeunload", function(event) {
+        abortJqxhr();
+      });
+
+      function unregisterJqxhr(event, jqxhr, settings) {
+        var idx = $.inArray(jqxhr, jqxhrs);
+        if (idx != -1) {
+          jqxhrs.splice(idx, 1);
+        }
+      }
+
+      $(document).ajaxComplete(unregisterJqxhr);
+
+      config = {
+        X_TOKEN: '9C23F19BE06B4BEB93046ECFDF50FF91'
+      }
+    });
+  </script>
+
+  <div class="smartolt-landing-hero-bg" aria-hidden="true"></div>
+
+  <div id="content-wrapper">
+    <div class="smartolt-topbar-network" aria-hidden="true">
+      <div class="smartolt-topbar-network-inner">
+        <svg class="smartolt-topbar-network-lines" viewBox="0 0 100 100" preserveAspectRatio="none">
+          <line x1="8" y1="68" x2="23" y2="78"></line>
+          <line x1="23" y1="78" x2="37" y2="63"></line>
+          <line x1="8" y1="68" x2="37" y2="63"></line>
+          <line x1="37" y1="63" x2="65" y2="18"></line>
+          <line x1="65" y1="18" x2="89" y2="34"></line>
+          <line x1="23" y1="78" x2="65" y2="18"></line>
+          <line x1="37" y1="63" x2="89" y2="34"></line>
+        </svg>
+        <span class="smartolt-topbar-node smartolt-topbar-node-a"></span>
+        <span class="smartolt-topbar-node smartolt-topbar-node-b"></span>
+        <span class="smartolt-topbar-node smartolt-topbar-node-c"></span>
+        <span class="smartolt-topbar-node smartolt-topbar-node-d"></span>
+        <span class="smartolt-topbar-node smartolt-topbar-node-e"></span>
+      </div>
+    </div>
+        <div class="navbar navbar-default navbar-fixed-top default-menu">
+    <div class="container">
+      <div class="navbar-header">
+        <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#navbar-main" aria-expanded="false" aria-controls="navbar">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand text-ellipsis max-width-250" href="/modulo?pagina=GPONManager">GPON Manager</a>
+      </div>
+      <div class="navbar-collapse collapse" id="navbar-main">
+        <ul class="nav navbar-nav">
+          <li><a href="/modulo?pagina=GPONManager">Dashboard</a></li>
+          <li><a href="/modulo?pagina=smartolt_configured_full">Configuradas</a></li>
+          <li><a href="/modulo?pagina=smartolt_unconfigured_full">No configuradas</a></li>
+          <li><a href="/modulo?pagina=smartolt_onu_types_full">Tipos ONU</a></li>
+          <li><a href="/modulo?pagina=smartolt_speed_profiles_full">Velocidad</a></li>
+          <li><a href="/modulo?pagina=smartolt_locations_full">Zonas</a></li>
+          <li class="dropdown">
+            <a class="dropdown-toggle" data-toggle="dropdown" href="#">Settings <span class="caret"></span></a>
+            <ul class="dropdown-menu">
+              <li><a href="/modulo?pagina=smartolt_olt">OLTs</a></li>
+              <li><a href="/modulo?pagina=smartolt_general">General</a></li>
+              <li><a href="/modulo?pagina=smartolt_billing">Billing</a></li>
+              <li><a href="/modulo?pagina=smartolt_system_config">VPN &amp; TR069</a></li>
+              <li><a href="/modulo?pagina=smartolt_presets_full">Presets</a></li>
+              <li><a href="/modulo?pagina=smartolt_diagnostics_full">Diagnostics</a></li>
+              <li><a href="/modulo?pagina=smartolt_graphs">Graphs</a></li>
+            </ul>
+          </li>
+        </ul>
+        <ul class="nav navbar-nav navbar-right">
+          <li><a href="/logout"><i class="fa fa-sign-out"></i> Salir</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+    <!-- Page Content -->
+    <div class="container">
+
+<div class="container-fluid content-wrap odbs-listing-page">
+	<style>
+		/* Light/modern navbar is position:fixed (overlay) and does not push content
+		   down, so the page needs explicit clearance. Night's navbar is in-flow and
+		   already offsets content, so it stays at 0. */
+		html:not(.smartolt-night) .odbs-listing-page {
+			padding-top: var(--smartolt-nav-offset, 68px);
+		}
+		.odbs-page-header {
+			align-items: flex-start;
+			display: flex;
+			gap: 16px;
+			justify-content: space-between;
+			margin: 2px 0 18px;
+		}
+		.odbs-page-title h2 {
+			font-size: 26px;
+			font-weight: 700;
+			margin: 0 0 8px;
+		}
+		.odbs-page-title p {
+			color: #64748b;
+			font-size: 14px;
+			margin: 0;
+		}
+		.odbs-page-actions {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 8px;
+			justify-content: flex-end;
+			margin-top: 2px;
+		}
+		.odbs-stats-grid {
+			display: grid;
+			gap: 14px;
+			grid-template-columns: repeat(4, minmax(0, 1fr));
+			margin-bottom: 18px;
+		}
+		.odbs-stat-card {
+			align-items: center;
+			background: #fff;
+			border: 1px solid #e5e7eb;
+			border-radius: 6px;
+			box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+			display: flex;
+			gap: 13px;
+			min-height: 76px;
+			padding: 14px 16px;
+		}
+		.odbs-stat-icon {
+			align-items: center;
+			border-radius: 50%;
+			display: inline-flex;
+			flex: 0 0 38px;
+			height: 38px;
+			justify-content: center;
+			width: 38px;
+		}
+		.odbs-stat-icon.total { background: #e8f0ff; color: #0064c8; }
+		.odbs-stat-icon.ports { background: #f3e8ff; color: #7e22ce; }
+		.odbs-stat-icon.used { background: #dcfce7; color: #15803d; }
+		.odbs-stat-icon.free { background: #f1f5f9; color: #334155; }
+		.odbs-stat-icon.odb-box svg {
+			display: block;
+			height: 32px;
+			width: 28px;
+		}
+		.odbs-stat-label {
+			color: #64748b;
+			font-size: 13px;
+			line-height: 1.2;
+			margin-bottom: 3px;
+		}
+		.odbs-stat-value {
+			color: #111827;
+			font-size: 23px;
+			font-weight: 700;
+			line-height: 1.1;
+		}
+		.odbs-filter-panel {
+			align-items: flex-end;
+			background: #fff;
+			border: 1px solid #e5e7eb;
+			border-radius: 6px;
+			display: flex;
+			flex-wrap: wrap;
+			gap: 12px 18px;
+			margin-bottom: 12px;
+			padding: 14px 16px;
+		}
+		.odbs-filter-panel .form-group {
+			margin-bottom: 0;
+		}
+		.odbs-filter-panel .control-label {
+			display: block;
+			font-size: 12px;
+			margin-bottom: 5px;
+		}
+		.odbs-filter-panel .odbs-reset-group {
+			margin-left: 0;
+		}
+		html.smartolt-night body.smartolt-site .odbs-page-title p {
+			color: #9ca3af;
+		}
+		html.smartolt-night body.smartolt-site .odbs-stat-card,
+		html.smartolt-night body.smartolt-site .odbs-filter-panel {
+			background: #111827;
+			border-color: #273447;
+			box-shadow: 0 1px 2px rgba(0, 0, 0, 0.28);
+		}
+		html.smartolt-night body.smartolt-site .odbs-stat-label {
+			color: #9ca3af;
+		}
+		html.smartolt-night body.smartolt-site .odbs-stat-value {
+			color: #f9fafb;
+		}
+		html.smartolt-night body.smartolt-site .odbs-stat-icon.free {
+			background: #273447;
+			color: #cbd5e1;
+		}
+		.odbs-listing-page .btn-default,
+		.odbs-listing-page .btn-default:hover,
+		.odbs-listing-page .btn-default:focus {
+			border-color: #cfd8e3;
+			outline: none;
+		}
+		.odbs-listing-page .btn-default:active,
+		.odbs-listing-page .btn-default.active,
+		.odbs-listing-page .btn-default:active:hover,
+		.odbs-listing-page .btn-default:active:focus {
+			background-color: #e6e9ef;
+			border-color: #e6e9ef;
+			box-shadow: none;
+			outline: none;
+		}
+		html.smartolt-night body.smartolt-site .odbs-listing-page .btn-default,
+		html.smartolt-night body.smartolt-site .odbs-listing-page .btn-default:hover,
+		html.smartolt-night body.smartolt-site .odbs-listing-page .btn-default:focus {
+			outline: none;
+		}
+		html.smartolt-night body.smartolt-site .odbs-listing-page .btn-default:active,
+		html.smartolt-night body.smartolt-site .odbs-listing-page .btn-default.active,
+		html.smartolt-night body.smartolt-site .odbs-listing-page .btn-default:active:hover,
+		html.smartolt-night body.smartolt-site .odbs-listing-page .btn-default:active:focus {
+			box-shadow: none;
+			outline: none;
+		}
+		@media (max-width: 1100px) {
+			.odbs-stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+		}
+		@media (max-width: 760px) {
+			.odbs-page-header { display: block; }
+			.odbs-page-actions { justify-content: flex-start; margin-top: 14px; }
+			.odbs-stats-grid { grid-template-columns: 1fr; }
+			.odbs-filter-panel { display: block; }
+			.odbs-filter-panel .form-group { margin-bottom: 10px; }
+			.odbs-filter-panel .odbs-reset-group { margin-left: 0; }
+		}
+	</style>
+	<div class="odbs-page-header">
+		<div class="odbs-page-title">
+			<h2>ODBs (NAPs, CTOs)/Splitters</h2>
+			<p>Manage distribution boxes, splitter capacity and connected ONUs.</p>
+		</div>
+		<div class="odbs-page-actions">
+							<a href="/odbs/add/" class="btn btn-primary"><span class="glyphicon glyphicon-plus"> </span> Add ODB (Splitter)</a>
+								<a href="#" id="delete-unused-odbs" class="btn btn-danger"><span class="glyphicon glyphicon-trash"> </span> Delete unused ODBs</a>
+													<a href="#" id="export-selection" class="btn btn-default" title="Export"><i class="fa fa-upload"></i> Export</a>
+									<a href="#" id="import-odbs" class="btn btn-default" title="Import ODBs "><i class="fa fa-download"></i> Import</a>
+					</div>
+	</div>
+		
+	<div id="odbs_stats"><div class="odbs-stats-grid">
+		<div class="odbs-stat-card"><span class="odbs-stat-icon total odb-box" aria-hidden="true"><svg viewBox="0 0 36 42" focusable="false"><rect x="10" y="4" width="16" height="27" rx="4" fill="#eef4fb" stroke="currentColor" stroke-width="1.4"></rect><rect x="8.6" y="9" width="2" height="6" rx=".8" fill="#cbd5e1" stroke="currentColor" stroke-width=".55"></rect><rect x="25.4" y="9" width="2" height="6" rx=".8" fill="#cbd5e1" stroke="currentColor" stroke-width=".55"></rect><rect x="8.6" y="22" width="2" height="6" rx=".8" fill="#cbd5e1" stroke="currentColor" stroke-width=".55"></rect><rect x="25.4" y="22" width="2" height="6" rx=".8" fill="#cbd5e1" stroke="currentColor" stroke-width=".55"></rect><path d="M14 21h8M14 24h8" stroke="#94a3b8" stroke-width="1.3" stroke-linecap="round"></path><path d="M18 31v8" stroke="#0064c8" stroke-width="2.5" stroke-linecap="round"></path><path d="M15.2 16.5h5.6l-2.8-6.2z" fill="none" stroke="#64748b" stroke-width="1.1" stroke-linejoin="round"></path><path d="M18 12.6v2.5M16.8 15.6h2.4" stroke="#64748b" stroke-width="1" stroke-linecap="round"></path></svg></span><div><div class="odbs-stat-label">Total ODBs</div><div class="odbs-stat-value">1</div></div></div>
+		<div class="odbs-stat-card"><span class="odbs-stat-icon ports"><i class="fa fa-th-large"></i></span><div><div class="odbs-stat-label">Total ports</div><div class="odbs-stat-value">12</div></div></div>
+		<div class="odbs-stat-card"><span class="odbs-stat-icon used"><i class="fa fa-check"></i></span><div><div class="odbs-stat-label">Used ports</div><div class="odbs-stat-value">0</div></div></div>
+		<div class="odbs-stat-card"><span class="odbs-stat-icon free"><i class="fa fa-circle-o"></i></span><div><div class="odbs-stat-label">Free ports</div><div class="odbs-stat-value">12</div></div></div>
+	</div></div>
+	
+	<form action="/odbs/listing" class="form-inline odbs" method="get" accept-charset="utf-8">
+ 
+    
+	<div class="odbs-filter-panel">
+    	<div class="form-group">
+    		<label class="control-label" for="free_text">Search</label>
+    		<input type="text" class="form-control input-220 input-search" id="free_text" name="free_text" value="" data-old-value="" placeholder="Name">
+    	</div>
+    	
+    	<div class="form-group">
+    		<label class="control-label" for="location">Zone</label>
+    		<span class="multiselect-native-select"><select name="zone_id" id="location" class="form-control input-180 select-search" multiple="multiple">
+</select><div class="btn-group input-180"><button type="button" class="multiselect dropdown-toggle overflow-hidden  input-180 form-control select-search" data-toggle="dropdown" title="Any"><span class="multiselect-selected-text">Any</span> <b class="caret"></b></button><ul class="multiselect-container dropdown-menu" style="max-height: 500px; overflow: hidden auto;"></ul></div></span>
+    	</div>
+    	
+    	<div class="form-group">
+    		<label class="control-label" for="olt">OLT</label>
+    		<span class="multiselect-native-select"><select name="olt_id" id="olt" class="form-control input-180 select-search" multiple="multiple">
+</select><div class="btn-group input-180"><button type="button" class="multiselect dropdown-toggle overflow-hidden  input-180 form-control select-search" data-toggle="dropdown" title="Any"><span class="multiselect-selected-text">Any</span> <b class="caret"></b></button><ul class="multiselect-container dropdown-menu" style="max-height: 500px; overflow: hidden auto;"></ul></div></span>
+    	</div>
+
+    	<div class="form-group">
+    		<label class="control-label" for="usage_filter">Usage</label>
+    		<span class="multiselect-native-select"><select name="usage_filter" id="usage_filter" class="form-control input-150 select-search">
+<option value="" selected="selected">Any</option>
+<option value="50">&gt;= 50%</option>
+<option value="75">&gt;= 75%</option>
+<option value="90">&gt;= 90%</option>
+<option value="exceeded">Capacity exceeded</option>
+</select><div class="btn-group input-150"><button type="button" class="multiselect dropdown-toggle overflow-hidden  input-150 form-control select-search" data-toggle="dropdown" title="Any"><span class="multiselect-selected-text">Any</span> <b class="caret"></b></button><ul class="multiselect-container dropdown-menu" style="max-height: 500px; overflow: hidden auto;"><li class="multiselect-item multiselect-filter" value="0"><div class="input-group"><span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span><input class="form-control multiselect-search" type="text" placeholder="Search"><span class="input-group-btn"><button class="btn btn-default multiselect-clear-filter" type="button"><i class="glyphicon glyphicon-remove-circle"></i></button></span></div></li><li class="active"><a tabindex="0" class="col-xs-12"><label class="col-xs-12 radio"><input type="radio" value=""> Any</label></a></li><li><a tabindex="0" class="col-xs-12"><label class="col-xs-12 radio"><input type="radio" value="50"> &gt;= 50%</label></a></li><li><a tabindex="0" class="col-xs-12"><label class="col-xs-12 radio"><input type="radio" value="75"> &gt;= 75%</label></a></li><li><a tabindex="0" class="col-xs-12"><label class="col-xs-12 radio"><input type="radio" value="90"> &gt;= 90%</label></a></li><li><a tabindex="0" class="col-xs-12"><label class="col-xs-12 radio"><input type="radio" value="exceeded"> Capacity exceeded</label></a></li></ul></div></span>
+    	</div>
+
+    	<div class="form-group">
+    		<label class="control-label" for="coordinates_filter">Coordinates</label>
+    		<span class="multiselect-native-select"><select name="coordinates_filter" id="coordinates_filter" class="form-control input-150 select-search">
+<option value="" selected="selected">Any</option>
+<option value="yes">Yes</option>
+<option value="no">No</option>
+</select><div class="btn-group input-150"><button type="button" class="multiselect dropdown-toggle overflow-hidden  input-150 form-control select-search" data-toggle="dropdown" title="Any"><span class="multiselect-selected-text">Any</span> <b class="caret"></b></button><ul class="multiselect-container dropdown-menu" style="max-height: 500px; overflow: hidden auto;"><li class="multiselect-item multiselect-filter" value="0"><div class="input-group"><span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span><input class="form-control multiselect-search" type="text" placeholder="Search"><span class="input-group-btn"><button class="btn btn-default multiselect-clear-filter" type="button"><i class="glyphicon glyphicon-remove-circle"></i></button></span></div></li><li class="active"><a tabindex="0" class="col-xs-12"><label class="col-xs-12 radio"><input type="radio" value=""> Any</label></a></li><li><a tabindex="0" class="col-xs-12"><label class="col-xs-12 radio"><input type="radio" value="yes"> Yes</label></a></li><li><a tabindex="0" class="col-xs-12"><label class="col-xs-12 radio"><input type="radio" value="no"> No</label></a></li></ul></div></span>
+    	</div>
+
+    	<div class="form-group odbs-reset-group">
+    		<a href="/modulo?pagina=smartolt_odbs_full" class="btn btn-default"><i class="fa fa-times"></i> Reset filters</a>
+    	</div>
+    	
+    </div>
+
+    <input type="hidden" name="sort_by" id="sort_by" value="name">
+	<input type="hidden" name="sort_order" id="sort_order" value="asc">
+
+    </form>
+	<div id="odbs_list" style="min-height: 70vh">
+<style>
+	.odbs-stats-source {
+		display: none;
+	}
+	.odbs-list-table .table {
+		margin-bottom: 0;
+	}
+	.odbs-list-table .table > thead > tr > th,
+	.odbs-list-table .table > tbody > tr > td {
+		vertical-align: middle;
+	}
+	.odbs-list-table .table > thead > tr > th {
+		white-space: nowrap;
+	}
+	.odbs-list-table .sort-link {
+		color: inherit;
+		text-decoration: none;
+	}
+	.odb-name-cell {
+		align-items: center;
+		display: flex;
+		gap: 10px;
+		min-width: 260px;
+	}
+	.odb-name-icon {
+		align-items: center;
+		background: #ffffff;
+		border: 1px solid #c6dcf3;
+		border-radius: 50%;
+		color: #0064c8;
+		display: inline-flex;
+		flex: 0 0 32px;
+		height: 32px;
+		justify-content: center;
+		width: 32px;
+	}
+	.odb-name-icon svg {
+		display: block;
+		height: 28px;
+		width: 24px;
+	}
+	.odbs-stat-icon.odb-box svg {
+		display: block;
+		height: 32px;
+		width: 28px;
+	}
+	.odb-name-main {
+		min-width: 0;
+	}
+	.odb-name-main .btn-link {
+		font-weight: 700;
+		padding: 0;
+		text-align: left;
+		white-space: normal;
+	}
+	.odb-position-icon {
+		align-items: center;
+		background: #f8fafc;
+		border: 1px solid #dbe3ef;
+		border-radius: 50%;
+		color: #94a3b8;
+		display: inline-flex;
+		height: 28px;
+		justify-content: center;
+		text-decoration: none !important;
+		width: 28px;
+	}
+	.odb-position-icon.has-position {
+		background: #ffffff;
+		border-color: #0064c8;
+		color: #0064c8;
+	}
+	.odb-position-icon.has-position:hover,
+	.odb-position-icon.has-position:focus {
+		background: #e8f1fb;
+		border-color: #0054a9;
+		color: #0054a9;
+		outline: none;
+	}
+	.odb-splitter-tag {
+		background: #ffffff;
+		border: 1px solid #d4dbe5;
+		border-radius: 3px;
+		color: #475569;
+		display: inline-block;
+		font-size: 13px;
+		font-weight: 600;
+		line-height: 20px;
+		margin-left: 0;
+		padding: 1px 7px;
+		vertical-align: middle;
+	}
+	.odb-onus-tag {
+		background: #0064c8;
+		border-color: #0064c8;
+		color: #ffffff;
+		text-decoration: none !important;
+	}
+	.odb-onus-tag:hover,
+	.odb-onus-tag:focus {
+		background: #0054a9;
+		border-color: #0054a9;
+		color: #ffffff;
+		outline: none;
+		text-decoration: none !important;
+	}
+	.odb-usage-horizontal {
+		width: 210px;
+		max-width: 100%;
+	}
+	.odb-usage-label {
+		align-items: baseline;
+		color: #334155;
+		display: flex;
+		font-size: 12px;
+		gap: 9px;
+		line-height: 1.15;
+		margin-bottom: 4px;
+		white-space: nowrap;
+	}
+	.odb-usage-status {
+		margin-left: auto;
+		font-weight: 700;
+	}
+	.odb-usage-status.danger { color: #dc2626; }
+	.odb-usage-track {
+		background: #e5e7eb;
+		border-radius: 2px;
+		height: 6px;
+		overflow: hidden;
+		width: 100%;
+	}
+	.odb-usage-fill {
+		border-radius: 2px;
+		height: 100%;
+	}
+	.odb-actions {
+		display: inline-flex;
+		gap: 7px;
+		justify-content: center;
+		white-space: nowrap;
+	}
+	.capacity-missing .odb-usage-track {
+		background: repeating-linear-gradient(90deg, rgba(245, 158, 11, 0.28) 0, rgba(245, 158, 11, 0.28) 8px, rgba(245, 158, 11, 0.12) 8px, rgba(245, 158, 11, 0.12) 14px);
+	}
+	.capacity-missing .odb-usage-label {
+		align-items: center;
+		font-size: 13px;
+		line-height: 18px;
+		margin-bottom: 5px;
+	}
+	.capacity-missing .odb-usage-status {
+		margin-left: 0;
+	}
+	.capacity-missing .odb-usage-fill {
+		background: transparent;
+	}
+	html.smartolt-night body.smartolt-site .odb-name-icon {
+		background: #10243e;
+		border-color: #1e3a5f;
+		color: #69a7ff;
+	}
+	html.smartolt-night body.smartolt-site .odb-splitter-tag {
+		background: #182235;
+		border-color: #334155;
+		color: #94a3b8;
+	}
+	html.smartolt-night body.smartolt-site .odbs-list-table a.odb-onus-tag {
+		background: #1f6fd0;
+		border-color: #1f6fd0;
+		color: #ffffff;
+	}
+	html.smartolt-night body.smartolt-site .odb-position-icon {
+		background: #182235;
+		border-color: #334155;
+		color: #64748b;
+	}
+	html.smartolt-night body.smartolt-site .odb-position-icon.has-position {
+		background: #10243e;
+		border-color: #69a7ff;
+		color: #69a7ff;
+	}
+	html.smartolt-night body.smartolt-site .odb-position-icon.has-position:hover,
+	html.smartolt-night body.smartolt-site .odb-position-icon.has-position:focus {
+		background: #17365f;
+		border-color: #9bd0ff;
+		color: #9bd0ff;
+	}
+	html.smartolt-night body.smartolt-site .odbs-list-table a.odb-onus-tag:hover,
+	html.smartolt-night body.smartolt-site .odbs-list-table a.odb-onus-tag:focus {
+		background: #2f80e0;
+		border-color: #2f80e0;
+		color: #ffffff;
+	}
+	html.smartolt-night body.smartolt-site .odb-usage-label {
+		color: #d1d5db;
+	}
+	html.smartolt-night body.smartolt-site .odb-usage-track {
+		background: rgba(229, 231, 235, 0.16);
+	}
+</style>
+
+
+
+	<div class="odbs-list-table">
+		<table class="table table-striped">
+			<thead>
+				<tr>
+					<th class="col-md-4"><a href="#" class="sort-link" data-sort-by="name" data-sort-order="desc">ODB (Splitter) name <i class="fa fa-sort-asc" aria-hidden="true"></i></a></th>
+					<th class="col-md-1 text-center"><a href="#" class="sort-link" data-sort-by="coordinates" data-sort-order="asc">Coordinates <i class="fa fa-sort text-muted" aria-hidden="true"></i></a></th>
+										<th class="col-md-1"><a href="#" class="sort-link" data-sort-by="onus_count" data-sort-order="asc">ONUs <i class="fa fa-sort text-muted" aria-hidden="true"></i></a></th>
+										<th class="col-md-1"><a href="#" class="sort-link" data-sort-by="nr_of_ports" data-sort-order="asc">Ports <i class="fa fa-sort text-muted" aria-hidden="true"></i></a></th>
+					<th class="col-md-2"><a href="#" class="sort-link" data-sort-by="usage" data-sort-order="asc">Usage <i class="fa fa-sort text-muted" aria-hidden="true"></i></a></th>
+					<th class="col-md-3"><a href="#" class="sort-link" data-sort-by="zone" data-sort-order="asc">Zone <i class="fa fa-sort text-muted" aria-hidden="true"></i></a></th>
+					<th class="col-md-1 text-center">Action</th>
+				</tr>
+			</thead>
+			<tbody>
+												<tr>
+					<td>
+						<div class="odb-name-cell">
+							<span class="odb-name-icon" aria-hidden="true"><svg viewBox="0 0 36 42" focusable="false"><rect x="10" y="4" width="16" height="27" rx="4" fill="#eef4fb" stroke="currentColor" stroke-width="1.4"></rect><rect x="8.6" y="9" width="2" height="6" rx=".8" fill="#cbd5e1" stroke="currentColor" stroke-width=".55"></rect><rect x="25.4" y="9" width="2" height="6" rx=".8" fill="#cbd5e1" stroke="currentColor" stroke-width=".55"></rect><rect x="8.6" y="22" width="2" height="6" rx=".8" fill="#cbd5e1" stroke="currentColor" stroke-width=".55"></rect><rect x="25.4" y="22" width="2" height="6" rx=".8" fill="#cbd5e1" stroke="currentColor" stroke-width=".55"></rect><path d="M14 21h8M14 24h8" stroke="#94a3b8" stroke-width="1.3" stroke-linecap="round"></path><path d="M18 31v8" stroke="#0064c8" stroke-width="2.5" stroke-linecap="round"></path><path d="M15.2 16.5h5.6l-2.8-6.2z" fill="none" stroke="#64748b" stroke-width="1.1" stroke-linejoin="round"></path><path d="M18 12.6v2.5M16.8 15.6h2.4" stroke="#64748b" stroke-width="1" stroke-linecap="round"></path></svg></span>
+							<div class="odb-name-main">
+																	<a href="/odbs/edit/1" class="btn btn-link">PON12 T1</a>
+															</div>
+						</div>
+					</td>
+					<td class="text-center">
+													<a href="/onu_map?odb_id=1" target="_blank" class="odb-position-icon has-position" title="View on map"><i class="fa fa-map-marker"></i></a>
+											</td>
+										<td><a href="/modulo?pagina=smartolt_configured_full/?odb_id=1&amp;all=1" class="odb-splitter-tag odb-onus-tag">0</a></td>
+										<td><span class="odb-splitter-tag">1:12</span></td>
+					<td><div class="odb-usage-horizontal" title="0/12 Ports · 0%"><div class="odb-usage-label"><span>0/12 0%</span></div><div class="odb-usage-track"><div class="odb-usage-fill" style="width:0%;background:#1fb325;"></div></div></div></td>
+					<td>Zone 1</td>
+					<td class="text-center">
+						<div class="odb-actions">
+													<a href="/odbs/delete/1" class="btn btn-danger">Delete</a>
+												</div>
+					</td>
+				</tr>
+						</tbody>
+		</table>
+	</div>
+	
+	<ul class="pagination">
+            </ul> 
+
+<script type="text/javascript">
+$(document).ready(function()  {
+	$(".sort-link").click(function(e) {
+		e.preventDefault();
+		form_data.sort_by = $(this).data('sort-by');
+		form_data.sort_order = $(this).data('sort-order').length > 0 ? $(this).data('sort-order') : 'asc';
+		form_data.page = '';
+		refreshUrlParameters(form_data, 'refreshOdbs');
+	});	
+});
+</script>
+</div>
+
+		<div class="modal fade" id="importOdbsModal" tabindex="-1" role="dialog">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+					<h3>Import ODBs </h3>
+				</div>
+				<div class="modal-body">
+					<div class="form-group">
+						<label class="control-label" for="odbsCsvFile">ODBs file</label>
+						<input type="file" name="odbsCsvFile" id="odbsCsvFile">
+						<div class="margin-top"><span class="help-block">Download file template from here: <a href="/_documents/Odbs_template.csv">Odbs_template.csv</a></span></div>
+						<div class="margin-top"><span class="help-block">The file should include the following header columns: <strong>Name, Nr of ports, Zone, Latitude, Longitude</strong></span></div>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-link" data-dismiss="modal">Cancel</button>
+					<button type="button" class="btn btn-primary import-odbs-button">Import ODBs </button>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+		<div class="modal fade" id="deleteUnusedOdbsModal" tabindex="-1" role="dialog">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+					<h3>Delete unused ODBs</h3>
+				</div>
+				<div class="modal-body">
+					<p>This will delete 1 ODBs (Splitters) that have no ONUs assigned. Are you sure you want to continue?</p>
+					<ul style="max-height: 300px; overflow-y: auto;">
+												<li>PON12 T1</li>
+											</ul>
+				</div>
+				<div class="modal-footer">
+					<form method="post" action="/odbs/delete_unused" style="display:inline">
+						<button type="button" class="btn btn-link" data-dismiss="modal">Cancel</button>
+						<button type="submit" class="btn btn-danger">Delete</button>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+</div>
+
+<script src="/public/smartolt-files/common.js?v=3.53.0.23"></script>
+<script src="/public/smartolt-files/odbs.js?v=3.53.0.18"></script>
+
+<script type="text/javascript">
+
+	var LANG = {
+		any: 'Any'
+	};
+
+	$(document).ready(function()  {
+		form_data = {
+				page: 1,
+				free_text: "",
+				zone_id: "",
+				olt_id: "",
+				usage_filter: "",
+				coordinates_filter: "",
+				sort_by: "name",
+				sort_order: "asc",
+				include_stats: '1',
+			};
+
+		update_needed = {};
+
+		overwriteFormDataFromUrlParameters();
+		
+		refreshOdbs();
+
+		dynamicSelectLoadOdbs("location", (form_data.zone_id != ''), "refreshOdbs");
+		dynamicSelectLoadOdbs("olt", (form_data.olt_id != ''), "refreshOdbs");
+
+		dynamicSelectInit($('#usage_filter'), "refreshOdbs", { single: true });
+		dynamicSelectInit($('#coordinates_filter'), "refreshOdbs", { single: true });
+
+		initFilterActionsNoSubmit(getOdbs, '/odbs/get_odbs_list', '#odbs_list');
+
+		$('button.multiselect').on('click', function (event) {
+			var $select = $(this).parent().prev('select');
+			var select_name = $select.attr('name');
+
+			// Only olt/zone are dynamically loaded; usage/coordinates are static single-selects.
+			if (select_name !== 'olt_id' && select_name !== 'zone_id') {
+				return;
+			}
+
+			var $button = $(this);
+
+			if (typeof(update_needed[select_name]) == 'undefined' || update_needed[select_name] == true) {
+
+				event.stopPropagation();
+
+				var buttonContent = $button.html();
+				$button.html($('<i class="fa fa-spinner fa-spin margin-left"></i>'));
+
+				var AjaxCall = $.ajax({
+						type: 'POST',
+						beforeSend: function(request) {
+							request.setRequestHeader("X-Token", config.X_TOKEN);
+						},
+						url: '/api/system/fetch_distinct_options/' + select_name,
+						data: {
+							olt_id: form_data.olt_id,
+							zone_id: form_data.zone_id,
+						},
+						timeout: 30000,
+						success: function(data)
+						{
+							$select.empty(); // remove old options
+				
+							$.each(data.response, function(key, value) {
+								if (typeof value == 'object') {
+									$select.append($("<option>").attr("value", value.option_id).html(value.option_name +  
+											(typeof(value.nr) !== 'undefined' ? '<span class="badge badge-light pull-right">' + value.nr + '</span>' : '')));
+								} else {
+									$select.append($("<option>").attr("value", value).text(value));
+								}
+							});
+				
+							$select.val(form_data[select_name]);
+				
+							$select.attr('multiple', true);
+				
+							$select.multiselect('rebuild');
+							
+							update_needed[select_name] = false;
+
+							$button.html(buttonContent);
+
+							$button.click();
+						}
+					});
+
+				registerJqxhr(AjaxCall);
+			}
+		});
+
+				$('#export-selection').click(function () {
+			var formData = new FormData();
+			for(var key in form_data) {
+				formData.append(key, form_data[key]);
+			}
+
+			$.ajax({
+				method: "POST",
+				beforeSend: function(request) {
+					request.setRequestHeader("X-Token", config.X_TOKEN);
+				},
+				url: "/api/system/export_odbs",
+				data : formData,
+				processData: false,  // tell jQuery not to process the data
+				contentType: false,  // tell jQuery not to set contentType
+			})
+			.done(function( data ) {
+				if(data && data.export_file) {
+					window.open('/reports/download_export_csv/' + data.export_file, "_self");
+				}
+			})
+			.fail(function(jqXHR, textStatus) {
+				if(jqXHR.responseJSON) {
+						$.MessageBox(jqXHR.responseJSON.error);
+					}
+					else {
+						$.MessageBox(jqXHR.responseText);
+					}
+			});
+		});
+		
+				$('#delete-unused-odbs').click(function (e) {
+			e.preventDefault();
+			$('#deleteUnusedOdbsModal').modal('show');
+		});
+		
+				var IMPORT_ODBS_LANG = {
+			importing: "Importing...",
+			import_complete: "Import complete!",
+			import_odbs: "Import ODBs ",
+			select_file: "Please select a file to import"		};
+
+		$('#import-odbs').click(function (e) {
+			e.preventDefault();
+			$('#importOdbsModal').modal('show');
+		});
+
+		$('.import-odbs-button').click(function () {
+			var $button = $('.import-odbs-button');
+			var fileInput = $('#odbsCsvFile')[0];
+
+			if (fileInput.files.length == 0) {
+				$.MessageBox(IMPORT_ODBS_LANG.select_file).done(function () {
+					fileInput.click();
+				});
+				return;
+			}
+
+			$button.attr('disabled', true).text(IMPORT_ODBS_LANG.importing);
+
+			var formData = new FormData();
+			formData.append('file', fileInput.files[0]);
+
+			$.ajax({
+				method: "POST",
+				beforeSend: function (request) {
+					request.setRequestHeader("X-Token", config.X_TOKEN);
+				},
+				url: "/api/system/import_odbs",
+				data: formData,
+				processData: false,
+				contentType: false
+			})
+			.done(function (data) {
+				$button.text(IMPORT_ODBS_LANG.import_complete);
+				$.MessageBox(data.response);
+			})
+			.fail(function (jqXHR) {
+				if (jqXHR.responseJSON) {
+					$.MessageBox(jqXHR.responseJSON.error);
+				} else {
+					$.MessageBox(jqXHR.responseText);
+				}
+			})
+			.always(function () {
+				setTimeout(function () {
+					$button.attr('disabled', false).text(IMPORT_ODBS_LANG.import_odbs);
+				}, 100);
+			});
+		});
+		
+	});
+	</script>
+
+
+</div>
+<br>
+<!-- /#page-wrapper -->
+    
+<div id="saveConfigModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="saveConfigModalLabel" aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+		  <div class="modal-header">
+		    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+		    <h3 id="saveConfigModalLabel">Save configuration</h3>
+		  </div>
+		  <div class="modal-body">
+		    <p>This will save the current OLT(s) configuration as startup configuration. It may take up to 5 minutes for the OLT(s) to finish saving the config. Are you sure?</p>
+		  </div>
+		  <div class="modal-footer">
+		    <button class="btn btn-link" data-dismiss="modal" aria-hidden="true">No, cancel</button>
+		    <button class="btn btn-primary save-configuration-button">Yes, save configuration</button>
+		  </div>
+		</div>
+	</div>
+</div>
+
+<div id="importModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="importModalLabel" aria-hidden="true">
+</div>
+
+<div id="rebuildModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="rebuildModalLabel" aria-hidden="true">
+</div>
+
+<div id="deleteAllApiReconciliationModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="deleteAllApiReconciliationModalLabel" aria-hidden="true">
+</div>
+
+<div id="generateSnmpIdsModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="generateSnmpIdsModalLabel" aria-hidden="true">
+</div>
+
+    <!-- Bootstrap Core JavaScript -->
+    <script src="/public/smartolt-files/bootstrap.min.js"></script>
+    <script src="/public/smartolt-files/bootstrap-multiselect.js?v=3.53.0"></script>
+
+    <!-- Metis Menu Plugin JavaScript -->
+    <script src="/public/smartolt-files/metisMenu.min.js"></script>
+
+    <!-- Custom Theme JavaScript -->
+    <script src="/public/smartolt-files/sb-admin-2.js"></script>
+        
+    <!-- Loading overlay -->
+    <script src="/public/smartolt-files/loadingoverlay.custom.js?v=2"></script>
+    
+    <!-- Message box -->
+    <script src="/public/smartolt-files/messagebox.min.js"></script>
+    
+    
+
+<script type="text/javascript">
+
+$( document ).ready(function() {
+	
+	// Hide new version dot if user has already seen this version
+	var currentVersion = '3.53.0';
+	var lastSeenVersion = localStorage.getItem('lastSeenVersion');
+	if (lastSeenVersion === currentVersion) {
+		$('.new-version-dot').hide();
+	}
+
+	
+	$('#smartolt-update-banner-changelog').on('click', function(e) {
+		e.preventDefault();
+		localStorage.setItem('lastSeenVersion', currentVersion);
+		$('.new-version-dot').hide();
+				window.location.href = '/changelog';
+			});
+
+	$('#smartolt-update-banner-dismiss').on('click', function() {
+		localStorage.setItem('lastSeenVersion', currentVersion);
+		$('.new-version-dot').hide();
+		$('#smartolt-update-banner').slideUp(300);
+	});
+
+	$('#footer-changelog-link').on('click', function() {
+		localStorage.setItem('lastSeenVersion', currentVersion);
+		$('.new-version-dot').hide();
+	});
+
+	//hide alert-success after 5 seconds
+	/*setTimeout(function(){
+		$('.alert-success').not('.nofade').fadeOut();
+	},5000);*/
+	
+	var waitingForOLT   = $("<div>", {
+	    id      : "waitingOLT",
+	    css     : {
+	        "font-size" : "50px",
+			"white-space" : "nowrap"
+	    },
+	    text    : "Waiting for OLT"
+	});
+
+	var loadingOverlaySettings = {
+		    image       : "",
+		    fontawesome : "fa fa-spinner fa-spin",
+		    custom  : waitingForOLT,
+		    resizeInterval : 0
+		};
+
+	$.LoadingOverlay("append", loadingOverlaySettings);
+
+	window.showLoadingOverlay = function(loadingText = null) {
+		if(loadingText != null) {
+			$("#waitingOLT").text(loadingText);
+		}
+		else {
+			$("#waitingOLT").text("Waiting for OLT");
+		}
+		
+		$.LoadingOverlay("show", loadingOverlaySettings);
+	}
+
+	window.hideLoadingOverlay = function() {
+		$.LoadingOverlay("hide");
+	}
+
+	window.isLoadingOverlayVisible = function() {
+		return $('.loadingoverlay').is(":visible");
+	}
+	
+	//hide loading overlay when ajax request finishes
+	/*$(document).ajaxStop(function(){
+		hideLoadingOverlay();
+	});*/
+
+	//show toast with error
+	$(document).ajaxError(function(requestObject, error, errorThrown) {
+		if(error.status != 404 && error != undefined && error.responseJSON != undefined && 
+				error.responseJSON.error != undefined && error.responseJSON.error.length > 0) {
+			toast(error.responseJSON.error);
+		}
+	});
+
+	//confirm message box
+	window.MessageBoxConfirm = function(message){
+	    return $.MessageBox({
+	        buttonDone  : "OK",
+	        buttonFail  : "Cancel",
+	        message     : message
+	    });
+	}
+
+	window.getSelectedText = function() {
+        if (window.getSelection) {
+            return window.getSelection().toString();
+        } 
+        else if (document.selection) {
+            return document.selection.createRange().text;
+        }
+        return '';
+    }
+
+	//close navbar menu when clicking outside of it
+	$(document).click(function (event) {
+		var clickover = $(event.target);
+		var $nav = $("div.navbar-collapse");
+        var _opened = $nav.hasClass("in");
+
+        if (_opened === true && !clickover.hasClass("navbar-toggle")) {
+			$nav.collapse('hide');
+        }
+    });
+
+	/*https://www.quirksmode.org/blog/archives/2014/02/mouse_event_bub.html
+	  Safari on iOS only allows the mouse events, including click, to bubble up in the following situations:
+	  1. The target element of the event is a link or a form field.
+	  2. The target element, or any of its ancestors up to but not including the <body>, has an explicit event handler set for any of the mouse events. This event handler may be an empty function.
+      3. The target element, or any of its ancestors up to and including the document has a cursor: pointer CSS declarations. */
+	$("#content-wrapper").click(function (event) {
+		//this is here only for iOS to allow mouse events to bubble up so we can close navbar menu when clicking outside of it
+    });
+
+	// check navbar menu top offset
+    function closeMenuIfOpened() {
+		var $nav = $("div.navbar-collapse");
+    	var _opened = $nav.hasClass("in");
+
+        if (_opened === true && $(".navbar").offset().top > 50) {
+			$nav.collapse('hide');
+        }
+    }
+
+    //for touch devices, detect zoom in/out events and close the navbar menu if opened
+    var tracks = [];
+    $(window).on("touchmove", function (event) {
+	
+	    //only run code if the user has two fingers touching
+	    if (event.originalEvent.touches.length === 2) {
+	
+	        //track the touches, I'm setting each touch as an array inside the tracks array
+	        //each touch array contains an X and Y coordinate
+	        tracks.push([ [event.originalEvent.touches[0].pageX, event.originalEvent.touches[0].pageY], [event.originalEvent.touches[1].pageX, event.originalEvent.touches[1].pageY] ]);
+	    }
+	}).on("touchstart", function () {
+	    //start-over
+	    tracks = [];
+	}).on("touchend", function () {
+	    if(tracks.length > 0) {
+			var $nav = $("div.navbar-collapse");
+	    	var _opened = $nav.hasClass("in");
+	        if (_opened === true) {
+				$nav.collapse('hide');
+	        }
+	    }
+	});
+
+	// COPY TO CLIPBOARD
+	// Attempts to use .execCommand('copy') on a created text field
+	// Falls back to a selectable alert if not supported
+	// Attempts to display status in Bootstrap tooltip
+	// ------------------------------------------------------------------------------
+
+	function copyToClipboard(text, el) {
+	  var copyTest = document.queryCommandSupported('copy');
+	  var elOriginalText = el.attr('data-original-title');
+
+	  if (copyTest === true) {
+	    var copyTextArea = document.createElement("textarea");
+	    copyTextArea.value = text;
+	    document.body.appendChild(copyTextArea);
+	    copyTextArea.select();
+	    try {
+	      var successful = document.execCommand('copy');
+	      var msg = successful ? "Copied!" : "Whoops, not copied!";
+	      el.attr('data-original-title', msg).tooltip('show');
+	    } 
+	    catch (err) {
+	      console.log("Oops, unable to copy");
+	    }
+	    document.body.removeChild(copyTextArea);
+	    el.attr('data-original-title', elOriginalText);
+	  } 
+	  else {
+	    // Fallback if browser doesn't support .execCommand('copy')
+	    window.prompt("Copy to clipboard", text);
+	  }
+	}
+
+	function copyToClipboard2(text, el) {
+		  if (document.queryCommandSupported('copy') === true) {
+			var elOriginalText = el.attr('data-original-title');
+	 	    var copyTextArea = document.createElement("textarea");
+		    copyTextArea.textContent = text.text();
+		    document.body.appendChild(copyTextArea);
+
+		    var selection = document.getSelection();
+		    var range = document.createRange();
+		    range.selectNode(copyTextArea);
+		    selection.removeAllRanges();
+		    selection.addRange(range);
+		    
+		    try {
+		      var successful = document.execCommand('copy');
+			  var msg;
+
+			  if (successful) {
+				  msg = "Copied!";
+			  } 
+			  else {
+				msg = "Whoops, not copied!";
+				el.removeClass('not-selectable');
+			  }
+		      el.attr('data-original-title', msg).tooltip('show');
+		    } 
+		    catch (err) {
+		      console.log("Oops, unable to copy");
+		    }
+		    selection.removeAllRanges();
+		    document.body.removeChild(copyTextArea);
+		    el.attr('data-original-title', elOriginalText);
+		  } 
+		  else {
+			$('.not-selectable').removeClass('not-selectable');
+		    // Fallback if browser doesn't support .execCommand('copy')
+		    window.prompt("Copy to clipboard", text.text());
+		  }
+		}
+
+	// Initialize
+   // ---------------------------------------------------------------------
+
+   // Tooltips
+   // Requires Bootstrap 3 for functionality
+   $('.js-tooltip').tooltip();
+
+   // Copy to clipboard
+   // Grab any text in the attribute 'data-copy' and pass it to the 
+   // copy function
+   $('.js-copy').click(function() {
+     var text = $(this).attr('data-copy');
+     var el = $(this);
+     copyToClipboard(text, el);
+   });
+
+   $(document).on('click','.comma-copy', function() {
+	   $(this).removeClass('btn-primary').addClass('btn-default');
+	     var el = $('#'+$(this).attr('data-idtag'));
+	     copyToClipboard2(el, $(this));
+	     el.removeClass('text-primary').addClass('text-muted');
+	   });
+
+   //trim white spaces when paste in any input
+   $(document).on('paste', 'input[type=text]', function(e) {
+	  // prevent copying action
+	  e.preventDefault();
+	  
+	  var pastedText = e.originalEvent.clipboardData.getData('Text');
+	  var withoutSpaces = pastedText;
+	  if(pastedText) {
+		  withoutSpaces = pastedText.trim();
+	  }
+
+	  //remove all spaces, including from inside the text
+	  if($(this).hasClass('no_spaces')) {
+		  withoutSpaces = withoutSpaces.replace(/\s/g, '');
+	  }
+	  
+	  $(this).insertAtCaret(withoutSpaces);
+	});
+
+   $.fn.insertAtCaret = function(text) {
+	    return this.each(function() {
+	        if (document.selection && this.tagName == 'TEXTAREA') {
+	            //IE textarea support
+	            this.focus();
+	            sel = document.selection.createRange();
+	            sel.text = text;
+	            this.focus();
+	        } else if (this.selectionStart || this.selectionStart == '0') {
+	            //MOZILLA/NETSCAPE support
+	            startPos = this.selectionStart;
+	            endPos = this.selectionEnd;
+	            scrollTop = this.scrollTop;
+	            this.value = this.value.substring(0, startPos) + text + this.value.substring(endPos, this.value.length);
+	            this.focus();
+	            this.selectionStart = startPos + text.length;
+	            this.selectionEnd = startPos + text.length;
+	            this.scrollTop = scrollTop;
+	        } else {
+	            // IE input[type=text] and other browsers
+	            this.value += text;
+	            this.focus();
+	            this.value = this.value;    // forces cursor to end
+	        }
+	    });
+	};
+    
+	
+  $('.save-configuration-button').click(function (){
+    var button = $('.save-configuration-anchor');
+
+    button.toggleClass('active');
+    button.attr('disabled', true);
+    button.text("Saving...");
+    $('#saveConfigModal').modal('hide');
+
+    $.ajax({
+        method: "GET",
+        beforeSend: function(request) {
+		    request.setRequestHeader("X-Token", config.X_TOKEN);
+		  },
+        url: "/api/system/write",
+      })
+      .done(function( response ) {
+        $.MessageBox((response && response.response) ? response.response : "Save initiated. It could take the OLT up to 5 minutes to write the config!");
+        button.text("Save config");
+        setTimeout(function () {
+          button.toggleClass('active');
+          button.attr('disabled', false);
+          button.text("Save config");
+        }, 1000);
+      })
+      .fail(function(jqXHR, textStatus) {
+    	  if(jqXHR.responseJSON) {
+				$.MessageBox(jqXHR.responseJSON.error);
+			}
+			else {
+				$.MessageBox(jqXHR.responseText);
+			}
+	        setTimeout(function () {
+	        	 button.toggleClass('active');
+	             button.attr('disabled', false);
+	             button.text("Save config");
+	        }, 1000);
+      });
+  });
+
+    
+});
+</script>
+
+</div>
+
+<style>
+.new-version-dot {
+	display: inline-block;
+	width: 8px;
+	height: 8px;
+	background-color: #5cb85c;
+	border-radius: 50%;
+	margin-left: 4px;
+	animation: pulse-green 2s infinite;
+}
+.footer-dot-sep {
+	opacity: 0.5;
+	margin: 0 2px;
+}
+footer {
+	height: auto;
+	padding-bottom: 8px;
+}
+#feature-tour-whatsnew .fa-bullhorn {
+	margin-right: 5px;
+	font-size: 2em;
+	vertical-align: -6px;
+}
+
+@keyframes pulse-green {
+	0% {
+		transform: scale(0.95);
+		box-shadow: 0 0 0 0 rgba(92, 184, 92, 0.7);
+	}
+	70% {
+		transform: scale(1);
+		box-shadow: 0 0 0 6px rgba(92, 184, 92, 0);
+	}
+	100% {
+		transform: scale(0.95);
+		box-shadow: 0 0 0 0 rgba(92, 184, 92, 0);
+	}
+}
+
+</style>
+
+<footer>
+	<div class="text-center row">SmartOLT <a href="/modulo?pagina=GPONManager" class="btn-link" id="footer-changelog-link">v3.53.0<span class="new-version-dot" title="New updates"></span></a> © 2026</div>
+</footer>
+
+
+
+
+<div class="loadingoverlay" style="background-color: rgba(255, 255, 255, 0.8); position: fixed; display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; top: 0px; left: 0px; width: 100%; height: 100%; background-size: 100px;"><div class="loadingoverlay_fontawesome fa fa-spinner fa-spin" style="font-size: 100px;"></div><div id="waitingOLT" style="font-size: 50px; white-space: nowrap;">Waiting for OLT</div></div></body></html>

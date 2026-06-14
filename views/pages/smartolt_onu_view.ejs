@@ -1,0 +1,185 @@
+<!DOCTYPE html><html lang="en" class="smartolt-night"><head>
+<script>window.SMARTOLT_DB_THEME='system';</script>
+<script>try{var k='smartolt-night',lk='smartolt-theme-local',dbTheme=window.SMARTOLT_DB_THEME,local=null,pref,n;try{local=localStorage.getItem(lk);}catch(e){}if(local==='night'||local==='light'||local==='system'){pref=local;}else if(dbTheme==='night'||dbTheme==='light'||dbTheme==='system'){pref=dbTheme;}else{pref='system';}if(pref==='system'){n=!!(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);}else if(pref==='night'){n=true;}else{n=false;}try{localStorage.setItem(k,n?'1':'0');}catch(e){}if(n){document.documentElement.classList.add('smartolt-night');}else{document.documentElement.classList.remove('smartolt-night');}document.cookie=k+'='+(n?'1':'0')+'; path=/; max-age=31536000; SameSite=Lax'+(location.protocol==='https:'?'; Secure':'');}catch(e){}</script>
+<script>try{var wk='smartolt-wide-tables',wv=null,m=document.cookie.match(new RegExp('(?:^|; )'+wk+'=([^;]*)'));try{wv=localStorage.getItem(wk);}catch(e){}if(wv!=='1'&&wv!=='0'&&m){wv=decodeURIComponent(m[1]);}if(wv==='1'){document.documentElement.classList.add('smartolt-wide-tables');}}catch(e){}</script>
+<meta http-equiv="content-type" content="text/html; utf-8">
+<meta charset="utf-8">
+<meta http-equiv="Content-Language" content="en">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="/favicon.ico" type="image/x-icon">
+<title>ONU View | ISP Total</title>
+<link href="/public/smartolt-files/bootstrap-custom.css" rel="stylesheet">
+<link href="/public/smartolt-files/styles.css" rel="stylesheet">
+<link href="/public/smartolt-files/toast.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+<link href="/public/smartolt-files/messagebox.css" rel="stylesheet">
+<link href="/public/smartolt-files/inter-fonts.css" rel="stylesheet">
+<link href="/public/smartolt-files/dashboard-smartolt-night.css" rel="stylesheet">
+<script src="/public/smartolt-files/dashboard-smartolt-night.js" defer></script>
+<link href="/public/smartolt-files/startmin.css" rel="stylesheet">
+<link href="/public/smartolt-files/dashboard-smartolt-modern.css" rel="stylesheet">
+<script src="/public/smartolt-files/jquery.min.js"></script>
+<script src="/public/smartolt-files/toast.js"></script>
+</head>
+<body class="smartolt-site smartolt-dashboard">
+
+<div class="smartolt-landing-hero-bg" aria-hidden="true"></div>
+<div id="content-wrapper">
+<div class="smartolt-topbar-network" aria-hidden="true"><div class="smartolt-topbar-network-inner"><svg class="smartolt-topbar-network-lines" viewBox="0 0 100 100" preserveAspectRatio="none"><line x1="8" y1="68" x2="23" y2="78"></line><line x1="23" y1="78" x2="37" y2="63"></line><line x1="8" y1="68" x2="37" y2="63"></line><line x1="37" y1="63" x2="65" y2="18"></line><line x1="65" y1="18" x2="89" y2="34"></line><line x1="23" y1="78" x2="65" y2="18"></line><line x1="37" y1="63" x2="89" y2="34"></line></svg><span class="smartolt-topbar-node smartolt-topbar-node-a"></span><span class="smartolt-topbar-node smartolt-topbar-node-b"></span><span class="smartolt-topbar-node smartolt-topbar-node-c"></span><span class="smartolt-topbar-node smartolt-topbar-node-d"></span><span class="smartolt-topbar-node smartolt-topbar-node-e"></span></div></div>
+    <div class="navbar navbar-default navbar-fixed-top default-menu">
+    <div class="container">
+      <div class="navbar-header">
+        <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#navbar-main" aria-expanded="false" aria-controls="navbar">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand text-ellipsis max-width-250" href="/modulo?pagina=GPONManager">GPON Manager</a>
+      </div>
+      <div class="navbar-collapse collapse" id="navbar-main">
+        <ul class="nav navbar-nav">
+          <li><a href="/modulo?pagina=GPONManager">Dashboard</a></li>
+          <li><a href="/modulo?pagina=smartolt_configured_full">Configuradas</a></li>
+          <li><a href="/modulo?pagina=smartolt_unconfigured_full">No configuradas</a></li>
+          <li><a href="/modulo?pagina=smartolt_onu_types_full">Tipos ONU</a></li>
+          <li><a href="/modulo?pagina=smartolt_speed_profiles_full">Velocidad</a></li>
+          <li><a href="/modulo?pagina=smartolt_locations_full">Zonas</a></li>
+          <li class="dropdown">
+            <a class="dropdown-toggle" data-toggle="dropdown" href="#">Settings <span class="caret"></span></a>
+            <ul class="dropdown-menu">
+              <li><a href="/modulo?pagina=smartolt_olt">OLTs</a></li>
+              <li><a href="/modulo?pagina=smartolt_general">General</a></li>
+              <li><a href="/modulo?pagina=smartolt_billing">Billing</a></li>
+              <li><a href="/modulo?pagina=smartolt_system_config">VPN &amp; TR069</a></li>
+              <li><a href="/modulo?pagina=smartolt_presets_full">Presets</a></li>
+              <li><a href="/modulo?pagina=smartolt_diagnostics_full">Diagnostics</a></li>
+              <li><a href="/modulo?pagina=smartolt_graphs">Graphs</a></li>
+            </ul>
+          </li>
+        </ul>
+        <ul class="nav navbar-nav navbar-right">
+          <li><a href="/logout"><i class="fa fa-sign-out"></i> Salir</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="container-fluid content-wrap">
+      <div class="row">
+        <div class="col-md-12">
+          <a href="/modulo?pagina=smartolt_configured_full" class="btn btn-sm btn-default"><i class="fa fa-arrow-left"></i> Back to ONUs list</a>
+          <h2>ONU: <span id="onuSn">ZTEGDC7A5BCD</span></h2>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-6">
+          <div class="panel panel-default">
+            <div class="panel-heading"><i class="fa fa-info-circle"></i> Basic Information</div>
+            <div class="panel-body">
+              <table class="table table-condensed">
+                <tr><td>SN / MAC</td><td><strong id="onuSn2">ZTEGDC7A5BCD</strong></td></tr>
+                <tr><td>Model</td><td><strong>EG8021V5</strong></td></tr>
+                <tr><td>Status</td><td><span class="label label-success">Online</span></td></tr>
+                <tr><td>Board/Port</td><td>2/10:41</td></tr>
+                <tr><td>Zone</td><td>Bella Vista</td></tr>
+                <tr><td>VLAN</td><td>200</td></tr>
+                <tr><td>Mode</td><td>Routing (PPPoE)</td></tr>
+                <tr><td>Client</td><td>Jose Almanza</td></tr>
+                <tr><td>Auth date</td><td>09-06-2026</td></tr>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="panel panel-default">
+            <div class="panel-heading"><i class="fa fa-signal"></i> Optical Signal</div>
+            <div class="panel-body">
+              <table class="table table-condensed">
+                <tr><td>Rx Power</td><td><strong>-25.85 dBm</strong> <span class="label label-success">Good</span></td></tr>
+                <tr><td>Tx Power</td><td><strong>+2.10 dBm</strong></td></tr>
+                <tr><td>Temperature</td><td><strong>38.5 °C</strong></td></tr>
+                <tr><td>Voltage</td><td><strong>3.31 V</strong></td></tr>
+                <tr><td>Bias Current</td><td><strong>12.5 mA</strong></td></tr>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-12">
+          <div class="panel panel-default">
+            <div class="panel-heading"><i class="fa fa-cogs"></i> Actions</div>
+            <div class="panel-body">
+              <button class="btn btn-warning" onclick="alert('Reboot: No disponible sin conexion OLT');return false;"><i class="fa fa-refresh"></i> Reboot</button>
+              <button class="btn btn-info" onclick="alert('Resync: No disponible sin conexion OLT');return false;"><i class="fa fa-rotate-right"></i> Resync</button>
+              <button class="btn btn-default" onclick="alert('Restore Default: No disponible sin conexion OLT');return false;"><i class="fa fa-undo"></i> Restore Default</button>
+              <button class="btn btn-danger" onclick="alert('Disable: No disponible sin conexion OLT');return false;"><i class="fa fa-ban"></i> Disable</button>
+              <button class="btn btn-danger" onclick="if(confirm('Delete this ONU?'))alert('Delete: No disponible sin conexion OLT');return false;"><i class="fa fa-trash"></i> Delete</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-6">
+          <div class="panel panel-default">
+            <div class="panel-heading"><i class="fa fa-line-chart"></i> Traffic (Last Hour)</div>
+            <div class="panel-body">
+              <canvas id="trafficChart" style="width:100%;height:200px;"></canvas>
+              <p class="text-center text-muted" style="margin-top:10px;">Real-time traffic graph (requires OLT connection)</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="panel panel-default">
+            <div class="panel-heading"><i class="fa fa-terminal"></i> Advanced Info</div>
+            <div class="panel-body">
+              <table class="table table-condensed">
+                <tr><td>Uptime</td><td>15 days 4h 32m</td></tr>
+                <tr><td>Last seen</td><td>Just now</td></tr>
+                <tr><td>Firmware</td><td>V3.2.0P1T1</td></tr>
+                <tr><td>Management IP</td><td>10.74.0.15</td></tr>
+                <tr><td>Hardware version</td><td>VER.A</td></tr>
+                <tr><td>ONT ID</td><td>41</td></tr>
+                <tr><td>Distance</td><td>2.3 km</td></tr>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+$(document).ready(function() {
+  var params = new URLSearchParams(window.location.search);
+  var onuId = params.get('onu_id');
+  if (onuId) {
+    // En el futuro cargar datos desde API /api/olt/onu/:id
+    $('#onuSn').text('ONU #' + onuId);
+    $('#onuSn2').text('ONU #' + onuId);
+  }
+  
+  // Traffic chart placeholder
+  var ctx = document.getElementById('trafficChart');
+  if (ctx) {
+    ctx.getContext('2d').fillStyle = '#2C2C2E';
+    ctx.getContext('2d').fillRect(0, 0, ctx.width, ctx.height);
+    ctx.getContext('2d').fillStyle = '#5cb85c';
+    ctx.getContext('2d').font = '14px Inter';
+    ctx.getContext('2d').textAlign = 'center';
+    ctx.getContext('2d').fillText('Traffic graph (requires Chart.js + OLT data)', ctx.width/2, ctx.height/2);
+  }
+});
+</script>
+
+<footer><div class="text-center">GPON Manager v1.0 &copy; 2026 ISPTotal</div></footer>
+</body>
+</html>

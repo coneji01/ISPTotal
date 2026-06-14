@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en" class="smartolt-night">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Configured ONUs - JOEL WIFI</title>
+
+<link href="/public/smartolt-files/bootstrap-custom.css" rel="stylesheet">
+<link href="/public/smartolt-files/bootstrap-multiselect.css" rel="stylesheet">
+<link href="/public/smartolt-files/styles.css" rel="stylesheet">
+<link href="/public/smartolt-files/toast.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+<link href="/public/smartolt-files/messagebox.css" rel="stylesheet">
+<link href="/public/smartolt-files/inter-fonts.css" rel="stylesheet">
+<link href="/public/smartolt-files/dashboard-smartolt-night.css" rel="stylesheet">
+
+<script src="/public/smartolt-files/jquery.min.js"></script>
+<script src="/public/smartolt-files/toast.js"></script>
+<script src="/public/smartolt-files/polling.js"></script>
+
+<style>
+.onu-list-name-col { min-width: 20ch; }
+.onu-list-zone-col { width: 8.333%; min-width: 120px; }
+.onu-list-zone-text { display: inline-block; max-width: 20ch; white-space: normal; overflow-wrap: anywhere; word-break: break-word; vertical-align: top; }
+.onu-list-name-text { display: inline-block; max-width: 30ch; white-space: normal; overflow-wrap: anywhere; word-break: break-word; vertical-align: top; }
+.table th { font-weight: 600; color: #2b2b2b; background-color: #f5f7f8; }
+.table td, .table th { vertical-align: middle !important; }
+.status-online { color: #5cb85c; }
+.status-pwrfail { color: #999; }
+.status-los { color: #d9534f; }
+.status-offline { color: #999; }
+.signal-good { color: #5cb85c; }
+.signal-warning { color: darkorange; }
+.signal-critical { color: #d9534f; }
+.pagination { margin: 0; padding: 0; display: inline-block; }
+.pagination li { display: inline; }
+.pagination li a, .pagination li span { padding: 6px 12px; border: 1px solid #ddd; margin-left: -1px; }
+.pagination .active a { background: #337ab7; color: white; border-color: #337ab7; }
+</style>
+</head>
+<body class="smartolt-site">
+
+<div id="content-wrapper">
+    <div class="navbar navbar-default navbar-fixed-top default-menu">
+    <div class="container">
+      <div class="navbar-header">
+        <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#navbar-main" aria-expanded="false" aria-controls="navbar">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand text-ellipsis max-width-250" href="/modulo?pagina=GPONManager" title="GPON Manager">GPON Manager</a>
+      </div>
+      <div class="navbar-collapse collapse" id="navbar-main">
+        <ul class="nav navbar-nav">
+          <li><a href="/modulo?pagina=GPONManager"><i class="fa fa-tachometer"></i> Dashboard</a></li>
+          <li><a href="/modulo?pagina=SmartoltConfigured"><i class="fa fa-check-circle"></i> Configuradas</a></li>
+          <li><a href="/modulo?pagina=SmartoltUnconfigured"><i class="fa fa-clock-o"></i> No configuradas</a></li>
+          <li><a href="/modulo?pagina=SmartoltOnuTypes"><i class="fa fa-microchip"></i> Tipos ONU</a></li>
+          <li><a href="/modulo?pagina=SmartoltSpeedProfiles"><i class="fa fa-tachometer"></i> Velocidad</a></li>
+          <li><a href="/modulo?pagina=SmartoltLocations"><i class="fa fa-map-marker"></i> Zonas</a></li>
+          <li><a href="/modulo?pagina=SmartoltDashboard"><i class="fa fa-external-link"></i> SmartOLT</a></li>
+        </ul>
+        <ul class="nav navbar-nav navbar-right">
+          <li><a href="#" id="smartolt-night-toggle" class="is-pref-night is-resolved is-night" title="Night mode"><i class="fa fa-adjust"></i></a></li>
+          <li><a href="/logout"><i class="fa fa-sign-out"></i></a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="container-fluid">
+      <h2>Configured ONUs</h2>
+
+      <div class="row margin-bottom">
+        <div class="col-sm-3">
+          <label>Search</label>
+          <input type="text" class="form-control" id="freeText" placeholder="SN, name, address..." onkeyup="filtrar()">
+        </div>
+        <div class="col-sm-2">
+          <label>Filter</label>
+          <select class="form-control" id="filterStatus" onchange="filtrar()">
+            <option value="">All</option>
+            <option value="Online">Online</option>
+            <option value="Offline">Offline</option>
+            <option value="LOS">LOS</option>
+            <option value="Power fail">Power fail</option>
+          </select>
+        </div>
+        <div class="col-sm-3 col-sm-offset-4 text-right">
+          <br>
+          <span class="badge badge-primary" id="countBadge">0 ONU(s)</span>
+          <a href="/modulo?pagina=SmartoltAuthorizeOnu" class="btn btn-primary btn-sm"><i class="fa fa-plus"></i> Authorize new</a>
+        </div>
+      </div>
+
+      <div id="onu_configured_list">
+        <div class="row">
+          <ul class="pagination" id="pagination"></ul>
+          <span class="pull-right margin-top" id="pageInfo"></span>
+        </div>
+
+        <div class="row">
+          <table class="table table-striped table-hover" id="onuTable">
+            <thead>
+              <tr>
+                <th class="text-center" style="width:34px"><input type="checkbox" id="selectAll"></th>
+                <th class="text-center">Status</th>
+                <th class="text-center">View</th>
+                <th class="onu-list-name-col">Name</th>
+                <th>SN</th>
+                <th>ONU</th>
+                <th class="onu-list-zone-col">Zone</th>
+                <th>Board/P</th>
+                <th>Type</th>
+                <th>VLAN</th>
+                <th>Mode</th>
+                <th>Auth date</th>
+              </tr>
+            </thead>
+            <tbody id="onuTableBody">
+              <tr><td colspan="12" class="text-center"><i class="fa fa-spinner fa-spin"></i> Loading ONUs...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="/public/smartolt-files/messagebox.min.js"></script>
+
+<script>
+$(document).ready(function() {
+  var todasOnus = [];
+  var pageSize = 100;
+
+  function getStatusIcon(status) {
+    switch((status || '').toLowerCase()) {
+      case 'online':
+      case 'working': return '<i class="fa fa-globe status-online"></i> Online';
+      case 'power fail':
+      case 'pwrfail': return '<i class="fa fa-plug status-pwrfail"></i> Power fail';
+      case 'los': return '<i class="fa fa-chain-broken status-los"></i> LOS';
+      default: return '<i class="fa fa-globe status-offline"></i> ' + (status || 'Offline');
+    }
+  }
+
+  function renderTabla(page) {
+    page = page || 1;
+    var filtrados = filtrarLocal();
+    var total = filtrados.length;
+    var start = (page - 1) * pageSize;
+    var end = Math.min(start + pageSize, total);
+    var totalPages = Math.ceil(total / pageSize) || 1;
+
+    // Paginacion
+    var pagHtml = '';
+    var maxPages = Math.min(totalPages, 20);
+    var startPage = Math.max(1, page - 5);
+    var endPage = Math.min(maxPages, startPage + 9);
+    if (endPage - startPage < 9) startPage = Math.max(1, endPage - 9);
+    
+    if (page > 1) pagHtml += '<li><a href="javascript:void(0)" data-page="' + (page-1) + '">&laquo;</a></li>';
+    for (var p = startPage; p <= endPage; p++) {
+      pagHtml += '<li' + (p === page ? ' class="active"' : '') + '><a href="javascript:void(0)" data-page="' + p + '">' + p + '</a></li>';
+    }
+    if (page < totalPages) pagHtml += '<li><a href="javascript:void(0)" data-page="' + (page+1) + '">&raquo;</a></li>';
+    
+    $('#pagination').html(pagHtml);
+    $('#pageInfo').text((total > 0 ? (start+1) + '-' + end : '0') + ' of ' + total + ' displayed');
+    $('#countBadge').text(total + ' ONU(s)');
+
+    // Tabla
+    var html = '';
+    for (var i = start; i < end; i++) {
+      var o = filtrados[i];
+      var viewUrl = '/modulo?pagina=SmartoltViewOnu&id=' + o.id;
+      var onuIndex = 'gpon-onu_1/' + (o.board || '?') + '/' + (o.port || '?') + ':' + (o.onu_id || '?');
+
+      html += '<tr class="valign-center">' +
+        '<td class="text-center"><input type="checkbox" class="onu-checkbox" value="' + o.id + '"></td>' +
+        '<td class="text-center" style="font-size:12px;">' + getStatusIcon(o.status) + '</td>' +
+        '<td class="text-center"><a href="' + viewUrl + '" class="btn btn-success btn-xs"><i class="fa fa-eye"></i> View</a></td>' +
+        '<td class="onu-list-name-col"><a href="' + viewUrl + '" class="onu-list-name-text" style="font-weight:600;">' + (o.name || 'N/A') + '</a></td>' +
+        '<td><a href="' + viewUrl + '"><code>' + (o.sn || '-') + '</code></a></td>' +
+        '<td><small style="font-weight:500;">1 - JOEL WIFI</small><br>' + onuIndex + '</td>' +
+        '<td class="onu-list-zone-col"><span class="onu-list-zone-text">' + (o.zone_name || '-') + '</span></td>' +
+        '<td>' + (o.board || '?') + '/' + (o.port || '?') + '</td>' +
+        '<td>' + (o.onu_type_name || '-') + '</td>' +
+        '<td>' + (o.vlan_id || '-') + '</td>' +
+        '<td><span class="label label-info">' + (o.mode || 'Routing') + '</span></td>' +
+        '<td style="font-size:12px;">' + (o.created_at ? new Date(o.created_at).toLocaleDateString() : '-') + '</td></tr>';
+    }
+
+    if (!html) html = '<tr><td colspan="12" class="text-center text-muted">No ONUs found</td></tr>';
+    $('#onuTableBody').html(html);
+
+    // Pagination click
+    $('#pagination a[data-page]').off('click').on('click', function() {
+      renderTabla(parseInt($(this).data('page')));
+    });
+
+    // Select all
+    $('#selectAll').off('change').on('change', function() {
+      $('.onu-checkbox').prop('checked', $(this).prop('checked'));
+    });
+  }
+
+  function filtrarLocal() {
+    var q = ($('#freeText').val() || '').toLowerCase().trim();
+    var statusFilter = ($('#filterStatus').val() || '').toLowerCase().trim();
+    
+    return todasOnus.filter(function(o) {
+      if (q) {
+        var match = (o.sn || '').toLowerCase().indexOf(q) >= 0 ||
+                    (o.name || '').toLowerCase().indexOf(q) >= 0 ||
+                    (o.description || '').toLowerCase().indexOf(q) >= 0 ||
+                    (o.zone_name || '').toLowerCase().indexOf(q) >= 0 ||
+                    String(o.board || '').indexOf(q) >= 0 ||
+                    String(o.port || '').indexOf(q) >= 0;
+        if (!match) return false;
+      }
+      if (statusFilter) {
+        var st = (o.status || 'offline').toLowerCase();
+        if (st !== statusFilter) return false;
+      }
+      return true;
+    });
+  }
+
+  window.filtrar = function() {
+    renderTabla(1);
+  };
+
+  function cargarConfigured() {
+    $('#onuTableBody').html('<tr><td colspan="12" class="text-center"><i class="fa fa-spinner fa-spin"></i> Loading ONUs...</td></tr>');
+    
+    $.ajax({
+      url: '/api/olt/configured-onus',
+      method: 'GET',
+      timeout: 30000,
+      success: function(r) {
+        if (!r.success || !r.data) {
+          $('#onuTableBody').html('<tr><td colspan="12" class="text-center text-danger">' + (r.error || 'Error') + '</td></tr>');
+          return;
+        }
+        // Si viene como array directo o como { onus: [...] }
+        todasOnus = Array.isArray(r.data) ? r.data : (r.data.onus || []);
+        renderTabla(1);
+      },
+      error: function() {
+        // Fallback: cargar desde DB local
+        $.ajax({
+          url: '/api/olt/onu-list',
+          method: 'GET',
+          timeout: 10000,
+          success: function(r2) {
+            if (r2.success && r2.data) {
+              todasOnus = r2.data;
+              renderTabla(1);
+            } else {
+              $('#onuTableBody').html('<tr><td colspan="12" class="text-center text-danger"><i class="fa fa-exclamation-triangle"></i> Error loading ONUs</td></tr>');
+            }
+          },
+          error: function() {
+            $('#onuTableBody').html('<tr><td colspan="12" class="text-center text-danger"><i class="fa fa-exclamation-triangle"></i> Error connecting</td></tr>');
+          }
+        });
+      }
+    });
+  }
+
+  cargarConfigured();
+  setInterval(cargarConfigured, 60000);
+});
+</script>
+
+</body>
+</html>

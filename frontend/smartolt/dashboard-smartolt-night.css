@@ -1,0 +1,4729 @@
+/* SmartOLT staging — night mode (app-wide + dashboard) */
+
+/* Light mode — app-wide typography (match dashboard Inter) */
+html:not(.smartolt-night) body.smartolt-site {
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+html:not(.smartolt-night) body.smartolt-site h1,
+html:not(.smartolt-night) body.smartolt-site h2,
+html:not(.smartolt-night) body.smartolt-site h3,
+html:not(.smartolt-night) body.smartolt-site h4,
+html:not(.smartolt-night) body.smartolt-site h5,
+html:not(.smartolt-night) body.smartolt-site h6,
+html:not(.smartolt-night) body.smartolt-site .h1,
+html:not(.smartolt-night) body.smartolt-site .h2,
+html:not(.smartolt-night) body.smartolt-site .h3,
+html:not(.smartolt-night) body.smartolt-site .h4,
+html:not(.smartolt-night) body.smartolt-site .h5,
+html:not(.smartolt-night) body.smartolt-site .h6,
+html:not(.smartolt-night) body.smartolt-site .tooltip,
+html:not(.smartolt-night) body.smartolt-site .popover {
+  font-family: inherit;
+}
+
+html.smartolt-night body.smartolt-site {
+  --navy-950: #06162f;
+  --navy-900: #071b3d;
+  --smartolt-nav-offset: 68px;
+  --smartolt-topbar-height: 60px;
+  background: var(--navy-950);
+  color: #e2e8f0;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+html.smartolt-night body.smartolt-site #content-wrapper {
+  background: transparent;
+  position: relative;
+}
+
+html.smartolt-night body.smartolt-site #content-wrapper > .container,
+html.smartolt-night body.smartolt-site #content-wrapper > .container-fluid {
+  padding-bottom: 40px;
+  padding-top: var(--smartolt-nav-offset);
+}
+
+html.smartolt-night body.smartolt-site .content-wrap > h2,
+html.smartolt-night body.smartolt-site .onu-wrapper > h2,
+html.smartolt-night body.smartolt-site .container-fluid > h2:first-child,
+html.smartolt-night body.smartolt-site .container > h2:first-child {
+  display: none;
+}
+
+html.smartolt-night body.smartolt-site .navbar-default {
+  background: rgba(6, 22, 47, 0.82) !important;
+  background-image: none !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+html.smartolt-night body.smartolt-site .navbar-default .navbar-brand,
+html.smartolt-night body.smartolt-site .navbar-default .nav > li > a {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+html.smartolt-night body.smartolt-site .navbar-default .nav > li > a:hover,
+html.smartolt-night body.smartolt-site .navbar-default .nav > li > a:focus,
+html.smartolt-night body.smartolt-site .navbar-default .nav > .open > a,
+html.smartolt-night body.smartolt-site .navbar-default .nav > .open > a:hover,
+html.smartolt-night body.smartolt-site .navbar-default .nav > .open > a:focus {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #fff !important;
+}
+
+html.smartolt-night body.smartolt-site .navbar-default .navbar-toggle .icon-bar {
+  background-color: #fff;
+}
+
+html.smartolt-night .dropdown-menu {
+  background: #0b1528;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.28);
+}
+
+html.smartolt-night .dropdown-menu > li > a {
+  color: #e2e8f0;
+}
+
+html.smartolt-night .dropdown-menu > li > a:hover,
+html.smartolt-night .dropdown-menu > li > a:focus {
+  background: rgba(29, 139, 255, 0.18);
+  color: #fff;
+}
+
+html.smartolt-night .dropdown-menu > .active > a,
+html.smartolt-night .dropdown-menu > .active > a:hover,
+html.smartolt-night .dropdown-menu > .active > a:focus {
+  background: rgba(29, 139, 255, 0.18);
+  color: #fff;
+}
+
+html.smartolt-night .dropdown-menu > .disabled > a,
+html.smartolt-night .dropdown-menu > .disabled > a:hover,
+html.smartolt-night .dropdown-menu > .disabled > a:focus,
+html.smartolt-night .dropdown-menu > li.disabled > a,
+html.smartolt-night .dropdown-menu > li.disabled > a:hover,
+html.smartolt-night .dropdown-menu > li.disabled > a:focus {
+  background-color: transparent !important;
+  color: #64748b !important;
+  cursor: not-allowed !important;
+  pointer-events: none;
+}
+
+html.smartolt-night .dropdown-menu .divider {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+html.smartolt-night body.smartolt-site footer,
+html.smartolt-night body.smartolt-site footer .text-center {
+  color: rgba(255, 255, 255, 0.45) !important;
+}
+
+html.smartolt-night body.smartolt-site footer a {
+  color: #8cc8ff !important;
+}
+
+html.smartolt-night body.smartolt-site .panel {
+  background: rgba(15, 26, 46, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.25);
+  color: #e2e8f0;
+}
+
+html.smartolt-night body.smartolt-site .panel-default > .panel-heading,
+html.smartolt-night body.smartolt-site .panel-primary > .panel-heading,
+html.smartolt-night body.smartolt-site .panel-green > .panel-heading,
+html.smartolt-night body.smartolt-site .panel-red > .panel-heading,
+html.smartolt-night body.smartolt-site .panel-yellow > .panel-heading {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: #f1f5f9 !important;
+}
+
+html.smartolt-night body.smartolt-site .panel-body {
+  background: transparent;
+  color: #e2e8f0;
+}
+
+html.smartolt-night body.smartolt-site .panel-footer {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+html.smartolt-night body.smartolt-site .form-control {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.15);
+  color: #f1f5f9;
+}
+
+html.smartolt-night body.smartolt-site .form-control:focus {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25);
+  color: #fff;
+}
+
+html.smartolt-night body.smartolt-site .form-control::placeholder {
+  color: rgba(255, 255, 255, 0.45);
+}
+
+html.smartolt-night body.smartolt-site .form-control[disabled],
+html.smartolt-night body.smartolt-site .form-control[readonly],
+html.smartolt-night body.smartolt-site fieldset[disabled] .form-control {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.5);
+  cursor: not-allowed;
+  opacity: 1;
+}
+
+/* Checkboxes & radios — app-wide (incl. disabled) */
+html.smartolt-night body.smartolt-site .checkbox label,
+html.smartolt-night body.smartolt-site .radio label,
+html.smartolt-night body.smartolt-site .checkbox-inline,
+html.smartolt-night body.smartolt-site .radio-inline {
+  color: #e2e8f0;
+}
+
+html.smartolt-night body.smartolt-site input[type="checkbox"],
+html.smartolt-night body.smartolt-site input[type="radio"] {
+  accent-color: #3b82f6;
+}
+
+html.smartolt-night body.smartolt-site .checkbox input[type="checkbox"],
+html.smartolt-night body.smartolt-site .checkbox-inline input[type="checkbox"],
+html.smartolt-night body.smartolt-site .radio input[type="radio"],
+html.smartolt-night body.smartolt-site .radio-inline input[type="radio"] {
+  accent-color: #3b82f6;
+}
+
+html.smartolt-night body.smartolt-site .checkbox input[type="checkbox"]:disabled,
+html.smartolt-night body.smartolt-site .checkbox-inline input[type="checkbox"]:disabled,
+html.smartolt-night body.smartolt-site .radio input[type="radio"]:disabled,
+html.smartolt-night body.smartolt-site .radio-inline input[type="radio"]:disabled,
+html.smartolt-night body.smartolt-site input[type="checkbox"]:disabled,
+html.smartolt-night body.smartolt-site input[type="checkbox"][disabled],
+html.smartolt-night body.smartolt-site input[type="radio"]:disabled,
+html.smartolt-night body.smartolt-site input[type="radio"][disabled],
+html.smartolt-night body.smartolt-site fieldset[disabled] input[type="checkbox"],
+html.smartolt-night body.smartolt-site fieldset[disabled] input[type="radio"] {
+  appearance: none;
+  -webkit-appearance: none;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1.5px solid rgba(255, 255, 255, 0.34);
+  border-radius: 3px;
+  box-shadow: none;
+  cursor: not-allowed;
+  height: 16px;
+  opacity: 1;
+  width: 16px;
+}
+
+html.smartolt-night body.smartolt-site .radio input[type="radio"]:disabled,
+html.smartolt-night body.smartolt-site .radio-inline input[type="radio"]:disabled,
+html.smartolt-night body.smartolt-site input[type="radio"]:disabled,
+html.smartolt-night body.smartolt-site input[type="radio"][disabled],
+html.smartolt-night body.smartolt-site fieldset[disabled] input[type="radio"] {
+  border-radius: 50%;
+}
+
+html.smartolt-night body.smartolt-site .checkbox input[type="checkbox"]:disabled:checked,
+html.smartolt-night body.smartolt-site .checkbox-inline input[type="checkbox"]:disabled:checked,
+html.smartolt-night body.smartolt-site input[type="checkbox"]:disabled:checked,
+html.smartolt-night body.smartolt-site input[type="checkbox"][disabled]:checked,
+html.smartolt-night body.smartolt-site fieldset[disabled] input[type="checkbox"]:checked {
+  background: rgba(100, 116, 139, 0.55) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23e2e8f0'%3E%3Cpath d='M12.2 4.2 6.8 10.3 3.8 7.3l-1.3 1.4 4.3 4.2 6.7-7.5z'/%3E%3C/svg%3E") center/11px no-repeat;
+  border-color: rgba(148, 163, 184, 0.58);
+}
+
+html.smartolt-night body.smartolt-site .radio input[type="radio"]:disabled:checked,
+html.smartolt-night body.smartolt-site .radio-inline input[type="radio"]:disabled:checked,
+html.smartolt-night body.smartolt-site input[type="radio"]:disabled:checked,
+html.smartolt-night body.smartolt-site input[type="radio"][disabled]:checked,
+html.smartolt-night body.smartolt-site fieldset[disabled] input[type="radio"]:checked {
+  background: rgba(100, 116, 139, 0.55);
+  border-color: rgba(148, 163, 184, 0.58);
+  box-shadow: inset 0 0 0 3px rgba(15, 23, 42, 0.92);
+}
+
+html.smartolt-night body.smartolt-site .checkbox.disabled label,
+html.smartolt-night body.smartolt-site .radio.disabled label,
+html.smartolt-night body.smartolt-site .checkbox-inline.disabled,
+html.smartolt-night body.smartolt-site .radio-inline.disabled,
+html.smartolt-night body.smartolt-site fieldset[disabled] .checkbox label,
+html.smartolt-night body.smartolt-site fieldset[disabled] .radio label,
+html.smartolt-night body.smartolt-site fieldset[disabled] .checkbox-inline,
+html.smartolt-night body.smartolt-site fieldset[disabled] .radio-inline {
+  color: rgba(255, 255, 255, 0.48);
+  cursor: not-allowed;
+}
+
+html.smartolt-night body.smartolt-site .btn.disabled,
+html.smartolt-night body.smartolt-site .btn[disabled],
+html.smartolt-night body.smartolt-site fieldset[disabled] .btn {
+  background: rgba(255, 255, 255, 0.06) !important;
+  background-image: none !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  box-shadow: none !important;
+  color: rgba(255, 255, 255, 0.38) !important;
+  cursor: not-allowed;
+  opacity: 1;
+  pointer-events: none;
+  text-shadow: none;
+}
+
+html.smartolt-night body.smartolt-site .btn-primary.disabled,
+html.smartolt-night body.smartolt-site .btn-primary[disabled],
+html.smartolt-night body.smartolt-site .btn-success.disabled,
+html.smartolt-night body.smartolt-site .btn-success[disabled],
+html.smartolt-night body.smartolt-site .btn-danger.disabled,
+html.smartolt-night body.smartolt-site .btn-danger[disabled] {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  color: rgba(255, 255, 255, 0.38) !important;
+}
+
+html.smartolt-night body.smartolt-site select.form-control {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-color: rgba(255, 255, 255, 0.06);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23cbd5e1' d='M2 4.5L6 8.5L10 4.5'/%3E%3C/svg%3E");
+  background-position: right 10px center;
+  background-repeat: no-repeat;
+  color-scheme: dark;
+  padding-right: 30px;
+}
+
+html.smartolt-night body.smartolt-site select.form-control option,
+html.smartolt-night body.smartolt-site select.form-control optgroup {
+  background: #0b1528;
+  color: #e2e8f0;
+}
+
+html.smartolt-night body.smartolt-site select.form-control option:disabled,
+html.smartolt-night body.smartolt-site select.form-control option[disabled] {
+  background: #0b1528;
+  color: #64748b;
+}
+
+/* File inputs — Choose file button + filename area */
+html.smartolt-night body.smartolt-site input[type="file"],
+html.smartolt-night .modal input[type="file"],
+html.smartolt-night .onu-ui-modal input[type="file"] {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  color: rgba(255, 255, 255, 0.75);
+  color-scheme: dark;
+  font-size: 14px;
+  line-height: 1.4;
+  max-width: 100%;
+  padding: 6px 8px 6px 0;
+}
+
+html.smartolt-night body.smartolt-site input[type="file"]:focus,
+html.smartolt-night .modal input[type="file"]:focus,
+html.smartolt-night .onu-ui-modal input[type="file"]:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25);
+  outline: none;
+}
+
+html.smartolt-night body.smartolt-site input[type="file"]::file-selector-button,
+html.smartolt-night .modal input[type="file"]::file-selector-button,
+html.smartolt-night .onu-ui-modal input[type="file"]::file-selector-button,
+html.smartolt-night body.smartolt-site input[type="file"]::-webkit-file-upload-button,
+html.smartolt-night .modal input[type="file"]::-webkit-file-upload-button,
+html.smartolt-night .onu-ui-modal input[type="file"]::-webkit-file-upload-button {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 6px;
+  color: #e2e8f0;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  margin-right: 10px;
+  padding: 7px 14px;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+html.smartolt-night body.smartolt-site input[type="file"]::file-selector-button:hover,
+html.smartolt-night .modal input[type="file"]::file-selector-button:hover,
+html.smartolt-night .onu-ui-modal input[type="file"]::file-selector-button:hover,
+html.smartolt-night body.smartolt-site input[type="file"]::-webkit-file-upload-button:hover,
+html.smartolt-night .modal input[type="file"]::-webkit-file-upload-button:hover,
+html.smartolt-night .onu-ui-modal input[type="file"]::-webkit-file-upload-button:hover {
+  background: rgba(29, 139, 255, 0.22);
+  border-color: rgba(59, 130, 246, 0.45);
+  color: #fff;
+}
+
+html.smartolt-night body.smartolt-site input[type="file"]::file-selector-button:active,
+html.smartolt-night .modal input[type="file"]::file-selector-button:active,
+html.smartolt-night .onu-ui-modal input[type="file"]::file-selector-button:active,
+html.smartolt-night body.smartolt-site input[type="file"]::-webkit-file-upload-button:active,
+html.smartolt-night .modal input[type="file"]::-webkit-file-upload-button:active,
+html.smartolt-night .onu-ui-modal input[type="file"]::-webkit-file-upload-button:active {
+  background: rgba(29, 139, 255, 0.3);
+  border-color: rgba(59, 130, 246, 0.55);
+  color: #fff;
+}
+
+html.smartolt-night body.smartolt-site label,
+html.smartolt-night body.smartolt-site .control-label {
+  color: #cbd5e1;
+}
+
+html.smartolt-night body.smartolt-site h1,
+html.smartolt-night body.smartolt-site h2,
+html.smartolt-night body.smartolt-site h3,
+html.smartolt-night body.smartolt-site h4 {
+  color: #f1f5f9;
+}
+
+html.smartolt-night body.smartolt-site .alert-success {
+  background: rgba(34, 197, 94, 0.15);
+  border-color: rgba(34, 197, 94, 0.35);
+  color: #86efac;
+}
+
+html.smartolt-night body.smartolt-site .alert-danger {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.35);
+  color: #fca5a5;
+}
+
+html.smartolt-night body.smartolt-site .alert-warning {
+  background: rgba(245, 158, 11, 0.15);
+  border-color: rgba(245, 158, 11, 0.35);
+  color: #fcd34d;
+}
+
+html.smartolt-night body.smartolt-site .alert-info {
+  background: rgba(59, 130, 246, 0.15);
+  border-color: rgba(59, 130, 246, 0.35);
+  color: #93c5fd;
+}
+
+html.smartolt-night body.smartolt-site .alert-link {
+  color: #93c5fd;
+}
+
+html.smartolt-night body.smartolt-site .btn-default {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.12);
+  color: #e2e8f0;
+}
+
+html.smartolt-night body.smartolt-site .btn-default:hover,
+html.smartolt-night body.smartolt-site .btn-default:focus {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.18);
+  color: #fff;
+}
+
+/* Colored action buttons — crisp white labels on dark UI */
+html.smartolt-night body.smartolt-site .btn-success,
+html.smartolt-night body.smartolt-site .btn-primary,
+html.smartolt-night body.smartolt-site .btn-danger,
+html.smartolt-night body.smartolt-site .btn-warning,
+html.smartolt-night body.smartolt-site .btn-info,
+html.smartolt-night body.smartolt-site .btn-yellow {
+  color: #fff !important;
+  font-weight: 600;
+  text-shadow: none;
+}
+
+html.smartolt-night body.smartolt-site .btn-success:hover,
+html.smartolt-night body.smartolt-site .btn-success:focus,
+html.smartolt-night body.smartolt-site .btn-primary:hover,
+html.smartolt-night body.smartolt-site .btn-primary:focus,
+html.smartolt-night body.smartolt-site .btn-danger:hover,
+html.smartolt-night body.smartolt-site .btn-danger:focus,
+html.smartolt-night body.smartolt-site .btn-warning:hover,
+html.smartolt-night body.smartolt-site .btn-warning:focus,
+html.smartolt-night body.smartolt-site .btn-info:hover,
+html.smartolt-night body.smartolt-site .btn-info:focus,
+html.smartolt-night body.smartolt-site .btn-yellow:hover,
+html.smartolt-night body.smartolt-site .btn-yellow:focus {
+  color: #fff !important;
+  text-shadow: none;
+}
+
+html.smartolt-night body.smartolt-site .btn-success {
+  background-color: #1d8bff !important;
+  border-color: #1d8bff !important;
+}
+
+html.smartolt-night body.smartolt-site .btn-success:hover,
+html.smartolt-night body.smartolt-site .btn-success:focus {
+  background-color: #006cff !important;
+  border-color: #006cff !important;
+}
+
+html.smartolt-night body.smartolt-site .btn-primary {
+  background-color: #45b942 !important;
+  border-color: #45b942 !important;
+}
+
+html.smartolt-night body.smartolt-site .btn-primary:hover,
+html.smartolt-night body.smartolt-site .btn-primary:focus {
+  background-color: #3aa838 !important;
+  border-color: #3aa838 !important;
+}
+
+html.smartolt-night body.smartolt-site .btn-danger {
+  background-color: #ef4444 !important;
+  border-color: #ef4444 !important;
+}
+
+html.smartolt-night body.smartolt-site .btn-danger:hover,
+html.smartolt-night body.smartolt-site .btn-danger:focus {
+  background-color: #dc2626 !important;
+  border-color: #dc2626 !important;
+}
+
+html.smartolt-night body.smartolt-site .btn .fa,
+html.smartolt-night body.smartolt-site .btn .glyphicon {
+  text-shadow: none;
+}
+
+/* Pagination — list pages + filter chips (diagnostics etc.) */
+html.smartolt-night body.smartolt-site .pagination > li > a,
+html.smartolt-night body.smartolt-site .pagination > li > span {
+  background-color: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  color: #e2e8f0 !important;
+}
+
+html.smartolt-night body.smartolt-site .pagination > li > a:hover,
+html.smartolt-night body.smartolt-site .pagination > li > a:focus,
+html.smartolt-night body.smartolt-site .pagination > li > span:hover,
+html.smartolt-night body.smartolt-site .pagination > li > span:focus {
+  background-color: rgba(29, 139, 255, 0.18) !important;
+  border-color: rgba(29, 139, 255, 0.35) !important;
+  color: #fff !important;
+}
+
+html.smartolt-night body.smartolt-site .pagination > .active > a,
+html.smartolt-night body.smartolt-site .pagination > .active > span,
+html.smartolt-night body.smartolt-site .pagination > .active > a:hover,
+html.smartolt-night body.smartolt-site .pagination > .active > span:hover,
+html.smartolt-night body.smartolt-site .pagination > .active > a:focus,
+html.smartolt-night body.smartolt-site .pagination > .active > span:focus,
+html.smartolt-night body.smartolt-site .pagination > li.active > a,
+html.smartolt-night body.smartolt-site .pagination > li.active > span {
+  background-color: rgba(29, 139, 255, 0.28) !important;
+  border-color: rgba(29, 139, 255, 0.45) !important;
+  color: #fff !important;
+}
+
+html.smartolt-night body.smartolt-site .pagination > .disabled > a,
+html.smartolt-night body.smartolt-site .pagination > .disabled > span,
+html.smartolt-night body.smartolt-site .pagination > .disabled > a:hover,
+html.smartolt-night body.smartolt-site .pagination > .disabled > span:hover,
+html.smartolt-night body.smartolt-site .pagination > .disabled > a:focus,
+html.smartolt-night body.smartolt-site .pagination > .disabled > span:focus {
+  background-color: rgba(255, 255, 255, 0.03) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  color: rgba(255, 255, 255, 0.35) !important;
+}
+
+html.smartolt-night body.smartolt-site .pon-type-filter .pagination > li > span {
+  border-radius: 4px;
+}
+
+html.smartolt-night body.smartolt-site .list-group-item {
+  background: transparent;
+  border-color: rgba(255, 255, 255, 0.08);
+  color: #e2e8f0;
+}
+
+html.smartolt-night body.smartolt-site a.list-group-item:hover,
+html.smartolt-night body.smartolt-site a.list-group-item:focus {
+  background: rgba(29, 139, 255, 0.12);
+  color: #fff;
+}
+
+/* OLT View — main tabs + IP pool sub-pills */
+html.smartolt-night body.smartolt-site .nav-tabs {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+html.smartolt-night body.smartolt-site .nav-tabs > li > a {
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px 6px 0 0;
+  color: rgba(255, 255, 255, 0.62);
+  margin-right: 2px;
+}
+
+html.smartolt-night body.smartolt-site .nav-tabs > li > a:hover,
+html.smartolt-night body.smartolt-site .nav-tabs > li > a:focus {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.08);
+  color: #e2e8f0;
+}
+
+html.smartolt-night body.smartolt-site .nav-tabs > li.active > a,
+html.smartolt-night body.smartolt-site .nav-tabs > li.active > a:hover,
+html.smartolt-night body.smartolt-site .nav-tabs > li.active > a:focus {
+  background: rgba(29, 139, 255, 0.18);
+  border: 1px solid rgba(29, 139, 255, 0.42);
+  border-bottom-color: transparent;
+  color: #f1f5f9;
+}
+
+html.smartolt-night body.smartolt-site .nav-tabs-compact > li.active > a,
+html.smartolt-night body.smartolt-site .nav-tabs-compact > li.active > a:hover,
+html.smartolt-night body.smartolt-site .nav-tabs-compact > li.active > a:focus {
+  box-shadow: inset 0 -2px 0 #3b82f6;
+}
+
+/* OLT View — ACL tab diagram + description */
+html.smartolt-night body.smartolt-site #acl > .col-xs-12 > .col-xs-12 > span,
+html.smartolt-night body.smartolt-site .acl-diagram-wrap {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+html.smartolt-night body.smartolt-site #acl > .col-xs-12 > .col-xs-12 > span {
+  display: block;
+  line-height: 1.55;
+  margin-top: 4px;
+}
+
+html.smartolt-night body.smartolt-site .acl-diagram-wrap {
+  margin-top: 16px;
+  padding: 0 0 8px;
+}
+
+html.smartolt-night body.smartolt-site .acl-diagram {
+  display: inline-block;
+  margin: 0 auto;
+  max-width: min(100%, 920px);
+}
+
+html.smartolt-night body.smartolt-site #acl h4 {
+  color: #e2e8f0;
+}
+
+/* Configured ONU — batch actions panel */
+html.smartolt-night body.smartolt-site #batch-actions-container .panel-title a,
+html.smartolt-night body.smartolt-site #batch-actions-container .panel-title strong {
+  color: #e2e8f0 !important;
+}
+
+html.smartolt-night body.smartolt-site #batch-actions-container .panel-title a:hover,
+html.smartolt-night body.smartolt-site #batch-actions-container .panel-title a:focus {
+  color: #fff !important;
+}
+
+html.smartolt-night body.smartolt-site #batch-actions-container .batch-action-row,
+html.smartolt-night body.smartolt-site #batch-actions-container .batch-actions-list + .batch-action-row,
+html.smartolt-night body.smartolt-site #batch-actions-container .batch-action-link {
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+html.smartolt-night body.smartolt-site #batch-actions-container .batch-action-link,
+html.smartolt-night body.smartolt-site #batch-actions-container .batch-action-collapsible .batch-action-row-title {
+  color: #e2e8f0 !important;
+}
+
+html.smartolt-night body.smartolt-site #batch-actions-container .batch-action-link:hover,
+html.smartolt-night body.smartolt-site #batch-actions-container .batch-action-collapsible .batch-action-row-title:hover,
+html.smartolt-night body.smartolt-site #batch-actions-container .batch-action-collapsible .batch-action-row-title:focus {
+  background-color: rgba(255, 255, 255, 0.06) !important;
+  color: #8cc8ff !important;
+}
+
+html.smartolt-night body.smartolt-site #batch-actions-container .batch-action-row-content label {
+  color: #cbd5e1 !important;
+}
+
+html.smartolt-night body.smartolt-site #batch-actions-container .batch-action-link.text-danger,
+html.smartolt-night body.smartolt-site #batch-actions-container .batch-action-label.text-danger,
+html.smartolt-night body.smartolt-site #batch-actions-container label.text-danger {
+  color: #fca5a5 !important;
+}
+
+html.smartolt-night body.smartolt-site #batch-actions-container .batch-action-link.text-danger:hover {
+  color: #f87171 !important;
+}
+
+html.smartolt-night body.smartolt-site #batch-actions-container .batch-action-link.batch-action-disabled,
+html.smartolt-night body.smartolt-site #batch-actions-container .batch-action-link.batch-action-disabled:hover {
+  background-color: transparent !important;
+  color: rgba(255, 255, 255, 0.35) !important;
+}
+
+html.smartolt-night body.smartolt-site #batch-actions-container .batch-action-olt-msg,
+html.smartolt-night body.smartolt-site #batch-actions-container .batch-action-help,
+html.smartolt-night body.smartolt-site #batch-actions-container .olt-required-msg {
+  color: rgba(255, 255, 255, 0.52) !important;
+}
+
+html.smartolt-night body.smartolt-site #batch-actions-container #active-batch-tasks {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+html.smartolt-night body.smartolt-site #batch-actions-container .batch-tasks-table th {
+  background-color: rgba(255, 255, 255, 0.06) !important;
+  color: rgba(255, 255, 255, 0.62) !important;
+}
+
+html.smartolt-night body.smartolt-site #batch-actions-container .batch-tasks-table .task-progress .progress-text {
+  color: #e2e8f0 !important;
+}
+
+html.smartolt-night body.smartolt-site #batch-actions-count.badge-primary,
+html.smartolt-night body.smartolt-site #batch-actions-container .badge-primary {
+  background-color: rgba(59, 130, 246, 0.35) !important;
+  color: #bfdbfe !important;
+}
+
+html.smartolt-night body.smartolt-site #batch-actions-container hr {
+  border-top-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+html.smartolt-night body.smartolt-site #batch-actions-container .progress,
+html.smartolt-night body.smartolt-site #batch-actions-container .progress-sm {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  box-shadow: none;
+}
+
+html.smartolt-night body.smartolt-site #batch-actions-container .task-progress-bar .progress-bar-success,
+html.smartolt-night body.smartolt-site #batch-actions-container .progress-bar-success {
+  background-color: #22c55e !important;
+}
+
+html.smartolt-night body.smartolt-site #batch-actions-container .task-progress-bar .progress-bar-danger,
+html.smartolt-night body.smartolt-site #batch-actions-container .progress-bar-danger {
+  background-color: #ef4444 !important;
+}
+
+/* Select / multiselect — flex layout so caret stays visible (day + night) */
+body.smartolt-site .multiselect-native-select .btn-group,
+body.smartolt-site .btn-group.full-width,
+body.smartolt-site .btn-group:has(> .multiselect),
+body.smartolt-site .btn-group:has(> button.multiselect) {
+  overflow: visible !important;
+}
+
+body.smartolt-site .btn-group .multiselect.dropdown-toggle,
+body.smartolt-site button.multiselect.dropdown-toggle,
+body.smartolt-site div.multiselect.dropdown-toggle {
+  align-items: center;
+  box-sizing: border-box;
+  display: flex !important;
+  gap: 8px;
+  height: 45px;
+  line-height: 1.42857143;
+  overflow: visible;
+  padding: 10px 12px !important;
+  position: relative;
+  width: 100%;
+}
+
+body.smartolt-site .multiselect-selected-text {
+  flex: 1 1 auto;
+  align-items: center;
+  display: block;
+  line-height: 1.42857143;
+  margin: 0 !important;
+  max-width: none !important;
+  min-height: 1.42857143em;
+  min-width: 0;
+  overflow: hidden;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: auto !important;
+}
+
+body.smartolt-site .multiselect.dropdown-toggle .caret,
+body.smartolt-site button.multiselect .caret {
+  flex: 0 0 auto;
+  margin: 0 !important;
+  position: static !important;
+  top: auto !important;
+  transform: none;
+}
+
+/* Compact selects — input-sm, batch actions only (reports/tasks uses full height below) */
+body.smartolt-site select.form-control.input-sm,
+body.smartolt-site select.form-control.form-control-sm,
+body.smartolt-site #batch-actions-container .multiselect.dropdown-toggle,
+body.smartolt-site #batch-actions-container button.multiselect.dropdown-toggle,
+body.smartolt-site .multiselect.input-sm,
+body.smartolt-site button.multiselect.input-sm {
+  gap: 6px;
+  height: 30px;
+  line-height: 18px;
+  padding: 6px 10px !important;
+}
+
+body.smartolt-site select.form-control.input-sm,
+body.smartolt-site select.form-control.form-control-sm {
+  padding: 6px 30px 6px 10px;
+}
+
+html.smartolt-night body.smartolt-site select.form-control.input-sm,
+html.smartolt-night body.smartolt-site select.form-control.form-control-sm {
+  padding: 6px 30px 6px 10px;
+}
+
+body.smartolt-site .multiselect.input-sm .multiselect-selected-text,
+body.smartolt-site #batch-actions-container .multiselect-selected-text {
+  line-height: 18px;
+  min-height: 18px;
+}
+
+/* Reports / Tasks — full-size filters (match Configured WAN mode / native selects) */
+body.smartolt-site form.tasks select.form-control,
+body.smartolt-site form.tasks input.form-control,
+body.smartolt-site form.tasks .btn-group .multiselect.dropdown-toggle,
+body.smartolt-site form.tasks button.multiselect.dropdown-toggle,
+body.smartolt-site form.tasks div.multiselect.dropdown-toggle {
+  box-sizing: border-box;
+  font-size: 15px;
+  height: 45px !important;
+  line-height: 1.42857143;
+  min-height: 45px;
+  padding: 10px 15px !important;
+}
+
+body.smartolt-site form.tasks .btn-group .multiselect.dropdown-toggle,
+body.smartolt-site form.tasks button.multiselect.dropdown-toggle,
+body.smartolt-site form.tasks div.multiselect.dropdown-toggle {
+  align-items: center;
+  display: flex !important;
+}
+
+body.smartolt-site form.tasks .multiselect-selected-text {
+  line-height: 1.42857143;
+  min-height: 1.42857143em;
+}
+
+body.smartolt-site form.tasks .btn-group.input-190,
+body.smartolt-site form.tasks .btn-group.input-100 {
+  vertical-align: middle;
+}
+
+/* Configured / Diagnostics filter bar — keep multiselect toggles same height as native selects */
+body.smartolt-site .form-inline.configured .filters-row select.form-control:not(.input-sm),
+body.smartolt-site .form-inline.configured #more-filters-section select.form-control:not(.input-sm),
+body.smartolt-site .form-inline.configured #svlan-cvlan-filters-row select.form-control:not(.input-sm),
+body.smartolt-site .form-inline.configured .filters-row .multiselect.dropdown-toggle,
+body.smartolt-site .form-inline.configured .filters-row button.multiselect.dropdown-toggle,
+body.smartolt-site .form-inline.configured .filters-row div.multiselect.dropdown-toggle,
+body.smartolt-site .form-inline.configured #more-filters-section .multiselect.dropdown-toggle,
+body.smartolt-site .form-inline.configured #more-filters-section button.multiselect.dropdown-toggle,
+body.smartolt-site .form-inline.configured #more-filters-section div.multiselect.dropdown-toggle,
+body.smartolt-site .form-inline.configured #svlan-cvlan-filters-row .multiselect.dropdown-toggle,
+body.smartolt-site .form-inline.configured #svlan-cvlan-filters-row button.multiselect.dropdown-toggle,
+body.smartolt-site .form-inline.configured #svlan-cvlan-filters-row div.multiselect.dropdown-toggle {
+  box-sizing: border-box;
+  font-size: 15px;
+  height: 45px !important;
+  line-height: 1.42857143;
+  min-height: 45px;
+  padding: 10px 15px !important;
+}
+
+body.smartolt-site .form-inline.configured .filters-row .multiselect.dropdown-toggle,
+body.smartolt-site .form-inline.configured .filters-row button.multiselect.dropdown-toggle,
+body.smartolt-site .form-inline.configured .filters-row div.multiselect.dropdown-toggle,
+body.smartolt-site .form-inline.configured #more-filters-section .multiselect.dropdown-toggle,
+body.smartolt-site .form-inline.configured #more-filters-section button.multiselect.dropdown-toggle,
+body.smartolt-site .form-inline.configured #more-filters-section div.multiselect.dropdown-toggle,
+body.smartolt-site .form-inline.configured #svlan-cvlan-filters-row .multiselect.dropdown-toggle,
+body.smartolt-site .form-inline.configured #svlan-cvlan-filters-row button.multiselect.dropdown-toggle,
+body.smartolt-site .form-inline.configured #svlan-cvlan-filters-row div.multiselect.dropdown-toggle {
+  align-items: center;
+  display: flex !important;
+}
+
+body.smartolt-site .form-inline.configured .filters-row .multiselect-selected-text,
+body.smartolt-site .form-inline.configured #more-filters-section .multiselect-selected-text,
+body.smartolt-site .form-inline.configured #svlan-cvlan-filters-row .multiselect-selected-text {
+  line-height: 1.42857143;
+  min-height: 1.42857143em;
+}
+
+/* Night mode — multiselect toggles & dropdown lists (filters, batch actions, etc.) */
+html.smartolt-night body.smartolt-site .multiselect.dropdown-toggle,
+html.smartolt-night body.smartolt-site button.multiselect.dropdown-toggle {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  box-shadow: none !important;
+  color: #f1f5f9 !important;
+}
+
+html.smartolt-night body.smartolt-site .btn-group.open .multiselect.dropdown-toggle,
+html.smartolt-night body.smartolt-site .btn-group.open button.multiselect.dropdown-toggle {
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2) !important;
+}
+
+html.smartolt-night body.smartolt-site .multiselect.dropdown-toggle .caret,
+html.smartolt-night body.smartolt-site button.multiselect .caret {
+  border-top-color: rgba(255, 255, 255, 0.55);
+}
+
+html.smartolt-night body.smartolt-site .multiselect-selected-text {
+  color: #f1f5f9;
+}
+
+html.smartolt-night body.smartolt-site .multiselect-container.dropdown-menu {
+  background: #0b1528 !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45) !important;
+}
+
+html.smartolt-night body.smartolt-site .multiselect-container.dropdown-menu > li > a {
+  color: #e2e8f0;
+  padding: 0 !important;
+}
+
+html.smartolt-night body.smartolt-site .multiselect-container.dropdown-menu > li > a > label {
+  color: inherit;
+  cursor: pointer;
+  display: block;
+  font-weight: 400;
+  margin: 0;
+  padding: 8px 16px 8px 38px !important;
+}
+
+html.smartolt-night body.smartolt-site .multiselect-container.dropdown-menu > li > a > label > input[type="checkbox"],
+html.smartolt-night body.smartolt-site .multiselect-container.dropdown-menu > li > a > label > input[type="radio"] {
+  accent-color: #3b82f6;
+  margin-left: -20px;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+html.smartolt-night body.smartolt-site .multiselect-container > li.multiselect-all > a > label {
+  font-weight: 600;
+}
+
+html.smartolt-night body.smartolt-site .multiselect-container > li.multiselect-group > a > label {
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.55);
+  font-weight: 600;
+  padding: 6px 16px !important;
+}
+
+html.smartolt-night body.smartolt-site .multiselect-container.dropdown-menu > li > a:hover,
+html.smartolt-night body.smartolt-site .multiselect-container.dropdown-menu > li > a:focus,
+html.smartolt-night body.smartolt-site .multiselect-container.dropdown-menu > li.active > a {
+  background: rgba(29, 139, 255, 0.18) !important;
+  color: #fff !important;
+}
+
+html.smartolt-night body.smartolt-site form.tasks .text-blue,
+html.smartolt-night body.smartolt-site #tasks_list .text-blue {
+  color: #7ec3ff !important;
+}
+
+/* Unconfigured ONU — auto-actions panel */
+html.smartolt-night body.smartolt-site #accordion_tasks .panel-title a {
+  color: #e2e8f0 !important;
+}
+
+html.smartolt-night body.smartolt-site #accordion_tasks .panel-title a:hover,
+html.smartolt-night body.smartolt-site #accordion_tasks .panel-title a:focus {
+  color: #fff !important;
+}
+
+html.smartolt-night body.smartolt-site #accordion_tasks #active-tasks-container .table th {
+  background-color: rgba(255, 255, 255, 0.06) !important;
+  color: rgba(255, 255, 255, 0.62) !important;
+}
+
+html.smartolt-night body.smartolt-site #accordion_tasks .active-tasks-refresh-hint {
+  color: rgba(255, 255, 255, 0.52) !important;
+}
+
+html.smartolt-night body.smartolt-site #accordion_tasks .progress,
+html.smartolt-night body.smartolt-site #accordion_tasks .task-progress-bar {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  box-shadow: none;
+}
+
+html.smartolt-night body.smartolt-site #accordion_tasks .task-progress-bar .progress-bar-success {
+  background-color: #22c55e !important;
+}
+
+html.smartolt-night body.smartolt-site #accordion_tasks .task-progress-bar .progress-bar-danger {
+  background-color: #ef4444 !important;
+}
+
+html.smartolt-night body.smartolt-site #accordion_tasks .label-green {
+  background-color: rgba(34, 197, 94, 0.25) !important;
+  color: #86efac !important;
+}
+
+html.smartolt-night body.smartolt-site #accordion_tasks .text-green {
+  color: #86efac !important;
+}
+
+html.smartolt-night body.smartolt-site #accordion_tasks .text-red {
+  color: #fca5a5 !important;
+}
+
+html.smartolt-night body.smartolt-site .more-filters-panel {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+html.smartolt-night body.smartolt-site .more-filters-toggle-row a {
+  color: #8cc8ff !important;
+}
+
+html.smartolt-night body.smartolt-site .more-filters-toggle-row a:hover {
+  color: #bfdbfe !important;
+}
+
+/* Unconfigured ONUs — OLT result blocks */
+html.smartolt-night body.smartolt-site #unconfigured_div .text-muted,
+html.smartolt-night body.smartolt-site #gpon_epon_unconfigured .text-muted,
+html.smartolt-night body.smartolt-site #existingUnconfiguredOnus .text-muted {
+  color: rgba(255, 255, 255, 0.52) !important;
+}
+
+html.smartolt-night body.smartolt-site #unconfigured_div .text-blue,
+html.smartolt-night body.smartolt-site #gpon_epon_unconfigured .text-blue,
+html.smartolt-night body.smartolt-site #existingUnconfiguredOnus .text-blue {
+  color: #7ec3ff !important;
+}
+
+html.smartolt-night body.smartolt-site #existingUnconfiguredOnus .refresh-single-olt:hover,
+html.smartolt-night body.smartolt-site #gpon_epon_unconfigured .refresh-single-olt:hover {
+  color: #bfdbfe !important;
+}
+
+html.smartolt-night body.smartolt-site #existingUnconfiguredOnus .refresh-single-olt.disabled,
+html.smartolt-night body.smartolt-site #gpon_epon_unconfigured .refresh-single-olt.disabled {
+  color: rgba(255, 255, 255, 0.28) !important;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+html.smartolt-night body.smartolt-site #existingUnconfiguredOnus [id^="gpon-epon-unconfigured-"] {
+  background: rgba(15, 26, 46, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  color: #e2e8f0;
+  margin-bottom: 16px;
+  padding: 16px 18px 10px;
+}
+
+html.smartolt-night body.smartolt-site #existingUnconfiguredOnus [id^="gpon-epon-unconfigured-"] h4 {
+  color: #f1f5f9;
+  margin-top: 0;
+}
+
+html.smartolt-night body.smartolt-site #existingUnconfiguredOnus [id^="gpon-epon-unconfigured-"] h4 .btn-link {
+  color: #8cc8ff;
+}
+
+html.smartolt-night body.smartolt-site #existingUnconfiguredOnus [id^="gpon-epon-unconfigured-"] h4 .btn-link:hover,
+html.smartolt-night body.smartolt-site #existingUnconfiguredOnus [id^="gpon-epon-unconfigured-"] h4 .btn-link:focus {
+  color: #b8dcff;
+}
+
+html.smartolt-night body.smartolt-site #existingUnconfiguredOnus [id^="gpon-epon-unconfigured-"] hr {
+  border-top-color: rgba(255, 255, 255, 0.1) !important;
+  margin: 14px 0 0;
+}
+
+html.smartolt-night body.smartolt-site #existingUnconfiguredOnus [id^="gpon-epon-unconfigured-"] .table {
+  margin-bottom: 0;
+}
+
+html.smartolt-night body.smartolt-site #existingUnconfiguredOnus [id^="gpon-epon-unconfigured-"] .label-info {
+  background-color: rgba(59, 130, 246, 0.25) !important;
+  color: #bfdbfe !important;
+}
+
+html.smartolt-night body.smartolt-site #existingUnconfiguredOnus [id^="gpon-epon-unconfigured-"] .onu-type-add {
+  color: #8cc8ff;
+}
+
+html.smartolt-night body.smartolt-site #gpon_epon_unconfigured_loading h3,
+html.smartolt-night body.smartolt-site #unconfigured_div hr {
+  border-top-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+html.smartolt-night body.smartolt-site #gpon_epon_unconfigured_loading h3 {
+  color: #e2e8f0;
+}
+
+html.smartolt-night body.smartolt-site #ip_pool_pills {
+  border-bottom-color: rgba(255, 255, 255, 0.12);
+}
+
+html.smartolt-night body.smartolt-site #ip_pool_pills > li > a {
+  background: rgba(255, 255, 255, 0.04) !important;
+  box-shadow: none !important;
+}
+
+html.smartolt-night body.smartolt-site #ip_pool_pills > li.scope-mgmt > a,
+html.smartolt-night body.smartolt-site #ip_pool_pills > li.scope-mgmt > a:focus {
+  background: rgba(0, 100, 200, 0.1) !important;
+  border-color: rgba(0, 100, 200, 0.55) !important;
+  color: #7ec3ff !important;
+}
+
+html.smartolt-night body.smartolt-site #ip_pool_pills > li.scope-internet > a,
+html.smartolt-night body.smartolt-site #ip_pool_pills > li.scope-internet > a:focus {
+  background: rgba(68, 152, 66, 0.1) !important;
+  border-color: rgba(68, 152, 66, 0.55) !important;
+  color: #86efac !important;
+}
+
+html.smartolt-night body.smartolt-site #ip_pool_pills > li.scope-voip > a,
+html.smartolt-night body.smartolt-site #ip_pool_pills > li.scope-voip > a:focus {
+  background: rgba(110, 46, 160, 0.12) !important;
+  border-color: rgba(110, 46, 160, 0.55) !important;
+  color: #c4a7e7 !important;
+}
+
+html.smartolt-night body.smartolt-site #ip_pool_pills > li.scope-mgmt > a:hover {
+  background: rgba(0, 100, 200, 0.18) !important;
+  border-color: rgba(0, 100, 200, 0.72) !important;
+  color: #b8dcff !important;
+}
+
+html.smartolt-night body.smartolt-site #ip_pool_pills > li.scope-internet > a:hover {
+  background: rgba(68, 152, 66, 0.18) !important;
+  border-color: rgba(68, 152, 66, 0.72) !important;
+  color: #bbf7d0 !important;
+}
+
+html.smartolt-night body.smartolt-site #ip_pool_pills > li.scope-voip > a:hover {
+  background: rgba(110, 46, 160, 0.2) !important;
+  border-color: rgba(110, 46, 160, 0.72) !important;
+  color: #ddd6fe !important;
+}
+
+html.smartolt-night body.smartolt-site #ip_pool_pills > li.scope-mgmt.active > a,
+html.smartolt-night body.smartolt-site #ip_pool_pills > li.scope-mgmt.active > a:focus,
+html.smartolt-night body.smartolt-site #ip_pool_pills > li.scope-mgmt.active > a:hover {
+  background: #0064c8 !important;
+  border-color: #0064c8 !important;
+  color: #fff !important;
+}
+
+html.smartolt-night body.smartolt-site #ip_pool_pills > li.scope-internet.active > a,
+html.smartolt-night body.smartolt-site #ip_pool_pills > li.scope-internet.active > a:focus,
+html.smartolt-night body.smartolt-site #ip_pool_pills > li.scope-internet.active > a:hover {
+  background: #449842 !important;
+  border-color: #449842 !important;
+  color: #fff !important;
+}
+
+html.smartolt-night body.smartolt-site #ip_pool_pills > li.scope-voip.active > a,
+html.smartolt-night body.smartolt-site #ip_pool_pills > li.scope-voip.active > a:focus,
+html.smartolt-night body.smartolt-site #ip_pool_pills > li.scope-voip.active > a:hover {
+  background: #6e2ea0 !important;
+  border-color: #6e2ea0 !important;
+  color: #fff !important;
+}
+
+/* ONU IP Pools — override inline light styles from onu_mgmt_ips_*.php */
+html.smartolt-night body.smartolt-site #ip_pools .ip-pools-table > thead > tr > th {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border-bottom-color: rgba(255, 255, 255, 0.12) !important;
+  color: #e2e8f0 !important;
+}
+
+html.smartolt-night body.smartolt-site #ip_pools .pool-row.pool-even > td,
+html.smartolt-night body.smartolt-site #ip_pools .pool-detail-row.pool-even > td {
+  background: rgba(255, 255, 255, 0.03) !important;
+}
+
+html.smartolt-night body.smartolt-site #ip_pools .pool-row.pool-odd > td,
+html.smartolt-night body.smartolt-site #ip_pools .pool-detail-row.pool-odd > td {
+  background: rgba(255, 255, 255, 0.06) !important;
+}
+
+html.smartolt-night body.smartolt-site #ip_pools .pool-row:hover > td,
+html.smartolt-night body.smartolt-site #ip_pools .pool-row.expanded > td {
+  background: rgba(29, 139, 255, 0.12) !important;
+}
+
+html.smartolt-night body.smartolt-site #ip_pools .pool-row .btn-pool-toggle {
+  color: #cbd5e1 !important;
+}
+
+html.smartolt-night body.smartolt-site #ip_pools .pool-detail-row > td {
+  border-top-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+html.smartolt-night body.smartolt-site #ip_pools .alloc-bar {
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+html.smartolt-night body.smartolt-site #ip_pools .alloc-text {
+  color: rgba(255, 255, 255, 0.55) !important;
+}
+
+html.smartolt-night body.smartolt-site #ip_pools .status-pill.warning {
+  color: #422006 !important;
+}
+
+html.smartolt-night body.smartolt-site #ip_pools .dns-mixed {
+  color: #fca5a5 !important;
+}
+
+html.smartolt-night body.smartolt-site #ip_pools .reserved-tag,
+html.smartolt-night body.smartolt-site #ip_pools .reserved-pill {
+  background: rgba(245, 158, 11, 0.16) !important;
+  border-color: rgba(245, 158, 11, 0.42) !important;
+  color: #fcd34d !important;
+}
+
+html.smartolt-night body.smartolt-site #ip_pools .cidr-chip-mgmt {
+  background: rgba(0, 100, 200, 0.14) !important;
+  border-color: rgba(0, 100, 200, 0.38) !important;
+  color: #7ec3ff !important;
+}
+
+html.smartolt-night body.smartolt-site #ip_pools .cidr-chip-internet {
+  background: rgba(68, 152, 66, 0.14) !important;
+  border-color: rgba(68, 152, 66, 0.38) !important;
+  color: #86efac !important;
+}
+
+html.smartolt-night body.smartolt-site #ip_pools .cidr-chip-voip {
+  background: rgba(110, 46, 160, 0.16) !important;
+  border-color: rgba(110, 46, 160, 0.38) !important;
+  color: #c4a7e7 !important;
+}
+
+html.smartolt-night body.smartolt-site #ip_pools .shared-olts-chip {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border-color: rgba(255, 255, 255, 0.14) !important;
+  color: #8cc8ff !important;
+}
+
+html.smartolt-night body.smartolt-site #ip_pools .ip-pool-section-header h3 {
+  color: #f1f5f9 !important;
+}
+
+html.smartolt-night body.smartolt-site #ip_pools .ip-pool-section-header h3.scope-mgmt {
+  color: #7ec3ff !important;
+}
+
+html.smartolt-night body.smartolt-site #ip_pools .ip-pool-section-header h3.scope-internet {
+  color: #86efac !important;
+}
+
+html.smartolt-night body.smartolt-site #ip_pools .ip-pool-section-header h3.scope-voip {
+  color: #c4a7e7 !important;
+}
+
+html.smartolt-night body.smartolt-site #ip_pools .ip-pool-section-header .section-help {
+  color: rgba(255, 255, 255, 0.55) !important;
+}
+
+html.smartolt-night body.smartolt-site #ip_pools .pool-summary-item {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+html.smartolt-night body.smartolt-site #ip_pools .pool-summary-item .summary-label {
+  color: rgba(255, 255, 255, 0.52) !important;
+}
+
+html.smartolt-night body.smartolt-site #ip_pools .pool-summary-item .summary-value {
+  color: #f1f5f9 !important;
+}
+
+html.smartolt-night body.smartolt-site #ip_pools .pool-summary-item.warning .summary-value {
+  color: #fca5a5 !important;
+}
+
+html.smartolt-night body.smartolt-site #ip_pools .ip-pool-empty,
+html.smartolt-night body.smartolt-site #ip_pools .ip-empty-state {
+  background: rgba(255, 255, 255, 0.03) !important;
+  border-color: rgba(255, 255, 255, 0.16) !important;
+}
+
+html.smartolt-night body.smartolt-site #ip_pools .ip-pool-empty h4,
+html.smartolt-night body.smartolt-site #ip_pools .ip-empty-state h4,
+html.smartolt-night body.smartolt-site #ip_pools .ip-edit-inline-header h3,
+html.smartolt-night body.smartolt-site #ip_pools .pool-edit-inline-header h3,
+html.smartolt-night body.smartolt-site #ip_pools .ip-delete-inline-header h3,
+html.smartolt-night body.smartolt-site #ip_pools .per-ip-header h3 {
+  color: #f1f5f9 !important;
+}
+
+html.smartolt-night body.smartolt-site #ip_pools .ip-pool-empty p,
+html.smartolt-night body.smartolt-site #ip_pools .ip-empty-state p,
+html.smartolt-night body.smartolt-site #ip_pools .ip-edit-inline-header h3 small,
+html.smartolt-night body.smartolt-site #ip_pools .ip-delete-inline-header h3 small {
+  color: rgba(255, 255, 255, 0.55) !important;
+}
+
+html.smartolt-night body.smartolt-site #ip_pools .pool-detail-grid .pool-meta dt,
+html.smartolt-night body.smartolt-site #ip_pools .pool-existing-ranges dt {
+  color: rgba(255, 255, 255, 0.52) !important;
+}
+
+html.smartolt-night body.smartolt-site #ip_pools .pool-detail-grid .pool-meta dd,
+html.smartolt-night body.smartolt-site #ip_pools .pool-existing-ranges dd {
+  color: #e2e8f0;
+}
+
+html.smartolt-night body.smartolt-site #ip_pools .pool-detail-grid .pool-meta .cidr-heatmap-svg {
+  border-color: rgba(255, 255, 255, 0.14) !important;
+}
+
+html.smartolt-night body.smartolt-site #ip_pools .pool-meta-shared {
+  border-top-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+html.smartolt-night body.smartolt-site #ip_pools .pool-meta-shared .siblings-header dt {
+  color: #e2e8f0 !important;
+}
+
+html.smartolt-night body.smartolt-site #ip_pools .pool-meta-shared .siblings-header dt .fa-share-alt {
+  color: #8cc8ff !important;
+}
+
+html.smartolt-night body.smartolt-site #ip_pools .pool-meta-shared .siblings-body .total-row {
+  border-top-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+html.smartolt-night body.smartolt-site #ip_pools .pool-meta-shared .siblings-body .total-row dt,
+html.smartolt-night body.smartolt-site #ip_pools .pool-meta-shared .siblings-body .total-row dd {
+  color: #8cc8ff !important;
+}
+
+html.smartolt-night body.smartolt-site #ip_pools .pool-detail-actions {
+  border-top-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+html.smartolt-night body.smartolt-site #ip_pools .pool-readonly-row,
+html.smartolt-night body.smartolt-site #ip_pools .ip-delete-list {
+  background: rgba(255, 255, 255, 0.04) !important;
+  color: #e2e8f0;
+}
+
+html.smartolt-night body.smartolt-site #ip_pools .pool-readonly-row .label-text {
+  color: rgba(255, 255, 255, 0.55) !important;
+}
+
+html.smartolt-night body.smartolt-site #ip_pools .network-summary {
+  background: rgba(34, 197, 94, 0.12) !important;
+  border-color: rgba(34, 197, 94, 0.32) !important;
+}
+
+html.smartolt-night body.smartolt-site #ip_pools .network-summary.invalid {
+  background: rgba(239, 68, 68, 0.12) !important;
+  border-color: rgba(239, 68, 68, 0.32) !important;
+}
+
+html.smartolt-night body.smartolt-site #ip_pools .network-summary .summary-title {
+  color: #86efac !important;
+}
+
+html.smartolt-night body.smartolt-site #ip_pools .network-summary.invalid .summary-title {
+  color: #fca5a5 !important;
+}
+
+html.smartolt-night body.smartolt-site #ip_pools .network-summary dt {
+  color: rgba(255, 255, 255, 0.55) !important;
+}
+
+html.smartolt-night body.smartolt-site #ip_pools .network-summary dd {
+  color: #e2e8f0;
+}
+
+html.smartolt-night body.smartolt-site #ip_pools .extend-summary {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+html.smartolt-night body.smartolt-site #ip_pools .extend-summary-item span,
+html.smartolt-night body.smartolt-site #ip_pools .extend-summary-item small,
+html.smartolt-night body.smartolt-site #ip_pools .field-help,
+html.smartolt-night body.smartolt-site #ip_pools .pool-config-note {
+  color: rgba(255, 255, 255, 0.55) !important;
+}
+
+html.smartolt-night body.smartolt-site #ip_pools .extend-summary-item strong {
+  color: #f1f5f9 !important;
+}
+
+html.smartolt-night body.smartolt-site #ip_pools .pool-details-toggle-inline i.fa,
+html.smartolt-night body.smartolt-site #ip_pools .pool-details-toggle-inline:hover i.fa {
+  color: #8cc8ff !important;
+}
+
+html.smartolt-night body.smartolt-site #ip_pools .reserved-toggle-row {
+  background: rgba(245, 158, 11, 0.08) !important;
+  border-color: rgba(245, 158, 11, 0.28) !important;
+  color: #e2e8f0;
+}
+
+html.smartolt-night body.smartolt-site #ip_pools .reserved-toggle-row.is-reserved {
+  background: rgba(245, 158, 11, 0.14) !important;
+  border-color: rgba(245, 158, 11, 0.42) !important;
+}
+
+html.smartolt-night body.smartolt-site #ip_pools .normalize-banner {
+  background: rgba(245, 158, 11, 0.12) !important;
+  border-color: rgba(245, 158, 11, 0.35) !important;
+  color: #fcd34d !important;
+}
+
+html.smartolt-night body.smartolt-site #ip_pools .shared-subnet-banner {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  color: #e2e8f0 !important;
+}
+
+html.smartolt-night body.smartolt-site #ip_pools .shared-subnet-banner h4 {
+  color: #f1f5f9 !important;
+}
+
+html.smartolt-night body.smartolt-site #ip_pools .shared-subnet-banner h4 .fa-share-alt {
+  color: rgba(255, 255, 255, 0.55) !important;
+}
+
+html.smartolt-night body.smartolt-site #ip_pools .shared-subnet-banner th,
+html.smartolt-night body.smartolt-site #ip_pools .shared-subnet-banner td {
+  border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+  color: #e2e8f0;
+}
+
+html.smartolt-night body.smartolt-site #ip_pools .shared-subnet-banner th {
+  color: rgba(255, 255, 255, 0.55) !important;
+}
+
+html.smartolt-night body.smartolt-site #ip_pools .shared-subnet-banner tr.current-olt td {
+  background: rgba(29, 139, 255, 0.1) !important;
+}
+
+html.smartolt-night body.smartolt-site #ip_pools .shared-subnet-banner tr.combined td {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border-top-color: rgba(255, 255, 255, 0.18) !important;
+}
+
+html.smartolt-night body.smartolt-site #ip_pools .shared-subnet-banner a {
+  color: #8cc8ff !important;
+}
+
+html.smartolt-night body.smartolt-site #ip_pools tr.allocated-row,
+html.smartolt-night body.smartolt-site #ip_pools tr.allocated-row td {
+  background: rgba(255, 255, 255, 0.03) !important;
+  color: rgba(255, 255, 255, 0.55) !important;
+}
+
+html.smartolt-night body.smartolt-site #ip_pools .allocated-tag {
+  color: rgba(255, 255, 255, 0.55) !important;
+}
+
+html.smartolt-night body.smartolt-site #ip_pools .table-striped > tbody > tr.selected-ip-row > td,
+html.smartolt-night body.smartolt-site #ip_pools .table-striped > tbody > tr.selected-ip-row:nth-of-type(odd) > td {
+  background: rgba(29, 139, 255, 0.14) !important;
+}
+
+html.smartolt-night body.smartolt-site #ip_pools .ip-filter-bar,
+html.smartolt-night body.smartolt-site #ip_pools .bulk-toolbar {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+html.smartolt-night body.smartolt-site #ip_pools .ip-filter-bar label,
+html.smartolt-night body.smartolt-site #ip_pools .ip-pager .pager-info {
+  color: rgba(255, 255, 255, 0.55) !important;
+}
+
+html.smartolt-night body.smartolt-site #ip_pools .ip-sort-link {
+  color: #e2e8f0 !important;
+}
+
+html.smartolt-night body.smartolt-site #ip_pools .bulk-toolbar .selected-count {
+  color: #f1f5f9 !important;
+}
+
+html.smartolt-night body.smartolt-site #ip_pools .bulk-toolbar input[type="text"] {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  color: #f1f5f9 !important;
+}
+
+html.smartolt-night body.smartolt-site #ip_pools .bulk-toolbar.has-selection {
+  background: rgba(245, 158, 11, 0.1) !important;
+  border-color: rgba(245, 158, 11, 0.32) !important;
+}
+
+html.smartolt-night body.smartolt-site #ip_pools .bulk-toolbar:not(.has-selection) {
+  background: rgba(255, 255, 255, 0.02) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+html.smartolt-night body.smartolt-site #ip_pools .bulk-toolbar:not(.has-selection) .selected-count {
+  color: rgba(255, 255, 255, 0.45) !important;
+}
+
+html.smartolt-night body.smartolt-site #ip_pools .ip-pager .pagination > li > a,
+html.smartolt-night body.smartolt-site #ip_pools .ip-pager .pagination > li > span {
+  color: #cbd5e1 !important;
+  background-color: rgba(255, 255, 255, 0.04) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+html.smartolt-night body.smartolt-site #ip_pools .ip-pager .pagination > li > a:hover,
+html.smartolt-night body.smartolt-site #ip_pools .ip-pager .pagination > li > a:focus {
+  color: #fff !important;
+  background-color: rgba(29, 139, 255, 0.22) !important;
+  border-color: rgba(29, 139, 255, 0.45) !important;
+}
+
+html.smartolt-night body.smartolt-site #ip_pools .ip-pager .pagination > .active > a,
+html.smartolt-night body.smartolt-site #ip_pools .ip-pager .pagination > .active > span,
+html.smartolt-night body.smartolt-site #ip_pools .ip-pager .pagination > .active > a:hover,
+html.smartolt-night body.smartolt-site #ip_pools .ip-pager .pagination > .active > span:hover,
+html.smartolt-night body.smartolt-site #ip_pools .ip-pager .pagination > .active > a:focus,
+html.smartolt-night body.smartolt-site #ip_pools .ip-pager .pagination > .active > span:focus {
+  color: #f1f5f9 !important;
+  background-color: rgba(29, 139, 255, 0.18) !important;
+  border-color: rgba(29, 139, 255, 0.42) !important;
+}
+
+html.smartolt-night body.smartolt-site #ip_pools .ip-pager .pagination > .disabled > a,
+html.smartolt-night body.smartolt-site #ip_pools .ip-pager .pagination > .disabled > span,
+html.smartolt-night body.smartolt-site #ip_pools .ip-pager .pagination > .disabled > a:hover,
+html.smartolt-night body.smartolt-site #ip_pools .ip-pager .pagination > .disabled > a:focus {
+  color: rgba(255, 255, 255, 0.35) !important;
+  background-color: rgba(255, 255, 255, 0.02) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+html.smartolt-night body.smartolt-site #ip_pools svg circle[stroke="#e9ecef"] {
+  stroke: rgba(255, 255, 255, 0.14) !important;
+}
+
+html.smartolt-night body.smartolt-site #ip_pools svg text[fill="#333"],
+html.smartolt-night body.smartolt-site #ip_pools svg text[fill="#666"] {
+  fill: #cbd5e1 !important;
+}
+
+/* Authorization presets — edit/add/common + listing guide */
+html.smartolt-night body.smartolt-site #preset_form .section-panel,
+html.smartolt-night body.smartolt-site .section-panel {
+  background: rgba(15, 26, 46, 0.92) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 8px;
+}
+
+html.smartolt-night body.smartolt-site #preset_form .section-panel-header,
+html.smartolt-night body.smartolt-site .section-panel-header {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 7px 7px 0 0;
+}
+
+html.smartolt-night body.smartolt-site #preset_form .section-panel-header h4,
+html.smartolt-night body.smartolt-site .section-panel-header h4 {
+  color: #f1f5f9 !important;
+}
+
+html.smartolt-night body.smartolt-site #preset_form .section-panel-header h4 i,
+html.smartolt-night body.smartolt-site .section-panel-header h4 i {
+  color: #8cc8ff !important;
+}
+
+html.smartolt-night body.smartolt-site #preset_form .section-panel-body,
+html.smartolt-night body.smartolt-site .section-panel-body {
+  color: #e2e8f0;
+}
+
+html.smartolt-night body.smartolt-site #preset_form .subsection-title {
+  color: #e2e8f0 !important;
+  border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+html.smartolt-night body.smartolt-site #preset_form .subsection-title i {
+  color: #8cc8ff !important;
+}
+
+html.smartolt-night body.smartolt-site #preset_form .text-muted,
+html.smartolt-night body.smartolt-site #preset_form .help-block,
+html.smartolt-night body.smartolt-site #preset_form .form-control-static.text-muted {
+  color: rgba(255, 255, 255, 0.52) !important;
+}
+
+html.smartolt-night body.smartolt-site #preset_form code,
+html.smartolt-night body.smartolt-site #presetsTable code,
+html.smartolt-night body.smartolt-site .pattern-var-link {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  color: #b8dcff !important;
+  padding: 1px 5px;
+}
+
+html.smartolt-night body.smartolt-site .pattern-var-link:hover {
+  background: rgba(29, 139, 255, 0.18) !important;
+  color: #dbeafe !important;
+}
+
+html.smartolt-night body.smartolt-site #preset_form .radio-inline,
+html.smartolt-night body.smartolt-site #preset_form .radio label,
+html.smartolt-night body.smartolt-site #preset_form .checkbox label {
+  color: #e2e8f0;
+}
+
+html.smartolt-night body.smartolt-site #preset_form #existing_default_warning {
+  color: #fcd34d;
+}
+
+html.smartolt-night body.smartolt-site #preset_form #wifi_not_available_message_common .alert {
+  background: rgba(59, 130, 246, 0.12) !important;
+  border: 1px solid rgba(59, 130, 246, 0.28) !important;
+  color: #cbd5e1 !important;
+}
+
+html.smartolt-night body.smartolt-site #preset_form .form-actions {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  margin-top: 8px;
+  padding-top: 16px;
+}
+
+html.smartolt-night body.smartolt-site #preset_form .form-actions .btn-link {
+  color: #8cc8ff;
+}
+
+html.smartolt-night body.smartolt-site #preset_form .form-actions .btn-link:hover,
+html.smartolt-night body.smartolt-site #preset_form .form-actions .btn-link:focus {
+  color: #b8dcff;
+}
+
+html.smartolt-night body.smartolt-site .getting-started-panel {
+  background: rgba(15, 26, 46, 0.92) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 8px;
+}
+
+html.smartolt-night body.smartolt-site .getting-started-header {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+html.smartolt-night body.smartolt-site .getting-started-header:hover {
+  background: rgba(29, 139, 255, 0.1) !important;
+}
+
+html.smartolt-night body.smartolt-site .getting-started-header h4,
+html.smartolt-night body.smartolt-site .getting-started-header .fa-chevron-down,
+html.smartolt-night body.smartolt-site .getting-started-header .fa-chevron-up,
+html.smartolt-night body.smartolt-site .hide-guide-link {
+  color: #e2e8f0 !important;
+}
+
+html.smartolt-night body.smartolt-site .hide-guide-link:hover {
+  color: #fff !important;
+  opacity: 1 !important;
+}
+
+html.smartolt-night body.smartolt-site .getting-started-body {
+  background: transparent !important;
+}
+
+html.smartolt-night body.smartolt-site .guide-section-title {
+  color: #f1f5f9 !important;
+  border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+html.smartolt-night body.smartolt-site .guide-section-title .fa {
+  color: #8cc8ff !important;
+}
+
+html.smartolt-night body.smartolt-site .steps-list li,
+html.smartolt-night body.smartolt-site .step-number,
+html.smartolt-night body.smartolt-site .steps-list strong {
+  color: #e2e8f0 !important;
+}
+
+html.smartolt-night body.smartolt-site #presetsTable .text-muted {
+  color: rgba(255, 255, 255, 0.52) !important;
+}
+
+html.smartolt-night body.smartolt-site #presetsTable .label-default {
+  background: rgba(255, 255, 255, 0.12) !important;
+  color: #e2e8f0 !important;
+}
+
+html.smartolt-night body.smartolt-site #presetsTable .label-primary {
+  background: rgba(59, 130, 246, 0.28) !important;
+  color: #bfdbfe !important;
+}
+
+html.smartolt-night body.smartolt-site #presetsTable .label-info {
+  background: rgba(56, 189, 248, 0.22) !important;
+  color: #bae6fd !important;
+}
+
+html.smartolt-night body.smartolt-site #presetsTable .label-success {
+  background: rgba(34, 197, 94, 0.22) !important;
+  color: #bbf7d0 !important;
+}
+
+html.smartolt-night body.smartolt-site #presetsTable .sort-link {
+  color: #e2e8f0;
+}
+
+html.smartolt-night body.smartolt-site #presetsTable .sort-link:hover,
+html.smartolt-night body.smartolt-site #presetsTable .sort-link:focus {
+  color: #8cc8ff;
+}
+
+/* Waiting for OLT loading overlay */
+html.smartolt-night .loadingoverlay {
+  background-color: rgba(6, 22, 47, 0.82) !important;
+}
+
+html.smartolt-night #waitingOLT {
+  color: #e2e8f0 !important;
+  font-size: clamp(22px, 4vw, 42px) !important;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  margin-top: 12px;
+  text-shadow: 0 2px 16px rgba(0, 0, 0, 0.45);
+  white-space: nowrap;
+}
+
+html.smartolt-night .loadingoverlay_fontawesome {
+  color: #8cc8ff !important;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
+}
+
+/* ——— Tables (diagnostics-style, app-wide) ——— */
+
+html.smartolt-night body.smartolt-site .table {
+  background: transparent;
+  border-collapse: separate;
+  border-spacing: 0;
+  color: #e2e8f0;
+  margin-bottom: 0;
+}
+
+/* SmartOLT often uses <tr><th> without <thead> — including inside tbody */
+html.smartolt-night body.smartolt-site .table > thead > tr > th,
+html.smartolt-night body.smartolt-site .table > tbody > tr:first-child > th,
+html.smartolt-night body.smartolt-site .table > tr > th,
+html.smartolt-night body.smartolt-site #existingUnconfiguredOnus .table th,
+html.smartolt-night body.smartolt-site #gpon_epon_unconfigured .table th,
+html.smartolt-night body.smartolt-site #accordion_tasks .table th {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-top: 0 !important;
+  color: rgba(255, 255, 255, 0.62) !important;
+  font-size: 12px;
+  font-weight: 600;
+  vertical-align: middle;
+}
+
+html.smartolt-night body.smartolt-site .table > tbody > tr > td,
+html.smartolt-night body.smartolt-site .table > tbody > tr:not(:first-child) > th,
+html.smartolt-night body.smartolt-site .table > tr > td {
+  border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: #e2e8f0;
+  vertical-align: middle;
+}
+
+/* Neutralize table-bordered — match diagnostics transparency */
+html.smartolt-night body.smartolt-site .table-bordered {
+  border: 0 !important;
+}
+
+html.smartolt-night body.smartolt-site .table-bordered > thead > tr > th,
+html.smartolt-night body.smartolt-site .table-bordered > tbody > tr > th,
+html.smartolt-night body.smartolt-site .table-bordered > tbody > tr > td,
+html.smartolt-night body.smartolt-site .table-bordered > tr > th,
+html.smartolt-night body.smartolt-site .table-bordered > tr > td {
+  border-left: 0 !important;
+  border-right: 0 !important;
+}
+
+html.smartolt-night body.smartolt-site .table-bordered > thead > tr > th,
+html.smartolt-night body.smartolt-site .table-bordered > tr > th {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
+}
+
+html.smartolt-night body.smartolt-site .table-striped > tbody > tr:nth-of-type(odd) {
+  background-color: rgba(255, 255, 255, 0.03);
+}
+
+html.smartolt-night body.smartolt-site .table-striped > tbody > tr:nth-of-type(even) {
+  background-color: transparent;
+}
+
+html.smartolt-night body.smartolt-site .table-striped > tbody > tr:hover,
+html.smartolt-night body.smartolt-site .table-hover > tbody > tr:hover {
+  background-color: rgba(29, 139, 255, 0.12) !important;
+}
+
+html.smartolt-night body.smartolt-site .table-striped > tbody > tr:hover > td,
+html.smartolt-night body.smartolt-site .table-striped > tbody > tr:hover > th,
+html.smartolt-night body.smartolt-site .table-hover > tbody > tr:hover > td,
+html.smartolt-night body.smartolt-site .table-hover > tbody > tr:hover > th {
+  color: #f8fafc;
+}
+
+html.smartolt-night body.smartolt-site .table .sort-link {
+  color: rgba(255, 255, 255, 0.62);
+  text-decoration: none;
+}
+
+html.smartolt-night body.smartolt-site .table .sort-link:hover,
+html.smartolt-night body.smartolt-site .table .sort-link:focus {
+  color: #fff;
+  text-decoration: none;
+}
+
+html.smartolt-night body.smartolt-site .table a {
+  color: #8cc8ff;
+}
+
+html.smartolt-night body.smartolt-site .table a:hover,
+html.smartolt-night body.smartolt-site .table a:focus {
+  color: #b8dcff;
+  text-decoration: none;
+}
+
+/* Don't let table link color wash out action buttons (View/Edit/Del) */
+html.smartolt-night body.smartolt-site .table a.btn,
+html.smartolt-night body.smartolt-site .table a.btn:hover,
+html.smartolt-night body.smartolt-site .table a.btn:focus,
+html.smartolt-night body.smartolt-site .panel-body a.btn,
+html.smartolt-night body.smartolt-site .panel-body a.btn:hover,
+html.smartolt-night body.smartolt-site .panel-body a.btn:focus,
+html.smartolt-night body.smartolt-site .tab-content a.btn,
+html.smartolt-night body.smartolt-site .tab-content a.btn:hover,
+html.smartolt-night body.smartolt-site .tab-content a.btn:focus {
+  color: #fff !important;
+  font-weight: 600;
+  text-decoration: none;
+  text-shadow: none;
+}
+
+html.smartolt-night body.smartolt-site .table .btn-link {
+  color: #8cc8ff;
+}
+
+html.smartolt-night body.smartolt-site .table .btn-link:hover,
+html.smartolt-night body.smartolt-site .table .btn-link:focus {
+  color: #b8dcff;
+}
+
+html.smartolt-night body.smartolt-site .panel > .table,
+html.smartolt-night body.smartolt-site .panel > .table-responsive > .table,
+html.smartolt-night body.smartolt-site .panel .table {
+  background: transparent;
+}
+
+html.smartolt-night body.smartolt-site .table-responsive {
+  background: transparent;
+  border: 0;
+}
+
+html.smartolt-night body.smartolt-site .table-responsive > .table-bordered {
+  border: 0 !important;
+}
+
+html.smartolt-night body.smartolt-site dl .table {
+  margin-top: 4px;
+}
+
+/* ONU view — inner rows without separators (stripe-only) */
+html.smartolt-night body.smartolt-site .onu-wrapper .table > tbody > tr > td,
+html.smartolt-night body.smartolt-site .onu-wrapper .table > tbody > tr > th,
+html.smartolt-night body.smartolt-site .onu-wrapper .table-bordered > tbody > tr > td,
+html.smartolt-night body.smartolt-site .onu-wrapper .table-bordered > tbody > tr > th {
+  border-top: 0 !important;
+  border-bottom: 0 !important;
+}
+
+/* ——— Modals ——— */
+
+html.smartolt-night .modal-backdrop {
+  z-index: 1040 !important;
+}
+
+html.smartolt-night .modal-backdrop.in {
+  opacity: 0.78;
+}
+
+html.smartolt-night .modal {
+  z-index: 1050 !important;
+}
+
+html.smartolt-night .modal-content {
+  background: #0d1829;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 12px;
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.04);
+  color: #e2e8f0;
+  overflow: hidden;
+}
+
+/* Multiselect lists must extend outside modal — overflow:hidden on .modal-content clips them */
+html.smartolt-night .modal:has(.btn-group.open) .modal-content,
+html.smartolt-night .onu-ui-modal.onu-ui-modal-dropdowns .modal-content {
+  overflow: visible;
+}
+
+html.smartolt-night .modal:has(.btn-group.open) .modal-body,
+html.smartolt-night .onu-ui-modal.onu-ui-modal-dropdowns .modal-body {
+  overflow: visible;
+}
+
+html.smartolt-night .modal:has(.btn-group.open) .form-group,
+html.smartolt-night .modal:has(.btn-group.open) [class*="col-"],
+html.smartolt-night .modal:has(.btn-group.open) .multiselect-native-select {
+  overflow: visible;
+}
+
+html.smartolt-night .modal-header {
+  background: rgba(255, 255, 255, 0.04);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 16px 20px;
+}
+
+html.smartolt-night .modal-header h3,
+html.smartolt-night .modal-header h4,
+html.smartolt-night .modal-header .modal-title {
+  color: #f1f5f9;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.35;
+  margin: 0;
+}
+
+html.smartolt-night .modal-body {
+  background: #0d1829 !important;
+  color: #e2e8f0;
+  padding: 18px 20px;
+}
+
+html.smartolt-night .modal-body p,
+html.smartolt-night .modal-body .onu-modal-confirm-text {
+  color: #cbd5e1;
+}
+
+html.smartolt-night .modal-footer {
+  background: rgba(255, 255, 255, 0.03) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 14px 20px;
+}
+
+html.smartolt-night .modal .close,
+html.smartolt-night .modal-header .close,
+html.smartolt-night .panel-default .close {
+  color: rgba(255, 255, 255, 0.55) !important;
+  opacity: 1;
+  text-shadow: none;
+}
+
+html.smartolt-night .modal .close:hover,
+html.smartolt-night .modal .close:focus,
+html.smartolt-night .modal-header .close:hover,
+html.smartolt-night .modal-header .close:focus {
+  color: #fff !important;
+  opacity: 1;
+}
+
+html.smartolt-night .close {
+  color: rgba(255, 255, 255, 0.55);
+  opacity: 1;
+  text-shadow: none;
+}
+
+html.smartolt-night .close:hover,
+html.smartolt-night .close:focus {
+  color: #fff;
+  opacity: 1;
+}
+
+/* ONU modals — override inline light styles from onu_view.php */
+html.smartolt-night .onu-ui-modal .modal-body {
+  background: #0d1829 !important;
+}
+
+html.smartolt-night .onu-ui-modal .modal-footer {
+  background: rgba(255, 255, 255, 0.03) !important;
+}
+
+html.smartolt-night .onu-ui-modal .onu-modal-section {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 8px;
+}
+
+html.smartolt-night .onu-ui-modal .onu-modal-section-heading {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+html.smartolt-night .onu-ui-modal .onu-modal-section-heading h4 {
+  color: #f1f5f9;
+}
+
+html.smartolt-night .onu-ui-modal .onu-modal-section-heading.scope-wan h4,
+html.smartolt-night .onu-ui-modal .onu-modal-section-heading.scope-wan i {
+  color: #6ee7a0;
+}
+
+html.smartolt-night .onu-ui-modal .onu-modal-section-heading.scope-vlan h4,
+html.smartolt-night .onu-ui-modal .onu-modal-section-heading.scope-vlan i,
+html.smartolt-night .onu-ui-modal .onu-modal-section-heading.scope-port h4,
+html.smartolt-night .onu-ui-modal .onu-modal-section-heading.scope-port i,
+html.smartolt-night .onu-ui-modal .onu-modal-section-heading.scope-onu h4,
+html.smartolt-night .onu-ui-modal .onu-modal-section-heading.scope-onu i,
+html.smartolt-night .onu-ui-modal .onu-modal-section-heading.scope-service h4,
+html.smartolt-night .onu-ui-modal .onu-modal-section-heading.scope-service i,
+html.smartolt-night .onu-ui-modal .onu-modal-section-heading.scope-speed h4,
+html.smartolt-night .onu-ui-modal .onu-modal-section-heading.scope-speed i,
+html.smartolt-night .onu-ui-modal .onu-modal-section-heading.scope-wifi h4,
+html.smartolt-night .onu-ui-modal .onu-modal-section-heading.scope-wifi i {
+  color: #7ec3ff;
+}
+
+html.smartolt-night .onu-ui-modal .onu-modal-section-heading.scope-voip h4,
+html.smartolt-night .onu-ui-modal .onu-modal-section-heading.scope-voip i {
+  color: #c4a7e7;
+}
+
+html.smartolt-night .onu-ui-modal .onu-modal-section-heading.scope-danger h4,
+html.smartolt-night .onu-ui-modal .onu-modal-section-heading.scope-danger i {
+  color: #fca5a5;
+}
+
+html.smartolt-night .onu-ui-modal .onu-modal-section-heading.scope-warning h4,
+html.smartolt-night .onu-ui-modal .onu-modal-section-heading.scope-warning i {
+  color: #fcd34d;
+}
+
+html.smartolt-night .onu-ui-modal .onu-modal-section-heading.scope-success h4,
+html.smartolt-night .onu-ui-modal .onu-modal-section-heading.scope-success i {
+  color: #6ee7a0;
+}
+
+html.smartolt-night #updateMode .wan-details-grid {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+html.smartolt-night #updateMode .wan-details-grid label {
+  color: rgba(255, 255, 255, 0.55) !important;
+}
+
+html.smartolt-night #updateMode .wan-details-grid input.form-control {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  color: #f1f5f9 !important;
+}
+
+html.smartolt-night #updateVlans .attached-vlans-help {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: #cbd5e1 !important;
+}
+
+html.smartolt-night #updateVlans .attached-vlans-help .help-block {
+  color: rgba(255, 255, 255, 0.55);
+}
+
+html.smartolt-night .modal .form-control,
+html.smartolt-night .modal select.form-control,
+html.smartolt-night .modal textarea.form-control {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.15);
+  color: #f1f5f9;
+}
+
+html.smartolt-night .modal select.form-control {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-color: rgba(255, 255, 255, 0.06);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23cbd5e1' d='M2 4.5L6 8.5L10 4.5'/%3E%3C/svg%3E");
+  background-position: right 10px center;
+  background-repeat: no-repeat;
+  color-scheme: dark;
+  padding-right: 30px;
+}
+
+html.smartolt-night .modal select.form-control option,
+html.smartolt-night .modal select.form-control optgroup {
+  background: #0b1528;
+  color: #e2e8f0;
+}
+
+html.smartolt-night .modal select.form-control option:disabled,
+html.smartolt-night .modal select.form-control option[disabled] {
+  background: #0b1528;
+  color: #64748b;
+}
+
+html.smartolt-night .modal .form-control:focus,
+html.smartolt-night .modal select.form-control:focus,
+html.smartolt-night .modal textarea.form-control:focus {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25);
+  color: #fff;
+}
+
+html.smartolt-night .modal .form-control[disabled],
+html.smartolt-night .modal .form-control[readonly],
+html.smartolt-night .modal fieldset[disabled] .form-control {
+  background: rgba(255, 255, 255, 0.03);
+  color: rgba(255, 255, 255, 0.45);
+}
+
+html.smartolt-night .modal label,
+html.smartolt-night .modal .control-label {
+  color: #cbd5e1;
+}
+
+html.smartolt-night .modal .help-block {
+  color: rgba(255, 255, 255, 0.52);
+}
+
+html.smartolt-night .modal .radio-inline,
+html.smartolt-night .modal .radio label,
+html.smartolt-night .modal .checkbox label,
+html.smartolt-night .modal .radio-single {
+  color: #e2e8f0;
+}
+
+html.smartolt-night .modal .only-label {
+  color: rgba(255, 255, 255, 0.45);
+}
+
+html.smartolt-night .modal .btn-link {
+  color: #8cc8ff;
+}
+
+html.smartolt-night .modal .btn-link:hover,
+html.smartolt-night .modal .btn-link:focus {
+  color: #b8dcff;
+}
+
+/* Modal multiselect + dropdown lists */
+html.smartolt-night .modal .multiselect.dropdown-toggle,
+html.smartolt-night .modal button.multiselect,
+html.smartolt-night .onu-ui-modal .multiselect.dropdown-toggle {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  box-shadow: none !important;
+  color: #f1f5f9 !important;
+}
+
+html.smartolt-night .modal .btn-group.open .multiselect.dropdown-toggle,
+html.smartolt-night .onu-ui-modal .btn-group.open .multiselect.dropdown-toggle {
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2) !important;
+}
+
+html.smartolt-night .modal .multiselect.dropdown-toggle .caret,
+html.smartolt-night .onu-ui-modal .multiselect.dropdown-toggle .caret {
+  border-top-color: rgba(255, 255, 255, 0.55);
+}
+
+html.smartolt-night .modal .multiselect-selected-text,
+html.smartolt-night .onu-ui-modal .multiselect-selected-text {
+  color: #f1f5f9;
+}
+
+html.smartolt-night .modal .multiselect-container.dropdown-menu,
+html.smartolt-night .onu-ui-modal .multiselect-container.dropdown-menu,
+html.smartolt-night .onu-ui-modal-dropdowns .multiselect-container.dropdown-menu {
+  background: #0b1528 !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45) !important;
+  padding: 4px 0 !important;
+  z-index: 1060 !important;
+}
+
+html.smartolt-night .modal .multiselect-container.dropdown-menu > li > a,
+html.smartolt-night .onu-ui-modal .multiselect-container.dropdown-menu > li > a {
+  background: transparent !important;
+  color: #e2e8f0 !important;
+  padding: 0 !important;
+}
+
+html.smartolt-night .modal .multiselect-container.dropdown-menu > li > a > label,
+html.smartolt-night .onu-ui-modal .multiselect-container.dropdown-menu > li > a > label {
+  color: #e2e8f0 !important;
+  cursor: pointer;
+  display: block;
+  font-weight: 400;
+  margin: 0 !important;
+  padding: 8px 16px 8px 38px !important;
+}
+
+html.smartolt-night .modal .multiselect-container input[type="checkbox"],
+html.smartolt-night .modal .multiselect-container input[type="radio"],
+html.smartolt-night .onu-ui-modal .multiselect-container input[type="checkbox"],
+html.smartolt-night .onu-ui-modal .multiselect-container input[type="radio"],
+html.smartolt-night .multiselect-container.dropdown-menu > li > a > label > input[type="checkbox"],
+html.smartolt-night .multiselect-container.dropdown-menu > li > a > label > input[type="radio"] {
+  accent-color: #3b82f6;
+  margin-left: -20px;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+html.smartolt-night .modal .multiselect-container.dropdown-menu > li > a:hover,
+html.smartolt-night .modal .multiselect-container.dropdown-menu > li > a:focus,
+html.smartolt-night .modal .multiselect-container.dropdown-menu > li.active > a,
+html.smartolt-night .modal .multiselect-container.dropdown-menu > li.active > a:hover,
+html.smartolt-night .modal .multiselect-container.dropdown-menu > li.active > a:focus,
+html.smartolt-night .onu-ui-modal .multiselect-container.dropdown-menu > li > a:hover,
+html.smartolt-night .onu-ui-modal .multiselect-container.dropdown-menu > li > a:focus,
+html.smartolt-night .onu-ui-modal .multiselect-container.dropdown-menu > li.active > a,
+html.smartolt-night .onu-ui-modal .multiselect-container.dropdown-menu > li.active > a:hover,
+html.smartolt-night .onu-ui-modal .multiselect-container.dropdown-menu > li.active > a:focus {
+  background: rgba(29, 139, 255, 0.18) !important;
+  color: #fff !important;
+}
+
+html.smartolt-night .modal .multiselect-container.dropdown-menu > li > a:hover > label,
+html.smartolt-night .modal .multiselect-container.dropdown-menu > li > a:focus > label,
+html.smartolt-night .modal .multiselect-container.dropdown-menu > li.active > a > label,
+html.smartolt-night .onu-ui-modal .multiselect-container.dropdown-menu > li > a:hover > label,
+html.smartolt-night .onu-ui-modal .multiselect-container.dropdown-menu > li > a:focus > label,
+html.smartolt-night .onu-ui-modal .multiselect-container.dropdown-menu > li.active > a > label {
+  color: #fff !important;
+}
+
+/* Disabled options — muted gray text, same dark bg as active rows */
+html.smartolt-night .multiselect-container.dropdown-menu > li.disabled,
+html.smartolt-night .multiselect-container.dropdown-menu > li.disabled.active {
+  background: transparent !important;
+}
+
+html.smartolt-night .multiselect-container.dropdown-menu > li.disabled > a,
+html.smartolt-night .multiselect-container.dropdown-menu > li.disabled > a:hover,
+html.smartolt-night .multiselect-container.dropdown-menu > li.disabled > a:focus,
+html.smartolt-night .multiselect-container.dropdown-menu > li.disabled.active > a,
+html.smartolt-night .multiselect-container.dropdown-menu > li.disabled.active > a:hover,
+html.smartolt-night .multiselect-container.dropdown-menu > li.disabled.active > a:focus {
+  background: transparent !important;
+  cursor: not-allowed !important;
+  pointer-events: none;
+}
+
+html.smartolt-night .multiselect-container.dropdown-menu > li.disabled > a > label,
+html.smartolt-night .multiselect-container.dropdown-menu > li.disabled.active > a > label {
+  color: #64748b !important;
+  font-weight: 400 !important;
+}
+
+html.smartolt-night .multiselect-container.dropdown-menu > li.disabled > a > label input[type="checkbox"],
+html.smartolt-night .multiselect-container.dropdown-menu > li.disabled > a > label input[type="radio"],
+html.smartolt-night .multiselect-container.dropdown-menu > li.disabled input[type="checkbox"],
+html.smartolt-night .multiselect-container.dropdown-menu > li.disabled input[type="radio"] {
+  appearance: none;
+  -webkit-appearance: none;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1.5px solid rgba(255, 255, 255, 0.28);
+  border-radius: 3px;
+  box-shadow: none;
+  cursor: not-allowed;
+  opacity: 1;
+  pointer-events: none;
+}
+
+html.smartolt-night .multiselect-container.dropdown-menu > li.disabled > a > label input[type="radio"],
+html.smartolt-night .multiselect-container.dropdown-menu > li.disabled input[type="radio"] {
+  border-radius: 50%;
+}
+
+html.smartolt-night .multiselect-container.dropdown-menu > li.disabled > a > label input[type="checkbox"]:checked,
+html.smartolt-night .multiselect-container.dropdown-menu > li.disabled input[type="checkbox"]:checked {
+  background: rgba(100, 116, 139, 0.45) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23cbd5e1'%3E%3Cpath d='M12.2 4.2 6.8 10.3 3.8 7.3l-1.3 1.4 4.3 4.2 6.7-7.5z'/%3E%3C/svg%3E") center/10px no-repeat;
+  border-color: rgba(148, 163, 184, 0.45);
+}
+
+html.smartolt-night .modal .multiselect-container > li.multiselect-all > a > label,
+html.smartolt-night .onu-ui-modal .multiselect-container > li.multiselect-all > a > label {
+  font-weight: 600;
+}
+
+html.smartolt-night .modal .multiselect-container > li.multiselect-group > a > label,
+html.smartolt-night .onu-ui-modal .multiselect-container > li.multiselect-group > a > label {
+  background: rgba(255, 255, 255, 0.04) !important;
+  color: rgba(255, 255, 255, 0.55) !important;
+  font-weight: 600;
+  padding: 6px 16px !important;
+}
+
+html.smartolt-night .modal .multiselect-container .multiselect-filter,
+html.smartolt-night .onu-ui-modal .multiselect-container .multiselect-filter {
+  padding: 8px 10px 6px !important;
+}
+
+html.smartolt-night .modal .multiselect-container .multiselect-filter .input-group,
+html.smartolt-night .onu-ui-modal .multiselect-container .multiselect-filter .input-group {
+  width: 100%;
+}
+
+html.smartolt-night .modal .multiselect-container .input-group-addon,
+html.smartolt-night .onu-ui-modal .multiselect-container .input-group-addon {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  color: rgba(255, 255, 255, 0.55) !important;
+}
+
+html.smartolt-night .modal .multiselect-container .multiselect-search,
+html.smartolt-night .onu-ui-modal .multiselect-container .multiselect-search {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  color: #f1f5f9 !important;
+}
+
+html.smartolt-night .modal .multiselect-container .multiselect-search:focus,
+html.smartolt-night .onu-ui-modal .multiselect-container .multiselect-search:focus {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: #3b82f6 !important;
+  box-shadow: none !important;
+  color: #fff !important;
+}
+
+html.smartolt-night .modal .multiselect-container .multiselect-search::placeholder,
+html.smartolt-night .onu-ui-modal .multiselect-container .multiselect-search::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+html.smartolt-night .modal .multiselect-container .multiselect-clear-filter,
+html.smartolt-night .onu-ui-modal .multiselect-container .multiselect-clear-filter {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+html.smartolt-night .modal .multiselect-container .multiselect-clear-filter:hover,
+html.smartolt-night .modal .multiselect-container .multiselect-clear-filter:focus,
+html.smartolt-night .onu-ui-modal .multiselect-container .multiselect-clear-filter:hover,
+html.smartolt-night .onu-ui-modal .multiselect-container .multiselect-clear-filter:focus {
+  background: rgba(255, 255, 255, 0.12) !important;
+  color: #fff !important;
+}
+
+html.smartolt-night .modal .dropdown-menu {
+  background: #0b1528 !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45) !important;
+  z-index: 1060 !important;
+}
+
+html.smartolt-night .modal .dropdown-menu > li > a {
+  color: #e2e8f0;
+  padding: 8px 16px;
+}
+
+html.smartolt-night .modal .dropdown-menu > li > a:hover,
+html.smartolt-night .modal .dropdown-menu > li > a:focus,
+html.smartolt-night .modal .dropdown-menu > .active > a,
+html.smartolt-night .modal .dropdown-menu > .active > a:hover,
+html.smartolt-night .modal .dropdown-menu > .active > a:focus {
+  background: rgba(29, 139, 255, 0.18) !important;
+  color: #fff !important;
+}
+
+/* Configure Auto Actions modal (#autoActionsModal) — override inline light styles from task_add/task_details */
+html.smartolt-night #autoActionsModal .modal-section-header {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+  margin: -18px -20px 20px !important;
+  padding: 15px 20px !important;
+}
+
+html.smartolt-night #autoActionsModal .modal-section-title {
+  color: #f1f5f9 !important;
+}
+
+html.smartolt-night #autoActionsModal .modal-section-title .fa {
+  color: #7ec3ff;
+}
+
+html.smartolt-night #autoActionsModal .preset-container {
+  background-color: rgba(255, 255, 255, 0.04) !important;
+  border-left-color: #3b82f6 !important;
+}
+
+html.smartolt-night #autoActionsModal .preset-arrow-icon {
+  color: #7ec3ff !important;
+}
+
+html.smartolt-night #autoActionsModal .preset-warning-icon {
+  color: #fbbf24 !important;
+}
+
+html.smartolt-night #autoActionsModal .duration-section {
+  border-top-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+html.smartolt-night #autoActionsModal .more-actions-toggle a {
+  color: #7ec3ff !important;
+}
+
+html.smartolt-night #autoActionsModal .more-actions-toggle a:hover {
+  color: #b8dcff !important;
+}
+
+html.smartolt-night #autoActionsModal .more-actions-section {
+  border-top-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+html.smartolt-night #autoActionsModal .info-icon,
+html.smartolt-night #autoActionsModal .fa-info-circle.text-muted {
+  color: rgba(255, 255, 255, 0.45) !important;
+}
+
+html.smartolt-night #autoActionsModal .text-muted,
+html.smartolt-night #autoActionsModal small.text-muted {
+  color: rgba(255, 255, 255, 0.52) !important;
+}
+
+html.smartolt-night #autoActionsModal .progress-text {
+  color: #e2e8f0;
+}
+
+html.smartolt-night #autoActionsModal .text-green {
+  color: #6ee7b7 !important;
+}
+
+html.smartolt-night #autoActionsModal .text-red {
+  color: #fca5a5 !important;
+}
+
+html.smartolt-night #autoActionsModal .switch .slider {
+  background-color: rgba(255, 255, 255, 0.22);
+}
+
+html.smartolt-night #autoActionsModal .switch input:checked + .slider {
+  background-color: #22c55e;
+}
+
+html.smartolt-night #autoActionsModal .switch .slider:before {
+  background-color: #f8fafc;
+}
+
+html.smartolt-night #autoActionsModal #auto_interval_group .pagination li span,
+html.smartolt-night #autoActionsModal #auto_interval_pagination > li > span {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(34, 197, 94, 0.45);
+  color: #86efac;
+}
+
+html.smartolt-night #autoActionsModal #auto_interval_group .pagination li.active span,
+html.smartolt-night #autoActionsModal #auto_interval_group .pagination li span:hover,
+html.smartolt-night #autoActionsModal #auto_interval_group .pagination li span:focus,
+html.smartolt-night #autoActionsModal #auto_interval_pagination > li.active > span,
+html.smartolt-night #autoActionsModal #auto_interval_pagination > li > span:hover,
+html.smartolt-night #autoActionsModal #auto_interval_pagination > li > span:focus {
+  background-color: rgba(34, 197, 94, 0.28) !important;
+  border-color: #22c55e !important;
+  color: #ecfdf5 !important;
+}
+
+html.smartolt-night #autoActionsModal .task-progress-bar {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  box-shadow: none;
+}
+
+html.smartolt-night #autoActionsModal .task-progress-bar .progress-bar-success {
+  background-color: #22c55e !important;
+}
+
+html.smartolt-night #autoActionsModal .task-progress-bar .progress-bar-danger {
+  background-color: #ef4444 !important;
+}
+
+html.smartolt-night #autoActionsModal .alert-warning {
+  background: rgba(251, 191, 36, 0.14) !important;
+  border-color: rgba(251, 191, 36, 0.32) !important;
+  color: #fde68a !important;
+}
+
+html.smartolt-night #autoActionsModal .alert-danger {
+  background: rgba(248, 113, 113, 0.14) !important;
+  border-color: rgba(248, 113, 113, 0.32) !important;
+  color: #fecaca !important;
+}
+
+html.smartolt-night #autoActionsModal .alert .close {
+  color: inherit !important;
+  opacity: 0.75;
+}
+
+html.smartolt-night #autoActionsModal .btn-group .multiselect.dropdown-toggle,
+html.smartolt-night #autoActionsModal button.multiselect.dropdown-toggle {
+  font-size: 15px;
+  height: 45px !important;
+  line-height: 1.42857143;
+  min-height: 45px;
+  padding: 10px 24px 10px 12px !important;
+}
+
+html.smartolt-night #autoActionsModal .multiselect-selected-text {
+  line-height: 1.42857143;
+  min-height: 1.42857143em;
+}
+
+/* Mgmt IP modal — override inline light styles from onu_voip_mgmt.php */
+html.smartolt-night #updateMgmtIP .modal-body {
+  background: #0d1829 !important;
+}
+
+html.smartolt-night #updateMgmtIP .modal-footer {
+  background: rgba(255, 255, 255, 0.03) !important;
+}
+
+html.smartolt-night #updateMgmtIP .ip-config-section {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 8px;
+}
+
+html.smartolt-night #updateMgmtIP .ip-config-section-heading {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+html.smartolt-night #updateMgmtIP .ip-config-section-heading h4 {
+  color: #f1f5f9;
+}
+
+html.smartolt-night #updateMgmtIP .ip-config-section-heading i {
+  color: rgba(255, 255, 255, 0.55);
+}
+
+html.smartolt-night #updateMgmtIP .ip-config-section-heading.scope-mgmt h4,
+html.smartolt-night #updateMgmtIP .ip-config-section-heading.scope-mgmt i {
+  color: #7ec3ff;
+}
+
+html.smartolt-night #updateMgmtIP .ip-config-section-heading.scope-voip h4,
+html.smartolt-night #updateMgmtIP .ip-config-section-heading.scope-voip i {
+  color: #c4a7e7;
+}
+
+html.smartolt-night #updateMgmtIP .ip-section-meta {
+  color: rgba(255, 255, 255, 0.52);
+}
+
+html.smartolt-night #updateMgmtIP .ip-details-grid {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+html.smartolt-night #updateMgmtIP .ip-details-grid label {
+  color: rgba(255, 255, 255, 0.55) !important;
+}
+
+html.smartolt-night #updateMgmtIP .ip-details-grid input.form-control {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  color: #f1f5f9 !important;
+}
+
+html.smartolt-night #updateMgmtIP .ip-details-grid input.form-control[disabled] {
+  background: rgba(255, 255, 255, 0.03) !important;
+  color: rgba(255, 255, 255, 0.45) !important;
+}
+
+html.smartolt-night #updateMgmtIP .ip-detail-toggle-row .btn-link,
+html.smartolt-night #updateMgmtIP .toggle-text {
+  color: #8cc8ff;
+}
+
+html.smartolt-night #updateMgmtIP .ip-detail-toggle-row .btn-link:hover,
+html.smartolt-night #updateMgmtIP .ip-detail-toggle-row .btn-link:focus,
+html.smartolt-night #updateMgmtIP .toggle-text:hover,
+html.smartolt-night #updateMgmtIP .toggle-text:focus {
+  color: #b8dcff;
+}
+
+html.smartolt-night #updateMgmtIP .help-block,
+html.smartolt-night #updateMgmtIP .help-block a {
+  color: rgba(255, 255, 255, 0.52);
+}
+
+html.smartolt-night #updateMgmtIP .help-block a:hover,
+html.smartolt-night #updateMgmtIP .help-block a:focus {
+  color: #8cc8ff;
+}
+
+html.smartolt-night #updateMgmtIP .control-label a,
+html.smartolt-night #updateMgmtIP label a {
+  color: #8cc8ff;
+}
+
+html.smartolt-night #updateMgmtIP .control-label a:hover,
+html.smartolt-night #updateMgmtIP label a:focus,
+html.smartolt-night #updateMgmtIP label a:hover,
+html.smartolt-night #updateMgmtIP label a:focus {
+  color: #b8dcff;
+}
+
+html.smartolt-night #updateMgmtIP .text-warning,
+html.smartolt-night #updateMgmtIP #mgmt_vlan_pool_warning,
+html.smartolt-night #updateMgmtIP #voip_vlan_pool_warning {
+  color: #fcd34d !important;
+}
+
+html.smartolt-night #updateMgmtIP .input-group .input-group-btn > .copy-ip-sync {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #e2e8f0;
+}
+
+html.smartolt-night #updateMgmtIP .input-group .input-group-btn > .copy-ip-sync:hover,
+html.smartolt-night #updateMgmtIP .input-group .input-group-btn > .copy-ip-sync:focus {
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+}
+
+/* OLT modals — override inline light styles from olt_uplink_info.php */
+html.smartolt-night .olt-ui-modal .modal-body,
+html.smartolt-night #configureUplinkPort.olt-ui-modal .modal-body {
+  background: #0d1829 !important;
+  overflow: visible;
+}
+
+html.smartolt-night .olt-ui-modal .modal-footer,
+html.smartolt-night #configureUplinkPort.olt-ui-modal .modal-footer {
+  background: rgba(255, 255, 255, 0.03) !important;
+}
+
+html.smartolt-night .olt-ui-modal .olt-modal-section,
+html.smartolt-night #configureUplinkPort .olt-modal-section {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 8px;
+}
+
+html.smartolt-night .olt-ui-modal .olt-modal-section-heading,
+html.smartolt-night #configureUplinkPort .olt-modal-section-heading {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+html.smartolt-night .olt-ui-modal .olt-modal-section-heading h4,
+html.smartolt-night #configureUplinkPort .olt-modal-section-heading h4 {
+  color: #f1f5f9 !important;
+}
+
+html.smartolt-night .olt-ui-modal .olt-modal-section-heading i,
+html.smartolt-night #configureUplinkPort .olt-modal-section-heading i {
+  color: #7ec3ff !important;
+}
+
+html.smartolt-night #configurePonPort .modal-body,
+html.smartolt-night #rebuildModal .modal-body {
+  background: #0d1829 !important;
+}
+
+html.smartolt-night #configurePonPort .modal-footer,
+html.smartolt-night #rebuildModal .modal-footer {
+  background: rgba(255, 255, 255, 0.03) !important;
+}
+
+/* ONU view — Get status, TR069 stat, live graph, traffic/signal charts */
+html.smartolt-night body.smartolt-site .onu-wrapper pre.status_container,
+html.smartolt-night body.smartolt-site .onu-wrapper #status {
+  background: rgba(0, 0, 0, 0.25) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 8px;
+  color: #cbd5e1 !important;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Courier New", monospace;
+  font-size: 15px;
+  line-height: 1.6;
+  margin-top: 8px;
+  max-height: none !important;
+  overflow: visible !important;
+  padding: 14px 16px;
+  white-space: pre-wrap;
+}
+
+html.smartolt-night body.smartolt-site .onu-wrapper #status_tr69.status_container {
+  background: transparent;
+  border: 0;
+  margin-top: 8px;
+  max-height: none !important;
+  overflow: visible !important;
+  padding: 0;
+}
+
+html.smartolt-night body.smartolt-site #status_tr69 .tr69.panel,
+html.smartolt-night body.smartolt-site #status_tr69 .tr69.panel-info {
+  background: rgba(15, 26, 46, 0.92);
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  margin-bottom: 8px;
+}
+
+html.smartolt-night body.smartolt-site #status_tr69 .tr69 > .panel-heading {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  color: #e2e8f0 !important;
+  font-size: 15px;
+}
+
+html.smartolt-night body.smartolt-site #status_tr69 .panel-body.tr69data {
+  background: transparent;
+  color: #e2e8f0;
+  font-size: 14px;
+  line-height: 1.55;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+html.smartolt-night body.smartolt-site #status_tr69 .panel-info > .panel-heading {
+  background: rgba(59, 130, 246, 0.14) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  color: #bfdbfe !important;
+  font-size: 15px;
+}
+
+html.smartolt-night body.smartolt-site #status_tr69 code {
+  background: rgba(255, 255, 255, 0.08);
+  color: #f9a8d4;
+  font-size: 14px;
+}
+
+html.smartolt-night body.smartolt-site #status_tr69 .tr69editval,
+html.smartolt-night body.smartolt-site #status_tr69 .form-control.input-sm {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.15);
+  color: #f1f5f9;
+  font-size: 14px;
+  height: 34px;
+}
+
+html.smartolt-night body.smartolt-site .onu-wrapper button.status_buttons.active {
+  opacity: 0.85;
+}
+
+html.smartolt-night body.smartolt-site .onu-wrapper #smartolt_live_graph {
+  background: rgba(15, 26, 46, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 1.55;
+  margin-top: 8px;
+  max-height: none !important;
+  overflow: visible !important;
+  padding: 12px;
+}
+
+html.smartolt-night body.smartolt-site .onu-wrapper .status_buttons {
+  font-size: 14px;
+}
+
+html.smartolt-night body.smartolt-site .onu-wrapper .graphs-container {
+  margin-top: 4px;
+}
+
+html.smartolt-night body.smartolt-site .onu-wrapper .graph-item {
+  background-color: rgba(15, 26, 46, 0.92) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.22) !important;
+}
+
+html.smartolt-night body.smartolt-site .onu-wrapper .toolbar-buttons .btn,
+html.smartolt-night body.smartolt-site .onu-wrapper .legend-icon-btn {
+  color: #8cc8ff !important;
+}
+
+html.smartolt-night body.smartolt-site .onu-wrapper .toolbar-buttons .btn:hover,
+html.smartolt-night body.smartolt-site .onu-wrapper .legend-icon-btn:hover {
+  background: rgba(29, 139, 255, 0.12) !important;
+  color: #b8dcff !important;
+}
+
+html.smartolt-night body.smartolt-site .onu-wrapper .datetime-picker-wrapper input {
+  background-color: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  color: #f1f5f9 !important;
+}
+
+html.smartolt-night body.smartolt-site .onu-wrapper .datetime-picker-wrapper .calendar-icon {
+  color: rgba(255, 255, 255, 0.45);
+}
+
+html.smartolt-night body.smartolt-site .onu-wrapper #onu_traffic_wrap,
+html.smartolt-night body.smartolt-site .onu-wrapper #onu_signal_wrap {
+  background-color: transparent !important;
+}
+
+html.smartolt-night body.smartolt-site .onu-wrapper #onu_traffic_chart,
+html.smartolt-night body.smartolt-site .onu-wrapper #onu_signal_chart {
+  background-color: rgba(0, 0, 0, 0.2) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+}
+
+html.smartolt-night body.smartolt-site .onu-wrapper #onu_traffic_legend,
+html.smartolt-night body.smartolt-site .onu-wrapper #onu_signal_legend {
+  color: #cbd5e1;
+}
+
+html.smartolt-night body.smartolt-site .onu-wrapper #onu_traffic_no_data,
+html.smartolt-night body.smartolt-site .onu-wrapper #onu_signal_no_data {
+  text-align: center;
+  padding: 12px 8px 8px;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+html.smartolt-night body.smartolt-site .onu-wrapper #onu_traffic_no_data img,
+html.smartolt-night body.smartolt-site .onu-wrapper #onu_signal_no_data img {
+  display: none !important;
+}
+
+html.smartolt-night body.smartolt-site .onu-wrapper #onu_traffic_no_data::before,
+html.smartolt-night body.smartolt-site .onu-wrapper #onu_signal_no_data::before {
+  content: "";
+  display: block;
+  width: min(100%, 320px);
+  height: 120px;
+  margin: 0 auto 10px;
+  border-radius: 6px;
+  border: 1px dashed rgba(255, 255, 255, 0.14);
+  background-color: rgba(0, 0, 0, 0.22);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 80' fill='none'%3E%3Crect x='8' y='10' width='144' height='60' rx='6' stroke='%2364748b' stroke-width='1.5' opacity='0.55'/%3E%3Cpath d='M24 58 L48 42 L72 50 L96 32 L120 44 L136 36' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' opacity='0.65'/%3E%3Ccircle cx='36' cy='24' r='4' fill='%2364748b' opacity='0.45'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 150px auto;
+}
+
+html.smartolt-night body.smartolt-site .onu-wrapper #onu_traffic_no_data .text-muted,
+html.smartolt-night body.smartolt-site .onu-wrapper #onu_signal_no_data .text-muted {
+  color: rgba(255, 255, 255, 0.52) !important;
+  font-size: 12px;
+  line-height: 1.45;
+  max-width: 280px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+html.smartolt-night body.smartolt-site .onu-wrapper #onu_traffic_no_data .margin-top,
+html.smartolt-night body.smartolt-site .onu-wrapper #onu_signal_no_data .margin-top {
+  margin-top: 0 !important;
+}
+
+/* Graph thumbnail placeholders — /graphs, dashboard, modals, redirected no_img PNGs */
+html.smartolt-night body.smartolt-site {
+  --smartolt-graph-placeholder-svg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 80' fill='none'%3E%3Crect x='8' y='10' width='144' height='60' rx='6' stroke='%2364748b' stroke-width='1.5' opacity='0.55'/%3E%3Cpath d='M24 58 L48 42 L72 50 L96 32 L120 44 L136 36' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' opacity='0.65'/%3E%3Ccircle cx='36' cy='24' r='4' fill='%2364748b' opacity='0.45'/%3E%3C/svg%3E");
+}
+
+html.smartolt-night body.smartolt-site img.smartolt-graph-placeholder-swapped {
+  display: inline-block !important;
+  max-width: 100%;
+  height: auto;
+  border-radius: 6px;
+}
+
+html.smartolt-night body.smartolt-site img.smartolt-graph-placeholder:not(.smartolt-graph-placeholder-swapped),
+html.smartolt-night body.smartolt-site img[src*="/content/img/no_img"]:not([src*="_night"]) {
+  display: none !important;
+}
+
+html.smartolt-night body.smartolt-site .smartolt-graph-placeholder-host {
+  position: relative;
+}
+
+html.smartolt-night body.smartolt-site .smartolt-graph-placeholder-host::before {
+  content: "";
+  display: block;
+  border-radius: 6px;
+  border: 1px dashed rgba(255, 255, 255, 0.14);
+  background-color: rgba(0, 0, 0, 0.22);
+  background-image: var(--smartolt-graph-placeholder-svg);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 150px auto;
+}
+
+html.smartolt-night body.smartolt-site .smartolt-graph-placeholder-host[data-smartolt-placeholder-size="small"]::before {
+  width: min(100%, 320px);
+  height: 120px;
+}
+
+html.smartolt-night body.smartolt-site .smartolt-graph-placeholder-host[data-smartolt-placeholder-size="dashboard"]::before {
+  width: min(100%, 480px);
+  height: 174px;
+  background-size: 220px auto;
+}
+
+html.smartolt-night body.smartolt-site .smartolt-graph-placeholder-host[data-smartolt-placeholder-size="big"]::before {
+  width: min(100%, 520px);
+  height: 200px;
+  background-size: 240px auto;
+}
+
+html.smartolt-night body.smartolt-site a.smartolt-graph-placeholder-host {
+  display: inline-block;
+  vertical-align: top;
+}
+
+html.smartolt-night body.smartolt-site a.smartolt-graph-placeholder-host:has(> img.img-rounded)::before {
+  border-radius: 6px;
+}
+
+html.smartolt-night body.smartolt-site .panel-body.smartolt-graph-placeholder-host {
+  display: block;
+  text-align: center;
+}
+
+html.smartolt-night body.smartolt-site .panel-body.smartolt-graph-placeholder-host::before {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+html.smartolt-night body.smartolt-site .graphs-modal-body.smartolt-graph-placeholder-host {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 220px;
+  padding: 16px;
+}
+
+html.smartolt-night body.smartolt-site .margin-10.inline-block .smartolt-graph-placeholder-host {
+  margin-top: 4px;
+}
+
+/* jQuery MessageBox — alerts, warnings, confirms (SmartOLT light + night) */
+body.smartolt-site .messagebox_overlay {
+  backdrop-filter: blur(2px);
+}
+
+/* Light mode */
+html:not(.smartolt-night) body.smartolt-site .messagebox_overlay {
+  background-color: rgba(15, 23, 42, 0.42) !important;
+}
+
+html:not(.smartolt-night) body.smartolt-site .messagebox {
+  background-color: #fff !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 12px !important;
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.18), 0 0 0 1px rgba(15, 23, 42, 0.04) !important;
+  color: #1e293b !important;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif !important;
+  font-size: 14px !important;
+  font-weight: 400 !important;
+  line-height: 1.55 !important;
+  min-width: 320px !important;
+}
+
+html:not(.smartolt-night) body.smartolt-site .messagebox_content {
+  color: #334155;
+  font-size: 14px;
+  line-height: 1.55;
+  padding: 22px 24px 0 !important;
+}
+
+html:not(.smartolt-night) body.smartolt-site .messagebox_content:after {
+  height: 22px;
+}
+
+html:not(.smartolt-night) body.smartolt-site .messagebox_content_label {
+  color: #64748b !important;
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 500;
+}
+
+html:not(.smartolt-night) body.smartolt-site .messagebox_content_input {
+  background: #fff !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 6px !important;
+  box-shadow: none !important;
+  color: #0f172a !important;
+  font-size: 14px !important;
+  padding: 8px 10px !important;
+}
+
+html:not(.smartolt-night) body.smartolt-site .messagebox_content_input:hover {
+  border-color: #94a3b8 !important;
+}
+
+html:not(.smartolt-night) body.smartolt-site .messagebox_content_input:focus {
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2) !important;
+}
+
+html:not(.smartolt-night) body.smartolt-site .messagebox_content_error {
+  background-color: #fef2f2 !important;
+  border: 1px solid #fecaca !important;
+  border-radius: 6px !important;
+  color: #b91c1c !important;
+  font-size: 13px;
+  margin-bottom: 0;
+}
+
+html:not(.smartolt-night) body.smartolt-site .messagebox_buttons {
+  background-color: #f8fafc !important;
+  border-top: 1px solid #e2e8f0 !important;
+  border-radius: 0 0 12px 12px !important;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+  padding: 14px 18px 16px !important;
+  text-align: right;
+}
+
+html:not(.smartolt-night) body.smartolt-site .messagebox_buttons button {
+  background-image: none !important;
+  border-radius: 8px !important;
+  box-shadow: none !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  margin: 0 !important;
+  min-width: 88px !important;
+  padding: 8px 16px !important;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+html:not(.smartolt-night) body.smartolt-site .messagebox_buttons .messagebox_button_done {
+  background-color: #2563eb !important;
+  border: 1px solid #2563eb !important;
+  color: #fff !important;
+}
+
+html:not(.smartolt-night) body.smartolt-site .messagebox_buttons .messagebox_button_done:hover {
+  background-color: #1d4ed8 !important;
+  border-color: #1d4ed8 !important;
+  color: #fff !important;
+}
+
+html:not(.smartolt-night) body.smartolt-site .messagebox_buttons .messagebox_button_done:active {
+  background-color: #1e40af !important;
+  border-color: #1e40af !important;
+}
+
+html:not(.smartolt-night) body.smartolt-site .messagebox_buttons .messagebox_button_fail {
+  background-color: #fff !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #475569 !important;
+}
+
+html:not(.smartolt-night) body.smartolt-site .messagebox_buttons .messagebox_button_fail:hover {
+  background-color: #f1f5f9 !important;
+  border-color: #94a3b8 !important;
+  color: #0f172a !important;
+}
+
+html:not(.smartolt-night) body.smartolt-site .messagebox_buttons .messagebox_button_fail:active {
+  background-color: #e2e8f0 !important;
+}
+
+/* Night mode */
+html.smartolt-night body.smartolt-site .messagebox_overlay {
+  background-color: rgba(6, 22, 47, 0.78) !important;
+}
+
+html.smartolt-night body.smartolt-site .messagebox {
+  background-color: #0d1829 !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.04) !important;
+  color: #e2e8f0 !important;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif !important;
+  font-size: 14px !important;
+  font-weight: 400 !important;
+  line-height: 1.55 !important;
+  min-width: 320px !important;
+}
+
+html.smartolt-night body.smartolt-site .messagebox_content {
+  color: #e2e8f0;
+  font-size: 14px;
+  line-height: 1.55;
+  padding: 22px 24px 0 !important;
+}
+
+html.smartolt-night body.smartolt-site .messagebox_content:after {
+  height: 22px;
+}
+
+html.smartolt-night body.smartolt-site .messagebox_content_label {
+  color: #94a3b8 !important;
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 500;
+}
+
+html.smartolt-night body.smartolt-site .messagebox_content_input {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  border-radius: 6px !important;
+  box-shadow: none !important;
+  color: #f1f5f9 !important;
+  font-size: 14px !important;
+  padding: 8px 10px !important;
+}
+
+html.smartolt-night body.smartolt-site .messagebox_content_input:hover {
+  border-color: rgba(255, 255, 255, 0.22) !important;
+}
+
+html.smartolt-night body.smartolt-site .messagebox_content_input:focus {
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25) !important;
+}
+
+html.smartolt-night body.smartolt-site .messagebox_content_error {
+  background: rgba(239, 68, 68, 0.15) !important;
+  border: 1px solid rgba(239, 68, 68, 0.35) !important;
+  border-radius: 6px !important;
+  color: #fca5a5 !important;
+  font-size: 13px;
+  margin-bottom: 0;
+}
+
+html.smartolt-night body.smartolt-site .messagebox_buttons {
+  background: rgba(255, 255, 255, 0.03) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 0 0 12px 12px !important;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+  padding: 14px 18px 16px !important;
+  text-align: right;
+}
+
+html.smartolt-night body.smartolt-site .messagebox_buttons button {
+  background-image: none !important;
+  border-radius: 8px !important;
+  box-shadow: none !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  margin: 0 !important;
+  min-width: 88px !important;
+  padding: 8px 16px !important;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+html.smartolt-night body.smartolt-site .messagebox_buttons .messagebox_button_done {
+  background: #2563eb !important;
+  border: 1px solid #2563eb !important;
+  color: #fff !important;
+}
+
+html.smartolt-night body.smartolt-site .messagebox_buttons .messagebox_button_done:hover {
+  background: #1d4ed8 !important;
+  border-color: #1d4ed8 !important;
+  color: #fff !important;
+}
+
+html.smartolt-night body.smartolt-site .messagebox_buttons .messagebox_button_done:active {
+  background: #1e40af !important;
+  border-color: #1e40af !important;
+}
+
+html.smartolt-night body.smartolt-site .messagebox_buttons .messagebox_button_fail {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  color: #cbd5e1 !important;
+}
+
+html.smartolt-night body.smartolt-site .messagebox_buttons .messagebox_button_fail:hover {
+  background: rgba(255, 255, 255, 0.12) !important;
+  border-color: rgba(255, 255, 255, 0.24) !important;
+  color: #f1f5f9 !important;
+}
+
+html.smartolt-night body.smartolt-site .messagebox_buttons .messagebox_button_fail:active {
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* ——— Dashboard-only ——— */
+
+html.smartolt-night body.smartolt-dashboard .content-wrap {
+  margin: 0 auto;
+  padding: 0 15px 40px;
+}
+
+/* Landing hero background — nextlan.ro .hero (night mode only, fixed, no layout shift) */
+.smartolt-landing-hero-bg {
+  display: none;
+}
+
+html.smartolt-night body.smartolt-site .smartolt-landing-hero-bg {
+  background:
+    radial-gradient(circle at 72% 18%, rgba(29, 139, 255, 0.24), transparent 28%),
+    radial-gradient(circle at 18% 84%, rgba(0, 108, 255, 0.18), transparent 28%),
+    linear-gradient(135deg, var(--navy-950), var(--navy-900) 55%, #031022);
+  display: block;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  position: fixed;
+  z-index: -1;
+}
+
+html.smartolt-night body.smartolt-site .smartolt-landing-hero-bg::before {
+  background-image:
+    linear-gradient(115deg, transparent 0 32%, rgba(29, 139, 255, 0.18) 32.2%, transparent 32.6% 100%),
+    linear-gradient(155deg, transparent 0 45%, rgba(29, 139, 255, 0.13) 45.2%, transparent 45.6% 100%),
+    linear-gradient(25deg, transparent 0 62%, rgba(0, 108, 255, 0.14) 62.1%, transparent 62.5% 100%);
+  content: "";
+  inset: 0;
+  opacity: 0.8;
+  pointer-events: none;
+  position: absolute;
+}
+
+html.smartolt-night body.smartolt-site .smartolt-landing-hero-bg::after {
+  background:
+    linear-gradient(180deg, rgba(6, 22, 47, 0) 0%, rgba(6, 22, 47, 0.55) 100%),
+    radial-gradient(circle at 26% 72%, rgba(29, 139, 255, 0.2), transparent 18%);
+  bottom: 0;
+  content: "";
+  height: 220px;
+  left: 0;
+  pointer-events: none;
+  position: absolute;
+  right: 0;
+}
+
+/* Topbar network overlay — behind navbar, no extra layout height (rework v1) */
+.smartolt-topbar-network {
+  display: none;
+}
+
+html.smartolt-night body.smartolt-site .smartolt-topbar-network {
+  background:
+    radial-gradient(circle at 72% 18%, rgba(29, 139, 255, 0.28), transparent 35%),
+    radial-gradient(circle at 18% 84%, rgba(0, 108, 255, 0.2), transparent 35%),
+    linear-gradient(135deg, var(--navy-950), var(--navy-900) 55%, #031022);
+  display: block;
+  height: var(--smartolt-topbar-height);
+  left: 0;
+  overflow: hidden;
+  pointer-events: none;
+  position: fixed;
+  right: 0;
+  top: 0;
+  z-index: 1029;
+}
+
+html.smartolt-night body.smartolt-site .smartolt-topbar-network::before {
+  background-image:
+    linear-gradient(115deg, transparent 0 32%, rgba(29, 139, 255, 0.18) 32.2%, transparent 32.6% 100%),
+    linear-gradient(155deg, transparent 0 45%, rgba(29, 139, 255, 0.13) 45.2%, transparent 45.6% 100%),
+    linear-gradient(25deg, transparent 0 62%, rgba(0, 108, 255, 0.14) 62.1%, transparent 62.5% 100%);
+  content: "";
+  inset: 0;
+  opacity: 0.85;
+  position: absolute;
+}
+
+html.smartolt-night body.smartolt-site .smartolt-topbar-network-inner {
+  inset: 0;
+  position: absolute;
+}
+
+html.smartolt-night body.smartolt-site .smartolt-topbar-network-lines {
+  height: 100%;
+  left: 0;
+  opacity: 0.9;
+  position: absolute;
+  top: 0;
+  width: 100%;
+}
+
+html.smartolt-night body.smartolt-site .smartolt-topbar-network-lines line {
+  stroke: rgba(29, 139, 255, 0.42);
+  stroke-width: 0.35;
+  vector-effect: non-scaling-stroke;
+}
+
+html.smartolt-night body.smartolt-site .smartolt-topbar-node {
+  background: #1d8bff;
+  border-radius: 999px;
+  box-shadow: 0 0 16px rgba(29, 139, 255, 0.95);
+  height: 6px;
+  opacity: 0.92;
+  position: absolute;
+  width: 6px;
+}
+
+html.smartolt-night body.smartolt-site .smartolt-topbar-node-a { left: 8%; top: 68%; }
+html.smartolt-night body.smartolt-site .smartolt-topbar-node-b { left: 23%; top: 78%; }
+html.smartolt-night body.smartolt-site .smartolt-topbar-node-c { left: 37%; top: 63%; }
+html.smartolt-night body.smartolt-site .smartolt-topbar-node-d { left: 65%; top: 18%; }
+html.smartolt-night body.smartolt-site .smartolt-topbar-node-e { left: 89%; top: 34%; }
+
+html.smartolt-night body.smartolt-dashboard .panel-default,
+html.smartolt-night body.smartolt-dashboard .panel-olt {
+  overflow: visible;
+}
+
+html.smartolt-night body.smartolt-dashboard .panel-default > .panel-heading,
+html.smartolt-night body.smartolt-dashboard .panel-olt > .panel-heading {
+  overflow: visible;
+  position: relative;
+  z-index: 2;
+}
+
+html.smartolt-night body.smartolt-dashboard .panel-heading .panel-heading-button {
+  /* Out of flow + flex-centered so a heading with a dropdown is the same height
+     as a plain text heading (matches modern.css). No transform — it would trap
+     the dropdown z-index. The heading's overflow:visible + z-index above keep
+     the dropdown painting over the panel body. */
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 15px;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  z-index: 3;
+}
+
+html.smartolt-night body.smartolt-dashboard .panel-heading .btn-group.open {
+  z-index: 4;
+}
+
+html.smartolt-night body.smartolt-dashboard .panel-heading-dropdown-toggle {
+  background: transparent !important;
+  background-image: none !important;
+  border: 0 !important;
+  border-radius: 4px !important;
+  box-shadow: none !important;
+  color: rgba(255, 255, 255, 0.52) !important;
+  font-weight: 500;
+  padding: 2px 4px;
+  text-shadow: none;
+}
+
+html.smartolt-night body.smartolt-dashboard .panel-heading-dropdown-toggle:hover,
+html.smartolt-night body.smartolt-dashboard .panel-heading .btn-group.open .panel-heading-dropdown-toggle {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  color: rgba(255, 255, 255, 0.78) !important;
+}
+
+html.smartolt-night body.smartolt-dashboard .panel-heading .btn-group.open .panel-heading-dropdown-toggle {
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+html.smartolt-night body.smartolt-dashboard .panel-heading-dropdown-toggle:focus,
+html.smartolt-night body.smartolt-dashboard .panel-heading-dropdown-toggle:active {
+  background: rgba(255, 255, 255, 0.05) !important;
+  box-shadow: none !important;
+  outline: none;
+}
+
+html.smartolt-night body.smartolt-dashboard .panel-heading-dropdown-toggle .caret {
+  border-top-color: rgba(255, 255, 255, 0.42);
+  margin-left: 3px;
+}
+
+html.smartolt-night body.smartolt-dashboard .panel-heading .dropdown-menu {
+  background: #0b1528;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.28);
+  margin-top: 4px;
+  max-height: 320px;
+  overflow-y: auto;
+  padding: 4px 0;
+  z-index: 1060;
+}
+
+html.smartolt-night body.smartolt-dashboard .panel-heading .dropdown-menu > li > a {
+  color: #e2e8f0;
+  padding: 8px 14px;
+}
+
+html.smartolt-night body.smartolt-dashboard .panel-heading .dropdown-menu > li > a:hover,
+html.smartolt-night body.smartolt-dashboard .panel-heading .dropdown-menu > li > a:focus {
+  background: rgba(29, 139, 255, 0.18);
+  color: #fff;
+}
+
+html.smartolt-night body.smartolt-dashboard .panel-heading .dropdown-menu > li > input.form-control {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.18);
+  box-shadow: none;
+  color: #f1f5f9;
+  margin: 6px 10px 8px;
+  width: calc(100% - 20px);
+}
+
+html.smartolt-night body.smartolt-dashboard .panel-heading .dropdown-menu > li > input.form-control::placeholder {
+  color: rgba(255, 255, 255, 0.45);
+}
+
+html.smartolt-night body.smartolt-dashboard .panel-heading .dropdown-menu > li > input.form-control:focus {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: #3b82f6;
+  color: #fff;
+}
+
+html.smartolt-night body.smartolt-dashboard #selected_olt {
+  color: rgba(255, 255, 255, 0.52);
+}
+
+html.smartolt-night body.smartolt-dashboard .badge-light {
+  background: rgba(29, 139, 255, 0.22);
+  color: #bfdbfe;
+  font-weight: 500;
+}
+
+html:not(.smartolt-night) body.smartolt-dashboard .panel-yellow {
+  margin-bottom: 10.5px !important;
+}
+
+html.smartolt-night body.smartolt-dashboard .table td.date-switch {
+  color: rgba(255, 255, 255, 0.55);
+  cursor: pointer;
+}
+
+html.smartolt-night body.smartolt-dashboard .panel-default > .table-responsive:last-child,
+html.smartolt-night body.smartolt-dashboard .panel-default > .table-responsive {
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
+  overflow: hidden;
+}
+
+html.smartolt-night body.smartolt-dashboard .network-status-chart-wrap {
+  background: transparent !important;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+html.smartolt-night body.smartolt-dashboard #onusStatusesGraph.panel-body {
+  background: transparent !important;
+}
+
+html.smartolt-night body.smartolt-dashboard #onus-statuses-chart {
+  background: transparent !important;
+}
+
+html.smartolt-night body.smartolt-dashboard .network-status-chart-loading,
+html.smartolt-night body.smartolt-dashboard .network-status-chart-empty {
+  color: #94a3b8;
+}
+
+/* ——— Task Monitor ——— */
+
+html.smartolt-night body.smartolt-site #content-wrapper > .container:has(#taskOverview) {
+  /* Extra top offset — fixed navbar + visible page title block */
+  padding-top: 72px;
+}
+
+/* Hide duplicate "Monitor" h2; keep task title visible */
+html.smartolt-night body.smartolt-site .container:has(#taskOverview) > h2:first-child {
+  display: none;
+}
+
+html.smartolt-night body.smartolt-site .container:has(#taskOverview) > div > h2 {
+  color: #f1f5f9;
+  display: block;
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1.25;
+  margin: 0 0 6px;
+}
+
+html.smartolt-night body.smartolt-site .container:has(#taskOverview) > div > h2 small {
+  color: rgba(255, 255, 255, 0.52);
+  font-size: 16px;
+  font-weight: 500;
+}
+
+html.smartolt-night body.smartolt-site .container:has(#taskOverview) > div > .text-muted,
+html.smartolt-night body.smartolt-site .container:has(#taskOverview) .text-muted {
+  color: rgba(255, 255, 255, 0.52);
+}
+
+html.smartolt-night body.smartolt-site .container:has(#taskOverview) .onu-tasks-toolbar label {
+  color: rgba(255, 255, 255, 0.78);
+}
+
+html.smartolt-night body.smartolt-site .metric-card {
+  background: rgba(15, 26, 46, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
+  color: #e2e8f0;
+}
+
+html.smartolt-night body.smartolt-site .metric-card h4 {
+  border-bottom-color: rgba(255, 255, 255, 0.1);
+  color: #f1f5f9;
+}
+
+html.smartolt-night body.smartolt-site .metric-card h4 .pull-right .btn-default {
+  margin-left: 6px;
+}
+
+html.smartolt-night body.smartolt-site .metric-card h5,
+html.smartolt-night body.smartolt-site #taskOverview h5,
+html.smartolt-night body.smartolt-site #adaptiveMetrics h5,
+html.smartolt-night body.smartolt-site #adaptiveCharts h5 {
+  color: #e2e8f0 !important;
+}
+
+/* Health Metrics History — scrollable table (inline light thead + bottom edge) */
+html.smartolt-night body.smartolt-site #adaptiveMetrics .table-responsive {
+  background: rgba(11, 21, 40, 0.96) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+}
+
+html.smartolt-night body.smartolt-site #adaptiveMetrics .table-responsive .table {
+  background: transparent;
+  margin-bottom: 0;
+}
+
+html.smartolt-night body.smartolt-site #adaptiveMetrics .table-responsive thead,
+html.smartolt-night body.smartolt-site #adaptiveMetrics .table-responsive thead[style*="background: #f5f7f8"],
+html.smartolt-night body.smartolt-site #adaptiveMetrics .table-responsive thead[style*="background:#f5f7f8"] {
+  background: rgba(15, 26, 46, 0.98) !important;
+}
+
+html.smartolt-night body.smartolt-site #adaptiveMetrics .table-responsive thead th {
+  background: rgba(15, 26, 46, 0.98) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.72) !important;
+}
+
+html.smartolt-night body.smartolt-site #adaptiveMetrics .table-responsive tbody td {
+  background: transparent !important;
+  border-top-color: rgba(255, 255, 255, 0.06) !important;
+  color: #e2e8f0;
+}
+
+html.smartolt-night body.smartolt-site #adaptiveMetrics .table-responsive tbody > tr:nth-of-type(odd) > td {
+  background: rgba(255, 255, 255, 0.03) !important;
+}
+
+html.smartolt-night body.smartolt-site #adaptiveMetrics .table-responsive tbody > tr:nth-of-type(even) > td {
+  background: transparent !important;
+}
+
+html.smartolt-night body.smartolt-site #adaptiveMetrics .table-responsive tbody > tr:hover > td {
+  background: rgba(29, 139, 255, 0.1) !important;
+}
+
+html.smartolt-night body.smartolt-site #adaptiveMetrics .table-responsive tbody > tr:last-child > td {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+html.smartolt-night body.smartolt-site #adaptiveMetrics .table-responsive .text-danger {
+  color: #fca5a5 !important;
+}
+
+html.smartolt-night body.smartolt-site #adaptiveMetrics .table-responsive .text-success {
+  color: #6ee7b7 !important;
+}
+
+html.smartolt-night body.smartolt-site #adaptiveMetrics .table-responsive .text-warning {
+  color: #fcd34d !important;
+}
+
+html.smartolt-night body.smartolt-site #taskOverview strong,
+html.smartolt-night body.smartolt-site #actionsStatus strong,
+html.smartolt-night body.smartolt-site .action-card strong {
+  color: #f1f5f9;
+}
+
+html.smartolt-night body.smartolt-site #taskOverview small,
+html.smartolt-night body.smartolt-site .action-card small {
+  color: rgba(255, 255, 255, 0.55);
+}
+
+html.smartolt-night body.smartolt-site .action-card {
+  background: rgba(11, 21, 40, 0.88);
+  border-color: rgba(255, 255, 255, 0.1);
+  border-left-color: #3b82f6;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+  color: #e2e8f0;
+}
+
+html.smartolt-night body.smartolt-site .action-card.stopped {
+  border-left-color: rgba(255, 255, 255, 0.35);
+  opacity: 0.92;
+}
+
+html.smartolt-night body.smartolt-site .action-card h5 {
+  color: #f1f5f9;
+}
+
+html.smartolt-night body.smartolt-site .stat-label {
+  color: rgba(255, 255, 255, 0.55);
+}
+
+html.smartolt-night body.smartolt-site .stat-value {
+  color: #e2e8f0;
+}
+
+html.smartolt-night body.smartolt-site .container:has(#taskOverview) .progress {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+html.smartolt-night body.smartolt-site .container:has(#taskOverview) .progress-bar-success {
+  background: linear-gradient(180deg, #34d399 0%, #059669 100%);
+}
+
+html.smartolt-night body.smartolt-site .container:has(#taskOverview) .progress-bar-warning {
+  background: linear-gradient(180deg, #fbbf24 0%, #d97706 100%);
+}
+
+html.smartolt-night body.smartolt-site .container:has(#taskOverview) .progress-bar-danger {
+  background: linear-gradient(180deg, #f87171 0%, #dc2626 100%);
+}
+
+html.smartolt-night body.smartolt-site .label-green {
+  background-color: rgba(52, 211, 153, 0.22);
+  border: 1px solid rgba(52, 211, 153, 0.35);
+  color: #6ee7b7;
+}
+
+html.smartolt-night body.smartolt-site .status-filter-list li {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.14);
+  color: #e2e8f0;
+}
+
+html.smartolt-night body.smartolt-site .status-filter-list li:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+html.smartolt-night body.smartolt-site .status-filter-list li.active {
+  background: rgba(29, 139, 255, 0.32);
+  border-color: rgba(59, 130, 246, 0.55);
+  color: #fff;
+}
+
+html.smartolt-night body.smartolt-site .status-filter-list li.active i,
+html.smartolt-night body.smartolt-site .status-filter-list li.active span {
+  color: #fff !important;
+}
+
+html.smartolt-night body.smartolt-site .adaptive-metric {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+html.smartolt-night body.smartolt-site .adaptive-metric .value {
+  color: #7ec3ff;
+}
+
+html.smartolt-night body.smartolt-site .adaptive-metric .label {
+  color: rgba(255, 255, 255, 0.55);
+}
+
+html.smartolt-night body.smartolt-site .circuit-closed {
+  background: rgba(52, 211, 153, 0.14);
+  border: 1px solid rgba(52, 211, 153, 0.28);
+  color: #6ee7b7;
+}
+
+html.smartolt-night body.smartolt-site .circuit-half-open {
+  background: rgba(251, 191, 36, 0.14);
+  border: 1px solid rgba(251, 191, 36, 0.28);
+  color: #fcd34d;
+}
+
+html.smartolt-night body.smartolt-site .circuit-open {
+  background: rgba(248, 113, 113, 0.14);
+  border: 1px solid rgba(248, 113, 113, 0.28);
+  color: #fca5a5;
+}
+
+html.smartolt-night body.smartolt-site .worker-details,
+html.smartolt-night body.smartolt-site .activity-timeline {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(59, 130, 246, 0.45);
+}
+
+html.smartolt-night body.smartolt-site .worker-detail-label,
+html.smartolt-night body.smartolt-site .activity-summary {
+  color: rgba(255, 255, 255, 0.55);
+}
+
+html.smartolt-night body.smartolt-site .worker-detail-value {
+  color: #e2e8f0;
+}
+
+html.smartolt-night body.smartolt-site .worker-detail-value.highlight {
+  color: #7ec3ff;
+}
+
+html.smartolt-night body.smartolt-site .worker-detail-value.countdown {
+  color: #fbbf24;
+}
+
+html.smartolt-night body.smartolt-site .worker-detail-value[style*="color: #e74c3c"],
+html.smartolt-night body.smartolt-site .activity-summary strong[style*="color: #e74c3c"] {
+  color: #f87171 !important;
+}
+
+html.smartolt-night body.smartolt-site .activity-summary strong[style*="color: #95a5a6"] {
+  color: rgba(255, 255, 255, 0.45) !important;
+}
+
+html.smartolt-night body.smartolt-site .chart-card {
+  background: rgba(11, 21, 40, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+}
+
+html.smartolt-night body.smartolt-site .chart-card h5 {
+  color: #e2e8f0;
+}
+
+html.smartolt-night body.smartolt-site .event-log-container {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+html.smartolt-night body.smartolt-site .event-log-entry {
+  background: rgba(15, 26, 46, 0.92);
+  color: #e2e8f0;
+}
+
+html.smartolt-night body.smartolt-site .event-timestamp {
+  color: rgba(255, 255, 255, 0.45);
+}
+
+html.smartolt-night body.smartolt-site .event-message {
+  color: #e2e8f0;
+}
+
+html.smartolt-night body.smartolt-site .event-details {
+  color: rgba(255, 255, 255, 0.45);
+}
+
+html.smartolt-night body.smartolt-site .error-details {
+  background: rgba(248, 113, 113, 0.12);
+  border-color: rgba(248, 113, 113, 0.35);
+  color: #fecaca;
+}
+
+html.smartolt-night body.smartolt-site #taskOverview div[style*="background: #fcf8e3"],
+html.smartolt-night body.smartolt-site #taskOverview div[style*="background:#fcf8e3"] {
+  background: rgba(251, 191, 36, 0.14) !important;
+  border-color: rgba(251, 191, 36, 0.32) !important;
+  color: #fde68a !important;
+}
+
+html.smartolt-night body.smartolt-site #taskOverview div[style*="background: #d9edf7"],
+html.smartolt-night body.smartolt-site #taskOverview div[style*="background:#d9edf7"] {
+  background: rgba(59, 130, 246, 0.14) !important;
+  border-color: rgba(59, 130, 246, 0.32) !important;
+  color: #bfdbfe !important;
+}
+
+html.smartolt-night body.smartolt-site .log-container {
+  background: #0b1528;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #e2e8f0;
+}
+
+html.smartolt-night body.smartolt-site .refresh-indicator {
+  background: rgba(29, 139, 255, 0.92);
+  box-shadow: 0 4px 16px rgba(29, 139, 255, 0.35);
+  color: #fff;
+}
+
+html.smartolt-night body.smartolt-site .pagination-info,
+html.smartolt-night body.smartolt-site .pagination-controls .page-info {
+  color: rgba(255, 255, 255, 0.55);
+}
+
+html.smartolt-night body.smartolt-site .pagination-arrow {
+  color: #7ec3ff;
+}
+
+html.smartolt-night body.smartolt-site .pagination-arrow:hover:not(.disabled) {
+  color: #b8dcff;
+}
+
+html.smartolt-night body.smartolt-site .pagination-arrow.disabled {
+  color: rgba(255, 255, 255, 0.25);
+}
+
+html.smartolt-night body.smartolt-site .container:has(#taskOverview) .onu-table thead > tr > th {
+  background: rgba(255, 255, 255, 0.06) !important;
+}
+
+@media (max-width: 991px) {
+  html.smartolt-night body.smartolt-site {
+    --smartolt-nav-offset: 62px;
+    --smartolt-topbar-height: 60px;
+  }
+
+  html.smartolt-night body.smartolt-site #content-wrapper > .container,
+  html.smartolt-night body.smartolt-site #content-wrapper > .container-fluid {
+    padding-top: var(--smartolt-nav-offset);
+  }
+
+  html.smartolt-night body.smartolt-site .smartolt-topbar-network {
+    height: var(--smartolt-topbar-height);
+  }
+
+  html.smartolt-night body.smartolt-dashboard .content-wrap {
+    padding: 0 14px 28px;
+  }
+}
+
+/* ——— API Stats ——— */
+
+html.smartolt-night body.smartolt-site #api_stats_window_buttons li span {
+  background: transparent;
+  border-color: rgba(140, 200, 255, 0.45);
+  color: #8cc8ff;
+}
+
+html.smartolt-night body.smartolt-site #api_stats_window_buttons li.active span,
+html.smartolt-night body.smartolt-site #api_stats_window_buttons li span:hover,
+html.smartolt-night body.smartolt-site #api_stats_window_buttons li span:focus {
+  background-color: rgba(29, 139, 255, 0.88);
+  border-color: rgba(29, 139, 255, 0.88);
+  color: #fff;
+}
+
+html.smartolt-night body.smartolt-site .api-stats-click-hint {
+  color: rgba(255, 255, 255, 0.45);
+}
+
+html.smartolt-night body.smartolt-site tr.api-stats-row:hover .api-stats-click-hint {
+  color: #8cc8ff;
+}
+
+html.smartolt-night body.smartolt-site #api_stats_recent_filter_from,
+html.smartolt-night body.smartolt-site #api_stats_recent_filter_to {
+  background-color: rgba(255, 255, 255, 0.06) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  color: #e2e8f0 !important;
+}
+
+html.smartolt-night body.smartolt-site #api_stats_drilldown_modal .text-muted,
+html.smartolt-night body.smartolt-site #api_stats_drilldown_pagination_info {
+  color: rgba(255, 255, 255, 0.52) !important;
+}
+
+html.smartolt-night body.smartolt-site #api_stats_drilldown_table .api-stats-param-key,
+html.smartolt-night body.smartolt-site #api_stats_recent_table .api-stats-param-key {
+  color: #cbd5e1;
+}
+
+html.smartolt-night body.smartolt-site #api_stats_drilldown_table .api-stats-resperr-inline,
+html.smartolt-night body.smartolt-site #api_stats_recent_table .api-stats-resperr-inline {
+  background-color: rgba(231, 76, 60, 0.12);
+  border-left-color: #e74c3c;
+  color: #ffb4aa;
+}
+
+html.smartolt-night body.smartolt-site #api_stats_drilldown_table .api-stats-resperr-code,
+html.smartolt-night body.smartolt-site #api_stats_recent_table .api-stats-resperr-code {
+  background-color: rgba(231, 76, 60, 0.18);
+  color: #ffb4aa;
+}
+
+html.smartolt-night body.smartolt-site .api-stats-headroom-expansion-cell {
+  background: rgba(11, 21, 40, 0.98);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+html.smartolt-night body.smartolt-site .api-stats-headroom-breakdown-header {
+  color: #e2e8f0;
+}
+
+html.smartolt-night body.smartolt-site .api-stats-headroom-day-label {
+  color: #f1f5f9;
+}
+
+html.smartolt-night body.smartolt-site .api-stats-headroom-page-info {
+  color: rgba(255, 255, 255, 0.52) !important;
+}
+
+html.smartolt-night body.smartolt-site .api-stats-headroom-hours {
+  background: rgba(15, 26, 46, 0.96);
+}
+
+html.smartolt-night body.smartolt-site .api-stats-headroom-hours td {
+  border-top-color: rgba(255, 255, 255, 0.08);
+  color: #cbd5e1;
+}
+
+html.smartolt-night body.smartolt-site .api-stats-headroom-hours .api-stats-hour-label,
+html.smartolt-night body.smartolt-site .api-stats-headroom-hours .api-stats-hour-calls {
+  color: rgba(255, 255, 255, 0.55);
+}
+
+html.smartolt-night body.smartolt-site .api-stats-headroom-hours .api-stats-bar-fill {
+  background-color: #1d8bff;
+}
+
+html.smartolt-night body.smartolt-site .api-stats-headroom-hours .api-stats-bar-over {
+  background-color: #ff6b6b;
+}
+
+html.smartolt-night body.smartolt-site .api-stats-headroom-hours .api-stats-bar-cap-line {
+  background-color: rgba(255, 255, 255, 0.45);
+}
+
+html.smartolt-night body.smartolt-site .api-stats-headroom-hours tr.api-stats-hour-row-clickable:hover td {
+  background-color: rgba(29, 139, 255, 0.12);
+}
+
+html.smartolt-night body.smartolt-site .api-stats-headroom-hours tr.api-stats-headroom-day-sep td {
+  background: rgba(255, 255, 255, 0.06);
+  border-top-color: rgba(255, 255, 255, 0.12);
+  color: #e2e8f0;
+}
+
+html.smartolt-night body.smartolt-site #api_stats_deprecation_breakdown {
+  background: rgba(15, 26, 46, 0.96) !important;
+  border-color: rgba(255, 193, 7, 0.28) !important;
+  color: #e2e8f0 !important;
+}
+
+html.smartolt-night body.smartolt-site #api_stats_deprecation_breakdown thead tr {
+  background: rgba(255, 193, 7, 0.12) !important;
+  color: #fde68a !important;
+}
+
+html.smartolt-night body.smartolt-site #api_stats_deprecation_breakdown th,
+html.smartolt-night body.smartolt-site #api_stats_deprecation_breakdown td {
+  border-bottom-color: rgba(255, 193, 7, 0.18) !important;
+}
+
+html.smartolt-night body.smartolt-site #api_firewall_ban_history_section .last-loaded {
+  color: rgba(255, 255, 255, 0.45);
+}
+
+html.smartolt-night body.smartolt-site .table-row-firewall-bad {
+  background-color: rgba(231, 76, 60, 0.14) !important;
+}
+
+/* jQuery UI date/time picker (API stats recent calls + anywhere else) */
+html.smartolt-night #ui-datepicker-div,
+html.smartolt-night .ui-datepicker.ui-widget,
+html.smartolt-night .ui-datepicker,
+html.smartolt-night .ui-timepicker-div,
+html.smartolt-night .ui-datepicker .ui-widget-content,
+html.smartolt-night .ui-timepicker-div .ui-widget-content {
+  background: #0f1a2e !important;
+  border-color: rgba(255, 255, 255, 0.14) !important;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45) !important;
+  color: #e2e8f0 !important;
+}
+
+html.smartolt-night .ui-datepicker .ui-widget-header,
+html.smartolt-night .ui-datepicker-header,
+html.smartolt-night .ui-timepicker-div dl {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  color: #f1f5f9 !important;
+}
+
+html.smartolt-night .ui-datepicker-title,
+html.smartolt-night .ui-datepicker th,
+html.smartolt-night .ui-timepicker-div dt,
+html.smartolt-night .ui-timepicker-div dd {
+  color: rgba(255, 255, 255, 0.72) !important;
+}
+
+html.smartolt-night .ui-datepicker select.ui-datepicker-month,
+html.smartolt-night .ui-datepicker select.ui-datepicker-year,
+html.smartolt-night .ui-datepicker .ui-datepicker-title select {
+  appearance: auto;
+  -webkit-appearance: menulist;
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  border-radius: 6px;
+  color: #e2e8f0 !important;
+  color-scheme: dark;
+  padding: 2px 24px 2px 8px;
+}
+
+html.smartolt-night .ui-datepicker select.ui-datepicker-month option,
+html.smartolt-night .ui-datepicker select.ui-datepicker-year option {
+  background: #0f1a2e;
+  color: #e2e8f0;
+}
+
+html.smartolt-night .ui-datepicker .ui-state-default,
+html.smartolt-night .ui-datepicker td span,
+html.smartolt-night .ui-datepicker td a,
+html.smartolt-night .ui-timepicker-div .ui_tpicker_time_input {
+  background: transparent !important;
+  border-color: transparent !important;
+  color: #cbd5e1 !important;
+}
+
+html.smartolt-night .ui-datepicker .ui-state-disabled,
+html.smartolt-night .ui-datepicker .ui-state-disabled .ui-state-default {
+  color: rgba(255, 255, 255, 0.25) !important;
+  opacity: 1 !important;
+}
+
+html.smartolt-night .ui-datepicker td a.ui-state-default:hover,
+html.smartolt-night .ui-datepicker td a.ui-state-default:focus,
+html.smartolt-night .ui-datepicker .ui-state-hover,
+html.smartolt-night .ui-datepicker .ui-state-focus {
+  background: rgba(29, 139, 255, 0.18) !important;
+  border-color: rgba(29, 139, 255, 0.35) !important;
+  color: #fff !important;
+}
+
+html.smartolt-night .ui-datepicker td .ui-state-highlight,
+html.smartolt-night .ui-datepicker td .ui-state-active,
+html.smartolt-night .ui-datepicker .ui-state-active {
+  background: rgba(29, 139, 255, 0.85) !important;
+  border-color: rgba(29, 139, 255, 0.85) !important;
+  color: #fff !important;
+}
+
+html.smartolt-night .ui-datepicker .ui-datepicker-prev,
+html.smartolt-night .ui-datepicker .ui-datepicker-next,
+html.smartolt-night .ui-datepicker .ui-datepicker-prev-hover,
+html.smartolt-night .ui-datepicker .ui-datepicker-next-hover {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+html.smartolt-night .ui-datepicker .ui-icon {
+  filter: invert(0.85);
+}
+
+html.smartolt-night .ui-datepicker .ui-datepicker-buttonpane {
+  background: rgba(255, 255, 255, 0.03) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+html.smartolt-night .ui-datepicker .ui-datepicker-buttonpane button {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  border-radius: 6px;
+  color: #cbd5e1 !important;
+  opacity: 1 !important;
+}
+
+html.smartolt-night .ui-datepicker .ui-datepicker-buttonpane button:hover,
+html.smartolt-night .ui-datepicker .ui-datepicker-buttonpane button:focus {
+  background: rgba(29, 139, 255, 0.18) !important;
+  border-color: rgba(29, 139, 255, 0.35) !important;
+  color: #fff !important;
+}
+
+html.smartolt-night .ui-datepicker .ui-datepicker-current {
+  color: #8cc8ff !important;
+}
+
+html.smartolt-night .ui-timepicker-div {
+  border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+html.smartolt-night .ui-timepicker-div .ui_tpicker_time .ui_tpicker_time_input {
+  border-bottom-color: rgba(255, 255, 255, 0.25) !important;
+  color: #e2e8f0 !important;
+}
+
+html.smartolt-night .ui-timepicker-div .ui_tpicker_time .ui_tpicker_time_input:focus {
+  border-bottom-color: #8cc8ff !important;
+}
+
+html.smartolt-night .ui-timepicker-div .ui-slider {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+html.smartolt-night .ui-timepicker-div .ui-slider-handle {
+  background: #1d8bff !important;
+  border-color: #1d8bff !important;
+}
+
+@media (max-width: 767px) {
+  html.smartolt-night body.smartolt-site #api_stats_top_uris_table tr,
+  html.smartolt-night body.smartolt-site #api_stats_slowest_uris_table tr,
+  html.smartolt-night body.smartolt-site #api_stats_top_keys_table tr,
+  html.smartolt-night body.smartolt-site #api_stats_top_ips_table tr,
+  html.smartolt-night body.smartolt-site #api_stats_headroom_table tr,
+  html.smartolt-night body.smartolt-site #api_firewall_ban_history_table tr,
+  html.smartolt-night body.smartolt-site #api_stats_drilldown_table tr,
+  html.smartolt-night body.smartolt-site #api_stats_recent_table tr {
+    background: rgba(15, 26, 46, 0.96);
+    border-color: rgba(255, 255, 255, 0.12);
+  }
+}
+
+/* ——— System Config ——— */
+
+html.smartolt-night body.smartolt-site #accordion_tunnel .panel-title a,
+html.smartolt-night body.smartolt-site #accordion_tr69 .panel-title a,
+html.smartolt-night body.smartolt-site .panel-group .panel-title .accordion-toggle {
+  color: #e2e8f0 !important;
+  text-decoration: none;
+}
+
+html.smartolt-night body.smartolt-site #accordion_tunnel .panel-title a:hover,
+html.smartolt-night body.smartolt-site #accordion_tunnel .panel-title a:focus,
+html.smartolt-night body.smartolt-site #accordion_tr69 .panel-title a:hover,
+html.smartolt-night body.smartolt-site #accordion_tr69 .panel-title a:focus,
+html.smartolt-night body.smartolt-site .panel-group .panel-title .accordion-toggle:hover,
+html.smartolt-night body.smartolt-site .panel-group .panel-title .accordion-toggle:focus {
+  color: #fff !important;
+}
+
+html.smartolt-night body.smartolt-site .panel-heading .accordion-toggle:after {
+  color: rgba(255, 255, 255, 0.45) !important;
+}
+
+html.smartolt-night body.smartolt-site .panel-group .panel + .panel {
+  margin-top: 8px;
+}
+
+html.smartolt-night body.smartolt-site .tab-content,
+html.smartolt-night body.smartolt-site .tab-pane {
+  color: #e2e8f0;
+}
+
+html.smartolt-night body.smartolt-site .tab-content .panel-body p,
+html.smartolt-night body.smartolt-site .tab-content .panel-body li,
+html.smartolt-night body.smartolt-site .tab-content .panel-body span:not(.label):not(.badge) {
+  color: #e2e8f0;
+}
+
+html.smartolt-night body.smartolt-site .tab-content .panel-body a:not(.btn) {
+  color: #8cc8ff;
+}
+
+html.smartolt-night body.smartolt-site .tab-content .panel-body a:not(.btn):hover,
+html.smartolt-night body.smartolt-site .tab-content .panel-body a:not(.btn):focus {
+  color: #b8dcff;
+}
+
+html.smartolt-night body.smartolt-site .tr69 > .panel-heading {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  color: #f1f5f9 !important;
+}
+
+html.smartolt-night body.smartolt-site pre.text-primary,
+html.smartolt-night .modal pre.text-primary {
+  background: rgba(0, 0, 0, 0.28) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: #8cc8ff !important;
+  padding: 12px;
+}
+
+body.smartolt-site .smartolt-tunnel-log-meta {
+  background: #f5f7fa;
+  border: 1px solid #d8dce5;
+  border-radius: 4px;
+  color: #334155;
+  font-size: 13px;
+  margin-bottom: 10px;
+  padding: 8px 12px;
+}
+
+body.smartolt-site .smartolt-tunnel-log-header {
+  margin-bottom: 10px;
+}
+
+body.smartolt-site .smartolt-tunnel-log-mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+body.smartolt-site .smartolt-tunnel-log-pre {
+  font-size: 14px;
+  line-height: 1.5;
+  max-height: 65vh;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+html.smartolt-night body.smartolt-site .smartolt-tunnel-log-meta,
+html.smartolt-night .modal .smartolt-tunnel-log-meta {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  color: #e2e8f0 !important;
+}
+
+html.smartolt-night body.smartolt-site .smartolt-tunnel-log-meta strong,
+html.smartolt-night .modal .smartolt-tunnel-log-meta strong {
+  color: #f1f5f9 !important;
+}
+
+html.smartolt-night body.smartolt-site .smartolt-tunnel-log-header,
+html.smartolt-night .modal .smartolt-tunnel-log-header {
+  color: #e2e8f0;
+}
+
+html.smartolt-night body.smartolt-site .smartolt-tunnel-log-header .text-muted,
+html.smartolt-night .modal .smartolt-tunnel-log-header .text-muted,
+html.smartolt-night body.smartolt-site .smartolt-tunnel-log-meta .text-muted,
+html.smartolt-night .modal .smartolt-tunnel-log-meta .text-muted {
+  color: rgba(255, 255, 255, 0.55) !important;
+}
+
+html.smartolt-night body.smartolt-site .smartolt-tunnel-log-pre,
+html.smartolt-night .modal .smartolt-tunnel-log-pre {
+  background: rgba(0, 0, 0, 0.28) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: #8cc8ff !important;
+  padding: 12px;
+}
+
+body.smartolt-site .smartolt-tr069-flow-wrap {
+  margin: 0 auto;
+  max-width: 100%;
+  text-align: center;
+}
+
+body.smartolt-site .smartolt-tr069-flow-img {
+  display: inline-block;
+  height: auto;
+  margin: 0 auto;
+  max-width: 100%;
+  width: auto;
+}
+
+html.smartolt-night body.smartolt-site .scrollbar-indigo,
+html.smartolt-night .modal .scrollbar-indigo {
+  scrollbar-color: rgba(255, 255, 255, 0.22) rgba(255, 255, 255, 0.06);
+}
+
+html.smartolt-night body.smartolt-site #tr69 .multiselect.dropdown-toggle,
+html.smartolt-night body.smartolt-site #tunnel .multiselect.dropdown-toggle {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  color: #f1f5f9 !important;
+}
+
+html.smartolt-night body.smartolt-site #tr69 .multiselect.dropdown-toggle .caret,
+html.smartolt-night body.smartolt-site #tunnel .multiselect.dropdown-toggle .caret {
+  border-top-color: rgba(255, 255, 255, 0.55);
+}
+
+/* ——— ONU Logs Viewer ——— */
+
+html.smartolt-night body.smartolt-site .filters-panel {
+  background: rgba(15, 26, 46, 0.92) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 10px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.22);
+}
+
+html.smartolt-night body.smartolt-site .filters-panel label {
+  color: rgba(255, 255, 255, 0.78) !important;
+}
+
+html.smartolt-night body.smartolt-site .filters-panel label .fa {
+  color: #8cc8ff;
+  margin-right: 4px;
+}
+
+html.smartolt-night body.smartolt-site .filters-panel .form-control {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.15);
+  color: #f1f5f9;
+}
+
+html.smartolt-night body.smartolt-site .filters-panel .form-control:focus {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: #3b82f6;
+  color: #fff;
+}
+
+html.smartolt-night body.smartolt-site .filters-panel .form-control::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+html.smartolt-night body.smartolt-site .filter-actions button[type="submit"] {
+  color: #7ec3ff !important;
+}
+
+html.smartolt-night body.smartolt-site .filter-actions button[type="submit"]:hover {
+  color: #b8dcff !important;
+}
+
+html.smartolt-night body.smartolt-site .filter-actions a[title="Clear Filters"] {
+  color: #f87171 !important;
+}
+
+html.smartolt-night body.smartolt-site .filter-actions a[title="Clear Filters"]:hover {
+  color: #fca5a5 !important;
+}
+
+html.smartolt-night body.smartolt-site .filter-actions a[title="Logs Settings"] {
+  color: rgba(255, 255, 255, 0.52) !important;
+}
+
+html.smartolt-night body.smartolt-site .filter-actions a[title="Logs Settings"]:hover {
+  color: rgba(255, 255, 255, 0.78) !important;
+}
+
+html.smartolt-night body.smartolt-site .log-stats .badge-info {
+  background: rgba(59, 130, 246, 0.28) !important;
+  color: #bfdbfe !important;
+}
+
+html.smartolt-night body.smartolt-site .log-stats .badge-warning {
+  background: rgba(245, 158, 11, 0.22) !important;
+  color: #fcd34d !important;
+}
+
+html.smartolt-night body.smartolt-site .log-viewer .log-entry {
+  border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+html.smartolt-night body.smartolt-site .log-viewer .log-entry:hover {
+  background-color: rgba(29, 139, 255, 0.08) !important;
+}
+
+html.smartolt-night body.smartolt-site .log-viewer .log-timestamp {
+  color: rgba(255, 255, 255, 0.52) !important;
+}
+
+html.smartolt-night body.smartolt-site .log-viewer .log-level-info {
+  background-color: rgba(59, 130, 246, 0.22) !important;
+  color: #93c5fd !important;
+}
+
+html.smartolt-night body.smartolt-site .log-viewer .log-level-debug {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+  color: rgba(255, 255, 255, 0.55) !important;
+}
+
+html.smartolt-night body.smartolt-site .log-viewer .log-level-warning {
+  background-color: rgba(245, 158, 11, 0.18) !important;
+  color: #fcd34d !important;
+}
+
+html.smartolt-night body.smartolt-site .log-viewer .log-level-error {
+  background-color: rgba(239, 68, 68, 0.18) !important;
+  color: #fca5a5 !important;
+}
+
+html.smartolt-night body.smartolt-site .log-viewer .log-source {
+  color: #7ec3ff !important;
+}
+
+html.smartolt-night body.smartolt-site .log-viewer .log-message {
+  color: #e2e8f0 !important;
+}
+
+html.smartolt-night body.smartolt-site .log-viewer .log-cmd-block code {
+  background: rgba(0, 0, 0, 0.32) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  color: #fca5a5 !important;
+}
+
+html.smartolt-night body.smartolt-site .log-viewer .toggle-raw {
+  color: #8cc8ff !important;
+}
+
+html.smartolt-night body.smartolt-site .log-viewer .toggle-raw:hover {
+  color: #b8dcff !important;
+}
+
+html.smartolt-night body.smartolt-site .log-viewer .operation-separator {
+  background-color: rgba(59, 130, 246, 0.14) !important;
+  border-top-color: rgba(59, 130, 246, 0.45) !important;
+  color: #93c5fd !important;
+}
+
+html.smartolt-night body.smartolt-site .log-viewer .raw-view {
+  background-color: rgba(0, 0, 0, 0.38) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #cbd5e1 !important;
+}
+
+/* ——— OLT Health Dashboard ——— */
+
+html.smartolt-night body.smartolt-site .container-fluid:has(#recent-events-table) > .row > [class*="col-"] > label,
+html.smartolt-night body.smartolt-site .container-fluid:has(#summary-cards) > .row > [class*="col-"] > label {
+  color: rgba(255, 255, 255, 0.78);
+}
+
+html.smartolt-night body.smartolt-site .metric-card .metric-value {
+  color: #f1f5f9 !important;
+}
+
+html.smartolt-night body.smartolt-site .metric-card .metric-label {
+  color: rgba(255, 255, 255, 0.55) !important;
+}
+
+html.smartolt-night body.smartolt-site #per-olt-table .row-danger > td,
+html.smartolt-night body.smartolt-site .table .row-danger > td {
+  background: rgba(239, 68, 68, 0.14) !important;
+  color: #fecaca !important;
+}
+
+html.smartolt-night body.smartolt-site #per-olt-table .row-warning > td,
+html.smartolt-night body.smartolt-site .table .row-warning > td {
+  background: rgba(245, 158, 11, 0.14) !important;
+  color: #fde68a !important;
+}
+
+html.smartolt-night body.smartolt-site .event-circuit_open {
+  color: #fca5a5 !important;
+}
+
+html.smartolt-night body.smartolt-site .event-circuit_close {
+  color: #6ee7b7 !important;
+}
+
+html.smartolt-night body.smartolt-site .event-circuit_reopen,
+html.smartolt-night body.smartolt-site .event-load_reduction {
+  color: #fcd34d !important;
+}
+
+html.smartolt-night body.smartolt-site .event-load_recovery {
+  color: #6ee7b7 !important;
+}
+
+html.smartolt-night body.smartolt-site .metric-card .table-responsive:has(#recent-events-table) {
+  background: rgba(11, 21, 40, 0.96) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+}
+
+html.smartolt-night body.smartolt-site #recent-events-table {
+  background: transparent;
+  margin-bottom: 0;
+}
+
+html.smartolt-night body.smartolt-site #recent-events-table thead,
+html.smartolt-night body.smartolt-site #recent-events-table thead[style*="background: #f5f7f8"],
+html.smartolt-night body.smartolt-site #recent-events-table thead[style*="background:#f5f7f8"] {
+  background: rgba(15, 26, 46, 0.98) !important;
+}
+
+html.smartolt-night body.smartolt-site #recent-events-table thead th {
+  background: rgba(15, 26, 46, 0.98) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.72) !important;
+}
+
+html.smartolt-night body.smartolt-site #recent-events-table tbody td {
+  background: transparent !important;
+  border-top-color: rgba(255, 255, 255, 0.06) !important;
+  color: #e2e8f0;
+}
+
+html.smartolt-night body.smartolt-site #recent-events-table tbody > tr:nth-of-type(odd) > td {
+  background: rgba(255, 255, 255, 0.03) !important;
+}
+
+html.smartolt-night body.smartolt-site #recent-events-table tbody > tr:nth-of-type(even) > td {
+  background: transparent !important;
+}
+
+html.smartolt-night body.smartolt-site #recent-events-table tbody > tr:hover > td {
+  background: rgba(29, 139, 255, 0.1) !important;
+}
+
+html.smartolt-night body.smartolt-site #recent-events-table tbody > tr:last-child > td {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* ——— Error Logs ——— */
+
+html.smartolt-night body.smartolt-site .content-wrap:has(#error-log-table) > .row > [class*="col-"] > label {
+  color: rgba(255, 255, 255, 0.78);
+}
+
+html.smartolt-night body.smartolt-site #error-count-display {
+  color: rgba(255, 255, 255, 0.48) !important;
+}
+
+html.smartolt-night body.smartolt-site .error-badge-lock_wait_timeout,
+html.smartolt-night body.smartolt-site .error-badge-deadlock {
+  background: rgba(239, 68, 68, 0.18) !important;
+  color: #fca5a5 !important;
+}
+
+html.smartolt-night body.smartolt-site .error-badge-db_error {
+  background: rgba(245, 158, 11, 0.18) !important;
+  color: #fcd34d !important;
+}
+
+html.smartolt-night body.smartolt-site .error-badge-php_error {
+  background: rgba(59, 130, 246, 0.18) !important;
+  color: #93c5fd !important;
+}
+
+html.smartolt-night body.smartolt-site .error-type-lock_wait_timeout,
+html.smartolt-night body.smartolt-site .error-type-deadlock {
+  color: #fca5a5 !important;
+}
+
+html.smartolt-night body.smartolt-site .error-type-db_error {
+  color: #fcd34d !important;
+}
+
+html.smartolt-night body.smartolt-site .error-type-php_error {
+  color: rgba(255, 255, 255, 0.55) !important;
+}
+
+html.smartolt-night body.smartolt-site #error-log-scroll {
+  background: rgba(11, 21, 40, 0.96) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+}
+
+html.smartolt-night body.smartolt-site #error-log-table {
+  background: transparent;
+  margin-bottom: 0;
+}
+
+html.smartolt-night body.smartolt-site #error-log-table thead,
+html.smartolt-night body.smartolt-site #error-log-table thead[style*="background: #f5f7f8"],
+html.smartolt-night body.smartolt-site #error-log-table thead[style*="background:#f5f7f8"] {
+  background: rgba(15, 26, 46, 0.98) !important;
+}
+
+html.smartolt-night body.smartolt-site #error-log-table thead th {
+  background: rgba(15, 26, 46, 0.98) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.72) !important;
+}
+
+html.smartolt-night body.smartolt-site #error-log-table tbody td {
+  background: transparent !important;
+  border-top-color: rgba(255, 255, 255, 0.06) !important;
+  color: #e2e8f0;
+}
+
+html.smartolt-night body.smartolt-site #error-log-table tbody > tr:nth-of-type(odd) > td {
+  background: rgba(255, 255, 255, 0.03) !important;
+}
+
+html.smartolt-night body.smartolt-site #error-log-table tbody > tr:nth-of-type(even) > td {
+  background: transparent !important;
+}
+
+html.smartolt-night body.smartolt-site #error-log-table tbody > tr:hover > td {
+  background: rgba(29, 139, 255, 0.1) !important;
+}
+
+html.smartolt-night body.smartolt-site #error-log-table tbody > tr:last-child > td {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+html.smartolt-night body.smartolt-site #error-log-table .error-msg-full {
+  background: rgba(0, 0, 0, 0.28) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  color: #cbd5e1 !important;
+  padding: 8px 10px !important;
+}
+
+html.smartolt-night body.smartolt-site #error-log-table .error-msg-cell span[style*="color:#3498db"],
+html.smartolt-night body.smartolt-site #error-log-table .error-msg-cell span[style*="color: #3498db"] {
+  color: #8cc8ff !important;
+}
+
+/* Config comparison — scan + auto-sync detail tables */
+html.smartolt-night body.smartolt-site .smartolt-config-comparison-table > thead > tr > th {
+  background: rgba(15, 26, 46, 0.98) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.72) !important;
+  font-size: 12px;
+  font-weight: 600;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+html.smartolt-night body.smartolt-site .smartolt-config-comparison-table > thead > tr {
+  background: rgba(15, 26, 46, 0.98) !important;
+}
+
+/* Theme toggle — icon matches active preference (sun=light, moon=night, adjust=system).
+   All icons stay hidden until JS adds .is-resolved: the server renders the account
+   pref, which can differ from this device's local override, so we avoid showing the
+   wrong icon for a frame. night.js (defer) resolves on DOMContentLoaded. */
+#smartolt-night-toggle .smartolt-theme-icon-light,
+#smartolt-night-toggle .smartolt-theme-icon-night,
+#smartolt-night-toggle .smartolt-theme-icon-system {
+  display: none;
+}
+
+#smartolt-night-toggle.is-resolved.is-pref-light .smartolt-theme-icon-light,
+#smartolt-night-toggle.is-resolved.is-pref-night .smartolt-theme-icon-night {
+  display: inline-block;
+}
+
+#smartolt-night-toggle.is-resolved.is-pref-system .smartolt-theme-icon-system {
+  display: inline-block;
+  opacity: 0.92;
+}
+
+html.smartolt-night #smartolt-night-toggle.is-pref-system .smartolt-theme-icon-system {
+  color: #e2e8f0 !important;
+}
+
+html.smartolt-night #smartolt-night-toggle.is-pref-night {
+  color: #fbbf24 !important;
+}
+
+/* Authorization preset wizard modal */
+html.smartolt-night #presetWizardModal .wizard-steps li {
+  color: rgba(255, 255, 255, 0.45);
+}
+
+html.smartolt-night #presetWizardModal .wizard-steps li.active {
+  color: #8cc8ff;
+}
+
+html.smartolt-night #presetWizardModal .wizard-steps li.completed {
+  color: #86efac;
+}
+
+html.smartolt-night #presetWizardModal .wizard-steps .step-num {
+  background-color: rgba(255, 255, 255, 0.14);
+  color: rgba(255, 255, 255, 0.78);
+}
+
+html.smartolt-night #presetWizardModal .wizard-steps li.active .step-num {
+  background-color: #2563eb;
+  color: #fff;
+}
+
+html.smartolt-night #presetWizardModal .wizard-steps li.completed .step-num {
+  background-color: #16a34a;
+  color: #fff;
+}
+
+html.smartolt-night #presetWizardModal .wizard-step-header {
+  border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+html.smartolt-night #presetWizardModal .wizard-step-header h4 {
+  color: #f1f5f9;
+}
+
+html.smartolt-night #presetWizardModal .wizard-step-header h4 .text-success {
+  color: #86efac !important;
+}
+
+html.smartolt-night #presetWizardModal .wizard-step-header p,
+html.smartolt-night #presetWizardModal #wizard_preset_form .text-muted,
+html.smartolt-night #presetWizardModal #wizard_preset_form .help-block {
+  color: rgba(255, 255, 255, 0.52) !important;
+}
+
+html.smartolt-night #presetWizardModal .wizard-default-section,
+html.smartolt-night #presetWizardModal #wizard_is_default_section {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  color: #e2e8f0;
+}
+
+html.smartolt-night #presetWizardModal .wizard-default-section__title,
+html.smartolt-night #presetWizardModal #wizard_is_default_section h5 {
+  color: #f1f5f9;
+}
+
+html.smartolt-night #presetWizardModal .wizard-default-section__checkbox label,
+html.smartolt-night #presetWizardModal #wizard_is_default_section .checkbox label {
+  color: #e2e8f0;
+}
+
+html.smartolt-night #presetWizardModal .wizard-default-section__olt-name,
+html.smartolt-night #presetWizardModal #wizard_default_olt_name {
+  color: #f8fafc;
+}
+
+html.smartolt-night #presetWizardModal #wizard_existing_default_warning {
+  background: rgba(234, 179, 8, 0.12) !important;
+  border-color: rgba(234, 179, 8, 0.28) !important;
+  color: #fde68a !important;
+}
+
+html.smartolt-night #presetWizardModal #wizard_preset_form code {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  color: #b8dcff !important;
+  padding: 1px 5px;
+}
+
+html.smartolt-night #presetWizardModal .wizard-subsection-title {
+  color: #e2e8f0 !important;
+  border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+html.smartolt-night #presetWizardModal .wizard-subsection-title i {
+  color: #8cc8ff !important;
+}
+
+html.smartolt-night #presetWizardModal .wizard-tip {
+  background: rgba(234, 179, 8, 0.1) !important;
+  border-color: rgba(234, 179, 8, 0.25) !important;
+  color: #fde68a !important;
+}
+
+html.smartolt-night #presetWizardModal .wizard-tip i {
+  color: #fbbf24 !important;
+}
+
+html.smartolt-night #presetWizardModal #wizardSummary .summary-row {
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+html.smartolt-night #presetWizardModal #wizardSummary .summary-label {
+  color: #cbd5e1;
+}
+
+html.smartolt-night #presetWizardModal #wizardSummary .summary-value {
+  color: #e2e8f0;
+}
+
+html.smartolt-night #presetWizardModal .wizard-progress .progress {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* Changelog feature links */
+html.smartolt-night body.smartolt-site .changelog-link {
+  color: #8cc8ff;
+  border-bottom-color: rgba(140, 200, 255, 0.5);
+}
+
+html.smartolt-night body.smartolt-site .changelog-link:hover,
+html.smartolt-night body.smartolt-site .changelog-link:focus {
+  color: #bfe0ff;
+  border-bottom-color: #bfe0ff;
+}

@@ -1,0 +1,1195 @@
+<!DOCTYPE html><html lang="en" class="smartolt-night"><head>
+        <script>window.SMARTOLT_DB_THEME='system';</script>
+    <!-- Paint-blocking: resolve theme before first paint. Precedence: per-device override (smartolt-theme-local, set by the header button) > account/DB pref > device (system). -->
+    <script>try{var k='smartolt-night',lk='smartolt-theme-local',dbTheme=window.SMARTOLT_DB_THEME,local=null,pref,n;try{local=localStorage.getItem(lk);}catch(e){}if(local==='night'||local==='light'||local==='system'){pref=local;}else if(dbTheme==='night'||dbTheme==='light'||dbTheme==='system'){pref=dbTheme;}else{pref='system';}if(pref==='system'){n=!!(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);}else if(pref==='night'){n=true;}else{n=false;}try{localStorage.setItem(k,n?'1':'0');}catch(e){}if(n){document.documentElement.classList.add('smartolt-night');}else{document.documentElement.classList.remove('smartolt-night');}document.cookie=k+'='+(n?'1':'0')+'; path=/; max-age=31536000; SameSite=Lax'+(location.protocol==='https:'?'; Secure':'');}catch(e){}</script>
+    <script>try{var wk='smartolt-wide-tables',wv=null,m=document.cookie.match(new RegExp('(?:^|; )'+wk+'=([^;]*)'));try{wv=localStorage.getItem(wk);}catch(e){}if(wv!=='1'&&wv!=='0'&&m){wv=decodeURIComponent(m[1]);}if(wv==='1'){document.documentElement.classList.add('smartolt-wide-tables');}}catch(e){}</script>
+        <meta http-equiv="content-type" content="text/html; utf-8">
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Language" content="en">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    
+  <title>Locations - JOEL WIFI</title>
+
+  <!-- Bootstrap Core CSS -->
+  <link href="/public/smartolt-files/bootstrap-custom.css?v=3.53.0.24" rel="stylesheet">
+  <link href="/public/smartolt-files/bootstrap-multiselect.css?v=3.53.0.20" rel="stylesheet">
+  <link href="/public/smartolt-files/styles.css?v=3.53.0.29" rel="stylesheet">
+  <link href="/public/smartolt-files/toast.css?v=3.53.0.20" rel="stylesheet">
+
+  
+  <!-- Custom Fonts -->
+  <link href="/public/smartolt-files/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+  <!-- Message box CSS -->
+  <link href="/public/smartolt-files/messagebox.css" rel="stylesheet" type="text/css">
+
+  <link href="/public/smartolt-files/inter-fonts.css?v=3.53.0.1" rel="stylesheet">
+  <link href="/public/smartolt-files/dashboard-smartolt-night.css?v=3.53.0.209" rel="stylesheet">
+  <script src="/public/smartolt-files/dashboard-smartolt-night.js?v=3.53.0.63" defer=""></script>
+    
+  <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+  <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+  <!--[if lt IE 9]>
+        <script src="/public/smartolt-files/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="/public/smartolt-files/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+  <!-- jQuery -->
+  <script src="/public/smartolt-files/jquery.min.js"></script>
+
+  
+  
+  <!-- Toast alerts -->
+  <script src="/public/smartolt-files/toast.js"></script>
+
+  <!-- Pauses recurring AJAX polling while the tab is hidden OR the user has been idle, resumes on focus / activity. -->
+  <script src="/public/smartolt-files/polling.js?v=3.53.0.3"></script>
+
+  <!-- Geolocation permission-error → localized message helper (shared by location pickers). -->
+  <script src="/public/smartolt-files/geolocation_helper.js?v=3.53.0.1"></script>
+
+  
+  
+</head>
+
+<body class="smartolt-site">
+<script type="text/javascript">
+$( document ).ready(function() {
+	$.ajaxSetup({
+		cache: false
+	});
+	
+	window.jqxhrs = [];
+
+      window.registerJqxhr = function(jqxhr) {
+        jqxhrs.push(jqxhr);
+      }
+
+      window.abortJqxhr = function() {
+        for (var i = jqxhrs.length - 1; i >= 0; i--) {
+          if (jqxhrs[i]) {
+            jqxhrs[i].abort();
+          }
+        }
+
+        window.jqxhrs = [];
+      }
+
+      $(window).bind("beforeunload", function(event) {
+        abortJqxhr();
+      });
+
+      function unregisterJqxhr(event, jqxhr, settings) {
+        var idx = $.inArray(jqxhr, jqxhrs);
+        if (idx != -1) {
+          jqxhrs.splice(idx, 1);
+        }
+      }
+
+      $(document).ajaxComplete(unregisterJqxhr);
+
+      config = {
+        X_TOKEN: '9C23F19BE06B4BEB93046ECFDF50FF91'
+      }
+    });
+  </script>
+
+  <div class="smartolt-landing-hero-bg" aria-hidden="true"></div>
+
+  <div id="content-wrapper">
+    <div class="smartolt-topbar-network" aria-hidden="true">
+      <div class="smartolt-topbar-network-inner">
+        <svg class="smartolt-topbar-network-lines" viewBox="0 0 100 100" preserveAspectRatio="none">
+          <line x1="8" y1="68" x2="23" y2="78"></line>
+          <line x1="23" y1="78" x2="37" y2="63"></line>
+          <line x1="8" y1="68" x2="37" y2="63"></line>
+          <line x1="37" y1="63" x2="65" y2="18"></line>
+          <line x1="65" y1="18" x2="89" y2="34"></line>
+          <line x1="23" y1="78" x2="65" y2="18"></line>
+          <line x1="37" y1="63" x2="89" y2="34"></line>
+        </svg>
+        <span class="smartolt-topbar-node smartolt-topbar-node-a"></span>
+        <span class="smartolt-topbar-node smartolt-topbar-node-b"></span>
+        <span class="smartolt-topbar-node smartolt-topbar-node-c"></span>
+        <span class="smartolt-topbar-node smartolt-topbar-node-d"></span>
+        <span class="smartolt-topbar-node smartolt-topbar-node-e"></span>
+      </div>
+    </div>
+        <div class="navbar navbar-default navbar-fixed-top default-menu">
+    <div class="container">
+      <div class="navbar-header">
+        <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#navbar-main" aria-expanded="false" aria-controls="navbar">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand text-ellipsis max-width-250" href="/modulo?pagina=GPONManager">GPON Manager</a>
+      </div>
+      <div class="navbar-collapse collapse" id="navbar-main">
+        <ul class="nav navbar-nav">
+          <li><a href="/modulo?pagina=GPONManager">Dashboard</a></li>
+          <li><a href="/modulo?pagina=smartolt_configured_full">Configuradas</a></li>
+          <li><a href="/modulo?pagina=smartolt_unconfigured_full">No configuradas</a></li>
+          <li><a href="/modulo?pagina=smartolt_onu_types_full">Tipos ONU</a></li>
+          <li><a href="/modulo?pagina=smartolt_speed_profiles_full">Velocidad</a></li>
+          <li><a href="/modulo?pagina=smartolt_locations_full">Zonas</a></li>
+          <li class="dropdown">
+            <a class="dropdown-toggle" data-toggle="dropdown" href="#">Settings <span class="caret"></span></a>
+            <ul class="dropdown-menu">
+              <li><a href="/modulo?pagina=smartolt_olt">OLTs</a></li>
+              <li><a href="/modulo?pagina=smartolt_general">General</a></li>
+              <li><a href="/modulo?pagina=smartolt_billing">Billing</a></li>
+              <li><a href="/modulo?pagina=smartolt_system_config">VPN &amp; TR069</a></li>
+              <li><a href="/modulo?pagina=smartolt_presets_full">Presets</a></li>
+              <li><a href="/modulo?pagina=smartolt_diagnostics_full">Diagnostics</a></li>
+              <li><a href="/modulo?pagina=smartolt_graphs">Graphs</a></li>
+            </ul>
+          </li>
+        </ul>
+        <ul class="nav navbar-nav navbar-right">
+          <li><a href="/logout"><i class="fa fa-sign-out"></i> Salir</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+    <!-- Page Content -->
+    <div class="container">
+
+<div class="container-fluid content-wrap">
+	<h2>Zones</h2>
+			
+	<form action="/locations/listing" class="form-inline locations" method="get" accept-charset="utf-8">
+	
+    <div class="margin-bottom">
+    	<div class="form-group">
+    		<label class="control-label" for="free_text">Search</label>
+    		<input type="text" class="form-control input-220 input-search" id="free_text" name="free_text" value="" data-old-value="" placeholder="Name">
+    	</div>
+    </div>
+
+    <input type="hidden" name="sort_by" id="sort_by" value="name">
+	<input type="hidden" name="sort_order" id="sort_order" value="asc">
+
+    </form>
+	<div class="clearfix">
+				<div class="pull-left">
+			<a href="/locations/add/" class="btn btn-success margin-right margin-bottom"><span class="glyphicon glyphicon-plus"> </span> Add Zone</a>
+						<a href="#" id="delete-unused-zones" class="btn btn-danger margin-bottom"><span class="glyphicon glyphicon-trash"> </span> Delete unused zones</a>
+					</div>
+				<div class="pull-right">
+						<a href="#" id="export-selection" class="btn btn-link margin-bottom" title="Export"><i class="fa fa-upload"></i> Export</a>
+									<a href="#" id="import-zones" class="btn btn-link margin-bottom" title="Import zones"><i class="fa fa-download"></i> Import</a>
+					</div>
+	</div>
+
+	<p><span>Use zones to group ONUs per town, neighborhood or village. Zones are simple display separations with no influence on the ONU settings.</span></p>
+	
+	<br>
+
+	<table class="table table-striped">
+		<tbody><tr>
+			<th class="col-md-1"><a href="/locations/listing?sort_by=name&amp;sort_order=desc" class="sort-link">Name <i class="fa fa-sort-asc" aria-hidden="true"></i></a></th>
+						<th class="col-md-2"><a href="/locations/listing?sort_by=onus_count&amp;sort_order=asc" class="sort-link">ONUs </a></th>
+						<th></th>
+			<th class="col-md-1 text-center">Action</th>
+		</tr>
+
+				<tr>
+			<td>
+									<a href="/locations/edit/36" class="btn btn-link">Bella Vista</a>
+							</td>
+						<td><a href="/modulo?pagina=smartolt_configured_full/?zone_id=36&amp;all=1" class="btn btn-link">23</a></td>
+						<td></td>
+			<td>
+									<a href="/locations/delete/36" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr>
+			<td>
+									<a href="/locations/edit/33" class="btn btn-link">default</a>
+							</td>
+						<td><a href="/modulo?pagina=smartolt_configured_full/?zone_id=33&amp;all=1" class="btn btn-link">16</a></td>
+						<td></td>
+			<td>
+									<a href="/locations/delete/33" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr>
+			<td>
+									<a href="/locations/edit/34" class="btn btn-link">Los Girasoles</a>
+							</td>
+						<td><a href="/modulo?pagina=smartolt_configured_full/?zone_id=34&amp;all=1" class="btn btn-link">0</a></td>
+						<td></td>
+			<td>
+									<a href="/locations/delete/34" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr>
+			<td>
+									<a href="/locations/edit/35" class="btn btn-link">Reparto Peralta</a>
+							</td>
+						<td><a href="/modulo?pagina=smartolt_configured_full/?zone_id=35&amp;all=1" class="btn btn-link">0</a></td>
+						<td></td>
+			<td>
+									<a href="/locations/delete/35" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr>
+			<td>
+									<a href="/locations/edit/1" class="btn btn-link">Zone 1</a>
+							</td>
+						<td><a href="/modulo?pagina=smartolt_configured_full/?zone_id=1&amp;all=1" class="btn btn-link">600</a></td>
+						<td></td>
+			<td>
+									<a href="/locations/delete/1" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr>
+			<td>
+									<a href="/locations/edit/10" class="btn btn-link">Zone 10</a>
+							</td>
+						<td><a href="/modulo?pagina=smartolt_configured_full/?zone_id=10&amp;all=1" class="btn btn-link">0</a></td>
+						<td></td>
+			<td>
+									<a href="/locations/delete/10" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr>
+			<td>
+									<a href="/locations/edit/11" class="btn btn-link">Zone 11</a>
+							</td>
+						<td><a href="/modulo?pagina=smartolt_configured_full/?zone_id=11&amp;all=1" class="btn btn-link">0</a></td>
+						<td></td>
+			<td>
+									<a href="/locations/delete/11" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr>
+			<td>
+									<a href="/locations/edit/12" class="btn btn-link">Zone 12</a>
+							</td>
+						<td><a href="/modulo?pagina=smartolt_configured_full/?zone_id=12&amp;all=1" class="btn btn-link">0</a></td>
+						<td></td>
+			<td>
+									<a href="/locations/delete/12" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr>
+			<td>
+									<a href="/locations/edit/13" class="btn btn-link">Zone 13</a>
+							</td>
+						<td><a href="/modulo?pagina=smartolt_configured_full/?zone_id=13&amp;all=1" class="btn btn-link">0</a></td>
+						<td></td>
+			<td>
+									<a href="/locations/delete/13" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr>
+			<td>
+									<a href="/locations/edit/14" class="btn btn-link">Zone 14</a>
+							</td>
+						<td><a href="/modulo?pagina=smartolt_configured_full/?zone_id=14&amp;all=1" class="btn btn-link">0</a></td>
+						<td></td>
+			<td>
+									<a href="/locations/delete/14" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr>
+			<td>
+									<a href="/locations/edit/15" class="btn btn-link">Zone 15</a>
+							</td>
+						<td><a href="/modulo?pagina=smartolt_configured_full/?zone_id=15&amp;all=1" class="btn btn-link">0</a></td>
+						<td></td>
+			<td>
+									<a href="/locations/delete/15" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr>
+			<td>
+									<a href="/locations/edit/16" class="btn btn-link">Zone 16</a>
+							</td>
+						<td><a href="/modulo?pagina=smartolt_configured_full/?zone_id=16&amp;all=1" class="btn btn-link">0</a></td>
+						<td></td>
+			<td>
+									<a href="/locations/delete/16" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr>
+			<td>
+									<a href="/locations/edit/17" class="btn btn-link">Zone 17</a>
+							</td>
+						<td><a href="/modulo?pagina=smartolt_configured_full/?zone_id=17&amp;all=1" class="btn btn-link">0</a></td>
+						<td></td>
+			<td>
+									<a href="/locations/delete/17" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr>
+			<td>
+									<a href="/locations/edit/18" class="btn btn-link">Zone 18</a>
+							</td>
+						<td><a href="/modulo?pagina=smartolt_configured_full/?zone_id=18&amp;all=1" class="btn btn-link">0</a></td>
+						<td></td>
+			<td>
+									<a href="/locations/delete/18" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr>
+			<td>
+									<a href="/locations/edit/19" class="btn btn-link">Zone 19</a>
+							</td>
+						<td><a href="/modulo?pagina=smartolt_configured_full/?zone_id=19&amp;all=1" class="btn btn-link">0</a></td>
+						<td></td>
+			<td>
+									<a href="/locations/delete/19" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr>
+			<td>
+									<a href="/locations/edit/2" class="btn btn-link">Zone 2</a>
+							</td>
+						<td><a href="/modulo?pagina=smartolt_configured_full/?zone_id=2&amp;all=1" class="btn btn-link">0</a></td>
+						<td></td>
+			<td>
+									<a href="/locations/delete/2" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr>
+			<td>
+									<a href="/locations/edit/20" class="btn btn-link">Zone 20</a>
+							</td>
+						<td><a href="/modulo?pagina=smartolt_configured_full/?zone_id=20&amp;all=1" class="btn btn-link">0</a></td>
+						<td></td>
+			<td>
+									<a href="/locations/delete/20" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr>
+			<td>
+									<a href="/locations/edit/21" class="btn btn-link">Zone 21</a>
+							</td>
+						<td><a href="/modulo?pagina=smartolt_configured_full/?zone_id=21&amp;all=1" class="btn btn-link">0</a></td>
+						<td></td>
+			<td>
+									<a href="/locations/delete/21" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr>
+			<td>
+									<a href="/locations/edit/22" class="btn btn-link">Zone 22</a>
+							</td>
+						<td><a href="/modulo?pagina=smartolt_configured_full/?zone_id=22&amp;all=1" class="btn btn-link">0</a></td>
+						<td></td>
+			<td>
+									<a href="/locations/delete/22" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr>
+			<td>
+									<a href="/locations/edit/23" class="btn btn-link">Zone 23</a>
+							</td>
+						<td><a href="/modulo?pagina=smartolt_configured_full/?zone_id=23&amp;all=1" class="btn btn-link">0</a></td>
+						<td></td>
+			<td>
+									<a href="/locations/delete/23" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr>
+			<td>
+									<a href="/locations/edit/24" class="btn btn-link">Zone 24</a>
+							</td>
+						<td><a href="/modulo?pagina=smartolt_configured_full/?zone_id=24&amp;all=1" class="btn btn-link">0</a></td>
+						<td></td>
+			<td>
+									<a href="/locations/delete/24" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr>
+			<td>
+									<a href="/locations/edit/25" class="btn btn-link">Zone 25</a>
+							</td>
+						<td><a href="/modulo?pagina=smartolt_configured_full/?zone_id=25&amp;all=1" class="btn btn-link">0</a></td>
+						<td></td>
+			<td>
+									<a href="/locations/delete/25" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr>
+			<td>
+									<a href="/locations/edit/26" class="btn btn-link">Zone 26</a>
+							</td>
+						<td><a href="/modulo?pagina=smartolt_configured_full/?zone_id=26&amp;all=1" class="btn btn-link">0</a></td>
+						<td></td>
+			<td>
+									<a href="/locations/delete/26" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr>
+			<td>
+									<a href="/locations/edit/27" class="btn btn-link">Zone 27</a>
+							</td>
+						<td><a href="/modulo?pagina=smartolt_configured_full/?zone_id=27&amp;all=1" class="btn btn-link">0</a></td>
+						<td></td>
+			<td>
+									<a href="/locations/delete/27" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr>
+			<td>
+									<a href="/locations/edit/28" class="btn btn-link">Zone 28</a>
+							</td>
+						<td><a href="/modulo?pagina=smartolt_configured_full/?zone_id=28&amp;all=1" class="btn btn-link">0</a></td>
+						<td></td>
+			<td>
+									<a href="/locations/delete/28" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr>
+			<td>
+									<a href="/locations/edit/29" class="btn btn-link">Zone 29</a>
+							</td>
+						<td><a href="/modulo?pagina=smartolt_configured_full/?zone_id=29&amp;all=1" class="btn btn-link">0</a></td>
+						<td></td>
+			<td>
+									<a href="/locations/delete/29" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr>
+			<td>
+									<a href="/locations/edit/3" class="btn btn-link">Zone 3</a>
+							</td>
+						<td><a href="/modulo?pagina=smartolt_configured_full/?zone_id=3&amp;all=1" class="btn btn-link">0</a></td>
+						<td></td>
+			<td>
+									<a href="/locations/delete/3" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr>
+			<td>
+									<a href="/locations/edit/30" class="btn btn-link">Zone 30</a>
+							</td>
+						<td><a href="/modulo?pagina=smartolt_configured_full/?zone_id=30&amp;all=1" class="btn btn-link">0</a></td>
+						<td></td>
+			<td>
+									<a href="/locations/delete/30" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr>
+			<td>
+									<a href="/locations/edit/31" class="btn btn-link">Zone 31</a>
+							</td>
+						<td><a href="/modulo?pagina=smartolt_configured_full/?zone_id=31&amp;all=1" class="btn btn-link">0</a></td>
+						<td></td>
+			<td>
+									<a href="/locations/delete/31" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr>
+			<td>
+									<a href="/locations/edit/32" class="btn btn-link">Zone 32</a>
+							</td>
+						<td><a href="/modulo?pagina=smartolt_configured_full/?zone_id=32&amp;all=1" class="btn btn-link">0</a></td>
+						<td></td>
+			<td>
+									<a href="/locations/delete/32" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr>
+			<td>
+									<a href="/locations/edit/4" class="btn btn-link">Zone 4</a>
+							</td>
+						<td><a href="/modulo?pagina=smartolt_configured_full/?zone_id=4&amp;all=1" class="btn btn-link">0</a></td>
+						<td></td>
+			<td>
+									<a href="/locations/delete/4" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr>
+			<td>
+									<a href="/locations/edit/5" class="btn btn-link">Zone 5</a>
+							</td>
+						<td><a href="/modulo?pagina=smartolt_configured_full/?zone_id=5&amp;all=1" class="btn btn-link">0</a></td>
+						<td></td>
+			<td>
+									<a href="/locations/delete/5" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr>
+			<td>
+									<a href="/locations/edit/6" class="btn btn-link">Zone 6</a>
+							</td>
+						<td><a href="/modulo?pagina=smartolt_configured_full/?zone_id=6&amp;all=1" class="btn btn-link">0</a></td>
+						<td></td>
+			<td>
+									<a href="/locations/delete/6" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr>
+			<td>
+									<a href="/locations/edit/7" class="btn btn-link">Zone 7</a>
+							</td>
+						<td><a href="/modulo?pagina=smartolt_configured_full/?zone_id=7&amp;all=1" class="btn btn-link">0</a></td>
+						<td></td>
+			<td>
+									<a href="/locations/delete/7" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr>
+			<td>
+									<a href="/locations/edit/8" class="btn btn-link">Zone 8</a>
+							</td>
+						<td><a href="/modulo?pagina=smartolt_configured_full/?zone_id=8&amp;all=1" class="btn btn-link">0</a></td>
+						<td></td>
+			<td>
+									<a href="/locations/delete/8" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+			<tr>
+			<td>
+									<a href="/locations/edit/9" class="btn btn-link">Zone 9</a>
+							</td>
+						<td><a href="/modulo?pagina=smartolt_configured_full/?zone_id=9&amp;all=1" class="btn btn-link">0</a></td>
+						<td></td>
+			<td>
+									<a href="/locations/delete/9" class="btn btn-danger">Delete</a>
+							</td>
+		</tr>
+		</tbody></table>
+
+<div class="modal fade" id="importZonesModal" tabindex="-1" role="dialog">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+				<h3>Import zones</h3>
+			</div>
+			<div class="modal-body">
+				<div class="form-group">
+					<label class="control-label" for="zonesCsvFile">Zones file</label>
+					<input type="file" name="zonesCsvFile" id="zonesCsvFile">
+					<div class="margin-top"><span class="help-block">Download file template from here: <a href="/_documents/Zones_template.csv">Zones_template.csv</a></span></div>
+					<div class="margin-top"><span class="help-block">The file should include the following header columns: <strong>Name</strong></span></div>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-link" data-dismiss="modal">Cancel</button>
+				<button type="button" class="btn btn-primary import-zones-button">Import zones</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="modal fade" id="deleteUnusedZonesModal" tabindex="-1" role="dialog">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+				<h3>Delete unused zones</h3>
+			</div>
+			<div class="modal-body">
+				<p>This will delete 33 zones that have no ONUs assigned and no ODBs (Splitters) assigned. Are you sure you want to continue?</p>
+				<ul style="max-height: 300px; overflow-y: auto;">
+										<li>Los Girasoles</li>
+										<li>Reparto Peralta</li>
+										<li>Zone 10</li>
+										<li>Zone 11</li>
+										<li>Zone 12</li>
+										<li>Zone 13</li>
+										<li>Zone 14</li>
+										<li>Zone 15</li>
+										<li>Zone 16</li>
+										<li>Zone 17</li>
+										<li>Zone 18</li>
+										<li>Zone 19</li>
+										<li>Zone 2</li>
+										<li>Zone 20</li>
+										<li>Zone 21</li>
+										<li>Zone 22</li>
+										<li>Zone 23</li>
+										<li>Zone 24</li>
+										<li>Zone 25</li>
+										<li>Zone 26</li>
+										<li>Zone 27</li>
+										<li>Zone 28</li>
+										<li>Zone 29</li>
+										<li>Zone 3</li>
+										<li>Zone 30</li>
+										<li>Zone 31</li>
+										<li>Zone 32</li>
+										<li>Zone 4</li>
+										<li>Zone 5</li>
+										<li>Zone 6</li>
+										<li>Zone 7</li>
+										<li>Zone 8</li>
+										<li>Zone 9</li>
+									</ul>
+			</div>
+			<div class="modal-footer">
+				<form method="post" action="/locations/delete_unused" style="display:inline">
+					<button type="button" class="btn btn-link" data-dismiss="modal">Cancel</button>
+					<button type="submit" class="btn btn-danger">Delete</button>
+				</form>
+			</div>
+		</div>
+	</div>
+</div>
+
+</div>
+
+<script type="text/javascript">
+
+	$(document).ready(function()  {
+		form_data = {
+				free_text: "",
+				sort_by: "name",
+				sort_order: "asc",
+			};
+
+				$('#export-selection').click(function () {
+			var formData = new FormData();
+			for(var key in form_data) {
+				formData.append(key, form_data[key]);
+			}
+
+			$.ajax({
+				method: "POST",
+				beforeSend: function(request) {
+					request.setRequestHeader("X-Token", config.X_TOKEN);
+				},
+				url: "/api/system/export_zones",
+				data : formData,
+				processData: false,  // tell jQuery not to process the data
+				contentType: false,  // tell jQuery not to set contentType
+			})
+			.done(function( data ) {
+				if(data && data.export_file) {
+					window.open('/reports/download_export_csv/' + data.export_file, "_self");
+				}
+			})
+			.fail(function(jqXHR, textStatus) {
+				if(jqXHR.responseJSON) {
+						$.MessageBox(jqXHR.responseJSON.error);
+					}
+					else {
+						$.MessageBox(jqXHR.responseText);
+					}
+			});
+		});
+		
+				$('#delete-unused-zones').click(function (e) {
+			e.preventDefault();
+			$('#deleteUnusedZonesModal').modal('show');
+		});
+		
+				var IMPORT_ZONES_LANG = {
+			importing: "Importing...",
+			import_complete: "Import complete!",
+			import_zones: "Import zones",
+			select_file: "Please select a file to import"		};
+
+		$('#import-zones').click(function (e) {
+			e.preventDefault();
+			$('#importZonesModal').modal('show');
+		});
+
+		$('.import-zones-button').click(function () {
+			var $button = $('.import-zones-button');
+			var fileInput = $('#zonesCsvFile')[0];
+
+			if (fileInput.files.length == 0) {
+				$.MessageBox(IMPORT_ZONES_LANG.select_file).done(function () {
+					fileInput.click();
+				});
+				return;
+			}
+
+			$button.attr('disabled', true).text(IMPORT_ZONES_LANG.importing);
+
+			var formData = new FormData();
+			formData.append('file', fileInput.files[0]);
+
+			$.ajax({
+				method: "POST",
+				beforeSend: function (request) {
+					request.setRequestHeader("X-Token", config.X_TOKEN);
+				},
+				url: "/api/system/import_zones",
+				data: formData,
+				processData: false,
+				contentType: false
+			})
+			.done(function (data) {
+				$button.text(IMPORT_ZONES_LANG.import_complete);
+				$.MessageBox(data.response);
+			})
+			.fail(function (jqXHR) {
+				if (jqXHR.responseJSON) {
+					$.MessageBox(jqXHR.responseJSON.error);
+				} else {
+					$.MessageBox(jqXHR.responseText);
+				}
+			})
+			.always(function () {
+				setTimeout(function () {
+					$button.attr('disabled', false).text(IMPORT_ZONES_LANG.import_zones);
+				}, 100);
+			});
+		});
+		
+	});
+	</script>
+
+
+</div>
+<br>
+<!-- /#page-wrapper -->
+    
+<div id="saveConfigModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="saveConfigModalLabel" aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+		  <div class="modal-header">
+		    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+		    <h3 id="saveConfigModalLabel">Save configuration</h3>
+		  </div>
+		  <div class="modal-body">
+		    <p>This will save the current OLT(s) configuration as startup configuration. It may take up to 5 minutes for the OLT(s) to finish saving the config. Are you sure?</p>
+		  </div>
+		  <div class="modal-footer">
+		    <button class="btn btn-link" data-dismiss="modal" aria-hidden="true">No, cancel</button>
+		    <button class="btn btn-primary save-configuration-button">Yes, save configuration</button>
+		  </div>
+		</div>
+	</div>
+</div>
+
+<div id="importModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="importModalLabel" aria-hidden="true">
+</div>
+
+<div id="rebuildModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="rebuildModalLabel" aria-hidden="true">
+</div>
+
+<div id="deleteAllApiReconciliationModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="deleteAllApiReconciliationModalLabel" aria-hidden="true">
+</div>
+
+<div id="generateSnmpIdsModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="generateSnmpIdsModalLabel" aria-hidden="true">
+</div>
+
+    <!-- Bootstrap Core JavaScript -->
+    <script src="/public/smartolt-files/bootstrap.min.js"></script>
+    <script src="/public/smartolt-files/bootstrap-multiselect.js?v=3.53.0"></script>
+
+    <!-- Metis Menu Plugin JavaScript -->
+    <script src="/public/smartolt-files/metisMenu.min.js"></script>
+
+    <!-- Custom Theme JavaScript -->
+    <script src="/public/smartolt-files/sb-admin-2.js"></script>
+        
+    <!-- Loading overlay -->
+    <script src="/public/smartolt-files/loadingoverlay.custom.js?v=2"></script>
+    
+    <!-- Message box -->
+    <script src="/public/smartolt-files/messagebox.min.js"></script>
+    
+    
+
+<script type="text/javascript">
+
+$( document ).ready(function() {
+	
+	// Hide new version dot if user has already seen this version
+	var currentVersion = '3.53.0';
+	var lastSeenVersion = localStorage.getItem('lastSeenVersion');
+	if (lastSeenVersion === currentVersion) {
+		$('.new-version-dot').hide();
+	}
+
+	
+	$('#smartolt-update-banner-changelog').on('click', function(e) {
+		e.preventDefault();
+		localStorage.setItem('lastSeenVersion', currentVersion);
+		$('.new-version-dot').hide();
+				window.location.href = '/changelog';
+			});
+
+	$('#smartolt-update-banner-dismiss').on('click', function() {
+		localStorage.setItem('lastSeenVersion', currentVersion);
+		$('.new-version-dot').hide();
+		$('#smartolt-update-banner').slideUp(300);
+	});
+
+	$('#footer-changelog-link').on('click', function() {
+		localStorage.setItem('lastSeenVersion', currentVersion);
+		$('.new-version-dot').hide();
+	});
+
+	//hide alert-success after 5 seconds
+	/*setTimeout(function(){
+		$('.alert-success').not('.nofade').fadeOut();
+	},5000);*/
+	
+	var waitingForOLT   = $("<div>", {
+	    id      : "waitingOLT",
+	    css     : {
+	        "font-size" : "50px",
+			"white-space" : "nowrap"
+	    },
+	    text    : "Waiting for OLT"
+	});
+
+	var loadingOverlaySettings = {
+		    image       : "",
+		    fontawesome : "fa fa-spinner fa-spin",
+		    custom  : waitingForOLT,
+		    resizeInterval : 0
+		};
+
+	$.LoadingOverlay("append", loadingOverlaySettings);
+
+	window.showLoadingOverlay = function(loadingText = null) {
+		if(loadingText != null) {
+			$("#waitingOLT").text(loadingText);
+		}
+		else {
+			$("#waitingOLT").text("Waiting for OLT");
+		}
+		
+		$.LoadingOverlay("show", loadingOverlaySettings);
+	}
+
+	window.hideLoadingOverlay = function() {
+		$.LoadingOverlay("hide");
+	}
+
+	window.isLoadingOverlayVisible = function() {
+		return $('.loadingoverlay').is(":visible");
+	}
+	
+	//hide loading overlay when ajax request finishes
+	/*$(document).ajaxStop(function(){
+		hideLoadingOverlay();
+	});*/
+
+	//show toast with error
+	$(document).ajaxError(function(requestObject, error, errorThrown) {
+		if(error.status != 404 && error != undefined && error.responseJSON != undefined && 
+				error.responseJSON.error != undefined && error.responseJSON.error.length > 0) {
+			toast(error.responseJSON.error);
+		}
+	});
+
+	//confirm message box
+	window.MessageBoxConfirm = function(message){
+	    return $.MessageBox({
+	        buttonDone  : "OK",
+	        buttonFail  : "Cancel",
+	        message     : message
+	    });
+	}
+
+	window.getSelectedText = function() {
+        if (window.getSelection) {
+            return window.getSelection().toString();
+        } 
+        else if (document.selection) {
+            return document.selection.createRange().text;
+        }
+        return '';
+    }
+
+	//close navbar menu when clicking outside of it
+	$(document).click(function (event) {
+		var clickover = $(event.target);
+		var $nav = $("div.navbar-collapse");
+        var _opened = $nav.hasClass("in");
+
+        if (_opened === true && !clickover.hasClass("navbar-toggle")) {
+			$nav.collapse('hide');
+        }
+    });
+
+	/*https://www.quirksmode.org/blog/archives/2014/02/mouse_event_bub.html
+	  Safari on iOS only allows the mouse events, including click, to bubble up in the following situations:
+	  1. The target element of the event is a link or a form field.
+	  2. The target element, or any of its ancestors up to but not including the <body>, has an explicit event handler set for any of the mouse events. This event handler may be an empty function.
+      3. The target element, or any of its ancestors up to and including the document has a cursor: pointer CSS declarations. */
+	$("#content-wrapper").click(function (event) {
+		//this is here only for iOS to allow mouse events to bubble up so we can close navbar menu when clicking outside of it
+    });
+
+	// check navbar menu top offset
+    function closeMenuIfOpened() {
+		var $nav = $("div.navbar-collapse");
+    	var _opened = $nav.hasClass("in");
+
+        if (_opened === true && $(".navbar").offset().top > 50) {
+			$nav.collapse('hide');
+        }
+    }
+
+    //for touch devices, detect zoom in/out events and close the navbar menu if opened
+    var tracks = [];
+    $(window).on("touchmove", function (event) {
+	
+	    //only run code if the user has two fingers touching
+	    if (event.originalEvent.touches.length === 2) {
+	
+	        //track the touches, I'm setting each touch as an array inside the tracks array
+	        //each touch array contains an X and Y coordinate
+	        tracks.push([ [event.originalEvent.touches[0].pageX, event.originalEvent.touches[0].pageY], [event.originalEvent.touches[1].pageX, event.originalEvent.touches[1].pageY] ]);
+	    }
+	}).on("touchstart", function () {
+	    //start-over
+	    tracks = [];
+	}).on("touchend", function () {
+	    if(tracks.length > 0) {
+			var $nav = $("div.navbar-collapse");
+	    	var _opened = $nav.hasClass("in");
+	        if (_opened === true) {
+				$nav.collapse('hide');
+	        }
+	    }
+	});
+
+	// COPY TO CLIPBOARD
+	// Attempts to use .execCommand('copy') on a created text field
+	// Falls back to a selectable alert if not supported
+	// Attempts to display status in Bootstrap tooltip
+	// ------------------------------------------------------------------------------
+
+	function copyToClipboard(text, el) {
+	  var copyTest = document.queryCommandSupported('copy');
+	  var elOriginalText = el.attr('data-original-title');
+
+	  if (copyTest === true) {
+	    var copyTextArea = document.createElement("textarea");
+	    copyTextArea.value = text;
+	    document.body.appendChild(copyTextArea);
+	    copyTextArea.select();
+	    try {
+	      var successful = document.execCommand('copy');
+	      var msg = successful ? "Copied!" : "Whoops, not copied!";
+	      el.attr('data-original-title', msg).tooltip('show');
+	    } 
+	    catch (err) {
+	      console.log("Oops, unable to copy");
+	    }
+	    document.body.removeChild(copyTextArea);
+	    el.attr('data-original-title', elOriginalText);
+	  } 
+	  else {
+	    // Fallback if browser doesn't support .execCommand('copy')
+	    window.prompt("Copy to clipboard", text);
+	  }
+	}
+
+	function copyToClipboard2(text, el) {
+		  if (document.queryCommandSupported('copy') === true) {
+			var elOriginalText = el.attr('data-original-title');
+	 	    var copyTextArea = document.createElement("textarea");
+		    copyTextArea.textContent = text.text();
+		    document.body.appendChild(copyTextArea);
+
+		    var selection = document.getSelection();
+		    var range = document.createRange();
+		    range.selectNode(copyTextArea);
+		    selection.removeAllRanges();
+		    selection.addRange(range);
+		    
+		    try {
+		      var successful = document.execCommand('copy');
+			  var msg;
+
+			  if (successful) {
+				  msg = "Copied!";
+			  } 
+			  else {
+				msg = "Whoops, not copied!";
+				el.removeClass('not-selectable');
+			  }
+		      el.attr('data-original-title', msg).tooltip('show');
+		    } 
+		    catch (err) {
+		      console.log("Oops, unable to copy");
+		    }
+		    selection.removeAllRanges();
+		    document.body.removeChild(copyTextArea);
+		    el.attr('data-original-title', elOriginalText);
+		  } 
+		  else {
+			$('.not-selectable').removeClass('not-selectable');
+		    // Fallback if browser doesn't support .execCommand('copy')
+		    window.prompt("Copy to clipboard", text.text());
+		  }
+		}
+
+	// Initialize
+   // ---------------------------------------------------------------------
+
+   // Tooltips
+   // Requires Bootstrap 3 for functionality
+   $('.js-tooltip').tooltip();
+
+   // Copy to clipboard
+   // Grab any text in the attribute 'data-copy' and pass it to the 
+   // copy function
+   $('.js-copy').click(function() {
+     var text = $(this).attr('data-copy');
+     var el = $(this);
+     copyToClipboard(text, el);
+   });
+
+   $(document).on('click','.comma-copy', function() {
+	   $(this).removeClass('btn-primary').addClass('btn-default');
+	     var el = $('#'+$(this).attr('data-idtag'));
+	     copyToClipboard2(el, $(this));
+	     el.removeClass('text-primary').addClass('text-muted');
+	   });
+
+   //trim white spaces when paste in any input
+   $(document).on('paste', 'input[type=text]', function(e) {
+	  // prevent copying action
+	  e.preventDefault();
+	  
+	  var pastedText = e.originalEvent.clipboardData.getData('Text');
+	  var withoutSpaces = pastedText;
+	  if(pastedText) {
+		  withoutSpaces = pastedText.trim();
+	  }
+
+	  //remove all spaces, including from inside the text
+	  if($(this).hasClass('no_spaces')) {
+		  withoutSpaces = withoutSpaces.replace(/\s/g, '');
+	  }
+	  
+	  $(this).insertAtCaret(withoutSpaces);
+	});
+
+   $.fn.insertAtCaret = function(text) {
+	    return this.each(function() {
+	        if (document.selection && this.tagName == 'TEXTAREA') {
+	            //IE textarea support
+	            this.focus();
+	            sel = document.selection.createRange();
+	            sel.text = text;
+	            this.focus();
+	        } else if (this.selectionStart || this.selectionStart == '0') {
+	            //MOZILLA/NETSCAPE support
+	            startPos = this.selectionStart;
+	            endPos = this.selectionEnd;
+	            scrollTop = this.scrollTop;
+	            this.value = this.value.substring(0, startPos) + text + this.value.substring(endPos, this.value.length);
+	            this.focus();
+	            this.selectionStart = startPos + text.length;
+	            this.selectionEnd = startPos + text.length;
+	            this.scrollTop = scrollTop;
+	        } else {
+	            // IE input[type=text] and other browsers
+	            this.value += text;
+	            this.focus();
+	            this.value = this.value;    // forces cursor to end
+	        }
+	    });
+	};
+    
+	
+  $('.save-configuration-button').click(function (){
+    var button = $('.save-configuration-anchor');
+
+    button.toggleClass('active');
+    button.attr('disabled', true);
+    button.text("Saving...");
+    $('#saveConfigModal').modal('hide');
+
+    $.ajax({
+        method: "GET",
+        beforeSend: function(request) {
+		    request.setRequestHeader("X-Token", config.X_TOKEN);
+		  },
+        url: "/api/system/write",
+      })
+      .done(function( response ) {
+        $.MessageBox((response && response.response) ? response.response : "Save initiated. It could take the OLT up to 5 minutes to write the config!");
+        button.text("Save config");
+        setTimeout(function () {
+          button.toggleClass('active');
+          button.attr('disabled', false);
+          button.text("Save config");
+        }, 1000);
+      })
+      .fail(function(jqXHR, textStatus) {
+    	  if(jqXHR.responseJSON) {
+				$.MessageBox(jqXHR.responseJSON.error);
+			}
+			else {
+				$.MessageBox(jqXHR.responseText);
+			}
+	        setTimeout(function () {
+	        	 button.toggleClass('active');
+	             button.attr('disabled', false);
+	             button.text("Save config");
+	        }, 1000);
+      });
+  });
+
+    
+});
+</script>
+
+</div>
+
+<style>
+.new-version-dot {
+	display: inline-block;
+	width: 8px;
+	height: 8px;
+	background-color: #5cb85c;
+	border-radius: 50%;
+	margin-left: 4px;
+	animation: pulse-green 2s infinite;
+}
+.footer-dot-sep {
+	opacity: 0.5;
+	margin: 0 2px;
+}
+footer {
+	height: auto;
+	padding-bottom: 8px;
+}
+#feature-tour-whatsnew .fa-bullhorn {
+	margin-right: 5px;
+	font-size: 2em;
+	vertical-align: -6px;
+}
+
+@keyframes pulse-green {
+	0% {
+		transform: scale(0.95);
+		box-shadow: 0 0 0 0 rgba(92, 184, 92, 0.7);
+	}
+	70% {
+		transform: scale(1);
+		box-shadow: 0 0 0 6px rgba(92, 184, 92, 0);
+	}
+	100% {
+		transform: scale(0.95);
+		box-shadow: 0 0 0 0 rgba(92, 184, 92, 0);
+	}
+}
+
+</style>
+
+<footer>
+	<div class="text-center row">SmartOLT <a href="/modulo?pagina=GPONManager" class="btn-link" id="footer-changelog-link">v3.53.0<span class="new-version-dot" title="New updates"></span></a> © 2026</div>
+</footer>
+
+
+
+
+<div class="loadingoverlay" style="background-color: rgba(255, 255, 255, 0.8); position: fixed; display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; top: 0px; left: 0px; width: 100%; height: 100%; background-size: 100px;"><div class="loadingoverlay_fontawesome fa fa-spinner fa-spin" style="font-size: 100px;"></div><div id="waitingOLT" style="font-size: 50px; white-space: nowrap;">Waiting for OLT</div></div></body></html>

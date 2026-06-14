@@ -1,0 +1,893 @@
+<style>
+.co-container { max-width: 1100px; margin: 0 auto; }
+.co-steps { display: flex; justify-content: center; gap: 8px; margin: 24px 0 32px; }
+.co-step { display: flex; flex-direction: column; align-items: center; gap: 6px; flex: 1; max-width: 180px; position: relative; }
+.co-step:not(:last-child)::after { content: ''; position: absolute; top: 18px; left: calc(50% + 22px); width: calc(100% - 44px); height: 2px; background: var(--border-color); }
+.co-step.active:not(:last-child)::after { background: var(--primary); }
+.co-step.completed:not(:last-child)::after { background: var(--success); }
+.co-step-circle { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; border: 2px solid var(--border-color); color: var(--text-gray); background: var(--card-bg); z-index: 1; transition: all .3s; }
+.co-step.active .co-step-circle { border-color: var(--primary); background: var(--primary); color: #fff; }
+.co-step.completed .co-step-circle { border-color: var(--success); background: var(--success); color: #fff; }
+.co-step-label { font-size: 11px; color: var(--text-gray); text-align: center; font-weight: 500; text-transform: uppercase; letter-spacing: .3px; }
+.co-step.active .co-step-label { color: var(--primary); font-weight: 700; }
+.co-step.completed .co-step-label { color: var(--success); }
+
+.co-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 24px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,.04); }
+.co-card-title { font-size: 16px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; color: var(--text-primary); }
+.co-card h4 { font-size: 13px; font-weight: 600; margin: 16px 0 8px; color: var(--text-primary); }
+.co-card h4:first-child { margin-top: 0; }
+
+.co-params { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+.co-param-item { display: flex; flex-direction: column; gap: 2px; }
+.co-param-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .3px; color: var(--text-gray); }
+.co-param-value { font-size: 14px; color: var(--text-primary); padding: 6px 10px; background: var(--bg-color); border-radius: 6px; font-family: monospace; word-break: break-all; }
+
+.co-onu-list { max-height: 400px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
+.co-onu-item { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; transition: all .15s; }
+.co-onu-item:hover { border-color: var(--primary); background: rgba(var(--primary-rgb, 37,99,235), .03); }
+.co-onu-item.selected { border-color: var(--primary); background: rgba(var(--primary-rgb, 37,99,235), .08); box-shadow: 0 0 0 1px var(--primary); }
+.co-onu-item .co-onu-sn { font-weight: 600; font-size: 13px; font-family: monospace; color: var(--text-primary); flex: 1; }
+.co-onu-item .co-onu-detail { font-size: 11px; color: var(--text-gray); }
+
+.co-search-input { position: relative; }
+.co-search-input input { width: 100%; padding: 10px 14px 10px 40px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 14px; background: var(--card-bg); }
+.co-search-input i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-gray); }
+
+.co-loading-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.5); display: none; align-items: center; justify-content: center; z-index: 9999; }
+.co-loading-overlay.active { display: flex; }
+.co-loading-box { background: var(--card-bg); border-radius: 16px; padding: 40px; text-align: center; max-width: 420px; width: 90%; box-shadow: 0 10px 40px rgba(0,0,0,.2); }
+.co-loading-box .co-loading-spinner { font-size: 48px; color: var(--primary); margin-bottom: 16px; }
+.co-loading-box .co-loading-title { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+.co-loading-box .co-loading-status { font-size: 13px; color: var(--text-gray); margin-bottom: 16px; }
+.co-loading-box .co-loading-steps { text-align: left; }
+.co-loading-step { display: flex; align-items: center; gap: 8px; padding: 6px 0; font-size: 13px; }
+.co-loading-step i { width: 18px; text-align: center; }
+.co-loading-step.pending { color: var(--text-gray); }
+.co-loading-step.active { color: var(--primary); font-weight: 600; }
+.co-loading-step.done { color: var(--success); }
+.co-loading-step.failed { color: var(--danger); }
+
+.co-step-nav { display: flex; justify-content: space-between; margin-top: 20px; gap: 12px; }
+
+.co-cliente-card { display: flex; align-items: center; gap: 16px; padding: 14px; border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 12px; }
+.co-cliente-card .co-cliente-info { flex: 1; }
+.co-cliente-card .co-cliente-name { font-weight: 700; font-size: 15px; }
+.co-cliente-card .co-cliente-detail { font-size: 12px; color: var(--text-gray); }
+
+.co-servicio-item { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; transition: all .15s; margin-bottom: 4px; }
+.co-servicio-item:hover { border-color: var(--primary); }
+.co-servicio-item.selected { border-color: var(--primary); background: rgba(var(--primary-rgb, 37,99,235), .08); box-shadow: 0 0 0 1px var(--primary); }
+.co-servicio-item .co-servicio-info { flex: 1; }
+.co-servicio-item .co-servicio-plan { font-weight: 600; font-size: 13px; }
+.co-servicio-item .co-servicio-detail { font-size: 11px; color: var(--text-gray); }
+.co-servicio-item .badge { font-size: 10px; }
+
+.co-result-step { display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border-color); }
+.co-result-step:last-child { border-bottom: none; }
+.co-result-step i { width: 20px; text-align: center; margin-top: 2px; }
+.co-result-step.done { color: var(--success); }
+.co-result-step.failed { color: var(--danger); }
+.co-result-step .co-result-text { font-size: 13px; }
+
+.history-panel { display: none; }
+.history-panel.active { display: block; }
+
+.history-table { width: 100%; border-collapse: collapse; }
+.history-table th { text-align: left; padding: 8px 10px; font-size: 11px; text-transform: uppercase; letter-spacing: .3px; color: var(--text-gray); border-bottom: 1px solid var(--border-color); }
+.history-table td { padding: 8px 10px; font-size: 12px; border-bottom: 1px solid var(--border-color); }
+
+.co-reason-modal .modal-content { max-width: 500px; }
+.co-reason-modal textarea { width: 100%; min-height: 100px; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 13px; resize: vertical; }
+
+.co-confirm-modal .modal-content { max-width: 520px; }
+.co-confirm-params { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 16px; margin: 12px 0; font-size: 13px; }
+.co-confirm-params .co-confirm-label { color: var(--text-gray); font-size: 11px; text-transform: uppercase; }
+.co-confirm-params .co-confirm-value { font-weight: 600; word-break: break-all; }
+</style>
+
+<div class="co-container">
+  <div class="page-header">
+    <h2><i class="fas fa-exchange-alt"></i> Cambio de ONU</h2>
+    <div class="btn-group">
+      <button class="btn btn-secondary btn-sm" onclick="toggleHistory()"><i class="fas fa-history"></i> Historial</button>
+      <button class="btn btn-primary btn-sm" onclick="resetWizard()"><i class="fas fa-redo"></i> Nuevo Cambio</button>
+    </div>
+  </div>
+
+  <!-- Step Indicator -->
+  <div class="co-steps">
+    <div class="co-step active" data-step="1">
+      <div class="co-step-circle">1</div>
+      <div class="co-step-label">Buscar Cliente</div>
+    </div>
+    <div class="co-step" data-step="2">
+      <div class="co-step-circle">2</div>
+      <div class="co-step-label">Seleccionar Servicio</div>
+    </div>
+    <div class="co-step" data-step="3">
+      <div class="co-step-circle">3</div>
+      <div class="co-step-label">Escaneo de ONU</div>
+    </div>
+    <div class="co-step" data-step="4">
+      <div class="co-step-circle">4</div>
+      <div class="co-step-label">Configurar &amp; Cambiar</div>
+    </div>
+  </div>
+
+  <!-- ====== STEP 1: Search Client ====== -->
+  <div class="co-step-content" data-step="1">
+    <div class="co-card">
+      <div class="co-card-title"><i class="fas fa-search"></i> Buscar Cliente</div>
+      <div class="co-search-input">
+        <i class="fas fa-search"></i>
+        <input type="text" id="coBuscarCliente" placeholder="Buscar por nombre, cédula o teléfono..." oninput="buscarClientes(this.value)" autofocus>
+      </div>
+      <div style="margin-top:12px;">
+        <small style="color:var(--text-gray);">Escriba al menos 2 caracteres para buscar.</small>
+      </div>
+    </div>
+    <div id="coClientesResultados"></div>
+  </div>
+
+  <!-- ====== STEP 2: Select Service ====== -->
+  <div class="co-step-content" data-step="2" style="display:none;">
+    <div class="co-card">
+      <div class="co-card-title"><i class="fas fa-user"></i> Cliente Seleccionado</div>
+      <div id="coClienteInfo" class="co-cliente-card"></div>
+    </div>
+    <div class="co-card">
+      <div class="co-card-title"><i class="fas fa-wifi"></i> Seleccionar Servicio</div>
+      <p style="font-size:12px;color:var(--text-gray);margin-bottom:12px;">Solo se muestran servicios con ONU vinculada. Seleccione el servicio al que desea cambiar la ONU.</p>
+      <div id="coServiciosList"></div>
+      <div class="co-step-nav">
+        <button class="btn btn-secondary" onclick="goToStep(1)"><i class="fas fa-arrow-left"></i> Volver</button>
+        <button class="btn btn-primary" onclick="goToStep(3)" id="coBtnServicioNext" disabled>Siguiente <i class="fas fa-arrow-right"></i></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== STEP 3: Scan ONU ====== -->
+  <div class="co-step-content" data-step="3" style="display:none;">
+    <div class="co-card">
+      <div class="co-card-title"><i class="fas fa-microchip"></i> Nueva ONU</div>
+      <div id="coScanInfo" style="margin-bottom:12px;"></div>
+      <label style="font-size:13px;font-weight:600;display:block;margin-bottom:6px;">Seleccionar OLT</label>
+      <select id="coOltSelect" class="form-control" style="margin-bottom:12px;">
+        <option value="">Seleccione una OLT...</option>
+      </select>
+      <button class="btn btn-primary" onclick="escanearONUs()" id="coBtnScan"><i class="fas fa-sync"></i> Escanear ONUs Pendientes</button>
+      <div style="margin-top:8px;">
+        <small style="color:var(--text-gray);">Escaneará ONUs no configuradas detectadas en la OLT.</small>
+      </div>
+    </div>
+    <div class="co-card" id="coOnuListCard" style="display:none;">
+      <div class="co-card-title"><i class="fas fa-list"></i> ONUs Detectadas</div>
+      <div id="coOnusDisponibles" class="co-onu-list"></div>
+      <div class="co-step-nav">
+        <button class="btn btn-secondary" onclick="goToStep(2)"><i class="fas fa-arrow-left"></i> Volver</button>
+        <button class="btn btn-primary" onclick="goToStep(4)" id="coBtnOnuNext" disabled>Siguiente <i class="fas fa-arrow-right"></i></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== STEP 4: Configure & Swap ====== -->
+  <div class="co-step-content" data-step="4" style="display:none;">
+    <div class="co-card">
+      <div class="co-card-title"><i class="fas fa-cogs"></i> Parámetros Capturados</div>
+      <div class="co-params" id="coParamsGrid"></div>
+    </div>
+    <div class="co-card">
+      <div class="co-card-title"><i class="fas fa-check-circle"></i> Realizar Cambio</div>
+      <p style="font-size:12px;color:var(--text-gray);margin-bottom:12px;">El proceso realizará los siguientes pasos: eliminar ONU vieja de SmartOLT, autorizar la nueva ONU, y registrar el cambio.</p>
+      <div class="co-step-nav">
+        <button class="btn btn-secondary" onclick="goToStep(3)"><i class="fas fa-arrow-left"></i> Volver</button>
+        <button class="btn btn-success" onclick="abrirModalRazon()"><i class="fas fa-play"></i> Iniciar Cambio</button>
+      </div>
+    </div>
+    <!-- Result steps (shown after completion) -->
+    <div class="co-card" id="coResultCard" style="display:none;">
+      <div class="co-card-title"><i class="fas fa-clipboard-check"></i> Resultado del Cambio</div>
+      <div id="coResultSteps"></div>
+    </div>
+  </div>
+
+  <!-- History Panel (toggle) -->
+  <div class="history-panel" id="coHistoryPanel">
+    <div class="co-card">
+      <div class="co-card-title"><i class="fas fa-history"></i> Historial de Cambios</div>
+      <div style="margin-bottom:12px;">
+        <div class="co-search-input">
+          <i class="fas fa-search"></i>
+          <input type="text" id="coHistorySearch" placeholder="Buscar en historial..." oninput="cargarHistorial(1)" style="padding:8px 12px 8px 36px;">
+        </div>
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="history-table" id="coHistoryTable">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Cliente</th>
+              <th>ONU Vieja</th>
+              <th>ONU Nueva</th>
+              <th>OLT Vieja</th>
+              <th>OLT Nueva</th>
+              <th>Razón</th>
+              <th>Fecha</th>
+              <th>Creado Por</th>
+            </tr>
+          </thead>
+          <tbody id="coHistoryBody"></tbody>
+        </table>
+      </div>
+      <div id="coHistoryPagination" style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;">
+        <small id="coHistoryInfo" style="color:var(--text-gray);"></small>
+        <div class="btn-group" id="coHistoryPages"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading Overlay -->
+  <div class="co-loading-overlay" id="coLoadingOverlay">
+    <div class="co-loading-box">
+      <div class="co-loading-spinner"><i class="fas fa-spinner fa-spin"></i></div>
+      <div class="co-loading-title">Procesando Cambio de ONU</div>
+      <div class="co-loading-status" id="coLoadingStatus">Preparando...</div>
+      <div class="co-loading-steps" id="coLoadingSteps">
+        <div class="co-loading-step pending" data-step="authorize"><i class="fas fa-circle"></i> Autorizar nueva ONU en SmartOLT</div>
+        <div class="co-loading-step pending" data-step="verify"><i class="fas fa-circle"></i> Verificar ONU registrada</div>
+        <div class="co-loading-step pending" data-step="delete"><i class="fas fa-circle"></i> Eliminar ONU vieja</div>
+        <div class="co-loading-step pending" data-step="register"><i class="fas fa-circle"></i> Registrar cambio en base de datos</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reason Modal -->
+  <div class="modal co-reason-modal" id="coReasonModal" style="display:none;">
+    <div class="modal-content">
+      <div class="modal-header"><h3><i class="fas fa-edit"></i> Motivo del Cambio</h3><span class="modal-close" onclick="closeModal('coReasonModal')">&times;</span></div>
+      <div class="modal-body">
+        <p style="font-size:13px;color:var(--text-gray);margin-bottom:12px;">Describa el motivo del cambio de ONU. Este campo es obligatorio.</p>
+        <textarea id="coRazonCambio" placeholder="Ej: ONU dañada por sobretensión, actualización a WiFi 5GHz, migración a nueva OLT..."></textarea>
+      </div>
+      <div class="modal-footer" style="display:flex;justify-content:flex-end;gap:8px;padding:12px 16px;border-top:1px solid var(--border-color);">
+        <button class="btn btn-secondary" onclick="closeModal('coReasonModal')">Cancelar</button>
+        <button class="btn btn-primary" onclick="confirmarCambio()">Continuar <i class="fas fa-arrow-right"></i></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirmation Modal -->
+  <div class="modal co-confirm-modal" id="coConfirmModal" style="display:none;">
+    <div class="modal-content">
+      <div class="modal-header"><h3><i class="fas fa-exclamation-triangle"></i> Confirmar Cambio de ONU</h3><span class="modal-close" onclick="closeModal('coConfirmModal')">&times;</span></div>
+      <div class="modal-body">
+        <p style="font-size:13px;color:var(--text-gray);margin-bottom:8px;">Confirme los detalles antes de proceder:</p>
+        <div class="co-confirm-params" id="coConfirmParams"></div>
+        <p style="font-size:13px;color:var(--text-gray);margin-top:8px;"><strong>Motivo:</strong> <span id="coConfirmRazon"></span></p>
+        <p style="font-size:12px;color:var(--danger);margin-top:12px;"><i class="fas fa-info-circle"></i> Esta acción eliminará la ONU vieja de SmartOLT y autorizará la nueva. El servicio podría interrumpirse momentáneamente.</p>
+      </div>
+      <div class="modal-footer" style="display:flex;justify-content:flex-end;gap:8px;padding:12px 16px;border-top:1px solid var(--border-color);">
+        <button class="btn btn-secondary" onclick="closeModal('coConfirmModal')">Cancelar</button>
+        <button class="btn btn-success" onclick="ejecutarCambio()"><i class="fas fa-check"></i> Confirmar y Ejecutar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== STATE =====
+var coState = {
+  cliente: null,
+  servicio: null,
+  oldOnuSn: '',
+  oldOnuOltId: 0,
+  newOnuSn: '',
+  newOnuOltId: 0,
+  oltName: '',
+  scanData: [],
+  oldOltName: '',
+  newOltName: '',
+  selectedOltId: 0,
+  pppoeUser: '',
+  pppoePass: '',
+  wifiSsid24: '',
+  wifiPass24: '',
+  wifiSsid5: '',
+  wifiPass5: '',
+  vlan: '',
+  onuType: '', newOnuBoard: '', newOnuPort: '',
+  swapId: null,
+  changeReason: '',
+  currentStep: 1
+};
+
+// ===== STEP NAVIGATION =====
+function goToStep(step) {
+  // Hide all step contents
+  document.querySelectorAll('.co-step-content').forEach(function(el) { el.style.display = 'none'; });
+  // Show current
+  document.querySelector('.co-step-content[data-step="' + step + '"]').style.display = 'block';
+  // Update indicators
+  document.querySelectorAll('.co-step').forEach(function(el) {
+    el.classList.remove('active', 'completed');
+    var s = parseInt(el.getAttribute('data-step'));
+    if (s === step) el.classList.add('active');
+    else if (s < step) el.classList.add('completed');
+  });
+  coState.currentStep = step;
+  
+  if (step === 1) document.getElementById('coBuscarCliente').focus();
+  if (step === 3 && coState.selectedOltId) {
+    document.getElementById('coOltSelect').value = coState.selectedOltId;
+    escanearONUs();
+  }
+  if (step === 4) renderParams();
+}
+
+function resetWizard() {
+  coState = {
+    cliente: null, servicio: null, oldOnuSn: '', oldOnuOltId: 0,
+    newOnuSn: '', newOnuOltId: 0, oltName: '', scanData: [],
+    oldOltName: '', newOltName: '', selectedOltId: 0,
+    pppoeUser: '', pppoePass: '', wifiSsid24: '', wifiPass24: '',
+    wifiSsid5: '', wifiPass5: '', vlan: '', onuType: '', swapId: null,
+    changeReason: '', currentStep: 1
+  };
+  document.getElementById('coBuscarCliente').value = '';
+  document.getElementById('coClientesResultados').innerHTML = '';
+  document.getElementById('coServiciosList').innerHTML = '';
+  document.getElementById('coClienteInfo').innerHTML = '';
+  document.getElementById('coOnusDisponibles').innerHTML = '';
+  document.getElementById('coOnuListCard').style.display = 'none';
+  document.getElementById('coResultCard').style.display = 'none';
+  document.getElementById('coParamsGrid').innerHTML = '';
+  document.getElementById('coBtnServicioNext').disabled = true;
+  document.getElementById('coBtnOnuNext').disabled = true;
+  document.getElementById('coScanInfo').innerHTML = '';
+  document.getElementById('coOltSelect').value = '';
+  goToStep(1);
+}
+
+// ===== STEP 1: SEARCH CLIENT =====
+var coSearchTimeout = null;
+function buscarClientes(q) {
+  clearTimeout(coSearchTimeout);
+  if (q.length < 2) { document.getElementById('coClientesResultados').innerHTML = ''; return; }
+  coSearchTimeout = setTimeout(function() {
+    fetch('/api/cambio-onu/buscar-cliente?q=' + encodeURIComponent(q))
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        var html = '';
+        if (data.error) { html = '<div class="co-card"><p style="color:var(--danger);text-align:center;">' + data.error + '</p></div>'; }
+        else if (data.length === 0) { html = '<div class="co-card"><p style="color:var(--text-gray);text-align:center;padding:20px;">No se encontraron clientes</p></div>'; }
+        else {
+          data.forEach(function(c) {
+            var dir = c.direccion || '';
+            var servicesInfo = '';
+            if (c.servicios && c.servicios.length > 0) {
+              var withOnu = c.servicios.filter(function(s) { return s.onu_sn; });
+              servicesInfo = '<small style="color:var(--text-gray);">' + c.servicios.length + ' servicio(s)';
+              if (withOnu.length > 0) servicesInfo += ' | <strong style="color:var(--success);">' + withOnu.length + ' con ONU</strong>';
+              else servicesInfo += ' | <span style="color:var(--danger);">Sin ONU vinculada</span>';
+              servicesInfo += '</small>';
+            }
+            html += '<div class="co-card" style="cursor:pointer;" onclick="seleccionarCliente(' + c.id + ')">';
+            html += '<div style="display:flex;align-items:center;gap:16px;">';
+            html += '<div style="flex:1;">';
+            html += '<div class="co-card-title" style="margin:0;"><i class="fas fa-user"></i> ' + c.nombre + '</div>';
+            html += '<div><small style="color:var(--text-gray);">' + (c.cedula || '') + ' | ' + (c.telefono || '') + (dir ? ' | ' + dir : '') + '</small></div>';
+            html += servicesInfo;
+            html += '</div>';
+            html += '<button class="btn btn-primary btn-sm">Seleccionar <i class="fas fa-arrow-right"></i></button>';
+            html += '</div></div>';
+          });
+        }
+        document.getElementById('coClientesResultados').innerHTML = html;
+      })
+      .catch(function(err) {
+        document.getElementById('coClientesResultados').innerHTML = '<div class="co-card"><p style="color:var(--danger);text-align:center;">Error: ' + err.message + '</p></div>';
+      });
+  }, 300);
+}
+
+function seleccionarCliente(clienteId) {
+  fetch('/api/cambio-onu/servicios/' + clienteId)
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (!data.success) { alert(data.error); return; }
+      // Build state
+      var clienteName = '';
+      var serviciosHtml = '';
+      var tieneConOnu = false;
+      
+      // Get client info from previous search
+      var tarjeta = document.querySelector('#coClientesResultados .co-card');
+      
+      data.data.forEach(function(s) {
+        if (!clienteName) clienteName = s.cliente_nombre || ('Cliente #' + clienteId);
+        var hasOnu = s.onu_sn ? true : false;
+        if (hasOnu) tieneConOnu = true;
+        var estCls = s.estado === 'activo' ? 'success' : s.estado === 'suspendido' ? 'warning' : 'secondary';
+        serviciosHtml += '<div class="co-servicio-item" onclick="seleccionarServicio(this, ' + s.id + ')" data-onu-sn="' + (s.onu_sn || '') + '" data-onu-id="' + (s.onu_id || 0) + '" data-olt-id="' + (s.olt_id || 0) + '" data-olt-name="' + (s.olt_nombre || '') + '" data-pppoe-user="' + (s.pppoe_user || '') + '" data-pppoe-pass="' + (s.pppoe_pass || '') + '">';
+        serviciosHtml += '<span class="badge badge-' + estCls + '">' + s.estado + '</span>';
+        serviciosHtml += '<div class="co-servicio-info">';
+        serviciosHtml += '<div class="co-servicio-plan">' + (s.plan_nombre || 'Sin plan') + ' <small>#SVC-' + s.id + '</small></div>';
+        serviciosHtml += '<div class="co-servicio-detail">' + (s.zona_nombre || '') + ' | IP: ' + (s.ip || 'N/A');
+        if (hasOnu) serviciosHtml += ' | ONU: <strong>' + s.onu_sn + '</strong>';
+        else serviciosHtml += ' | <span style="color:var(--danger);">Sin ONU</span>';
+        serviciosHtml += '</div></div>';
+        serviciosHtml += '<i class="fas fa-check-circle" style="color:var(--success);display:none;"></i>';
+        serviciosHtml += '</div>';
+      });
+      
+      // Update client info display
+      document.getElementById('coClienteInfo').innerHTML = 
+        '<div class="co-cliente-info"><div class="co-cliente-name">' + clienteName + '</div></div>';
+      
+      document.getElementById('coServiciosList').innerHTML = serviciosHtml;
+      document.getElementById('coBtnServicioNext').disabled = true;
+      coState.cliente = { id: clienteId, nombre: clienteName };
+      goToStep(2);
+    });
+}
+
+function seleccionarServicio(el, servicioId) {
+  document.querySelectorAll('.co-servicio-item').forEach(function(e) {
+    e.classList.remove('selected');
+    e.querySelector('i.fa-check-circle').style.display = 'none';
+  });
+  el.classList.add('selected');
+  el.querySelector('i.fa-check-circle').style.display = 'inline-block';
+  
+  coState.servicio = { id: servicioId };
+  coState.oldOnuSn = el.getAttribute('data-onu-sn') || '';
+  coState.oldOnuOltId = parseInt(el.getAttribute('data-olt-id')) || 0;
+  coState.oldOltName = el.getAttribute('data-olt-name') || '';
+  coState.pppoeUser = el.getAttribute('data-pppoe-user') || '';
+  coState.pppoePass = el.getAttribute('data-pppoe-pass') || '';
+  
+  document.getElementById('coBtnServicioNext').disabled = false;
+}
+
+// ===== STEP 3: SCAN ONUS =====
+function loadOltOptions() {
+  fetch('/api/smartolt/config')
+    .then(function(r) { return r.json(); })
+    .then(function(config) {
+      // Get OLTs list
+      return fetch('/api/olts').then(function(r) { return r.json(); });
+    })
+    .then(function(olts) {
+      var sel = document.getElementById('coOltSelect');
+      sel.innerHTML = '<option value="">Seleccione una OLT...</option>';
+      olts.forEach(function(olt) {
+        var opt = document.createElement('option');
+        opt.value = olt.id;
+        opt.textContent = olt.nombre + (olt.ip ? ' (' + olt.ip + ')' : '');
+        if (coState.oldOnuOltId && parseInt(olt.id) === coState.oldOnuOltId) opt.selected = true;
+        sel.appendChild(opt);
+      });
+      if (coState.oldOnuOltId && !olts.some(function(o) { return o.id === coState.oldOnuOltId; })) {
+        // Add the old OLT anyway
+        fetch('/api/olts').then(function(r) { return r.json(); }).then(function(all) {
+          // already loaded all
+        });
+      }
+      // Select old OLT by default if available
+      if (coState.oldOnuOltId) {
+        sel.value = coState.oldOnuOltId;
+      }
+      // Update scan info
+      document.getElementById('coScanInfo').innerHTML = 
+        '<div style="display:flex;gap:8px;flex-wrap:wrap;">' +
+        '<span class="badge badge-info">Cliente: ' + (coState.cliente ? coState.cliente.nombre : '') + '</span>' +
+        '<span class="badge badge-info">Servicio: #SVC-' + (coState.servicio ? coState.servicio.id : '') + '</span>' +
+        '<span class="badge badge-secondary">ONU Vieja: ' + coState.oldOnuSn + '</span>' +
+        '<span class="badge badge-secondary">OLT Vieja: ' + coState.oldOltName + '</span>' +
+        '</div>';
+    });
+}
+
+function escanearONUs() {
+  var oltId = parseInt(document.getElementById('coOltSelect').value);
+  if (!oltId) { alert('Seleccione una OLT'); return; }
+  
+  coState.selectedOltId = oltId;
+  document.getElementById('coBtnScan').disabled = true;
+  document.getElementById('coBtnScan').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Escaneando...';
+  document.getElementById('coOnusDisponibles').innerHTML = '';
+  
+  fetch('/api/cambio-onu/scan-onus?olt_id=' + oltId + '&mode=smartolt')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      document.getElementById('coBtnScan').disabled = false;
+      document.getElementById('coBtnScan').innerHTML = '<i class="fas fa-sync"></i> Escanear ONUs Pendientes';
+      
+      if (!data.success) {
+        document.getElementById('coOnusDisponibles').innerHTML = '<p style="color:var(--danger);text-align:center;padding:20px;">' + data.message + '</p>';
+        document.getElementById('coOnuListCard').style.display = 'block';
+        return;
+      }
+      
+      coState.scanData = data.onus || [];
+      coState.newOltName = data.olt_name || '';
+      
+      if (coState.scanData.length === 0) {
+        document.getElementById('coOnusDisponibles').innerHTML = '<p style="color:var(--text-gray);text-align:center;padding:20px;">No se encontraron ONUs pendientes en esta OLT.</p>';
+        document.getElementById('coOnuListCard').style.display = 'block';
+        return;
+      }
+      
+      var html = '';
+      coState.scanData.forEach(function(o, i) {
+        var sn = o.sn || o.serial || o.serial_number || o.mac || '';
+        var name = o.name || o.nombre || o.description || '';
+        var signal = o.signal || o.signal_dbm || o.rx_power || '';
+        var port = o.port || o.pon_port || o.puerto || '';
+        var model = o.onu_type || o.model || '';
+        var board = o.board || '';
+        
+        html += '<div class="co-onu-item" onclick="seleccionarONU(this, ' + i + ')" data-sn="' + sn + '" data-model="' + model + '" data-board="' + board + '" data-port="' + port + '">';
+        html += '<i class="fas fa-microchip" style="color:var(--primary);font-size:20px;"></i>';
+        html += '<div class="co-onu-sn">' + sn + '</div>';
+        html += '<div class="co-onu-detail">';
+        if (name) html += name + ' | ';
+        if (model) html += model + ' | ';
+        if (port) html += 'Puerto: ' + board + '/' + port + ' | ';
+        if (signal) html += 'Señal: ' + signal;
+        html += '</div>';
+        html += '<i class="fas fa-check-circle" style="color:var(--success);display:none;font-size:18px;"></i>';
+        html += '</div>';
+      });
+      
+      document.getElementById('coOnusDisponibles').innerHTML = html;
+      document.getElementById('coOnuListCard').style.display = 'block';
+      document.getElementById('coBtnOnuNext').disabled = true;
+    })
+    .catch(function(err) {
+      document.getElementById('coBtnScan').disabled = false;
+      document.getElementById('coBtnScan').innerHTML = '<i class="fas fa-sync"></i> Escanear ONUs Pendientes';
+      document.getElementById('coOnusDisponibles').innerHTML = '<p style="color:var(--danger);text-align:center;padding:20px;">Error: ' + err.message + '</p>';
+      document.getElementById('coOnuListCard').style.display = 'block';
+    });
+}
+
+function seleccionarONU(el, index) {
+  document.querySelectorAll('.co-onu-item').forEach(function(e) {
+    e.classList.remove('selected');
+    e.querySelector('i.fa-check-circle').style.display = 'none';
+  });
+  el.classList.add('selected');
+  el.querySelector('i.fa-check-circle').style.display = 'inline-block';
+  
+  var data = coState.scanData[index];
+  coState.newOnuSn = el.getAttribute('data-sn') || '';
+  coState.onuType = el.getAttribute('data-model') || '';
+  coState.newOnuBoard = el.getAttribute('data-board') || '';
+  coState.newOnuPort = el.getAttribute('data-port') || '';
+  coState.newOnuOltId = coState.selectedOltId;
+  document.getElementById('coBtnOnuNext').disabled = false;
+}
+
+// Load OLTs when step 3 is ready (called from step navigation)
+var origGoToStep = goToStep;
+goToStep = function(step) {
+  origGoToStep(step);
+  if (step === 3) loadOltOptions();
+};
+
+// ===== STEP 4: PARAMS & EXECUTION =====
+function renderParams() {
+  var html = '';
+  html += '<div class="co-param-item"><span class="co-param-label">Cliente</span><span class="co-param-value">' + (coState.cliente ? coState.cliente.nombre : '') + '</span></div>';
+  html += '<div class="co-param-item"><span class="co-param-label">Servicio</span><span class="co-param-value">#SVC-' + (coState.servicio ? coState.servicio.id : '') + '</span></div>';
+  html += '<div class="co-param-item"><span class="co-param-label">ONU Vieja (SN)</span><span class="co-param-value">' + coState.oldOnuSn + '</span></div>';
+  html += '<div class="co-param-item"><span class="co-param-label">OLT Vieja</span><span class="co-param-value">' + coState.oldOltName + '</span></div>';
+  html += '<div class="co-param-item"><span class="co-param-label">ONU Nueva (SN)</span><span class="co-param-value">' + coState.newOnuSn + '</span></div>';
+  html += '<div class="co-param-item"><span class="co-param-label">OLT Nueva</span><span class="co-param-value">' + coState.newOltName + '</span></div>';
+  html += '<div class="co-param-item"><span class="co-param-label">PPPoE Usuario</span><span class="co-param-value">' + (coState.pppoeUser || 'DHCP') + '</span></div>';
+  html += '<div class="co-param-item"><span class="co-param-label">PPPoE Contraseña</span><span class="co-param-value">' + (coState.pppoePass ? '••••••••' : 'N/A') + '</span></div>';
+  
+  // WiFi params
+  var wifiHtml = '<div class="co-card"><div class="co-card-title"><i class="fas fa-wifi"></i> Configuración WiFi</div>';
+  wifiHtml += '<label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">SSID 2.4GHz</label>';
+  wifiHtml += '<input type="text" class="form-control" id="coWifiSsid24" value="' + (coState.wifiSsid24 || '') + '" placeholder="Ej: ISPTotal-WiFi" style="margin-bottom:8px;">';
+  wifiHtml += '<label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">Contraseña 2.4GHz</label>';
+  wifiHtml += '<input type="text" class="form-control" id="coWifiPass24" value="' + (coState.wifiPass24 || '') + '" placeholder="Ej: Clave1234" style="margin-bottom:8px;">';
+  wifiHtml += '<label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">SSID 5GHz</label>';
+  wifiHtml += '<input type="text" class="form-control" id="coWifiSsid5" value="' + (coState.wifiSsid5 || '') + '" placeholder="Opcional" style="margin-bottom:8px;">';
+  wifiHtml += '<label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">Contraseña 5GHz</label>';
+  wifiHtml += '<input type="text" class="form-control" id="coWifiPass5" value="' + (coState.wifiPass5 || '') + '" placeholder="Opcional" style="margin-bottom:4px;">';
+  wifiHtml += '</div>';
+  
+  // VLAN
+  var vlanHtml = '<div class="co-card"><div class="co-card-title"><i class="fas fa-tag"></i> VLAN</div>';
+  vlanHtml += '<label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">VLAN ID</label>';
+  vlanHtml += '<input type="text" class="form-control" id="coVlan" value="' + (coState.vlan || '') + '" placeholder="Ej: 100 (dejar vacío para usar default de OLT)">';
+  vlanHtml += '</div>';
+  
+  document.getElementById('coParamsGrid').innerHTML = html;
+  // Insert WiFi/VLAN cards after the params
+  var wifiCard = document.createElement('div');
+  wifiCard.innerHTML = wifiHtml;
+  document.querySelector('.co-params').parentNode.appendChild(wifiCard.firstElementChild);
+  
+  var vlanCard = document.createElement('div');
+  vlanCard.innerHTML = vlanHtml;
+  wifiCard.firstElementChild.parentNode.appendChild(vlanCard.firstElementChild);
+  
+  // Save on change
+  document.getElementById('coWifiSsid24').onchange = function() { coState.wifiSsid24 = this.value; };
+  document.getElementById('coWifiPass24').onchange = function() { coState.wifiPass24 = this.value; };
+  document.getElementById('coWifiSsid5').onchange = function() { coState.wifiSsid5 = this.value; };
+  document.getElementById('coWifiPass5').onchange = function() { coState.wifiPass5 = this.value; };
+  document.getElementById('coVlan').onchange = function() { coState.vlan = this.value; };
+}
+
+function abrirModalRazon() {
+  // Save WiFi/VLAN values
+  if (document.getElementById('coWifiSsid24')) coState.wifiSsid24 = document.getElementById('coWifiSsid24').value;
+  if (document.getElementById('coWifiPass24')) coState.wifiPass24 = document.getElementById('coWifiPass24').value;
+  if (document.getElementById('coWifiSsid5')) coState.wifiSsid5 = document.getElementById('coWifiSsid5').value;
+  if (document.getElementById('coWifiPass5')) coState.wifiPass5 = document.getElementById('coWifiPass5').value;
+  if (document.getElementById('coVlan')) coState.vlan = document.getElementById('coVlan').value;
+  
+  document.getElementById('coRazonCambio').value = '';
+  openModal('coReasonModal');
+}
+
+function confirmarCambio() {
+  var razon = document.getElementById('coRazonCambio').value.trim();
+  if (!razon) { alert('Debe ingresar el motivo del cambio.'); return; }
+  coState.changeReason = razon;
+  closeModal('coReasonModal');
+  
+  // Show confirm modal
+  var paramsHtml = '';
+  var items = [
+    ['Cliente', coState.cliente ? coState.cliente.nombre : ''],
+    ['Servicio', '#SVC-' + (coState.servicio ? coState.servicio.id : '')],
+    ['ONU Vieja', coState.oldOnuSn],
+    ['OLT Vieja', coState.oldOltName],
+    ['ONU Nueva', coState.newOnuSn],
+    ['OLT Nueva', coState.newOltName],
+    ['PPPoE', coState.pppoeUser || 'DHCP'],
+    ['WiFi 2.4', coState.wifiSsid24 || 'No'],
+    ['WiFi 5', coState.wifiSsid5 || 'No'],
+    ['VLAN', coState.vlan || 'Default OLT']
+  ];
+  items.forEach(function(item) {
+    paramsHtml += '<div class="co-confirm-label">' + item[0] + '</div><div class="co-confirm-value">' + item[1] + '</div>';
+  });
+  document.getElementById('coConfirmParams').innerHTML = paramsHtml;
+  document.getElementById('coConfirmRazon').textContent = razon;
+  openModal('coConfirmModal');
+}
+
+function ejecutarCambio() {
+  closeModal('coConfirmModal');
+  var overlay = document.getElementById('coLoadingOverlay');
+  overlay.classList.add('active');
+  
+  // Reset loading steps
+  document.querySelectorAll('.co-loading-step').forEach(function(el) {
+    el.className = 'co-loading-step pending';
+    el.querySelector('i').className = 'fas fa-circle';
+  });
+  
+  // ===== FLUJO: Primero eliminar vieja, luego autorizar nueva =====
+  
+  // STEP 1: Delete old ONU first (to avoid SmartOLT save_config conflicts)
+  document.getElementById('coLoadingStatus').textContent = 'Eliminando ONU vieja...';
+  var step1 = document.querySelector('.co-loading-step[data-step="delete"]');
+  step1.className = 'co-loading-step active';
+  step1.querySelector('i').className = 'fas fa-spinner fa-spin';
+  
+  fetch('/api/smartolt/onu/authorize', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      olt_id: coState.newOnuOltId,
+      serial: coState.newOnuSn,
+      model: coState.onuType || '',
+      descripcion: coState.cliente ? coState.cliente.nombre : '',
+      cliente_nombre: coState.cliente ? coState.cliente.nombre : '',
+      servicio_id: coState.servicio.id,
+      vlan: coState.vlan || '',
+      board: coState.newOnuBoard || '',
+      port: coState.newOnuPort || '',
+      pppoe_user: coState.pppoeUser || '',
+      pppoe_pass: coState.pppoePass || '',
+      onu_mode: ''
+    })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(authResult) {
+    if (!authResult.success) {
+      throw new Error(authResult.message || 'Error al autorizar nueva ONU');
+    }
+    step1.className = 'co-loading-step done';
+    step1.querySelector('i').className = 'fas fa-check-circle';
+    
+    // STEP 2: Delete old ONU immediately (no verificar)
+    document.getElementById('coLoadingStatus').textContent = 'Eliminando ONU vieja...';
+    document.getElementById('coLoadingStatus').textContent = 'Eliminando ONU vieja...';
+    var step2 = document.querySelector('.co-loading-step[data-step="delete"]');
+    step2.className = 'co-loading-step active';
+    step2.querySelector('i').className = 'fas fa-spinner fa-spin';
+    
+    return fetch('/api/cambio-onu/eliminar-onu-vieja', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sn: coState.oldOnuSn, olt_id: coState.oldOnuOltId, servicio_id: coState.servicio.id })
+    });
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(authResult) {
+    if (!authResult.success) {
+      throw new Error(authResult.message || 'Error al autorizar nueva ONU');
+    }
+    var step2 = document.querySelector('.co-loading-step[data-step="authorize"]');
+    step2.className = 'co-loading-step done';
+    step2.querySelector('i').className = 'fas fa-check-circle';
+    
+    // STEP 3: Create swap record
+    document.getElementById('coLoadingStatus').textContent = 'Registrando cambio en base de datos...';
+    var step3 = document.querySelector('.co-loading-step[data-step="register"]');
+    step3.className = 'co-loading-step active';
+    step3.querySelector('i').className = 'fas fa-spinner fa-spin';
+    
+    return fetch('/api/cambio-onu/crear-swap', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        cliente_id: coState.cliente ? coState.cliente.id : null,
+        servicio_id: coState.servicio ? coState.servicio.id : null,
+        old_sn: coState.oldOnuSn,
+        new_sn: coState.newOnuSn,
+        old_olt_id: coState.oldOnuOltId,
+        new_olt_id: coState.newOnuOltId,
+        pppoe_user: coState.pppoeUser,
+        pppoe_pass: coState.pppoePass,
+        wifi_ssid_24: coState.wifiSsid24,
+        wifi_pass_24: coState.wifiPass24,
+        wifi_ssid_5: coState.wifiSsid5,
+        wifi_pass_5: coState.wifiPass5,
+        vlan: coState.vlan,
+        onu_type: coState.onuType,
+        change_reason: coState.changeReason
+      })
+    });
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(swapResult) {
+    var step3 = document.querySelector('.co-loading-step[data-step="register"]');
+    if (swapResult.success) {
+      step3.className = 'co-loading-step done';
+      step3.querySelector('i').className = 'fas fa-check-circle';
+      coState.swapId = swapResult.id;
+    } else {
+      step4.className = 'co-loading-step failed';
+      step4.querySelector('i').className = 'fas fa-times-circle';
+    }
+    
+    if (coState.swapId && coState.changeReason) {
+      fetch('/api/cambio-onu/actualizar-razon', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: coState.swapId, change_reason: coState.changeReason })
+      }).catch(function() {});
+    }
+    
+    document.getElementById('coLoadingStatus').textContent = 'Cambio completado';
+    overlay.classList.remove('active');
+    mostrarResultado();
+  })
+  .catch(function(err) {
+    document.getElementById('coLoadingStatus').textContent = 'Error: ' + err.message;
+    document.querySelector('.co-loading-step[data-step="delete"]').className = 'co-loading-step failed';
+    document.querySelector('.co-loading-step[data-step="delete"] i').className = 'fas fa-times-circle';
+    setTimeout(function() {
+      overlay.classList.remove('active');
+      alert('Error durante el cambio: ' + err.message);
+    }, 1500);
+  });
+}
+
+function mostrarResultado() {
+  document.getElementById('coResultCard').style.display = 'block';
+  var html = '';
+  
+  html += '<div class="co-result-step done"><i class="fas fa-check-circle"></i><div class="co-result-text">ONU vieja (SN: ' + coState.oldOnuSn + ') eliminada de SmartOLT y desvinculada del servicio.</div></div>';
+  
+  html += '<div class="co-result-step done"><i class="fas fa-check-circle"></i><div class="co-result-text">Nueva ONU (SN: ' + coState.newOnuSn + ') autorizada y configurada en ' + coState.newOltName + '.</div></div>';
+  
+  if (coState.pppoeUser) {
+    html += '<div class="co-result-step done"><i class="fas fa-check-circle"></i><div class="co-result-text">WAN configurada en modo PPPoE con usuario: ' + coState.pppoeUser + '</div></div>';
+  } else {
+    html += '<div class="co-result-step done"><i class="fas fa-check-circle"></i><div class="co-result-text">WAN configurada en modo DHCP</div></div>';
+  }
+  
+  if (coState.wifiSsid24) {
+    html += '<div class="co-result-step done"><i class="fas fa-check-circle"></i><div class="co-result-text">WiFi 2.4GHz configurado: SSID=' + coState.wifiSsid24 + '</div></div>';
+  }
+  if (coState.wifiSsid5) {
+    html += '<div class="co-result-step done"><i class="fas fa-check-circle"></i><div class="co-result-text">WiFi 5GHz configurado: SSID=' + coState.wifiSsid5 + '</div></div>';
+  }
+  
+  html += '<div class="co-result-step done"><i class="fas fa-check-circle"></i><div class="co-result-text">TR-069 habilitado en la nueva ONU para gestión remota.</div></div>';
+  
+  if (coState.vlan) {
+    html += '<div class="co-result-step done"><i class="fas fa-check-circle"></i><div class="co-result-text">VLAN ' + coState.vlan + ' configurada en servicio y ONU.</div></div>';
+  }
+  
+  html += '<div class="co-result-step done"><i class="fas fa-check-circle"></i><div class="co-result-text">Swap registrado (ID: ' + coState.swapId + ') con motivo: ' + coState.changeReason + '</div></div>';
+  
+  html += '<div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border-color);text-align:center;">';
+  html += '<button class="btn btn-primary" onclick="resetWizard()"><i class="fas fa-redo"></i> Realizar Otro Cambio</button>';
+  html += '</div>';
+  
+  document.getElementById('coResultSteps').innerHTML = html;
+}
+
+// ===== HISTORY =====
+var historyVisible = false;
+function toggleHistory() {
+  var panel = document.getElementById('coHistoryPanel');
+  historyVisible = !historyVisible;
+  panel.classList.toggle('active');
+  if (historyVisible) cargarHistorial(1);
+}
+
+function cargarHistorial(page) {
+  page = page || 1;
+  var search = document.getElementById('coHistorySearch') ? document.getElementById('coHistorySearch').value.trim() : '';
+  
+  var url = '/api/cambio-onu/historial?page=' + page + '&limit=20';
+  if (search) url += '&search=' + encodeURIComponent(search);
+  
+  fetch(url)
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (!data.success) { document.getElementById('coHistoryBody').innerHTML = '<tr><td colspan="9" style="text-align:center;padding:20px;color:var(--danger);">' + data.message + '</td></tr>'; return; }
+      
+      var html = '';
+      if (data.data.length === 0) {
+        html = '<tr><td colspan="9" style="text-align:center;padding:20px;color:var(--text-gray);">No se encontraron registros</td></tr>';
+      } else {
+        data.data.forEach(function(r) {
+          html += '<tr>';
+          html += '<td>' + r.id + '</td>';
+          html += '<td><strong>' + (r.cliente_nombre || 'N/A') + '</strong></td>';
+          html += '<td style="font-family:monospace;font-size:11px;">' + (r.old_sn || '') + '</td>';
+          html += '<td style="font-family:monospace;font-size:11px;">' + (r.new_sn || '') + '</td>';
+          html += '<td>' + (r.old_olt_nombre || '') + '</td>';
+          html += '<td>' + (r.new_olt_nombre || '') + '</td>';
+          html += '<td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="' + (r.change_reason || '') + '">' + (r.change_reason || '') + '</td>';
+          html += '<td style="font-size:11px;">' + (r.completed_at || '') + '</td>';
+          html += '<td style="font-size:11px;">' + (r.creado_por || '') + '</td>';
+          html += '</tr>';
+        });
+      }
+      document.getElementById('coHistoryBody').innerHTML = html;
+      document.getElementById('coHistoryInfo').textContent = 'Página ' + data.page + ' de ' + data.pages + ' (' + data.total + ' registros)';
+      
+      // Pagination
+      var pagesHtml = '';
+      for (var i = 1; i <= data.pages; i++) {
+        pagesHtml += '<button class="btn btn-sm ' + (i === data.page ? 'btn-primary' : 'btn-secondary') + '" onclick="cargarHistorial(' + i + ')">' + i + '</button>';
+      }
+      document.getElementById('coHistoryPages').innerHTML = pagesHtml;
+    })
+    .catch(function(err) {
+      document.getElementById('coHistoryBody').innerHTML = '<tr><td colspan="9" style="text-align:center;padding:20px;color:var(--danger);">Error: ' + err.message + '</td></tr>';
+    });
+}
+
+// ===== INIT =====
+document.addEventListener('DOMContentLoaded', function() {
+  // Preload zone/olt info if available
+  var autoOlt = '<%= JSON.stringify(typeof zonas !== 'undefined' ? zonas : []) %>';
+  goToStep(1);
+});
+</script>

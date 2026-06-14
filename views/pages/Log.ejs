@@ -1,0 +1,256 @@
+<style>
+.log-header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:18px}
+.log-title{font-size:1.3rem;font-weight:700;color:var(--text-main,#1e293b);display:flex;align-items:center;gap:10px}.log-title i{color:#8b5cf6}
+.log-card{background:var(--bg-card,#fff);border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,.06);border:1px solid var(--border-color,#e2e8f0);overflow:hidden}
+.log-filters{padding:14px 16px;border-bottom:1px solid var(--border-color,#e2e8f0);display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.log-input{padding:7px 12px;border:1px solid var(--border-color,#e2e8f0);border-radius:8px;font-size:0.84rem;outline:none;background:var(--bg-input,#fff);color:var(--text-main,#1e293b)}.log-input:focus{border-color:#8b5cf6}
+.log-search{flex:1;min-width:180px}
+.log-select{padding:7px 10px;border:1px solid var(--border-color,#e2e8f0);border-radius:8px;font-size:0.84rem;background:var(--bg-input,#fff);cursor:pointer;color:var(--text-main,#475569)}
+.log-date{width:130px}
+.log-empty{padding:40px;text-align:center;color:#94a3b8;font-size:0.9rem}
+.log-row{display:flex;align-items:flex-start;gap:12px;padding:12px 16px;border-bottom:1px solid #f1f5f9;transition:background .1s;font-size:0.88rem;color:var(--text-main,#1e293b)}
+.log-row:hover{background:#faf5ff}
+.log-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:0.85rem;flex-shrink:0}
+.log-body{flex:1;min-width:0}
+.log-action{font-weight:700;color:var(--text-main,#1e293b)}
+.log-module{font-size:0.75rem;padding:2px 8px;border-radius:4px;font-weight:600;display:inline-block;background:#ede9fe;color:#6d28d9}
+.log-user{font-weight:600;color:#2563eb}
+.log-client{color:#16a34a;font-weight:600}
+.log-client a{color:#16a34a;text-decoration:none}.log-client a:hover{text-decoration:underline}
+.log-detail{color:#64748b;font-size:0.8rem;margin-top:2px}
+.log-meta{display:flex;gap:12px;font-size:0.75rem;color:#94a3b8;margin-top:3px;flex-wrap:wrap}
+.log-right{flex-shrink:0;text-align:right;min-width:90px}
+.log-time{font-size:0.8rem;font-weight:600;color:var(--text-main,#475569)}
+.log-date-text{font-size:0.72rem;color:#94a3b8}
+.log-ip{font-size:0.7rem;color:#cbd5e1;font-family:monospace}
+.log-pag{display:flex;gap:4px;align-items:center;justify-content:center;padding:12px 16px;flex-wrap:wrap}
+.log-pag-btn{min-width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--border-color,#e2e8f0);border-radius:6px;background:var(--bg-card,#fff);color:var(--text-main,#475569);font-size:0.8rem;cursor:pointer;font-weight:500;transition:all .15s}
+.log-pag-btn:hover:not(:disabled):not(.log-pag-active){background:#f1f5f9}.log-pag-btn:disabled{opacity:.3;cursor:not-allowed}
+.log-pag-active{background:#8b5cf6;color:#fff;border-color:#8b5cf6}.log-pag-info{font-size:0.75rem;color:#94a3b8;margin:0 6px}
+.log-btn{padding:6px 14px;border:none;border-radius:8px;font-size:0.82rem;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:5px;transition:all .15s}
+.log-btn-red{background:#fef2f2;color:#dc2626}.log-btn-red:hover{background:#fee2e2}
+.log-counter{font-size:0.82rem;color:#64748b;padding:0 16px 10px}
+@media(max-width:640px){.log-filters{flex-direction:column}.log-search,.log-select,.log-date{width:100%}.log-row{flex-direction:column;gap:8px}.log-right{text-align:left;display:flex;gap:10px}}
+</style>
+
+<div class="log-header">
+    <div class="log-title"><i class="fas fa-history"></i> Registro de Actividad</div>
+    <button class="log-btn log-btn-red" onclick="logClean()"><i class="fas fa-broom"></i> Limpiar antiguos</button>
+</div>
+
+<div class="log-card">
+    <div class="log-filters">
+        <input type="text" class="log-input log-search" id="logSearch" placeholder="Buscar usuario, accion, cliente, IP..." oninput="if(logTimer)clearTimeout(logTimer);logTimer=setTimeout(function(){logLoad(1)},400)">
+        <select class="log-select" id="logUser" onchange="logLoad(1)">
+            <option value="">Todos los usuarios</option>
+            <% (logUsers || []).forEach(function(u) { %>
+                <option value="<%= u %>"><%= u %></option>
+            <% }); %>
+        </select>
+        <select class="log-select" id="logModule" onchange="logLoad(1)">
+            <option value="">Todos los modulos</option>
+            <% (logModules || []).forEach(function(m) { %>
+                <option value="<%= m %>"><%= m %></option>
+            <% }); %>
+        </select>
+        <input type="date" class="log-input log-date" id="logDesde" onchange="logLoad(1)" title="Desde">
+        <input type="date" class="log-input log-date" id="logHasta" onchange="logLoad(1)" title="Hasta">
+    </div>
+    <div class="log-counter" id="logCounter">Cargando...</div>
+    <div id="logList">
+        <div class="log-empty"><i class="fas fa-hourglass-half"></i> Cargando registros...</div>
+    </div>
+    <div class="log-pag" id="logPag"></div>
+</div>
+
+<script>
+var logTimer = null;
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+var logIconMap = {
+    'default': { icon: 'fa-circle', bg: '#e2e8f0', color: '#64748b' },
+    'crear': { icon: 'fa-plus-circle', bg: '#dbeafe', color: '#2563eb' },
+    'creado': { icon: 'fa-plus-circle', bg: '#dbeafe', color: '#2563eb' },
+    'nuevo': { icon: 'fa-plus-circle', bg: '#dbeafe', color: '#2563eb' },
+    'registrar': { icon: 'fa-plus-circle', bg: '#dbeafe', color: '#2563eb' },
+    'editar': { icon: 'fa-edit', bg: '#fef3c7', color: '#d97706' },
+    'actualizar': { icon: 'fa-edit', bg: '#fef3c7', color: '#d97706' },
+    'modificar': { icon: 'fa-edit', bg: '#fef3c7', color: '#d97706' },
+    'cambio': { icon: 'fa-exchange-alt', bg: '#ede9fe', color: '#7c3aed' },
+    'eliminar': { icon: 'fa-trash', bg: '#fef2f2', color: '#dc2626' },
+    'pago': { icon: 'fa-hand-holding-usd', bg: '#dcfce7', color: '#16a34a' },
+    'pagar': { icon: 'fa-hand-holding-usd', bg: '#dcfce7', color: '#16a34a' },
+    'asignar': { icon: 'fa-user-check', bg: '#ede9fe', color: '#7c3aed' },
+    'asignado': { icon: 'fa-user-check', bg: '#ede9fe', color: '#7c3aed' },
+    'incidencia': { icon: 'fa-exclamation-triangle', bg: '#fef3c7', color: '#d97706' },
+    'suspender': { icon: 'fa-pause-circle', bg: '#fef3c7', color: '#d97706' },
+    'suspension': { icon: 'fa-pause-circle', bg: '#fef3c7', color: '#d97706' },
+    'reactivar': { icon: 'fa-play-circle', bg: '#dcfce7', color: '#16a34a' },
+    'retirar': { icon: 'fa-times-circle', bg: '#fef2f2', color: '#dc2626' },
+    'login': { icon: 'fa-sign-in-alt', bg: '#dbeafe', color: '#2563eb' },
+    'logout': { icon: 'fa-sign-out-alt', bg: '#fef2f2', color: '#dc2626' },
+    'cron': { icon: 'fa-clock', bg: '#cffafe', color: '#0891b2' },
+    'ejecutar': { icon: 'fa-play', bg: '#cffafe', color: '#0891b2' },
+    'configurar': { icon: 'fa-cog', bg: '#f1f5f9', color: '#475569' },
+    'limpiar': { icon: 'fa-broom', bg: '#fef2f2', color: '#dc2626' },
+    'backup': { icon: 'fa-database', bg: '#dbeafe', color: '#2563eb' },
+    'enviar': { icon: 'fa-paper-plane', bg: '#dcfce7', color: '#16a34a' },
+    'exportar': { icon: 'fa-file-export', bg: '#ede9fe', color: '#7c3aed' },
+    'importar': { icon: 'fa-file-import', bg: '#fef3c7', color: '#d97706' },
+};
+
+function getAccionInfo(accion) {
+    var key = (accion || '').toLowerCase();
+    for (var k in logIconMap) {
+        if (key.indexOf(k) !== -1) return logIconMap[k];
+    }
+    return logIconMap['default'];
+}
+
+function formatFecha(fechaStr) {
+    if (!fechaStr) return { time: '', date: '' };
+    // Handle ISO format
+    var d = new Date(fechaStr.replace(' ', 'T'));
+    if (isNaN(d.getTime())) return { time: fechaStr, date: '' };
+    var optsTime = { hour: 'numeric', minute: '2-digit', second: '2-digit', hour12: true };
+    var optsDate = { day: 'numeric', month: 'short', year: 'numeric' };
+    return {
+        time: d.toLocaleTimeString('es', optsTime),
+        date: d.toLocaleDateString('es', optsDate)
+    };
+}
+
+function logLoad(page) {
+    page = page || 1;
+    var search = document.getElementById('logSearch').value;
+    var user = document.getElementById('logUser').value;
+    var module = document.getElementById('logModule').value;
+    var desde = document.getElementById('logDesde').value;
+    var hasta = document.getElementById('logHasta').value;
+
+    document.getElementById('logList').innerHTML = '<div class="log-empty"><i class="fas fa-spinner fa-spin"></i> Cargando...</div>';
+    
+    var url = '/modulo?pagina=Log&ajax=list&page=' + page
+        + '&search=' + encodeURIComponent(search)
+        + '&user=' + encodeURIComponent(user)
+        + '&module=' + encodeURIComponent(module)
+        + '&desde=' + encodeURIComponent(desde)
+        + '&hasta=' + encodeURIComponent(hasta);
+    
+    fetch(url)
+        .then(function(r) { return r.json(); })
+        .then(function(res) {
+            if (res.status !== 'success') {
+                document.getElementById('logList').innerHTML = '<div class="log-empty">Error al cargar registros</div>';
+                return;
+            }
+            
+            document.getElementById('logCounter').textContent = res.total + ' registro(s) encontrado(s)';
+            
+            if (!res.data.length) {
+                document.getElementById('logList').innerHTML = '<div class="log-empty"><i class="fas fa-inbox"></i> No hay registros de actividad</div>';
+                document.getElementById('logPag').innerHTML = '';
+                return;
+            }
+            
+            var html = '';
+            res.data.forEach(function(row) {
+                var iconInfo = getAccionInfo(row.accion);
+                var ft = formatFecha(row.created_at);
+                var clientLink = row.cliente_nombre ? (row.cliente_id ? '<a href="/modulo?pagina=VerCliente&id=' + row.cliente_id + '"><i class="fas fa-user" style="font-size:0.7rem;"></i> ' + escapeHtml(row.cliente_nombre) + '</a>' : '<i class="fas fa-user" style="font-size:0.7rem;"></i> ' + escapeHtml(row.cliente_nombre)) : '';
+                var detailHtml = row.detalle ? '<div class="log-detail">' + escapeHtml(row.detalle) + '</div>' : '';
+                var clientHtml = clientLink ? '<div class="log-client">' + clientLink + '</div>' : '';
+                
+                html += '<div class="log-row">'
+                    + '<div class="log-icon" style="background:' + iconInfo.bg + ';color:' + iconInfo.color + ';"><i class="fas ' + iconInfo.icon + '"></i></div>'
+                    + '<div class="log-body">'
+                    + '<div><span class="log-user">' + escapeHtml(row.usuario_nombre || 'Sistema') + '</span> <span class="log-action">' + escapeHtml(row.accion) + '</span> <span class="log-module">' + escapeHtml(row.modulo) + '</span></div>'
+                    + clientHtml
+                    + detailHtml
+                    + '</div>'
+                    + '<div class="log-right">'
+                    + '<div class="log-time">' + ft.time + '</div>'
+                    + '<div class="log-date-text">' + ft.date + '</div>'
+                    + '<div class="log-ip">' + escapeHtml(row.ip_address || '') + '</div>'
+                    + '</div>'
+                    + '</div>';
+            });
+            
+            document.getElementById('logList').innerHTML = html;
+            
+            // Pagination
+            var pagHtml = '';
+            var totalPages = Math.ceil(res.total / 25);
+            if (totalPages > 1) {
+                if (page > 1) {
+                    pagHtml += '<button class="log-pag-btn" onclick="logLoad(1)" title="Primera"><i class="fas fa-angle-double-left"></i></button>';
+                    pagHtml += '<button class="log-pag-btn" onclick="logLoad(' + (page - 1) + ')" title="Anterior"><i class="fas fa-angle-left"></i></button>';
+                }
+                
+                var startPage = Math.max(1, page - 2);
+                var endPage = Math.min(totalPages, page + 2);
+                if (startPage > 1) pagHtml += '<span class="log-pag-info">...</span>';
+                for (var p = startPage; p <= endPage; p++) {
+                    pagHtml += '<button class="log-pag-btn ' + (p === page ? 'log-pag-active' : '') + '" onclick="logLoad(' + p + ')">' + p + '</button>';
+                }
+                if (endPage < totalPages) pagHtml += '<span class="log-pag-info">...</span>';
+                
+                if (page < totalPages) {
+                    pagHtml += '<button class="log-pag-btn" onclick="logLoad(' + (page + 1) + ')" title="Siguiente"><i class="fas fa-angle-right"></i></button>';
+                    pagHtml += '<button class="log-pag-btn" onclick="logLoad(' + totalPages + ')" title="Ultima"><i class="fas fa-angle-double-right"></i></button>';
+                }
+            }
+            document.getElementById('logPag').innerHTML = pagHtml;
+        })
+        .catch(function(err) {
+            document.getElementById('logList').innerHTML = '<div class="log-empty">Error: ' + err.message + '</div>';
+        });
+}
+
+function logClean() {
+    var days = prompt('Eliminar registros de actividad anteriores a cuantos días?', '30');
+    if (!days || isNaN(days) || parseInt(days) < 1) return;
+    days = parseInt(days);
+    
+    if (!confirm('Se eliminaran los registros de actividad anteriores a ' + days + ' dias. Continuar?')) return;
+    
+    var btn = event && event.target ? (event.target.tagName === 'BUTTON' ? event.target : event.target.closest('button')) : document.querySelector('.log-btn-red');
+    if (btn) btn.disabled = true;
+    
+    var formData = new FormData();
+    formData.append('days', days);
+    
+    fetch('/modulo?pagina=Log&ajax=clean', {
+        method: 'POST',
+        body: formData
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(res) {
+        if (res.status === 'success') {
+            showToast(res.deleted + ' registro(s) eliminados');
+            logLoad(1);
+        } else {
+            showToast('Error: ' + (res.msg || 'Desconocido'), 'error');
+        }
+    })
+    .catch(function(err) {
+        showToast('Error: ' + err.message, 'error');
+    })
+    .finally(function() {
+        if (btn) btn.disabled = false;
+    });
+}
+
+// Initial load
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(function() { logLoad(1); }, 100);
+});
+</script>

@@ -1,0 +1,194 @@
+<div style="padding:10px 0;">
+<style>
+.bk-cards{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+.bk-card{flex:1;min-width:150px;background:#f8fafc;border-radius:8px;padding:14px 16px;border:1px solid #eef2f6}
+.bk-card h4{margin:0;font-size:20px;font-weight:700;color:#1a2234}
+.bk-card p{margin:2px 0 0;font-size:12px;color:#64748b}
+.bk-section{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:18px;margin-bottom:16px}
+.bk-section h3{margin:0 0 12px;font-size:15px;font-weight:600}
+.bk-section h3 i{margin-right:6px;color:#1d8bff}
+.bk-table{width:100%;border-collapse:collapse}
+.bk-table th{background:#f8fafc;color:#475569;font-weight:600;font-size:12px;text-transform:uppercase;padding:8px;border-bottom:2px solid #e2e8f0;text-align:left}
+.bk-table td{padding:8px;font-size:13px;border-top:1px solid #f1f5f9}
+.bk-table tr:hover{background:#f8fafc}
+.bk-badge{display:inline-block;padding:2px 7px;border-radius:4px;font-size:11px;font-weight:600}
+.bk-badge-info{background:#dbeafe;color:#1e40af}
+.bk-badge-success{background:#d1fae5;color:#065f46}
+.bk-upload-zone{border:2px dashed #cbd5e1;border-radius:10px;padding:24px;text-align:center;cursor:pointer;transition:all 0.3s}
+.bk-upload-zone:hover{border-color:#1d8bff;background:#f0f7ff}
+.bk-upload-zone i{font-size:32px;color:#94a3b8;margin-bottom:8px}
+.bk-upload-zone h4{margin:0 0 4px;font-size:14px}
+.bk-upload-zone p{margin:0;font-size:12px;color:#64748b}
+.bk-btn{padding:6px 14px;border-radius:6px;border:none;font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:4px}
+.bk-btn-primary{background:#1d8bff;color:#fff}.bk-btn-primary:hover{background:#1674d6}
+.bk-btn-success{background:#10b981;color:#fff}.bk-btn-success:hover{background:#059669}
+.bk-btn-danger{background:#ef4444;color:#fff}.bk-btn-danger:hover{background:#dc2626}
+.bk-btn-warning{background:#f59e0b;color:#fff}.bk-btn-warning:hover{background:#d97706}
+.bk-btn-sm{padding:4px 8px;font-size:12px}
+.bk-form-group{margin-bottom:12px}
+.bk-form-group label{display:block;font-weight:500;font-size:13px;color:#334155;margin-bottom:4px}
+.bk-form-group input,.bk-form-group select{width:100%;padding:7px 10px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px}
+.bk-form-group input:focus,.bk-form-group select:focus{border-color:#1d8bff;outline:none;box-shadow:0 0 0 2px rgba(29,139,255,0.15)}
+.bk-status{display:none;padding:10px 14px;border-radius:8px;margin-bottom:12px;font-size:13px}
+.bk-status.success{display:block;background:#d1fae5;color:#065f46;border:1px solid #a7f3d0}
+.bk-status.error{display:block;background:#fee2e2;color:#991b1b;border:1px solid #fecaca}
+.bk-status.info{display:block;background:#dbeafe;color:#1e40af;border:1px solid #bfdbfe}
+.bk-progress{display:none;margin-bottom:12px}.bk-progress.active{display:block}
+.bk-progress-bar{height:6px;border-radius:3px;background:#e2e8f0;overflow:hidden}
+.bk-progress-bar div{height:100%;width:0%;background:linear-gradient(90deg,#1d8bff,#06b6d4);border-radius:3px;transition:width 0.3s}
+.bk-progress-text{font-size:12px;color:#64748b;text-align:center;margin-top:4px}
+</style>
+
+<div id="bkStatus" class="bk-status"></div>
+<div id="bkProgress" class="bk-progress"><div class="bk-progress-bar"><div id="bkProgressBar"></div></div><div class="bk-progress-text" id="bkProgressText">Procesando...</div></div>
+
+<!-- STATS -->
+<div class="bk-cards">
+  <div class="bk-card"><h4><%= backups.length %></h4><p>Backups disponibles</p></div>
+  <div class="bk-card"><h4><%= bc.frequency || 'Manual' %></h4><p>Frecuencia</p></div>
+  <div class="bk-card"><h4><%= (bc.email||'').replace(/(.{3}).*@/,'$1***@') || 'No config' %></h4><p>Correo destino</p></div>
+  <div class="bk-card"><h4><%= bc.next_run || '--' %></h4><p>Próximo backup</p></div>
+</div>
+
+<!-- GENERAR -->
+<div class="bk-section">
+  <h3><i class="fas fa-play-circle"></i> Generar Backup Ahora</h3>
+  <p style="font-size:13px;color:#64748b;margin-bottom:10px;">Crea copia completa de BD + uploads + configuración. Se enviará al correo si SMTP está configurado.</p>
+  <button class="bk-btn bk-btn-success" onclick="bkCrear()"><i class="fas fa-database"></i> Generar Backup</button>
+</div>
+
+<!-- CONFIGURACIÓN BACKUP -->
+<div class="bk-section">
+  <h3><i class="fas fa-cog"></i> Configuración de Backup</h3>
+  <div class="row">
+    <div class="col-md-4">
+      <div class="bk-form-group">
+        <label><i class="fas fa-envelope"></i> Correo destino (recibirás los backups)</label>
+        <input type="email" id="bkEmail" value="<%= bc.email || '' %>" placeholder="tudominio@correo.com">
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="bk-form-group">
+        <label><i class="fas fa-calendar"></i> Frecuencia</label>
+        <select id="bkFreq">
+          <option value="semanal" <%= bc.frequency==='semanal' ? 'selected' : '' %>>Semanal (domingo 3AM)</option>
+          <option value="cada3dias" <%= bc.frequency==='cada3dias' ? 'selected' : '' %>>Cada 3 días (3AM)</option>
+          <option value="diario" <%= bc.frequency==='diario' ? 'selected' : '' %>>Diario (3AM)</option>
+          <option value="manual" <%= !bc.frequency||bc.frequency==='manual' ? 'selected' : '' %>>Solo manual</option>
+        </select>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="bk-form-group">
+        <label><i class="fas fa-trash"></i> Conservar</label>
+        <select id="bkKeep">
+          <option value="5" <%= bc.keep==='5' ? 'selected' : '' %>>Últimos 5 backups</option>
+          <option value="10" <%= bc.keep==='10' ? 'selected' : '' %>>Últimos 10 backups</option>
+          <option value="20" <%= bc.keep==='20' ? 'selected' : '' %>>Últimos 20 backups</option>
+          <option value="0" <%= bc.keep==='0' ? 'selected' : '' %>>Todos (no borrar)</option>
+        </select>
+      </div>
+    </div>
+  </div>
+  <button class="bk-btn bk-btn-primary" onclick="bkGuardarConfig()"><i class="fas fa-save"></i> Guardar Configuración</button>
+</div>
+
+<!-- CONFIGURACIÓN SMTP -->
+<div class="bk-section">
+  <h3><i class="fas fa-mail-bulk"></i> Configuración SMTP (para envío de backups por correo)</h3>
+  <p style="font-size:13px;color:#64748b;margin-bottom:10px;">Configura tu servidor SMTP para recibir los backups automáticamente por email. Puedes usar Gmail, Outlook, o tu propio servidor.</p>
+  <div class="row">
+    <div class="col-md-3">
+      <div class="bk-form-group">
+        <label>Servidor SMTP</label>
+        <input type="text" id="bkSmtpHost" value="<%= smtp_host || '' %>" placeholder="smtp.gmail.com">
+      </div>
+    </div>
+    <div class="col-md-2">
+      <div class="bk-form-group">
+        <label>Puerto</label>
+        <input type="number" id="bkSmtpPort" value="<%= smtp_port || '587' %>" placeholder="587">
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="bk-form-group">
+        <label>Usuario (correo SMTP)</label>
+        <input type="email" id="bkSmtpUser" value="<%= smtp_user || '' %>" placeholder="tu@gmail.com">
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="bk-form-group">
+        <label>Contraseña / App Password</label>
+        <input type="password" id="bkSmtpPass" value="<%= smtp_password || '' %>" placeholder="••••••••">
+      </div>
+    </div>
+  </div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;">
+    <button class="bk-btn bk-btn-primary" onclick="bkGuardarSMTP()"><i class="fas fa-save"></i> Guardar SMTP</button>
+    <button class="bk-btn bk-btn-warning" onclick="bkProbarEmail()"><i class="fas fa-paper-plane"></i> Enviar Correo de Prueba</button>
+  </div>
+</div>
+
+<!-- HISTORIAL -->
+<div class="bk-section">
+  <h3><i class="fas fa-history"></i> Historial de Backups</h3>
+  <% if (backups.length === 0) { %>
+    <p style="font-size:13px;padding:10px 0;color:#64748b;">No hay backups aún. Genera uno ahora.</p>
+  <% } else { %>
+    <table class="bk-table">
+      <thead><tr><th>Fecha</th><th>Archivo</th><th>Tamaño</th><th>Acciones</th></tr></thead>
+      <tbody>
+        <% backups.forEach(function(b){ %>
+          <tr>
+            <td><%= b.date %></td>
+            <td><i class="fas fa-file-archive"></i> <%= b.filename %></td>
+            <td><span class="bk-badge bk-badge-info"><%= b.size %></span></td>
+            <td>
+              <a href="/api/backup/download?file=<%= encodeURIComponent(b.filename) %>" class="bk-btn bk-btn-primary bk-btn-sm" title="Descargar"><i class="fas fa-download"></i></a>
+              <button class="bk-btn bk-btn-warning bk-btn-sm" onclick="bkRestaurar('<%= b.filename.replace(/'/g,"\\'") %>')" title="Restaurar"><i class="fas fa-undo"></i></button>
+              <button class="bk-btn bk-btn-danger bk-btn-sm" onclick="bkEliminar('<%= b.filename.replace(/'/g,"\\'") %>')" title="Eliminar"><i class="fas fa-trash"></i></button>
+            </td>
+          </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  <% } %>
+</div>
+
+<!-- RESTAURAR DESDE ARCHIVO -->
+<div class="bk-section">
+  <h3><i class="fas fa-upload"></i> Restaurar desde archivo</h3>
+  <p style="font-size:13px;color:#64748b;margin-bottom:10px;">Sube un backup .zip anterior. <strong style="color:#dc2626;">¡Sobrescribirá TODOS los datos actuales!</strong></p>
+  <div class="bk-upload-zone" onclick="document.getElementById('bkFileInput').click()" id="bkUploadZone">
+    <i class="fas fa-cloud-upload"></i>
+    <h4>Selecciona archivo .zip</h4>
+    <p>o arrastra y suelta aquí</p>
+    <input type="file" id="bkFileInput" accept=".zip" style="display:none" onchange="bkSubir(this)">
+  </div>
+</div>
+
+<script>
+// Drag & drop
+var bkUploadZone=document.getElementById('bkUploadZone');
+bkUploadZone.addEventListener('dragover',function(e){e.preventDefault();bkUploadZone.classList.add('active');});
+bkUploadZone.addEventListener('dragleave',function(){bkUploadZone.classList.remove('active');});
+bkUploadZone.addEventListener('drop',function(e){e.preventDefault();bkUploadZone.classList.remove('active');if(e.dataTransfer.files.length){document.getElementById('bkFileInput').files=e.dataTransfer.files;bkSubir({files:e.dataTransfer.files});}});
+
+function bkMsg(t,m){var el=document.getElementById('bkStatus');el.className='bk-status '+t;el.innerHTML='<i class="fas fa-'+(t==='success'?'check-circle':t==='error'?'times-circle':'info-circle')+'"></i> '+m;if(t==='success')setTimeout(function(){el.style.display='none';},4000);}
+function bkProgress(p,t){var w=document.getElementById('bkProgress');w.classList.add('active');document.getElementById('bkProgressBar').style.width=p+'%';document.getElementById('bkProgressText').textContent=t||'Procesando...';if(p>=100)setTimeout(function(){w.classList.remove('active');},2000);}
+
+function bkCrear(){if(!confirm('Generar backup ahora?'))return;bkMsg('info','Generando backup...');bkProgress(10,'Iniciando...');fetch('/api/backup/create',{method:'POST'}).then(function(r){return r.json();}).then(function(d){if(d.success){bkProgress(100,'Completado');bkMsg('success','Backup: '+d.filename+' ('+d.size+')'+(d.email?' - Enviado por correo':''));setTimeout(function(){openConfig('backup');},1500);}else{bkProgress(0,'');bkMsg('error','Error: '+(d.error||''));}}).catch(function(){bkProgress(0,'');bkMsg('error','Error del servidor');});}
+
+function bkGuardarConfig(){var e=document.getElementById('bkEmail').value.trim();var f=document.getElementById('bkFreq').value;var k=document.getElementById('bkKeep').value;if(f!=='manual'&&!e){bkMsg('error','Correo requerido para backup automático');return;}bkProgress(30,'Guardando...');fetch('/api/backup/config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:e,frequency:f,keep:k})}).then(function(r){return r.json();}).then(function(d){if(d.success){bkProgress(100,'Guardado');bkMsg('success','Configuración guardada');setTimeout(function(){openConfig('backup');},1500);}else{bkProgress(0,'');bkMsg('error','Error: '+(d.error||''));}}).catch(function(){bkProgress(0,'');bkMsg('error','Error del servidor');});}
+
+function bkGuardarSMTP(){var h=document.getElementById('bkSmtpHost').value.trim();var p=document.getElementById('bkSmtpPort').value.trim();var u=document.getElementById('bkSmtpUser').value.trim();var pw=document.getElementById('bkSmtpPass').value;if(!h||!u){bkMsg('error','Servidor SMTP y Usuario requeridos');return;}bkProgress(30,'Guardando SMTP...');fetch('/api/backup/smtp-config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({smtp_host:h,smtp_port:p||587,smtp_user:u,smtp_password:pw})}).then(function(r){return r.json();}).then(function(d){if(d.success){bkProgress(100,'Guardado');bkMsg('success','Configuración SMTP guardada');}else{bkProgress(0,'');bkMsg('error','Error: '+(d.error||''));}}).catch(function(){bkProgress(0,'');bkMsg('error','Error del servidor');});}
+
+function bkProbarEmail(){bkMsg('info','Enviando correo de prueba...');bkProgress(30,'Enviando...');fetch('/api/backup/test-email',{method:'POST'}).then(function(r){return r.json();}).then(function(d){if(d.success){bkProgress(100,'Enviado');bkMsg('success',d.message);}else{bkProgress(0,'');bkMsg('error','Error: '+(d.error||''));}}).catch(function(){bkProgress(0,'');bkMsg('error','Error del servidor');});}
+
+function bkRestaurar(fn){if(!confirm('\u26a0\ufe0f Restaurar '+fn+'? Esto borrar\u00e1 TODOS los datos actuales.'))return;bkMsg('info','Restaurando...');bkProgress(10,'Preparando...');fetch('/api/backup/restore',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({filename:fn})}).then(function(r){return r.json();}).then(function(d){if(d.success){bkProgress(100,'Restaurado');bkMsg('success','Restaurado exitosamente');setTimeout(function(){location.href='/';},2000);}else{bkProgress(0,'');bkMsg('error','Error: '+(d.error||''));}}).catch(function(){bkProgress(0,'');bkMsg('error','Error del servidor');});}
+
+function bkEliminar(fn){if(!confirm('Eliminar backup '+fn+'?'))return;fetch('/api/backup/delete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({filename:fn})}).then(function(r){return r.json();}).then(function(d){if(d.success){bkMsg('success','Eliminado');setTimeout(function(){openConfig('backup');},1000);}else{bkMsg('error','Error: '+(d.error||''));}}).catch(function(){bkMsg('error','Error del servidor');});}
+
+function bkSubir(inp){var f=inp.files?inp.files[0]:null;if(!f)return;if(!f.name.endsWith('.zip')){bkMsg('error','Solo archivos .zip');return;}if(!confirm('Restaurar desde '+f.name+'? Se sobrescribir\u00e1n los datos.'))return;bkMsg('info','Subiendo...');bkProgress(10,'Subiendo...');var fd=new FormData();fd.append('backup',f);fetch('/api/backup/restore/upload',{method:'POST',body:fd}).then(function(r){return r.json();}).then(function(d){if(d.success){bkProgress(100,'Restaurado');bkMsg('success','Restaurado exitosamente');setTimeout(function(){location.href='/';},2000);}else{bkProgress(0,'');bkMsg('error','Error: '+(d.error||''));}}).catch(function(){bkProgress(0,'');bkMsg('error','Error del servidor');});}
+</script>
+</div>

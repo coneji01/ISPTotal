@@ -1,0 +1,2019 @@
+<% 
+// Inventario.ejs — DomISP-style full inventory management
+// Backend: case 'InventarioAPI' → INV_API = '/modulo?pagina=InventarioAPI&action='
+%>
+<style>
+/* ===== INVENTARIO DOMISP STYLES (inv- prefix) ===== */
+
+/* Wrap */
+.inv-wrap {
+  padding: 4px 0;
+}
+.inv-wrap h2 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 6px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.inv-wrap .inv-subtitle {
+  color: #94a3b8;
+  font-size: 0.82rem;
+  margin-bottom: 16px;
+}
+
+/* Tabs */
+.inv-tabs {
+  display: flex;
+  gap: 3px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+  margin-bottom: 18px;
+  background: #f1f5f9;
+  border-radius: 12px;
+  padding: 4px;
+}
+.inv-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 16px;
+  border: none;
+  background: transparent;
+  border-radius: 10px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: #64748b;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.18s;
+}
+.inv-tab:hover {
+  background: rgba(99,102,241,0.08);
+  color: #4f46e5;
+}
+.inv-tab.active {
+  background: #fff;
+  color: #4f46e5;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  font-weight: 600;
+}
+.inv-tab i {
+  font-size: 0.85rem;
+}
+.inv-tab-content {
+  display: none;
+  animation: invFadeIn 0.25s ease;
+}
+.inv-tab-content.active { display: block; }
+@keyframes invFadeIn {
+  from { opacity:0; transform:translateY(6px); }
+  to { opacity:1; transform:translateY(0); }
+}
+
+/* Cards */
+.inv-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+.inv-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 18px;
+  border-bottom: 1px solid #f1f5f9;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.inv-card-header h3, .inv-card-header h4 {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #1e293b;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.inv-card-body {
+  padding: 16px 18px;
+}
+
+/* Layout helpers */
+.inv-row {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.inv-row > * { min-width: 0; }
+.inv-col {
+  flex: 1;
+  min-width: 200px;
+}
+.inv-col-2 { flex: 0 0 calc(50% - 8px); }
+.inv-col-3 { flex: 0 0 calc(33.333% - 11px); }
+.inv-col-4 { flex: 0 0 calc(25% - 12px); }
+@media(max-width:768px) {
+  .inv-col-2, .inv-col-3, .inv-col-4 { flex: 1 1 100%; }
+}
+
+/* Summary cards (dashboard) */
+.inv-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(185px, 1fr));
+  gap: 14px;
+  margin-bottom: 20px;
+}
+.inv-summary-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px 18px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  transition: all 0.2s;
+}
+.inv-summary-card:hover {
+  box-shadow: 0 4px 14px rgba(0,0,0,0.07);
+  transform: translateY(-2px);
+}
+.inv-summary-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+.inv-summary-info h4 {
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #1e293b;
+  line-height: 1.2;
+}
+.inv-summary-info p {
+  margin: 2px 0 0;
+  font-size: 0.75rem;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+/* Buttons */
+.inv-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 18px;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s;
+  white-space: nowrap;
+}
+.inv-btn:active { transform: scale(0.97); }
+.inv-btn-primary {
+  background: linear-gradient(135deg,#6366f1,#8b5cf6);
+  color: #fff;
+}
+.inv-btn-primary:hover { box-shadow: 0 3px 10px rgba(99,102,241,0.3); }
+.inv-btn-secondary {
+  background: #f1f5f9;
+  color: #475569;
+}
+.inv-btn-secondary:hover { background: #e2e8f0; }
+.inv-btn-success {
+  background: #22c55e;
+  color: #fff;
+}
+.inv-btn-success:hover { background: #16a34a; }
+.inv-btn-danger {
+  background: #ef4444;
+  color: #fff;
+}
+.inv-btn-danger:hover { background: #dc2626; }
+.inv-btn-warning {
+  background: #f59e0b;
+  color: #fff;
+}
+.inv-btn-warning:hover { background: #d97706; }
+.inv-btn-info {
+  background: #3b82f6;
+  color: #fff;
+}
+.inv-btn-info:hover { background: #2563eb; }
+.inv-btn-sm {
+  padding: 5px 12px;
+  font-size: 0.78rem;
+  border-radius: 6px;
+}
+.inv-btn-xs {
+  padding: 3px 8px;
+  font-size: 0.72rem;
+  border-radius: 5px;
+}
+.inv-btn-green {
+  background: #25D366;
+  color: #fff;
+}
+.inv-btn-green:hover { background: #1da851; }
+
+/* Form groups */
+.inv-form-group {
+  margin-bottom: 14px;
+}
+.inv-label {
+  display: block;
+  font-weight: 600;
+  font-size: 0.8rem;
+  color: #374151;
+  margin-bottom: 4px;
+}
+.inv-label .inv-required { color: #ef4444; margin-left: 1px; }
+.inv-input, .inv-select, .inv-textarea {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  color: #1e293b;
+  background: #fff;
+  transition: border-color 0.18s, box-shadow 0.18s;
+  box-sizing: border-box;
+}
+.inv-input:focus, .inv-select:focus, .inv-textarea:focus {
+  outline: none;
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99,102,241,0.12);
+}
+.inv-input-error { border-color: #ef4444 !important; }
+.inv-textarea { min-height: 70px; resize: vertical; }
+.inv-checkbox-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.82rem;
+  color: #374151;
+  cursor: pointer;
+  font-weight: 500;
+}
+.inv-checkbox-label input[type="checkbox"] {
+  width: 17px;
+  height: 17px;
+  accent-color: #6366f1;
+  cursor: pointer;
+}
+
+/* Tables */
+.inv-table-wrap {
+  overflow-x: auto;
+}
+.inv-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+.inv-table thead th {
+  background: #f8fafc;
+  padding: 10px 10px;
+  text-align: left;
+  font-weight: 600;
+  color: #64748b;
+  border-bottom: 2px solid #e2e8f0;
+  white-space: nowrap;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+.inv-table tbody td {
+  padding: 9px 10px;
+  border-bottom: 1px solid #f1f5f9;
+  color: #334155;
+  vertical-align: middle;
+}
+.inv-table tbody tr:hover { background: #f8fafc; }
+.inv-table tbody tr:last-child td { border-bottom: none; }
+.inv-table .inv-cell-check { width: 36px; text-align: center; }
+.inv-table .inv-cell-check input[type="checkbox"] {
+  width: 16px; height: 16px;
+  accent-color: #6366f1;
+  cursor: pointer;
+}
+
+/* Badges */
+.inv-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+.inv-badge-green { background: #dcfce7; color: #15803d; }
+.inv-badge-yellow { background: #fef3c7; color: #b45309; }
+.inv-badge-red { background: #fef2f2; color: #dc2626; }
+.inv-badge-blue { background: #e0e7ff; color: #4338ca; }
+.inv-badge-gray { background: #f1f5f9; color: #64748b; }
+.inv-badge-purple { background: #ede9fe; color: #6d28d9; }
+
+/* Pagination */
+.inv-pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid #e2e8f0;
+}
+.inv-pagination button:disabled { opacity: 0.4; cursor: not-allowed; }
+.inv-page-info {
+  font-size: 0.82rem;
+  color: #64748b;
+  font-weight: 600;
+}
+
+/* Bulk bar */
+.inv-bulk-bar {
+  display: flex;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 10px;
+  padding: 10px 16px;
+  margin-bottom: 14px;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.inv-bulk-bar .inv-bulk-count {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #166534;
+}
+
+/* Search row */
+.inv-search-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+.inv-search-row .inv-input-wrap {
+  position: relative;
+  flex: 1;
+  min-width: 180px;
+}
+.inv-search-row .inv-input-wrap i {
+  position: absolute;
+  left: 11px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  font-size: 0.8rem;
+}
+.inv-search-row .inv-input-wrap .inv-input {
+  padding-left: 30px;
+}
+
+/* Client search result */
+.inv-client-result {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  margin-top: 8px;
+}
+.inv-client-result img {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+.inv-client-result .inv-client-info { flex: 1; }
+.inv-client-result .inv-client-info strong { display: block; font-size: 0.85rem; color: #1e293b; }
+.inv-client-result .inv-client-info span { font-size: 0.75rem; color: #94a3b8; }
+
+/* Sub-tabs (solo config) */
+.inv-sub-tabs {
+  display: flex;
+  gap: 3px;
+  margin-bottom: 16px;
+  background: #f8fafc;
+  border-radius: 8px;
+  padding: 3px;
+  overflow-x: auto;
+}
+.inv-sub-tab {
+  padding: 7px 14px;
+  border: none;
+  background: transparent;
+  border-radius: 7px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #64748b;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+}
+.inv-sub-tab:hover { background: rgba(99,102,241,0.06); color: #4f46e5; }
+.inv-sub-tab.active {
+  background: #fff;
+  color: #4f46e5;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  font-weight: 600;
+}
+.inv-sub-content { display: none; }
+.inv-sub-content.active { display: block; animation: invFadeIn 0.2s ease; }
+
+/* Chart placeholder */
+.inv-chart-box {
+  background: #f8fafc;
+  border: 1px dashed #d1d5db;
+  border-radius: 10px;
+  padding: 30px;
+  text-align: center;
+  color: #94a3b8;
+  font-size: 0.85rem;
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.inv-chart-box .inv-chart-bar-container {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  height: 160px;
+  padding: 0 10px;
+  margin-top: 12px;
+}
+.inv-chart-bar {
+  flex: 1;
+  max-width: 50px;
+  border-radius: 6px 6px 0 0;
+  min-height: 4px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  transition: height 0.5s ease;
+}
+.inv-chart-bar .inv-bar-label {
+  position: absolute;
+  bottom: -22px;
+  font-size: 0.65rem;
+  color: #64748b;
+  white-space: nowrap;
+  font-weight: 500;
+}
+.inv-chart-bar .inv-bar-val {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 4px;
+}
+
+/* Empty state */
+.inv-empty {
+  text-align: center;
+  padding: 40px 20px;
+  color: #94a3b8;
+}
+.inv-empty i { font-size: 2.5rem; margin-bottom: 10px; opacity: 0.5; }
+.inv-empty p { font-size: 0.9rem; margin: 0; }
+
+/* Loading */
+.inv-loading {
+  text-align: center;
+  padding: 40px;
+  color: #94a3b8;
+}
+.inv-loading i { font-size: 1.4rem; }
+
+/* Modales DomISP */
+#invModalContainer {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: 10000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.35);
+  backdrop-filter: blur(2px);
+}
+#invModalContainer.open { display: flex; }
+.inv-modal-box {
+  background: #fff;
+  border-radius: 16px;
+  width: 90%;
+  max-width: 520px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+  animation: invModalIn 0.22s ease;
+}
+.inv-modal-box.inv-modal-wide { max-width: 680px; }
+.inv-modal-box.inv-modal-sm { max-width: 400px; }
+@keyframes invModalIn {
+  from { opacity:0; transform:scale(0.94) translateY(10px); }
+  to { opacity:1; transform:scale(1) translateY(0); }
+}
+.inv-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 22px;
+  border-bottom: 1px solid #f1f5f9;
+}
+.inv-modal-header h3 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #1e293b;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.inv-modal-close {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: #f1f5f9;
+  border-radius: 8px;
+  font-size: 1.2rem;
+  color: #94a3b8;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.inv-modal-close:hover { background: #e2e8f0; color: #64748b; }
+.inv-modal-body { padding: 18px 22px; }
+.inv-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 14px 22px;
+  border-top: 1px solid #f1f5f9;
+}
+
+/* Toast / notification */
+.inv-toast {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 99999;
+  padding: 12px 22px;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  animation: invToastIn 0.25s ease;
+  max-width: 380px;
+}
+.inv-toast-success { background: #dcfce7; color: #15803d; border-left: 4px solid #22c55e; }
+.inv-toast-error { background: #fef2f2; color: #dc2626; border-left: 4px solid #ef4444; }
+.inv-toast-info { background: #e0e7ff; color: #4338ca; border-left: 4px solid #6366f1; }
+@keyframes invToastIn {
+  from { opacity:0; transform:translateX(30px); }
+  to { opacity:1; transform:translateX(0); }
+}
+
+/* Responsive */
+@media(max-width:640px) {
+  .inv-summary-grid { grid-template-columns: repeat(2,1fr); }
+  .inv-tabs { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .inv-tab { padding: 8px 12px; font-size: 0.75rem; }
+  .inv-modal-box { width: 95%; max-width: 100%; border-radius: 12px; margin: 10px; }
+}
+</style>
+
+<div class="inv-wrap">
+  <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:10px; margin-bottom:8px;">
+    <div>
+      <h2><i class="fas fa-boxes" style="color:#6366f1;"></i> Inventario</h2>
+      <p class="inv-subtitle">Gestión completa de artículos, asignaciones, devoluciones y reportes</p>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="inv-tabs" id="invTabs">
+    <button class="inv-tab active" data-tab="dashboard"><i class="fas fa-chart-pie"></i> Dashboard</button>
+    <button class="inv-tab" data-tab="registrar"><i class="fas fa-plus-circle"></i> Registrar</button>
+    <button class="inv-tab" data-tab="asignar"><i class="fas fa-hand-holding"></i> Asignar</button>
+    <button class="inv-tab" data-tab="devolver"><i class="fas fa-undo-alt"></i> Devolver</button>
+    <button class="inv-tab" data-tab="mover"><i class="fas fa-arrows-alt-h"></i> Mover</button>
+    <button class="inv-tab" data-tab="historial"><i class="fas fa-history"></i> Historial</button>
+    <button class="inv-tab" data-tab="reportes"><i class="fas fa-file-alt"></i> Reportes</button>
+    <button class="inv-tab" data-tab="configuracion"><i class="fas fa-cog"></i> Configuración</button>
+  </div>
+
+  <!-- ==================== TAB: DASHBOARD ==================== -->
+  <div class="inv-tab-content active" data-tab="dashboard">
+    <div class="inv-summary-grid" id="invDashSummary">
+      <div class="inv-summary-card"><div class="inv-summary-icon" style="background:#e0e7ff;color:#4338ca;"><i class="fas fa-box"></i></div><div class="inv-summary-info"><h4 id="invDashTotalItems">0</h4><p>Total Artículos</p></div></div>
+      <div class="inv-summary-card"><div class="inv-summary-icon" style="background:#dcfce7;color:#15803d;"><i class="fas fa-dollar-sign"></i></div><div class="inv-summary-info"><h4 id="invDashTotalValor">$0</h4><p>Valor Total</p></div></div>
+      <div class="inv-summary-card"><div class="inv-summary-icon" style="background:#fef3c7;color:#b45309;"><i class="fas fa-exclamation-triangle"></i></div><div class="inv-summary-info"><h4 id="invDashLowStock">0</h4><p>Stock Bajo</p></div></div>
+      <div class="inv-summary-card"><div class="inv-summary-icon" style="background:#ede9fe;color:#6d28d9;"><i class="fas fa-users"></i></div><div class="inv-summary-info"><h4 id="invDashTecnicos">0</h4><p>Técnicos</p></div></div>
+      <div class="inv-summary-card"><div class="inv-summary-icon" style="background:#e0f2fe;color:#0369a1;"><i class="fas fa-tags"></i></div><div class="inv-summary-info"><h4 id="invDashCategorias">0</h4><p>Categorías</p></div></div>
+    </div>
+
+    <div class="inv-row">
+      <div class="inv-col inv-col-2">
+        <div class="inv-card">
+          <div class="inv-card-header"><h4><i class="fas fa-chart-bar" style="color:#6366f1;"></i> Artículos por Técnico</h4></div>
+          <div class="inv-card-body">
+            <div class="inv-chart-box" id="invDashChart">
+              Cargando gráfico...
+              <div class="inv-chart-bar-container" id="invChartBars"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="inv-col inv-col-2">
+        <div class="inv-card">
+          <div class="inv-card-header"><h4><i class="fas fa-exclamation-circle" style="color:#ef4444;"></i> Materiales Agotados</h4></div>
+          <div class="inv-card-body" style="padding:0;">
+            <div class="inv-table-wrap">
+              <table class="inv-table" id="invDashEmptyTable">
+                <thead><tr><th>Código</th><th>Nombre</th><th>Stock</th></tr></thead>
+                <tbody id="invDashEmptyBody"><tr><td colspan="3" class="inv-empty"><i class="fas fa-check-circle" style="color:#22c55e;"></i><p>Sin materiales agotados</p></td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== TAB: REGISTRAR ==================== -->
+  <div class="inv-tab-content" data-tab="registrar">
+    <div class="inv-card">
+      <div class="inv-card-header"><h3><i class="fas fa-plus-circle" style="color:#22c55e;"></i> Registrar Nuevo Artículo</h3></div>
+      <div class="inv-card-body">
+        <form id="invFormRegistrar" onsubmit="event.preventDefault(); invRegistrarArticulo();">
+          <div class="inv-row">
+            <div class="inv-col inv-col-2">
+              <div class="inv-form-group">
+                <label class="inv-label">Código <span class="inv-required">*</span></label>
+                <div style="display:flex; gap:6px;">
+                  <input type="text" id="invRegCodigo" class="inv-input" placeholder="INV-001" required style="flex:1;">
+                  <button type="button" class="inv-btn inv-btn-sm inv-btn-secondary" onclick="invGenerarCodigo('invRegCodigo')" title="Generar código automático"><i class="fas fa-sync-alt"></i></button>
+                </div>
+              </div>
+            </div>
+            <div class="inv-col inv-col-2">
+              <div class="inv-form-group">
+                <label class="inv-label">Nombre del Artículo <span class="inv-required">*</span></label>
+                <input type="text" id="invRegNombre" class="inv-input" placeholder="Ej: ONU Huawei HG8245" required>
+              </div>
+            </div>
+          </div>
+          <div class="inv-row">
+            <div class="inv-col inv-col-2">
+              <div class="inv-form-group">
+                <label class="inv-label">Oficina / Sucursal</label>
+                <select id="invRegOficina" class="inv-select">
+                  <option value="">Seleccione oficina</option>
+                </select>
+              </div>
+            </div>
+            <div class="inv-col inv-col-2">
+              <div class="inv-form-group">
+                <label class="inv-label">Categoría <span class="inv-required">*</span></label>
+                <div style="display:flex; gap:6px;">
+                  <select id="invRegCategoria" class="inv-select" onchange="invToggleOtraCategoria('invRegCategoria','invRegCategoriaOtra')" style="flex:1;">
+                    <option value="">Seleccione</option>
+                    <option value="ONU">ONU</option>
+                    <option value="Router">Router</option>
+                    <option value="Caja TV">Caja TV</option>
+                    <option value="Repetidor WiFi">Repetidor WiFi</option>
+                    <option value="UPS">UPS</option>
+                    <option value="Cable">Cable</option>
+                    <option value="Conectores">Conectores</option>
+                    <option value="Splitter">Splitter</option>
+                    <option value="Antena">Antena</option>
+                    <option value="Switch">Switch</option>
+                    <option value="Micronodo">Micronodo</option>
+                    <option value="Caja Nap">Caja Nap</option>
+                    <option value="Manga">Manga</option>
+                    <option value="Fibra Óptica">Fibra Óptica</option>
+                    <option value="Herramienta">Herramienta</option>
+                    <option value="Otro">Otro...</option>
+                  </select>
+                  <input type="text" id="invRegCategoriaOtra" class="inv-input" placeholder="Nueva categoría" style="display:none; flex:1;">
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="inv-row">
+            <div class="inv-col inv-col-3">
+              <div class="inv-form-group">
+                <label class="inv-label">¿Es de Venta?</label>
+                <label class="inv-checkbox-label">
+                  <input type="checkbox" id="invRegVenta">
+                  <i class="fas fa-dollar-sign" style="color:#22c55e;"></i> Sí, se vende al público
+                </label>
+              </div>
+            </div>
+            <div class="inv-col inv-col-3">
+              <div class="inv-form-group">
+                <label class="inv-label">Precio ($)</label>
+                <input type="number" id="invRegPrecio" class="inv-input" min="0" step="0.01" value="0" placeholder="0.00">
+              </div>
+            </div>
+            <div class="inv-col inv-col-3">
+              <div class="inv-form-group">
+                <label class="inv-label">Cantidad Inicial <span class="inv-required">*</span></label>
+                <input type="number" id="invRegCantidad" class="inv-input" min="1" value="1" required>
+              </div>
+            </div>
+          </div>
+          <div class="inv-form-group">
+            <label class="inv-label">Número de Serie (opcional)</label>
+            <input type="text" id="invRegSerial" class="inv-input" placeholder="Serial / IMEI / MAC" style="max-width:350px;">
+          </div>
+          <div style="display:flex; gap:8px; margin-top:4px; flex-wrap:wrap;">
+            <button type="submit" class="inv-btn inv-btn-primary"><i class="fas fa-save"></i> Guardar Artículo</button>
+            <button type="button" class="inv-btn inv-btn-secondary" onclick="invLimpiarForm('invFormRegistrar')"><i class="fas fa-eraser"></i> Limpiar</button>
+            <button type="button" class="inv-btn inv-btn-info" onclick="invImprimirCodigo()"><i class="fas fa-print"></i> Imprimir Código</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== TAB: ASIGNAR ==================== -->
+  <div class="inv-tab-content" data-tab="asignar">
+    <div class="inv-card">
+      <div class="inv-card-header"><h3><i class="fas fa-hand-holding" style="color:#6366f1;"></i> Asignar Artículo a Técnico</h3></div>
+      <div class="inv-card-body">
+        <form id="invFormAsignar" onsubmit="event.preventDefault(); invAsignarArticulo();">
+          <div class="inv-row">
+            <div class="inv-col inv-col-2">
+              <div class="inv-form-group">
+                <label class="inv-label">Artículo (Código) <span class="inv-required">*</span></label>
+                <select id="invAsigArticulo" class="inv-select" required>
+                  <option value="">Seleccione un artículo</option>
+                </select>
+              </div>
+            </div>
+            <div class="inv-col inv-col-2">
+              <div class="inv-form-group">
+                <label class="inv-label">Técnico <span class="inv-required">*</span></label>
+                <select id="invAsigTecnico" class="inv-select" required>
+                  <option value="">Seleccione técnico</option>
+                  <% (empleados || []).forEach(function(e) { %>
+                  <option value="<%= e.id %>"><%= e.nombre %></option>
+                  <% }); %>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="inv-row">
+            <div class="inv-col inv-col-2">
+              <div class="inv-form-group">
+                <label class="inv-label">Motivo de Uso <span class="inv-required">*</span></label>
+                <select id="invAsigUso" class="inv-select" required>
+                  <option value="">Seleccione</option>
+                  <option value="Instalación">Instalación</option>
+                  <option value="Reparación">Reparación</option>
+                  <option value="Mantenimiento">Mantenimiento</option>
+                  <option value="Cambio">Cambio de equipo</option>
+                  <option value="Nueva Venta">Nueva Venta</option>
+                  <option value="Reposición">Reposición</option>
+                  <option value="Otro">Otro</option>
+                </select>
+              </div>
+            </div>
+            <div class="inv-col inv-col-2">
+              <div class="inv-form-group">
+                <label class="inv-label">Cliente (opcional)</label>
+                <div style="display:flex; gap:6px;">
+                  <input type="text" id="invAsigClienteBuscar" class="inv-input" placeholder="Buscar cliente por nombre o cédula..." style="flex:1;" onkeyup="invBuscarCliente(this.value,'invAsigClienteResult','invAsigClienteId')">
+                  <button type="button" class="inv-btn inv-btn-sm inv-btn-secondary" onclick="document.getElementById('invAsigClienteBuscar').value=''; document.getElementById('invAsigClienteResult').innerHTML=''; document.getElementById('invAsigClienteId').value='';"><i class="fas fa-times"></i></button>
+                </div>
+                <input type="hidden" id="invAsigClienteId" value="">
+                <div id="invAsigClienteResult"></div>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex; gap:8px; margin-top:4px;">
+            <button type="submit" class="inv-btn inv-btn-primary"><i class="fas fa-check"></i> Asignar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== TAB: DEVOLVER ==================== -->
+  <div class="inv-tab-content" data-tab="devolver">
+    <div class="inv-card">
+      <div class="inv-card-header"><h3><i class="fas fa-undo-alt" style="color:#f59e0b;"></i> Registrar Devolución</h3></div>
+      <div class="inv-card-body">
+        <form id="invFormDevolver" onsubmit="event.preventDefault(); invRegistrarDevolucion();">
+          <div class="inv-row">
+            <div class="inv-col inv-col-2">
+              <div class="inv-form-group">
+                <label class="inv-label">Artículo <span class="inv-required">*</span></label>
+                <select id="invDevArticulo" class="inv-select" required>
+                  <option value="">Seleccione artículo</option>
+                </select>
+              </div>
+            </div>
+            <div class="inv-col inv-col-2">
+              <div class="inv-form-group">
+                <label class="inv-label">Técnico que devuelve <span class="inv-required">*</span></label>
+                <select id="invDevTecnico" class="inv-select" required>
+                  <option value="">Seleccione técnico</option>
+                  <% (empleados || []).forEach(function(e) { %>
+                  <option value="<%= e.id %>"><%= e.nombre %></option>
+                  <% }); %>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="inv-row">
+            <div class="inv-col inv-col-2">
+              <div class="inv-form-group">
+                <label class="inv-label">Motivo de Devolución <span class="inv-required">*</span></label>
+                <select id="invDevMotivo" class="inv-select" required>
+                  <option value="">Seleccione motivo</option>
+                  <option value="No utilizado">No utilizado</option>
+                  <option value="Defectuoso / Dañado">Defectuoso / Dañado</option>
+                  <option value="Cliente canceló">Cliente canceló</option>
+                  <option value="Equipo equivocado">Equipo equivocado</option>
+                  <option value="Reposición de bodega">Reposición de bodega</option>
+                  <option value="Cambio de equipo">Cambio de equipo</option>
+                  <option value="Otro">Otro</option>
+                </select>
+              </div>
+            </div>
+            <div class="inv-col inv-col-2">
+              <div class="inv-form-group">
+                <label class="inv-label">Cliente (opcional)</label>
+                <input type="text" id="invDevClienteBuscar" class="inv-input" placeholder="Buscar cliente..." onkeyup="invBuscarCliente(this.value,'invDevClienteResult','invDevClienteId')">
+                <input type="hidden" id="invDevClienteId" value="">
+                <div id="invDevClienteResult"></div>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex; gap:8px; margin-top:4px;">
+            <button type="submit" class="inv-btn inv-btn-warning"><i class="fas fa-undo-alt"></i> Registrar Devolución</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== TAB: MOVER ==================== -->
+  <div class="inv-tab-content" data-tab="mover">
+    <div class="inv-card">
+      <div class="inv-card-header"><h3><i class="fas fa-arrows-alt-h" style="color:#3b82f6;"></i> Mover Artículo entre Oficinas</h3></div>
+      <div class="inv-card-body">
+        <form id="invFormMover" onsubmit="event.preventDefault(); invMoverArticulo();">
+          <div class="inv-row">
+            <div class="inv-col inv-col-2">
+              <div class="inv-form-group">
+                <label class="inv-label">Artículo <span class="inv-required">*</span></label>
+                <select id="invMovArticulo" class="inv-select" required>
+                  <option value="">Seleccione artículo</option>
+                </select>
+              </div>
+            </div>
+            <div class="inv-col inv-col-4">
+              <div class="inv-form-group">
+                <label class="inv-label">Oficina Origen <span class="inv-required">*</span></label>
+                <select id="invMovOrigen" class="inv-select" required>
+                  <option value="">Seleccione origen</option>
+                </select>
+              </div>
+            </div>
+            <div class="inv-col inv-col-4">
+              <div class="inv-form-group">
+                <label class="inv-label">Oficina Destino <span class="inv-required">*</span></label>
+                <select id="invMovDestino" class="inv-select" required>
+                  <option value="">Seleccione destino</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="inv-form-group">
+            <label class="inv-label">Cantidad a mover</label>
+            <input type="number" id="invMovCantidad" class="inv-input" min="1" value="1" style="max-width:150px;">
+          </div>
+          <div style="display:flex; gap:8px; margin-top:4px;">
+            <button type="submit" class="inv-btn inv-btn-info"><i class="fas fa-arrows-alt-h"></i> Mover</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== TAB: HISTORIAL ==================== -->
+  <div class="inv-tab-content" data-tab="historial">
+    <!-- Bulk bar -->
+    <div class="inv-bulk-bar" id="invBulkBar" style="display:none;">
+      <span class="inv-bulk-count" id="invBulkCount">0 seleccionado(s)</span>
+      <div style="display:flex; gap:6px; flex-wrap:wrap;">
+        <button class="inv-btn inv-btn-sm inv-btn-success" onclick="invBulkAction('activar')"><i class="fas fa-check"></i> Activar</button>
+        <button class="inv-btn inv-btn-sm inv-btn-danger" onclick="invBulkAction('eliminar')"><i class="fas fa-trash"></i> Eliminar</button>
+        <button class="inv-btn inv-btn-sm inv-btn-secondary" onclick="invBulkDeseleccionar()"><i class="fas fa-times"></i> Deseleccionar</button>
+      </div>
+    </div>
+
+    <!-- Search row -->
+    <div class="inv-search-row">
+      <div class="inv-input-wrap">
+        <i class="fas fa-search"></i>
+        <input type="text" id="invHistSearch" class="inv-input" placeholder="Buscar en historial..." onkeyup="invHistPage=1; invCargarHistorial();">
+      </div>
+      <select id="invHistFiltroTipo" class="inv-select" style="width:auto; min-width:130px;" onchange="invHistPage=1; invCargarHistorial();">
+        <option value="">Todos los tipos</option>
+        <option value="entrada">Entrada</option>
+        <option value="salida">Salida</option>
+        <option value="asignacion">Asignación</option>
+        <option value="devolucion">Devolución</option>
+        <option value="movimiento">Movimiento</option>
+        <option value="ajuste">Ajuste</option>
+      </select>
+      <span class="inv-badge inv-badge-blue" id="invHistTotal" style="display:none;">Total: 0</span>
+    </div>
+
+    <!-- Table -->
+    <div class="inv-card">
+      <div class="inv-table-wrap">
+        <table class="inv-table" id="invHistTable">
+          <thead>
+            <tr>
+              <th class="inv-cell-check"><input type="checkbox" id="invHistSelectAll" onchange="invHistToggleAll()"></th>
+              <th>ID</th>
+              <th>Artículo</th>
+              <th>Tipo</th>
+              <th>Cantidad</th>
+              <th>Técnico</th>
+              <th>Cliente</th>
+              <th>Oficina</th>
+              <th>Nota</th>
+              <th>Fecha</th>
+            </tr>
+          </thead>
+          <tbody id="invHistBody">
+            <tr><td colspan="10" class="inv-loading"><i class="fas fa-spinner fa-spin"></i><br>Cargando historial...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="inv-pagination" id="invHistPagination" style="display:none;">
+      <button class="inv-btn inv-btn-sm inv-btn-secondary" onclick="invHistCambiarPag(-1)" id="invHistPrevBtn" disabled><i class="fas fa-chevron-left"></i> Anterior</button>
+      <span class="inv-page-info" id="invHistPageInfo">Página 1 de 1</span>
+      <button class="inv-btn inv-btn-sm inv-btn-secondary" onclick="invHistCambiarPag(1)" id="invHistNextBtn" disabled>Siguiente <i class="fas fa-chevron-right"></i></button>
+    </div>
+  </div>
+
+  <!-- ==================== TAB: REPORTES ==================== -->
+  <div class="inv-tab-content" data-tab="reportes">
+    <div class="inv-card">
+      <div class="inv-card-header"><h3><i class="fas fa-file-alt" style="color:#6366f1;"></i> Generar Reporte</h3></div>
+      <div class="inv-card-body">
+        <form id="invFormReporte" onsubmit="event.preventDefault(); invGenerarReporte();">
+          <div class="inv-row">
+            <div class="inv-col inv-col-3">
+              <div class="inv-form-group">
+                <label class="inv-label">Técnico</label>
+                <select id="invRepTecnico" class="inv-select">
+                  <option value="">Todos los técnicos</option>
+                  <% (empleados || []).forEach(function(e) { %>
+                  <option value="<%= e.id %>"><%= e.nombre %></option>
+                  <% }); %>
+                </select>
+              </div>
+            </div>
+            <div class="inv-col inv-col-3">
+              <div class="inv-form-group">
+                <label class="inv-label">Desde</label>
+                <input type="date" id="invRepDesde" class="inv-input">
+              </div>
+            </div>
+            <div class="inv-col inv-col-3">
+              <div class="inv-form-group">
+                <label class="inv-label">Hasta</label>
+                <input type="date" id="invRepHasta" class="inv-input">
+              </div>
+            </div>
+          </div>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <button type="submit" class="inv-btn inv-btn-primary"><i class="fas fa-search"></i> Generar Reporte</button>
+            <button type="button" class="inv-btn inv-btn-success" onclick="invExportarReporte()"><i class="fas fa-file-excel"></i> Exportar Excel</button>
+            <button type="button" class="inv-btn inv-btn-secondary" onclick="invImprimirReporte()"><i class="fas fa-print"></i> Imprimir</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="inv-card" id="invRepResultCard" style="display:none;">
+      <div class="inv-card-header"><h4><i class="fas fa-table" style="color:#6366f1;"></i> Resultado del Reporte</h4></div>
+      <div class="inv-table-wrap">
+        <table class="inv-table" id="invRepTable">
+          <thead>
+            <tr><th>ID</th><th>Artículo</th><th>Técnico</th><th>Acción</th><th>Cantidad</th><th>Cliente</th><th>Fecha</th></tr>
+          </thead>
+          <tbody id="invRepBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== TAB: CONFIGURACION ==================== -->
+  <div class="inv-tab-content" data-tab="configuracion">
+    <div class="inv-card">
+      <div class="inv-card-header"><h3><i class="fas fa-cog" style="color:#64748b;"></i> Configuración del Módulo</h3></div>
+      <div class="inv-card-body">
+        <div class="inv-sub-tabs" id="invConfigTabs">
+          <button class="inv-sub-tab active" data-subtab="categorias"><i class="fas fa-tags"></i> Categorías</button>
+          <button class="inv-sub-tab" data-subtab="oficinas"><i class="fas fa-building"></i> Oficinas</button>
+          <button class="inv-sub-tab" data-subtab="personal"><i class="fas fa-users-cog"></i> Personal</button>
+          <button class="inv-sub-tab" data-subtab="alertas"><i class="fas fa-bell"></i> Alertas</button>
+          <button class="inv-sub-tab" data-subtab="correo"><i class="fas fa-envelope"></i> Correo</button>
+          <button class="inv-sub-tab" data-subtab="whatsapp"><i class="fab fa-whatsapp"></i> WhatsApp</button>
+          <button class="inv-sub-tab" data-subtab="impresion"><i class="fas fa-print"></i> Impresión</button>
+        </div>
+
+        <!-- Categorías -->
+        <div class="inv-sub-content active" data-subtab="categorias">
+          <div class="inv-card">
+            <div class="inv-card-header"><h4><i class="fas fa-tags" style="color:#4338ca;"></i> Gestionar Categorías</h4><button class="inv-btn inv-btn-sm inv-btn-primary" onclick="invConfigAgregarCategoria()"><i class="fas fa-plus"></i> Nueva</button></div>
+            <div class="inv-card-body" style="padding:0;">
+              <table class="inv-table">
+                <thead><tr><th>Nombre</th><th>Artículos</th><th>Acciones</th></tr></thead>
+                <tbody id="invConfigCategoriasBody"><tr><td colspan="3" class="inv-loading"><i class="fas fa-spinner fa-spin"></i> Cargando...</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Oficinas -->
+        <div class="inv-sub-content" data-subtab="oficinas">
+          <div class="inv-card">
+            <div class="inv-card-header"><h4><i class="fas fa-building" style="color:#0369a1;"></i> Gestionar Oficinas</h4><button class="inv-btn inv-btn-sm inv-btn-primary" onclick="invConfigAgregarOficina()"><i class="fas fa-plus"></i> Nueva</button></div>
+            <div class="inv-card-body" style="padding:0;">
+              <table class="inv-table">
+                <thead><tr><th>Nombre</th><th>Dirección</th><th>Acciones</th></tr></thead>
+                <tbody id="invConfigOficinasBody"><tr><td colspan="3" class="inv-loading"><i class="fas fa-spinner fa-spin"></i> Cargando...</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Personal -->
+        <div class="inv-sub-content" data-subtab="personal">
+          <div class="inv-card">
+            <div class="inv-card-header"><h4><i class="fas fa-users-cog" style="color:#6d28d9;"></i> Personal con Acceso a Inventario</h4></div>
+            <div class="inv-card-body" style="padding:0;">
+              <table class="inv-table">
+                <thead><tr><th>Nombre</th><th>Cargo</th><th>Permiso</th><th>Acciones</th></tr></thead>
+                <tbody id="invConfigPersonalBody"><tr><td colspan="4" class="inv-loading"><i class="fas fa-spinner fa-spin"></i> Cargando...</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Alertas -->
+        <div class="inv-sub-content" data-subtab="alertas">
+          <div class="inv-card">
+            <div class="inv-card-header"><h4><i class="fas fa-bell" style="color:#b45309;"></i> Configurar Alertas de Stock</h4></div>
+            <div class="inv-card-body">
+              <div class="inv-form-group">
+                <label class="inv-label">Límite mínimo de stock</label>
+                <input type="number" id="invConfigStockMin" class="inv-input" min="0" value="5" style="max-width:120px;">
+                <p style="font-size:0.75rem; color:#94a3b8; margin-top:4px;">Notificar cuando el stock esté por debajo de este valor</p>
+              </div>
+              <div class="inv-form-group">
+                <label class="inv-checkbox-label">
+                  <input type="checkbox" id="invConfigNotifCorreo" checked>
+                  <i class="fas fa-envelope" style="color:#3b82f6;"></i> Notificar por correo electrónico
+                </label>
+              </div>
+              <div class="inv-form-group">
+                <label class="inv-checkbox-label">
+                  <input type="checkbox" id="invConfigNotifWhatsApp">
+                  <i class="fab fa-whatsapp" style="color:#25D366;"></i> Notificar por WhatsApp
+                </label>
+              </div>
+              <button class="inv-btn inv-btn-primary" onclick="invConfigGuardarAlertas()"><i class="fas fa-save"></i> Guardar Configuración</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Correo -->
+        <div class="inv-sub-content" data-subtab="correo">
+          <div class="inv-card">
+            <div class="inv-card-header"><h4><i class="fas fa-envelope" style="color:#3b82f6;"></i> Configuración de Correo</h4></div>
+            <div class="inv-card-body">
+              <div class="inv-form-group">
+                <label class="inv-label">Correo de notificación</label>
+                <input type="email" id="invConfigCorreo" class="inv-input" placeholder="inventario@tudominio.com" style="max-width:350px;">
+              </div>
+              <div class="inv-form-group">
+                <label class="inv-label">Correos adicionales (separados por coma)</label>
+                <input type="text" id="invConfigCorreosAdicionales" class="inv-input" placeholder="correo1@dom.com, correo2@dom.com">
+              </div>
+              <button class="inv-btn inv-btn-primary" onclick="invConfigGuardarCorreo()"><i class="fas fa-save"></i> Guardar</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- WhatsApp -->
+        <div class="inv-sub-content" data-subtab="whatsapp">
+          <div class="inv-card">
+            <div class="inv-card-header"><h4><i class="fab fa-whatsapp" style="color:#25D366;"></i> Configuración de WhatsApp</h4></div>
+            <div class="inv-card-body">
+              <div class="inv-form-group">
+                <label class="inv-label">Número de WhatsApp (con código de país)</label>
+                <input type="text" id="invConfigWhatsAppNum" class="inv-input" placeholder="+18091234567" style="max-width:220px;">
+              </div>
+              <div class="inv-form-group">
+                <label class="inv-label">API Key (si aplica)</label>
+                <input type="text" id="invConfigWhatsAppApi" class="inv-input" placeholder="Token o API Key" style="max-width:350px;">
+              </div>
+              <button class="inv-btn inv-btn-green" onclick="invConfigGuardarWhatsApp()"><i class="fas fa-save"></i> Guardar</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Impresión -->
+        <div class="inv-sub-content" data-subtab="impresion">
+          <div class="inv-card">
+            <div class="inv-card-header"><h4><i class="fas fa-print" style="color:#64748b;"></i> Configuración de Impresión</h4></div>
+            <div class="inv-card-body">
+              <div class="inv-form-group">
+                <label class="inv-label">Formato de código de barras</label>
+                <select id="invConfigPrintFormato" class="inv-select" style="max-width:250px;">
+                  <option value="CODE128">CODE128</option>
+                  <option value="EAN13">EAN-13</option>
+                  <option value="QR">QR</option>
+                </select>
+              </div>
+              <div class="inv-form-group">
+                <label class="inv-label">Tamaño de etiqueta</label>
+                <select id="invConfigPrintTamano" class="inv-select" style="max-width:200px;">
+                  <option value="pequena">Pequeña (2x1 pulgada)</option>
+                  <option value="mediana">Mediana (3x2 pulgadas)</option>
+                  <option value="grande">Grande (4x2 pulgadas)</option>
+                </select>
+              </div>
+              <button class="inv-btn inv-btn-primary" onclick="invConfigGuardarImpresion()"><i class="fas fa-save"></i> Guardar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================= MODAL CONTAINER ============================= -->
+<div id="invModalContainer">
+  <div class="inv-modal-box" id="invModalBox">
+    <div class="inv-modal-header">
+      <h3 id="invModalTitle"><i class="fas fa-info-circle"></i> Modal</h3>
+      <button class="inv-modal-close" onclick="invCerrarModal()">&times;</button>
+    </div>
+    <div class="inv-modal-body" id="invModalBody">
+      <p>Contenido del modal</p>
+    </div>
+    <div class="inv-modal-footer" id="invModalFooter">
+      <button class="inv-btn inv-btn-secondary" onclick="invCerrarModal()">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ===================================================================
+   INVENTARIO — DomISP-style full module
+   INV_API = '/modulo?pagina=InventarioAPI&action='
+   =================================================================== */
+const INV_API = '/modulo?pagina=InventarioAPI&action=';
+
+// State
+let invHistPage = 1, invHistTotalPages = 1, invHistTotalItems = 0;
+let invHistItems = [];
+let invRepData = [];
+
+/* ===== UTILITIES ===== */
+function invEsc(t) {
+  if (t == null) return '';
+  return t.toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+}
+function invDateStr(d) {
+  if (!d) return '';
+  const dt = new Date(d);
+  const y = dt.getFullYear();
+  const m = String(dt.getMonth()+1).padStart(2,'0');
+  const day = String(dt.getDate()).padStart(2,'0');
+  return day + '/' + m + '/' + y;
+}
+function invToast(msg, type) {
+  const el = document.createElement('div');
+  el.className = 'inv-toast inv-toast-' + (type || 'info');
+  const icon = type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle';
+  el.innerHTML = '<i class="fas ' + icon + '"></i> ' + invEsc(msg);
+  document.body.appendChild(el);
+  setTimeout(function(){ el.style.opacity='0'; el.style.transition='opacity 0.3s'; setTimeout(function(){ el.remove(); },400); }, 3000);
+}
+
+/* ===== API ===== */
+async function invAPI(action, payload) {
+  try {
+    const url = INV_API + encodeURIComponent(action);
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload || {})
+    });
+    return await res.json();
+  } catch(e) {
+    return { success: false, message: 'Error de conexión: ' + e.message };
+  }
+}
+
+/* ===== TABS ===== */
+function invMostrar(tabName) {
+  // Tabs
+  document.querySelectorAll('.inv-tab').forEach(function(t){ t.classList.remove('active'); });
+  document.querySelectorAll('.inv-tab-content').forEach(function(t){ t.classList.remove('active'); });
+  const tabBtn = document.querySelector('.inv-tab[data-tab="' + tabName + '"]');
+  const tabContent = document.querySelector('.inv-tab-content[data-tab="' + tabName + '"]');
+  if (tabBtn) tabBtn.classList.add('active');
+  if (tabContent) tabContent.classList.add('active');
+}
+document.getElementById('invTabs').addEventListener('click', function(e) {
+  const btn = e.target.closest('.inv-tab');
+  if (!btn) return;
+  const tab = btn.getAttribute('data-tab');
+  invMostrar(tab);
+  if (tab === 'dashboard') invGenerarDashboard();
+  if (tab === 'historial') invCargarHistorial();
+  if (tab === 'configuracion') invCargarConfiguracion();
+  if (tab === 'registrar') invCargarOficinasSelect('invRegOficina');
+  if (tab === 'asignar') { invCargarSelectArticulos('invAsigArticulo'); invCargarOficinasSelect(); }
+  if (tab === 'devolver') invCargarSelectArticulos('invDevArticulo');
+  if (tab === 'mover') { invCargarSelectArticulos('invMovArticulo'); invCargarOficinasSelect('invMovOrigen'); invCargarOficinasSelect('invMovDestino'); }
+});
+
+/* ===== SUB-TABS (Config) ===== */
+document.addEventListener('click', function(e) {
+  const subBtn = e.target.closest('.inv-sub-tab');
+  if (!subBtn) return;
+  const tab = subBtn.getAttribute('data-subtab');
+  document.querySelectorAll('.inv-sub-tab').forEach(function(t){ t.classList.remove('active'); });
+  document.querySelectorAll('.inv-sub-content').forEach(function(t){ t.classList.remove('active'); });
+  subBtn.classList.add('active');
+  var content = document.querySelector('.inv-sub-content[data-subtab="' + tab + '"]');
+  if (content) content.classList.add('active');
+  if (tab === 'categorias') invCargarConfigCategorias();
+  if (tab === 'oficinas') invCargarConfigOficinas();
+  if (tab === 'personal') invCargarConfigPersonal();
+});
+
+/* ===== MODAL ===== */
+function invAbrirModal(html, opts) {
+  opts = opts || {};
+  document.getElementById('invModalTitle').innerHTML = opts.title || '<i class="fas fa-info-circle"></i> Información';
+  document.getElementById('invModalBody').innerHTML = html;
+  var footer = document.getElementById('invModalFooter');
+  if (opts.footer) {
+    footer.innerHTML = opts.footer;
+    footer.style.display = 'flex';
+  } else {
+    footer.innerHTML = '<button class="inv-btn inv-btn-secondary" onclick="invCerrarModal()">Cerrar</button>';
+    footer.style.display = 'flex';
+  }
+  var box = document.getElementById('invModalBox');
+  box.className = 'inv-modal-box';
+  if (opts.wide) box.classList.add('inv-modal-wide');
+  if (opts.sm) box.classList.add('inv-modal-sm');
+  document.getElementById('invModalContainer').classList.add('open');
+}
+function invCerrarModal() {
+  document.getElementById('invModalContainer').classList.remove('open');
+}
+// Close modal on overlay click
+document.getElementById('invModalContainer').addEventListener('click', function(e) {
+  if (e.target === this) invCerrarModal();
+});
+
+/* ===== GENERAR CODIGO ===== */
+function invGenerarCodigo(inputId) {
+  var prefix = 'INV';
+  var rand = Math.floor(Math.random() * 9000) + 1000;
+  var code = prefix + '-' + rand;
+  document.getElementById(inputId).value = code;
+}
+
+/* ===== CARGAR DATOS COMUNES ===== */
+async function invCargarDatos() {
+  // No-op por ahora, los datos se cargan bajo demanda
+}
+
+async function invCargarOficinasSelect(selectId) {
+  try {
+    var res = await invAPI('listar_oficinas', {});
+    if (res.success && res.items) {
+      var sel = document.getElementById(selectId);
+      if (!sel) return;
+      var val = sel.value;
+      sel.innerHTML = '<option value="">Seleccione oficina</option>';
+      res.items.forEach(function(o) {
+        sel.innerHTML += '<option value="' + invEsc(o.id) + '">' + invEsc(o.nombre) + '</option>';
+      });
+      if (val) sel.value = val;
+    }
+  } catch(e) {}
+}
+
+async function invCargarSelectArticulos(selectId) {
+  try {
+    var res = await invAPI('listar', { all: '1' });
+    if (res.success && res.items) {
+      var sel = document.getElementById(selectId);
+      if (!sel) return;
+      var val = sel.value;
+      sel.innerHTML = '<option value="">Seleccione artículo</option>';
+      res.items.forEach(function(a) {
+        var stock = parseInt(a.stock) || 0;
+        sel.innerHTML += '<option value="' + a.id + '">' + invEsc(a.codigo || '') + ' — ' + invEsc(a.nombre) + ' (Stock: ' + stock + ')</option>';
+      });
+      if (val) sel.value = val;
+    }
+  } catch(e) {}
+}
+
+/* ===== TOGGLE "OTRA" CATEGORIA ===== */
+function invToggleOtraCategoria(selectId, inputId) {
+  var sel = document.getElementById(selectId);
+  var inp = document.getElementById(inputId);
+  if (!sel || !inp) return;
+  if (sel.value === 'Otro') {
+    inp.style.display = 'block';
+    inp.focus();
+  } else {
+    inp.style.display = 'none';
+    inp.value = '';
+  }
+}
+
+/* ===== CLIENT SEARCH ===== */
+async function invBuscarCliente(query, resultId, hiddenId) {
+  var resultEl = document.getElementById(resultId);
+  var hiddenEl = document.getElementById(hiddenId);
+  if (!query || query.length < 2) {
+    resultEl.innerHTML = '';
+    if (hiddenEl) hiddenEl.value = '';
+    return;
+  }
+  try {
+    var res = await invAPI('buscar_cliente', { q: query });
+    if (res.success && res.items && res.items.length > 0) {
+      var html = '';
+      res.items.forEach(function(c) {
+        var nombre = c.nombre || c.Nombre || 'Desconocido';
+        html += '<div class="inv-client-result" style="cursor:pointer;" onclick="invSeleccionarCliente(' + (c.id || c.ID) + ',\'' + invEsc(nombre) + '\',\'' + resultId + '\',\'' + hiddenId + '\')">'
+          + '<i class="fas fa-user-circle" style="font-size:28px;color:#94a3b8;"></i>'
+          + '<div class="inv-client-info"><strong>' + invEsc(nombre) + '</strong>'
+          + '<span>' + invEsc(c.cedula || c.Cedula || c.telefono || c.Telefono || '') + '</span></div>'
+          + '</div>';
+      });
+      resultEl.innerHTML = html;
+    } else {
+      resultEl.innerHTML = '<div style="padding:8px 0;font-size:0.8rem;color:#94a3b8;">Sin resultados</div>';
+    }
+  } catch(e) {
+    resultEl.innerHTML = '<div style="padding:8px 0;font-size:0.8rem;color:#ef4444;">Error al buscar</div>';
+  }
+}
+
+function invSeleccionarCliente(id, nombre, resultId, hiddenId) {
+  var resultEl = document.getElementById(resultId);
+  var hiddenEl = document.getElementById(hiddenId);
+  if (hiddenEl) hiddenEl.value = id;
+  resultEl.innerHTML = '<div class="inv-client-result">'
+    + '<i class="fas fa-user-circle" style="font-size:28px;color:#6366f1;"></i>'
+    + '<div class="inv-client-info"><strong>' + invEsc(nombre) + '</strong>'
+    + '<span style="color:#6366f1;">✓ Seleccionado</span></div>'
+    + '<button class="inv-btn inv-btn-xs inv-btn-secondary" onclick="document.getElementById(\'' + hiddenId + '\').value=\'\';document.getElementById(\'' + resultId + '\').innerHTML=\'\';">&times;</button>'
+    + '</div>';
+}
+
+/* ===== DASHBOARD ===== */
+async function invGenerarDashboard() {
+  try {
+    var res = await invAPI('dashboard', {});
+    if (!res.success) return;
+    var d = res.data || {};
+    document.getElementById('invDashTotalItems').textContent = d.total_items || 0;
+    document.getElementById('invDashTotalValor').textContent = '$' + (parseFloat(d.total_valor) || 0).toFixed(2);
+    document.getElementById('invDashLowStock').textContent = d.low_stock || 0;
+    document.getElementById('invDashTecnicos').textContent = d.total_tecnicos || 0;
+    document.getElementById('invDashCategorias').textContent = d.total_categorias || 0;
+
+    // Chart: items por técnico
+    var chartBars = document.getElementById('invChartBars');
+    chartBars.innerHTML = '';
+    if (d.tecnicos_chart && d.tecnicos_chart.length > 0) {
+      var maxVal = Math.max.apply(null, d.tecnicos_chart.map(function(t){ return parseInt(t.cantidad) || 0; }));
+      maxVal = Math.max(maxVal, 1);
+      d.tecnicos_chart.forEach(function(t) {
+        var val = parseInt(t.cantidad) || 0;
+        var pct = (val / maxVal) * 140;
+        var color = '#6366f1';
+        if (val === 0) color = '#e2e8f0';
+        chartBars.innerHTML += '<div class="inv-chart-bar" style="height:' + Math.max(pct,6) + 'px;background:' + color + ';">'
+          + '<span class="inv-bar-val">' + val + '</span>'
+          + '<span class="inv-bar-label">' + invEsc(t.nombre || '?') + '</span></div>';
+      });
+    } else {
+      chartBars.innerHTML = '<p style="color:#94a3b8;width:100%;">Sin datos de asignaciones</p>';
+    }
+
+    // Empty materials table
+    var emptyBody = document.getElementById('invDashEmptyBody');
+    if (d.agotados && d.agotados.length > 0) {
+      var html = '';
+      d.agotados.forEach(function(a) {
+        var stock = parseInt(a.stock) || 0;
+        var badgeClass = stock <= 0 ? 'inv-badge-red' : 'inv-badge-yellow';
+        html += '<tr><td>' + invEsc(a.codigo || '') + '</td><td>' + invEsc(a.nombre || '') + '</td>'
+          + '<td><span class="inv-badge ' + badgeClass + '">' + stock + '</span></td></tr>';
+      });
+      emptyBody.innerHTML = html;
+    } else {
+      emptyBody.innerHTML = '<tr><td colspan="3" class="inv-empty"><i class="fas fa-check-circle" style="color:#22c55e;"></i><p>Sin materiales agotados</p></td></tr>';
+    }
+  } catch(e) {
+    console.error('Dashboard error:', e);
+  }
+}
+
+/* ===== REGISTRAR ARTICULO ===== */
+async function invRegistrarArticulo() {
+  var codigo = document.getElementById('invRegCodigo').value.trim();
+  var nombre = document.getElementById('invRegNombre').value.trim();
+  var oficinaId = document.getElementById('invRegOficina').value;
+  var categoria = document.getElementById('invRegCategoria').value;
+  var categoriaOtra = document.getElementById('invRegCategoriaOtra').value.trim();
+  var esVenta = document.getElementById('invRegVenta').checked ? 1 : 0;
+  var precio = parseFloat(document.getElementById('invRegPrecio').value) || 0;
+  var cantidad = parseInt(document.getElementById('invRegCantidad').value) || 1;
+  var serial = document.getElementById('invRegSerial').value.trim();
+
+  if (!codigo) { invToast('El código es obligatorio', 'error'); return; }
+  if (!nombre) { invToast('El nombre del artículo es obligatorio', 'error'); return; }
+
+  // Si seleccionó "Otro" y puso un valor, usar ese
+  if (categoria === 'Otro' && categoriaOtra) categoria = categoriaOtra;
+  if (!categoria) { invToast('Seleccione una categoría', 'error'); return; }
+
+  var payload = {
+    codigo: codigo,
+    nombre: nombre,
+    categoria: categoria,
+    oficina_id: oficinaId || null,
+    es_venta: esVenta,
+    precio: precio,
+    cantidad: cantidad,
+    serial: serial || null
+  };
+
+  var res = await invAPI('registrar', payload);
+  if (res.success) {
+    invToast('Artículo registrado exitosamente', 'success');
+    invLimpiarForm('invFormRegistrar');
+    invGenerarCodigo('invRegCodigo');
+  } else {
+    invToast(res.message || 'Error al registrar artículo', 'error');
+  }
+}
+
+/* ===== GENERAR CODIGO ===== */
+function invLimpiarForm(formId) {
+  var form = document.getElementById(formId);
+  if (!form) return;
+  var inputs = form.querySelectorAll('input:not([type="hidden"]), select, textarea');
+  inputs.forEach(function(inp) {
+    if (inp.type === 'checkbox' || inp.type === 'radio') inp.checked = false;
+    else if (inp.tagName === 'SELECT') inp.selectedIndex = 0;
+    else inp.value = '';
+  });
+}
+
+/* ===== IMPRIMIR CODIGO ===== */
+function invImprimirCodigo() {
+  var codigo = document.getElementById('invRegCodigo').value.trim();
+  var nombre = document.getElementById('invRegNombre').value.trim();
+  if (!codigo) { invToast('Primero registre o genere un código', 'info'); return; }
+  var w = window.open('', '_blank', 'width=400,height=300');
+  w.document.write('<html><head><style>body{font-family:Arial;text-align:center;padding:40px;}h1{font-size:2rem;letter-spacing:3px;}.label{font-size:0.9rem;color:#666;margin:8px 0;}hr{margin:20px;}</style></head><body>');
+  w.document.write('<h1>' + invEsc(codigo) + '</h1>');
+  w.document.write('<div class="label">' + invEsc(nombre) + '</div>');
+  w.document.write('<hr><p style="color:#999;">Código de inventario</p>');
+  w.document.write('</body></html>');
+  w.document.close();
+  w.print();
+}
+
+/* ===== ASIGNAR ARTICULO ===== */
+async function invAsignarArticulo() {
+  var articuloId = document.getElementById('invAsigArticulo').value;
+  var tecnicoId = document.getElementById('invAsigTecnico').value;
+  var uso = document.getElementById('invAsigUso').value;
+  var clienteId = document.getElementById('invAsigClienteId').value;
+
+  if (!articuloId) { invToast('Seleccione un artículo', 'error'); return; }
+  if (!tecnicoId) { invToast('Seleccione un técnico', 'error'); return; }
+  if (!uso) { invToast('Seleccione el motivo de uso', 'error'); return; }
+
+  var res = await invAPI('asignar', {
+    inventario_id: parseInt(articuloId),
+    tecnico_id: parseInt(tecnicoId),
+    uso: uso,
+    cliente_id: clienteId ? parseInt(clienteId) : null
+  });
+
+  if (res.success) {
+    invToast('Artículo asignado exitosamente', 'success');
+    document.getElementById('invFormAsignar').reset();
+    document.getElementById('invAsigClienteBuscar').value = '';
+    document.getElementById('invAsigClienteResult').innerHTML = '';
+    document.getElementById('invAsigClienteId').value = '';
+  } else {
+    invToast(res.message || 'Error al asignar', 'error');
+  }
+}
+
+/* ===== DEVOLVER ARTICULO ===== */
+async function invRegistrarDevolucion() {
+  var articuloId = document.getElementById('invDevArticulo').value;
+  var tecnicoId = document.getElementById('invDevTecnico').value;
+  var motivo = document.getElementById('invDevMotivo').value;
+  var clienteId = document.getElementById('invDevClienteId').value;
+
+  if (!articuloId) { invToast('Seleccione un artículo', 'error'); return; }
+  if (!tecnicoId) { invToast('Seleccione el técnico', 'error'); return; }
+  if (!motivo) { invToast('Seleccione el motivo de devolución', 'error'); return; }
+
+  var res = await invAPI('devolver', {
+    inventario_id: parseInt(articuloId),
+    tecnico_id: parseInt(tecnicoId),
+    motivo: motivo,
+    cliente_id: clienteId ? parseInt(clienteId) : null
+  });
+
+  if (res.success) {
+    invToast('Devolución registrada exitosamente', 'success');
+    document.getElementById('invFormDevolver').reset();
+    document.getElementById('invDevClienteBuscar').value = '';
+    document.getElementById('invDevClienteResult').innerHTML = '';
+    document.getElementById('invDevClienteId').value = '';
+  } else {
+    invToast(res.message || 'Error al registrar devolución', 'error');
+  }
+}
+
+/* ===== MOVER ARTICULO ===== */
+async function invMoverArticulo() {
+  var articuloId = document.getElementById('invMovArticulo').value;
+  var origenId = document.getElementById('invMovOrigen').value;
+  var destinoId = document.getElementById('invMovDestino').value;
+  var cantidad = parseInt(document.getElementById('invMovCantidad').value) || 1;
+
+  if (!articuloId) { invToast('Seleccione un artículo', 'error'); return; }
+  if (!origenId) { invToast('Seleccione oficina origen', 'error'); return; }
+  if (!destinoId) { invToast('Seleccione oficina destino', 'error'); return; }
+  if (origenId === destinoId) { invToast('Origen y destino deben ser diferentes', 'error'); return; }
+  if (cantidad < 1) { invToast('Cantidad inválida', 'error'); return; }
+
+  var res = await invAPI('mover', {
+    inventario_id: parseInt(articuloId),
+    oficina_origen_id: parseInt(origenId),
+    oficina_destino_id: parseInt(destinoId),
+    cantidad: cantidad
+  });
+
+  if (res.success) {
+    invToast('Artículo movido exitosamente', 'success');
+    document.getElementById('invFormMover').reset();
+  } else {
+    invToast(res.message || 'Error al mover artículo', 'error');
+  }
+}
+
+/* ===== HISTORIAL ===== */
+async function invCargarHistorial() {
+  var search = document.getElementById('invHistSearch').value.trim();
+  var tipo = document.getElementById('invHistFiltroTipo').value;
+
+  document.getElementById('invHistBody').innerHTML = '<tr><td colspan="10" class="inv-loading"><i class="fas fa-spinner fa-spin"></i><br>Cargando historial...</td></tr>';
+  document.getElementById('invHistPagination').style.display = 'none';
+
+  var res = await invAPI('historial', {
+    search: search || null,
+    tipo: tipo || null,
+    page: invHistPage
+  });
+
+  if (res.success) {
+    invHistItems = res.items || [];
+    invHistTotalPages = res.totalPages || 1;
+    invHistTotalItems = res.total || 0;
+    invHistRenderTable(invHistItems);
+    invHistRenderPagination();
+  } else {
+    document.getElementById('invHistBody').innerHTML = '<tr><td colspan="10" style="text-align:center;padding:30px;color:#94a3b8;">' + (res.message || 'Error al cargar') + '</td></tr>';
+  }
+}
+
+function invHistRenderTable(items) {
+  var body = document.getElementById('invHistBody');
+  if (!items.length) {
+    body.innerHTML = '<tr><td colspan="10" class="inv-empty"><i class="fas fa-inbox"></i><p>No hay registros en el historial</p></td></tr>';
+    return;
+  }
+  var html = '';
+  items.forEach(function(h) {
+    var tipoLabel = invEsc(h.tipo || h.accion || '');
+    var tipoBadge = 'inv-badge-blue';
+    if (tipoLabel === 'entrada' || tipoLabel === 'Entrada') tipoBadge = 'inv-badge-green';
+    else if (tipoLabel === 'salida' || tipoLabel === 'Salida') tipoBadge = 'inv-badge-red';
+    else if (tipoLabel === 'asignacion' || tipoLabel === 'Asignación') tipoBadge = 'inv-badge-purple';
+    else if (tipoLabel === 'devolucion' || tipoLabel === 'Devolución') tipoBadge = 'inv-badge-yellow';
+    else if (tipoLabel === 'movimiento' || tipoLabel === 'Movimiento') tipoBadge = 'inv-badge-blue';
+
+    html += '<tr>'
+      + '<td class="inv-cell-check"><input type="checkbox" class="inv-hist-check" value="' + (h.id || '') + '" onchange="invHistUpdateBulk()"></td>'
+      + '<td>' + (h.id || '') + '</td>'
+      + '<td><strong>' + invEsc(h.articulo_nombre || h.nombre_articulo || '') + '</strong><br><span style="font-size:0.7rem;color:#94a3b8;">' + invEsc(h.codigo || '') + '</span></td>'
+      + '<td><span class="inv-badge ' + tipoBadge + '">' + tipoLabel + '</span></td>'
+      + '<td>' + (parseInt(h.cantidad) || '-') + '</td>'
+      + '<td>' + invEsc(h.tecnico_nombre || h.tecnico || '') + '</td>'
+      + '<td>' + invEsc(h.cliente_nombre || h.cliente || '') + '</td>'
+      + '<td>' + invEsc(h.oficina_nombre || h.oficina || '') + '</td>'
+      + '<td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="' + invEsc(h.nota || h.motivo || '') + '">' + invEsc(h.nota || h.motivo || '') + '</td>'
+      + '<td style="white-space:nowrap;font-size:0.78rem;">' + invDateStr(h.fecha || h.created_at || '') + '</td>'
+      + '</tr>';
+  });
+  body.innerHTML = html;
+  invHistUpdateBulk();
+}
+
+function invHistRenderPagination() {
+  var pag = document.getElementById('invHistPagination');
+  var info = document.getElementById('invHistPageInfo');
+  var prev = document.getElementById('invHistPrevBtn');
+  var next = document.getElementById('invHistNextBtn');
+  if (invHistTotalPages <= 1) { pag.style.display = 'none'; return; }
+  pag.style.display = 'flex';
+  info.textContent = 'Página ' + invHistPage + ' de ' + invHistTotalPages;
+  prev.disabled = invHistPage <= 1;
+  next.disabled = invHistPage >= invHistTotalPages;
+
+  var tot = document.getElementById('invHistTotal');
+  if (invHistTotalItems > 0) { tot.style.display = 'inline'; tot.textContent = 'Total: ' + invHistTotalItems; }
+  else { tot.style.display = 'none'; }
+}
+
+function invHistCambiarPag(d) {
+  var n = invHistPage + d;
+  if (n >= 1 && n <= invHistTotalPages) { invHistPage = n; invCargarHistorial(); }
+}
+
+/* Bulk actions */
+function invHistToggleAll() {
+  var checked = document.getElementById('invHistSelectAll').checked;
+  document.querySelectorAll('.inv-hist-check').forEach(function(cb){ cb.checked = checked; });
+  invHistUpdateBulk();
+}
+function invHistUpdateBulk() {
+  var checks = document.querySelectorAll('.inv-hist-check:checked');
+  var count = checks.length;
+  var bar = document.getElementById('invBulkBar');
+  document.getElementById('invBulkCount').textContent = count + ' seleccionado(s)';
+  bar.style.display = count > 0 ? 'flex' : 'none';
+}
+async function invBulkAction(action) {
+  var checks = document.querySelectorAll('.inv-hist-check:checked');
+  var ids = [];
+  checks.forEach(function(cb){ ids.push(cb.value); });
+  if (!ids.length) { invToast('Seleccione al menos un registro', 'info'); return; }
+  if (action === 'eliminar' && !confirm('¿Eliminar ' + ids.length + ' registro(s) del historial?')) return;
+  var res = await invAPI('bulk_' + action, { ids: ids });
+  if (res.success) {
+    invToast('Acción ejecutada en ' + ids.length + ' registro(s)', 'success');
+    invCargarHistorial();
+  } else {
+    invToast(res.message || 'Error al ejecutar acción', 'error');
+  }
+}
+function invBulkDeseleccionar() {
+  document.querySelectorAll('.inv-hist-check').forEach(function(cb){ cb.checked = false; });
+  document.getElementById('invHistSelectAll').checked = false;
+  invHistUpdateBulk();
+}
+
+/* ===== REPORTES ===== */
+async function invGenerarReporte() {
+  var tecnicoId = document.getElementById('invRepTecnico').value;
+  var desde = document.getElementById('invRepDesde').value;
+  var hasta = document.getElementById('invRepHasta').value;
+
+  var res = await invAPI('reporte', {
+    tecnico_id: tecnicoId ? parseInt(tecnicoId) : null,
+    desde: desde || null,
+    hasta: hasta || null
+  });
+
+  if (res.success && res.items && res.items.length > 0) {
+    invRepData = res.items;
+    var html = '';
+    res.items.forEach(function(r) {
+      html += '<tr>'
+        + '<td>' + (r.id || '') + '</td>'
+        + '<td>' + invEsc(r.articulo_nombre || r.nombre || '') + '</td>'
+        + '<td>' + invEsc(r.tecnico_nombre || r.tecnico || '') + '</td>'
+        + '<td>' + invEsc(r.accion || r.tipo || '') + '</td>'
+        + '<td>' + (parseInt(r.cantidad) || '-') + '</td>'
+        + '<td>' + invEsc(r.cliente_nombre || r.cliente || '') + '</td>'
+        + '<td>' + invDateStr(r.fecha || r.created_at || '') + '</td>'
+        + '</tr>';
+    });
+    document.getElementById('invRepBody').innerHTML = html;
+    document.getElementById('invRepResultCard').style.display = 'block';
+  } else {
+    document.getElementById('invRepBody').innerHTML = '<tr><td colspan="7" class="inv-empty"><i class="fas fa-search"></i><p>Sin resultados para este reporte</p></td></tr>';
+    document.getElementById('invRepResultCard').style.display = 'block';
+  }
+}
+
+function invExportarReporte() {
+  if (!invRepData.length) { invToast('No hay datos para exportar', 'info'); return; }
+  var csv = 'ID,Artículo,Técnico,Acción,Cantidad,Cliente,Fecha\n';
+  invRepData.forEach(function(r) {
+    csv += (r.id || '') + ',"' + (r.articulo_nombre || r.nombre || '') + '","' + (r.tecnico_nombre || r.tecnico || '') + '","' + (r.accion || r.tipo || '') + '",' + (parseInt(r.cantidad) || 0) + ',"' + (r.cliente_nombre || r.cliente || '') + '","' + invDateStr(r.fecha || r.created_at || '') + '"\n';
+  });
+  var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  var link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = 'reporte_inventario_' + new Date().toISOString().slice(0,10) + '.csv';
+  link.click();
+}
+
+function invImprimirReporte() {
+  var content = document.getElementById('invRepResultCard');
+  if (!content || content.style.display === 'none') { invToast('No hay reporte para imprimir', 'info'); return; }
+  var w = window.open('', '_blank', 'width=900,height=600');
+  w.document.write('<html><head><title>Reporte Inventario</title>');
+  w.document.write('<style>body{font-family:Arial;padding:20px;}table{width:100%;border-collapse:collapse;font-size:12px;}th,td{border:1px solid #ccc;padding:6px 8px;text-align:left;}th{background:#f5f5f5;}</style>');
+  w.document.write('</head><body>');
+  w.document.write('<h2>Reporte de Inventario</h2>');
+  w.document.write('<p>' + new Date().toLocaleDateString('es-DO') + '</p>');
+  w.document.write(document.getElementById('invRepTable').outerHTML);
+  w.document.write('</body></html>');
+  w.document.close();
+  w.print();
+}
+
+/* ===== CONFIGURACION ===== */
+async function invCargarConfiguracion() {
+  // Cargar valores por defecto de configuración
+  try {
+    var res = await invAPI('config_get', {});
+    if (res.success && res.data) {
+      if (res.data.stock_min) document.getElementById('invConfigStockMin').value = res.data.stock_min;
+      if (res.data.notif_correo) document.getElementById('invConfigNotifCorreo').checked = res.data.notif_correo == 1;
+      if (res.data.notif_whatsapp) document.getElementById('invConfigNotifWhatsApp').checked = res.data.notif_whatsapp == 1;
+      if (res.data.correo) document.getElementById('invConfigCorreo').value = res.data.correo;
+      if (res.data.correos_adicionales) document.getElementById('invConfigCorreosAdicionales').value = res.data.correos_adicionales;
+      if (res.data.whatsapp_numero) document.getElementById('invConfigWhatsAppNum').value = res.data.whatsapp_numero;
+      if (res.data.whatsapp_api) document.getElementById('invConfigWhatsAppApi').value = res.data.whatsapp_api;
+    }
+  } catch(e) {}
+  invCargarConfigCategorias();
+  invCargarConfigOficinas();
+  invCargarConfigPersonal();
+}
+
+async function invCargarConfigCategorias() {
+  try {
+    var res = await invAPI('listar_categorias', {});
+    var body = document.getElementById('invConfigCategoriasBody');
+    if (res.success && res.items && res.items.length > 0) {
+      var html = '';
+      res.items.forEach(function(c) {
+        html += '<tr><td>' + invEsc(c.nombre) + '</td><td>' + (parseInt(c.total_articulos) || 0) + '</td>'
+          + '<td><button class="inv-btn inv-btn-xs inv-btn-danger" onclick="invConfigEliminarCategoria(' + c.id + ')"><i class="fas fa-trash"></i></button></td></tr>';
+      });
+      body.innerHTML = html;
+    } else {
+      body.innerHTML = '<tr><td colspan="3" class="inv-empty"><p>Sin categorías registradas</p></td></tr>';
+    }
+  } catch(e) {
+    document.getElementById('invConfigCategoriasBody').innerHTML = '<tr><td colspan="3" style="text-align:center;padding:20px;color:#ef4444;">Error al cargar</td></tr>';
+  }
+}
+
+function invConfigAgregarCategoria() {
+  invAbrirModal(
+    '<div class="inv-form-group"><label class="inv-label">Nombre de la categoría</label><input type="text" id="invNuevaCategoriaInput" class="inv-input" placeholder="Ej: Fibra Óptica"></div>',
+    {
+      title: '<i class="fas fa-tags" style="color:#4338ca;"></i> Nueva Categoría',
+      footer: '<button class="inv-btn inv-btn-secondary" onclick="invCerrarModal()">Cancelar</button><button class="inv-btn inv-btn-primary" onclick="invGuardarNuevaCategoria()"><i class="fas fa-save"></i> Guardar</button>',
+      sm: true
+    }
+  );
+  setTimeout(function(){ document.getElementById('invNuevaCategoriaInput').focus(); }, 100);
+}
+
+async function invGuardarNuevaCategoria() {
+  var nombre = document.getElementById('invNuevaCategoriaInput').value.trim();
+  if (!nombre) { invToast('Ingrese un nombre', 'error'); return; }
+  var res = await invAPI('categoria_guardar', { nombre: nombre });
+  if (res.success) {
+    invToast('Categoría guardada', 'success');
+    invCerrarModal();
+    invCargarConfigCategorias();
+  } else {
+    invToast(res.message || 'Error al guardar', 'error');
+  }
+}
+
+async function invConfigEliminarCategoria(id) {
+  if (!confirm('¿Eliminar esta categoría?')) return;
+  var res = await invAPI('categoria_eliminar', { id: id });
+  if (res.success) {
+    invToast('Categoría eliminada', 'success');
+    invCargarConfigCategorias();
+  } else {
+    invToast(res.message || 'Error al eliminar', 'error');
+  }
+}
+
+async function invCargarConfigOficinas() {
+  try {
+    var res = await invAPI('listar_oficinas', {});
+    var body = document.getElementById('invConfigOficinasBody');
+    if (res.success && res.items && res.items.length > 0) {
+      var html = '';
+      res.items.forEach(function(o) {
+        html += '<tr><td>' + invEsc(o.nombre) + '</td><td>' + invEsc(o.direccion || '') + '</td>'
+          + '<td><button class="inv-btn inv-btn-xs inv-btn-danger" onclick="invConfigEliminarOficina(' + o.id + ')"><i class="fas fa-trash"></i></button></td></tr>';
+      });
+      body.innerHTML = html;
+    } else {
+      body.innerHTML = '<tr><td colspan="3" class="inv-empty"><p>Sin oficinas registradas</p></td></tr>';
+    }
+  } catch(e) {
+    document.getElementById('invConfigOficinasBody').innerHTML = '<tr><td colspan="3" style="text-align:center;padding:20px;color:#ef4444;">Error al cargar</td></tr>';
+  }
+}
+
+function invConfigAgregarOficina() {
+  invAbrirModal(
+    '<div class="inv-form-group"><label class="inv-label">Nombre de la oficina</label><input type="text" id="invNuevaOficinaNombre" class="inv-input" placeholder="Ej: Oficina Principal"></div>' +
+    '<div class="inv-form-group"><label class="inv-label">Dirección</label><input type="text" id="invNuevaOficinaDir" class="inv-input" placeholder="Dirección (opcional)"></div>',
+    {
+      title: '<i class="fas fa-building" style="color:#0369a1;"></i> Nueva Oficina',
+      footer: '<button class="inv-btn inv-btn-secondary" onclick="invCerrarModal()">Cancelar</button><button class="inv-btn inv-btn-primary" onclick="invGuardarNuevaOficina()"><i class="fas fa-save"></i> Guardar</button>',
+      sm: true
+    }
+  );
+}
+
+async function invGuardarNuevaOficina() {
+  var nombre = document.getElementById('invNuevaOficinaNombre').value.trim();
+  var dir = document.getElementById('invNuevaOficinaDir').value.trim();
+  if (!nombre) { invToast('Ingrese el nombre de la oficina', 'error'); return; }
+  var res = await invAPI('oficina_guardar', { nombre: nombre, direccion: dir || null });
+  if (res.success) {
+    invToast('Oficina guardada', 'success');
+    invCerrarModal();
+    invCargarConfigOficinas();
+  } else {
+    invToast(res.message || 'Error al guardar', 'error');
+  }
+}
+
+async function invConfigEliminarOficina(id) {
+  if (!confirm('¿Eliminar esta oficina?')) return;
+  var res = await invAPI('oficina_eliminar', { id: id });
+  if (res.success) {
+    invToast('Oficina eliminada', 'success');
+    invCargarConfigOficinas();
+  } else {
+    invToast(res.message || 'Error al eliminar', 'error');
+  }
+}
+
+async function invCargarConfigPersonal() {
+  try {
+    var res = await invAPI('listar_personal', {});
+    var body = document.getElementById('invConfigPersonalBody');
+    if (res.success && res.items && res.items.length > 0) {
+      var html = '';
+      res.items.forEach(function(p) {
+        var permiso = p.permiso_inventario;
+        var permisoLabel = permiso == 1 ? '<span class="inv-badge inv-badge-green"><i class="fas fa-check"></i> Acceso completo</span>' : '<span class="inv-badge inv-badge-gray"><i class="fas fa-times"></i> Sin acceso</span>';
+        html += '<tr><td>' + invEsc(p.nombre) + '</td><td>' + invEsc(p.cargo || '') + '</td><td>' + permisoLabel + '</td>'
+          + '<td><button class="inv-btn inv-btn-xs inv-btn-primary" onclick="invConfigTogglePermiso(' + p.id + ',' + (permiso == 1 ? 0 : 1) + ')"><i class="fas fa-' + (permiso == 1 ? 'times' : 'check') + '"></i> ' + (permiso == 1 ? 'Quitar' : 'Dar') + ' acceso</button></td></tr>';
+      });
+      body.innerHTML = html;
+    } else {
+      body.innerHTML = '<tr><td colspan="4" class="inv-empty"><p>Sin personal configurado</p></td></tr>';
+    }
+  } catch(e) {
+    document.getElementById('invConfigPersonalBody').innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;color:#ef4444;">Error al cargar</td></tr>';
+  }
+}
+
+async function invConfigTogglePermiso(userId, nuevoPermiso) {
+  var res = await invAPI('personal_permiso', { usuario_id: userId, permiso_inventario: nuevoPermiso });
+  if (res.success) {
+    invToast('Permiso actualizado', 'success');
+    invCargarConfigPersonal();
+  } else {
+    invToast(res.message || 'Error al actualizar permiso', 'error');
+  }
+}
+
+async function invConfigGuardarAlertas() {
+  var stockMin = document.getElementById('invConfigStockMin').value;
+  var notifCorreo = document.getElementById('invConfigNotifCorreo').checked ? 1 : 0;
+  var notifWhatsapp = document.getElementById('invConfigNotifWhatsApp').checked ? 1 : 0;
+  var res = await invAPI('config_guardar', {
+    stock_min: parseInt(stockMin) || 5,
+    notif_correo: notifCorreo,
+    notif_whatsapp: notifWhatsapp
+  });
+  if (res.success) invToast('Alertas guardadas', 'success');
+  else invToast(res.message || 'Error al guardar', 'error');
+}
+
+async function invConfigGuardarCorreo() {
+  var correo = document.getElementById('invConfigCorreo').value.trim();
+  var adicionales = document.getElementById('invConfigCorreosAdicionales').value.trim();
+  var res = await invAPI('config_guardar', { correo: correo || null, correos_adicionales: adicionales || null });
+  if (res.success) invToast('Configuración de correo guardada', 'success');
+  else invToast(res.message || 'Error al guardar', 'error');
+}
+
+async function invConfigGuardarWhatsApp() {
+  var num = document.getElementById('invConfigWhatsAppNum').value.trim();
+  var api = document.getElementById('invConfigWhatsAppApi').value.trim();
+  var res = await invAPI('config_guardar', { whatsapp_numero: num || null, whatsapp_api: api || null });
+  if (res.success) invToast('Configuración de WhatsApp guardada', 'success');
+  else invToast(res.message || 'Error al guardar', 'error');
+}
+
+async function invConfigGuardarImpresion() {
+  var formato = document.getElementById('invConfigPrintFormato').value;
+  var tamano = document.getElementById('invConfigPrintTamano').value;
+  var res = await invAPI('config_guardar', { print_formato: formato, print_tamano: tamano });
+  if (res.success) invToast('Configuración de impresión guardada', 'success');
+  else invToast(res.message || 'Error al guardar', 'error');
+}
+
+/* ===== INIT ===== */
+function invInit() {
+  // Cargar dashboard al iniciar
+  invGenerarDashboard();
+  // Cargar oficinas en selects
+  setTimeout(function() {
+    invCargarOficinasSelect('invRegOficina');
+    invCargarOficinasSelect('invMovOrigen');
+    invCargarOficinasSelect('invMovDestino');
+  }, 300);
+}
+invInit();
+</script>

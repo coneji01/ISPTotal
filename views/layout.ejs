@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= pagina %> | ISP Total</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="/css/style.css" rel="stylesheet">
+  <link href="/css/mobile.css" rel="stylesheet">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Sidebar -->
+    <!-- Botón menú móvil -->
+    <button id="mobile-menu-btn" onclick="toggleMobileMenu()">
+      <i class="fas fa-bars"></i>
+    </button>
+    
+    <!-- Overlay para cerrar sidebar al hacer clic fuera -->
+    <div id="sidebar-overlay" onclick="closeMobileMenu()"></div>
+
+    <aside class="sidebar" id="mainSidebar" data-theme="dark">
+      <div class="sidebar-header">
+        <i class="fas fa-globe"></i>
+        <span class="sidebar-brand">ISP Total</span>
+        <button id="close-sidebar-btn" onclick="closeMobileMenu()">&times;</button>
+      </div>
+      <nav class="sidebar-nav">
+        <% menuEstructura.forEach(function(item) { %>
+          <% if (item.type === 'link') { %>
+            <a href="/modulo?pagina=<%= item.id %>" class="nav-item <%= pagina === item.id ? 'active' : '' %>">
+              <i class="fas <%= item.icon %>"></i>
+              <span><%= item.nombre %></span>
+            </a>
+          <% } else if (item.type === 'category') { %>
+            <a href="javascript:void(0)" class="nav-item" onclick="toggleMenu('<%= item.id %>')">
+              <i class="fas <%= item.icon %>"></i>
+              <span><%= item.nombre %></span>
+              <i class="fas fa-chevron-down menu-arrow" id="arrow-<%= item.id %>"></i>
+            </a>
+            <div id="submenu-<%= item.id %>" class="submenu-container" style="<%= item.items.some(function(s) { return s.id === pagina; }) ? '' : 'display:none;' %>">
+              <% item.items.forEach(function(sub) { %>
+                <a href="/modulo?pagina=<%= sub.id %>" class="nav-item sub-item <%= pagina === sub.id ? 'active' : '' %>">
+                  <i class="fas <%= sub.icon %>"></i>
+                  <span><%= sub.nombre %></span>
+                </a>
+              <% }) %>
+            </div>
+          <% } %>
+        <% }) %>
+      </nav>
+      <div class="sidebar-footer">
+        <a href="javascript:void(0)" class="nav-item" onclick="toggleThemeMenu()">
+          <i class="fas fa-palette"></i>
+          <span>Tema</span>
+          <i class="fas fa-chevron-down" id="themeArrow" style="margin-left:auto;font-size:0.7rem;opacity:0.7;transition:transform 0.3s;"></i>
+        </a>
+        <div id="themeSubmenu" class="submenu-container" style="display:none;">
+          <a href="javascript:void(0)" class="nav-item sub-item theme-opt" onclick="setTheme('dark', this)" data-theme="dark">
+            <span class="theme-dot theme-dot-dark"></span> Oscuro
+          </a>
+          <a href="javascript:void(0)" class="nav-item sub-item theme-opt" onclick="setTheme('light', this)" data-theme="light">
+            <span class="theme-dot theme-dot-light"></span> Claro
+          </a>
+          <a href="javascript:void(0)" class="nav-item sub-item theme-opt" onclick="setTheme('glass', this)" data-theme="glass">
+            <span class="theme-dot theme-dot-glass"></span> Cristal
+          </a>
+        </div>
+        <a href="/logout" class="nav-item"><i class="fas fa-sign-out-alt"></i> <span>Cerrar sesión</span></a>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="main-content">
+      <% if (typeof serverDate !== 'undefined' && serverDate && serverDate.overridden) { %>
+      <div class="server-date-banner">
+        <i class="fas fa-calendar-alt"></i>
+        <span><strong>Modo Pruebas</strong> — Fecha simulada: <span class="srv-date-value"><%= serverDate.current_date_only %></span></span>
+        <span class="srv-date-sep">|</span>
+        <span style="font-size:0.72rem;opacity:0.7;">Real: <%= serverDate.real_date_only %></span>
+        <a href="/modulo?pagina=Configuracion" class="srv-date-config-link" title="Configurar fecha"><i class="fas fa-cog"></i></a>
+      </div>
+      <% } %>
+      <!-- Top Header Actions (buscador global + pago rápido) -->
+      <div class="top-header-actions">
+        <div class="global-search-container">
+          <div class="search-input-wrapper" id="globalSearchWrapper">
+            <i class="fas fa-search search-icon"></i>
+            <div id="globalSearchInput" contenteditable="true" data-placeholder="Buscar cliente..." oninput="globSearch(this)" onfocus="this.parentElement.classList.add('focused')" onblur="setTimeout(function(){document.getElementById('globalSearchDropdown').style.display='none';},300)"></div>
+            <i class="fas fa-times clear-icon" onclick="clearGlobalSearch()" style="display:none;" id="globalSearchClear"></i>
+          </div>
+          <div class="search-dropdown" id="globalSearchDropdown"></div>
+        </div>
+        <a href="/modulo?pagina=RegistrarPago" class="btn-quick-pay" title="Pago rápido"><i class="fas fa-dollar-sign"></i></a>
+      </div>
+
+      <header class="topbar">
+        <button class="sidebar-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+        <div class="topbar-title"><%= pagina %></div>
+        <div class="topbar-user">
+          <i class="fas fa-user-circle"></i> <%= user.nombre || user.username %>
+        </div>
+      </header>
+      <div class="content">
+        <%- include('pages/' + pagina) %>
+      </div>
+    </main>
+  </div>
+
+  <!-- Profile Modal -->
+  <div id="perfilModal" class="modal" style="display:none">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3><i class="fas fa-user-circle"></i> Mi Perfil</h3>
+        <span class="modal-close" onclick="closeModal('perfilModal')">&times;</span>
+      </div>
+      <div class="modal-body">
+        <form id="perfilForm">
+          <div class="form-group">
+            <label>Usuario</label>
+            <input type="text" value="<%= user.username %>" disabled class="form-control">
+          </div>
+          <div class="form-group">
+            <label>Nombre</label>
+            <input type="text" name="nombre" value="<%= user.nombre || '' %>" class="form-control">
+          </div>
+          <div class="form-group">
+            <label>Teléfono</label>
+            <input type="text" name="telefono" class="form-control">
+          </div>
+          <div class="form-group">
+            <label>Correo</label>
+            <input type="email" name="correo" class="form-control">
+          </div>
+          <div class="form-group">
+            <label>Nueva Contraseña (dejar vacío para no cambiar)</label>
+            <input type="password" name="password" class="form-control">
+          </div>
+          <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function toggleSidebar() { document.getElementById('mainSidebar').classList.toggle('collapsed'); }
+    function toggleMobileMenu() {
+      var sb = document.getElementById('mainSidebar');
+      sb.classList.remove('collapsed');
+      sb.classList.toggle('active');
+      document.getElementById('sidebar-overlay').classList.toggle('active');
+    }
+    function closeMobileMenu() {
+      var sb = document.getElementById('mainSidebar');
+      sb.classList.remove('active');
+      document.getElementById('sidebar-overlay').classList.remove('active');
+    }
+    function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+    function showToast(msg, type='success') {
+      const t = document.createElement('div');
+      t.className = 'toast toast-' + type;
+      t.innerHTML = msg;
+      document.body.appendChild(t);
+      setTimeout(() => t.remove(), 3000);
+    }
+    
+    // Collapsible submenus
+    function toggleMenu(id) {
+      const sub = document.getElementById('submenu-' + id);
+      const arrow = document.getElementById('arrow-' + id);
+      if (sub) {
+        const isOpen = sub.style.display !== 'none';
+        sub.style.display = isOpen ? 'none' : 'block';
+        if (arrow) arrow.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
+      }
+    }
+    
+    // Global search
+    var globSearchTimer = null;
+    function globSearch(el) {
+      var q = el.textContent.trim();
+      document.getElementById('globalSearchClear').style.display = q ? 'block' : 'none';
+      clearTimeout(globSearchTimer);
+      if (q.length < 2) { document.getElementById('globalSearchDropdown').style.display = 'none'; return; }
+      globSearchTimer = setTimeout(function() {
+        fetch('/api/clientes/buscar?q=' + encodeURIComponent(q))
+          .then(function(r) { return r.json(); })
+          .then(function(data) {
+            var dd = document.getElementById('globalSearchDropdown');
+            if (!data.length) {
+              dd.innerHTML = '<div style="padding:12px;text-align:center;color:#94a3b8;">Sin resultados</div>';
+              dd.style.display = 'block'; return;
+            }
+            dd.innerHTML = data.map(function(c) {
+              return '<div class="search-result-item" onclick="window.location.href=\'/modulo?pagina=VerCliente&id=' + c.id + '\'">'
+                + '<div><div class="res-name">' + (c.nombre || '') + '</div>'
+                + '<div class="res-meta"><i class="fas fa-id-card"></i> ' + (c.cedula || '') + ' | <i class="fas fa-phone"></i> ' + (c.telefono || '') + '</div></div>'
+                + '<i class="fas fa-chevron-right" style="color:#94a3b8;"></i></div>';
+            }).join('');
+            dd.style.display = 'block';
+          })
+          .catch(function() {});
+      }, 300);
+    }
+    function clearGlobalSearch() {
+      document.getElementById('globalSearchInput').textContent = '';
+      document.getElementById('globalSearchDropdown').style.display = 'none';
+      document.getElementById('globalSearchClear').style.display = 'none';
+    }
+
+    // Initialize open submenus on page load based on active items
+    document.addEventListener('DOMContentLoaded', function() {
+      document.querySelectorAll('.sub-item.active').forEach(function(el) {
+        const sub = el.closest('.submenu-container');
+        if (sub) {
+          sub.style.display = 'block';
+          const arrow = sub.previousElementSibling?.querySelector('.menu-arrow');
+          if (arrow) arrow.style.transform = 'rotate(180deg)';
+        }
+      });
+    });
+    
+    // Profile
+    document.getElementById('perfilForm')?.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const fd = new FormData(this);
+      const data = Object.fromEntries(fd);
+      const r = await fetch('/api/perfil', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(data) });
+      if (r.ok) { showToast('Perfil actualizado'); closeModal('perfilModal'); }
+    });
+
+    // ===== TEMA =====
+    function toggleThemeMenu() {
+      var sm = document.getElementById('themeSubmenu');
+      var ar = document.getElementById('themeArrow');
+      if (sm.classList.contains('open')) { sm.classList.remove('open'); if(ar) ar.classList.remove('rotate-down'); }
+      else { sm.classList.add('open'); if(ar) ar.classList.add('rotate-down'); }
+    }
+
+    function setTheme(theme, btn) {
+      var sb = document.getElementById('mainSidebar');
+      if (!sb) return;
+      sb.classList.remove('sidebar-light', 'sidebar-glass');
+      if (theme === 'light') sb.classList.add('sidebar-light');
+      else if (theme === 'glass') sb.classList.add('sidebar-glass');
+      sb.setAttribute('data-theme', theme);
+      document.querySelectorAll('.theme-opt').forEach(function(opt) {
+        opt.classList.remove('active');
+        if (opt.getAttribute('data-theme') === theme) opt.classList.add('active');
+      });
+      localStorage.setItem('isptotal-sidebar-theme', theme);
+      fetch('/api/theme/save', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({theme:theme}) })
+        .catch(function(e) { console.error('Error guardando tema:', e); });
+    }
+
+    // Cargar tema al iniciar
+    document.addEventListener('DOMContentLoaded', function() {
+      var savedTheme = localStorage.getItem('isptotal-sidebar-theme') || 'dark';
+      var sb = document.getElementById('mainSidebar');
+      if (sb) {
+        sb.classList.remove('sidebar-light', 'sidebar-glass');
+        if (savedTheme === 'light') sb.classList.add('sidebar-light');
+        else if (savedTheme === 'glass') sb.classList.add('sidebar-glass');
+        sb.setAttribute('data-theme', savedTheme);
+        document.querySelectorAll('.theme-opt').forEach(function(opt) {
+          opt.classList.remove('active');
+          if (opt.getAttribute('data-theme') === savedTheme) opt.classList.add('active');
+        });
+      }
+    });
+  </script>
+  <script src="/js/app.js"></script>
+</body>
+</html>

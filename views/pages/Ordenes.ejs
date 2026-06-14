@@ -1,0 +1,834 @@
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+    --bg-body: #f1f5f9; --bg-card: #ffffff; --bg-input: #e2e8f0;
+    --text-main: #1e293b; --text-muted: #64748b; --border-color: #cbd5e1;
+    --accent-primary: #6366f1; --accent-success: #10b981; --accent-danger: #ef4444; --accent-warning: #f59e0b;
+}
+* { font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+
+.page-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:25px; flex-wrap:wrap; gap:10px; }
+.page-title { font-size:1.3rem; font-weight:600; color:var(--text-main); display:flex; align-items:center; gap:10px; }
+
+.card { background:var(--bg-card); padding:20px; border-radius:12px; border:1px solid var(--border-color); box-shadow:0 2px 5px rgba(0,0,0,0.05); overflow-x:auto; margin-bottom:20px; }
+
+table { width:100%; border-collapse:collapse; min-width:600px; }
+th { padding:12px 10px; color:var(--text-muted); border-bottom:1px solid var(--border-color); font-size:0.8rem; text-transform:uppercase; text-align:left; font-weight:600; }
+td { padding:12px 10px; border-bottom:1px solid var(--border-color); color:var(--text-main); font-size:0.88rem; }
+
+.btn { padding:8px 16px; border-radius:6px; border:none; font-size:0.85rem; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:6px; transition:all 0.15s; text-decoration:none; }
+.btn-primary { background:var(--accent-primary); color:#fff; }
+.btn-primary:hover { opacity:0.9; }
+.btn-icon { background:none; border:none; cursor:pointer; font-size:1rem; padding:4px 6px; border-radius:4px; transition:background 0.15s; }
+.btn-icon:hover { background:#f1f5f9; }
+.btn-modal-close { background:#ef4444; color:white; border:none; border-radius:6px; padding:6px 14px; cursor:pointer; font-size:0.8rem; font-weight:600; transition:opacity 0.2s; white-space:nowrap; }
+.btn-modal-close:hover { opacity:0.85; }
+.btn-icon:hover { opacity:0.75; }
+.btn-success { background:var(--accent-success); color:#fff; }
+.btn-success:hover { opacity:0.9; }
+.btn-danger { background:var(--accent-danger); color:#fff; }
+.btn-danger:hover { opacity:0.9; }
+.btn-warning { background:var(--accent-warning); color:#fff; }
+.btn-warning:hover { opacity:0.9; }
+.btn-outline { background:transparent; color:var(--text-muted); border:1px solid var(--border-color); }
+.btn-outline:hover { background:#f8fafc; color:var(--text-main); }
+.btn-sm { padding:5px 10px; font-size:0.78rem; }
+
+.badge { display:inline-block; padding:3px 10px; border-radius:20px; font-size:0.75rem; font-weight:600; }
+.badge-success { background:rgba(16,185,129,0.15); color:var(--accent-success); }
+.badge-danger { background:rgba(239,68,68,0.15); color:var(--accent-danger); }
+.badge-warning { background:rgba(245,158,11,0.15); color:var(--accent-warning); }
+.badge-muted { background:#e2e8f0; color:#475569; }
+
+.tabs-container { display:flex; gap:0; margin-bottom:20px; border-bottom:2px solid #e2e8f0; overflow-x:auto; }
+.tab-btn { padding:12px 24px; background:none; border:none; font-weight:600; cursor:pointer; color:var(--text-muted); font-size:0.88rem; white-space:nowrap; transition:all 0.2s; position:relative; }
+.tab-btn:hover { color:var(--text-main); background:#f8fafc; }
+.tab-btn.active { color:var(--accent-primary); }
+.tab-btn.active::after { content:''; position:absolute; bottom:-2px; left:0; right:0; height:3px; background:var(--accent-primary); border-radius:3px 3px 0 0; }
+
+.modal-overlay { display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.6); z-index:2000; align-items:center; justify-content:center; backdrop-filter:blur(4px); }
+.modal-overlay.active { display:flex; }
+.modal-content { background:var(--bg-card); border-radius:12px; box-shadow:0 20px 60px rgba(0,0,0,0.15); width:90%; max-width:620px; max-height:90vh; overflow-y:auto; padding:25px; }
+.modal-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; padding-bottom:12px; border-bottom:1px solid var(--border-color); }
+.modal-header h3 { margin:0; font-size:1.05rem; color:var(--text-main); font-weight:600; }
+.modal-close { background:none; border:none; font-size:1.3rem; color:var(--text-muted); cursor:pointer; padding:0 4px; }
+.modal-close:hover { color:var(--text-main); }
+.modal-sm { max-width:450px; }
+
+.form-group { margin-bottom:15px; }
+.form-label { display:block; margin-bottom:5px; font-weight:600; font-size:0.82rem; color:var(--text-muted); }
+.form-control, .form-select { width:100%; padding:10px 12px; border:1px solid var(--border-color); border-radius:6px; font-size:0.88rem; background:var(--bg-input); transition:border-color 0.15s; box-sizing:border-box; }
+.form-control:focus, .form-select:focus { outline:none; border-color:var(--accent-primary); box-shadow:0 0 0 3px rgba(99,102,241,0.15); }
+.form-row { display:grid; grid-template-columns:1fr 1fr; gap:15px; }
+
+.client-result-item { padding:12px 15px; cursor:pointer; border-bottom:1px solid #f1f5f9; transition:background 0.15s; }
+.client-result-item:last-child { border-bottom:none; }
+.client-result-item:hover { background:#eff6ff; }
+
+/* Detail modal */
+.det-info-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px; }
+.det-card { background:#f8fafc; border-radius:8px; padding:14px; border:1px solid #e2e8f0; }
+.det-card h4 { margin:0 0 10px; font-size:0.78rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; font-weight:600; }
+.det-card .info-line { font-size:0.85rem; line-height:1.9; color:#334155; }
+
+@media(max-width:768px) {
+    .page-title { font-size:1.05rem; }
+    .card { padding:12px; border-radius:10px; }
+    .tabs-container { margin-bottom:12px; }
+    .tab-btn { padding:10px 16px; font-size:0.82rem; }
+    table { min-width:450px; }
+    th { padding:8px 6px; font-size:0.72rem; }
+    td { padding:10px 6px; font-size:0.82rem; }
+    .form-row { grid-template-columns:1fr; }
+    .det-info-grid { grid-template-columns:1fr; }
+    .modal-content { width:95%; padding:18px 14px; border-radius:14px; }
+    .modal-overlay { padding:10px; align-items:flex-start; padding-top:5vh; }
+}
+</style>
+
+<div class="page-header">
+  <h2 class="page-title"><i class="fas fa-clipboard-list" style="color:var(--accent-primary);"></i> Órdenes de Servicio</h2>
+  <button class="btn btn-primary" onclick="abrirNuevaOrden()"><i class="fas fa-plus"></i> Nueva Orden</button>
+</div>
+
+<div class="tabs-container">
+  <button class="tab-btn active" onclick="switchTab('pendientes',this)"><i class="fas fa-clock"></i> Pendientes (<%= ordenesPendientes.length %>)</button>
+  <button class="tab-btn" onclick="switchTab('cerradas',this)"><i class="fas fa-check-circle"></i> Cerradas (<%= ordenesCerradas.length %>)</button>
+</div>
+
+<!-- TAB: PENDIENTES -->
+<div id="tabPendientes" class="tab-content">
+  <div class="card">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Tipo</th>
+          <th>Cliente</th>
+          <th>Detalles</th>
+          <th>Zona</th>
+          <th>Fecha</th>
+          <th style="text-align:center;">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (ordenesPendientes.length === 0) { %>
+        <tr><td colspan="7" style="text-align:center;padding:30px;color:var(--text-muted);">No hay órdenes pendientes</td></tr>
+        <% } else { ordenesPendientes.forEach(function(o) { %>
+        <tr>
+          <td style="font-weight:600;">#<%= o.id %></td>
+          <td><span class="badge badge-warning"><i class="fas fa-truck-moving"></i> <%= o.tipo %></span></td>
+          <td><a href="/modulo?pagina=VerCliente&id=<%= o.cliente_id %>" class="client-name-link"><%= o.cliente_nombre || '—' %></a></td>
+          <td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"><%= o.detalle || '—' %></td>
+          <td><%= o.zona_nombre || '—' %></td>
+          <td style="font-size:0.82rem;color:var(--text-muted);"><%= new Date(o.created_at).toLocaleDateString('es-DO') %></td>
+          <td style="text-align:center;white-space:nowrap;">
+            <button class="btn-icon" style="color:#3b82f6;" onclick="abrirDetalleOrden(<%= o.id %>)" title="Ver Detalle"><i class="fas fa-eye"></i></button>
+            <button class="btn-icon" style="color:#0369a1;" onclick="gpsOrden(<%= o.id %>, '')" title="Ir con GPS"><i class="fas fa-map-marker-alt"></i></button>
+            <button class="btn-icon" style="color:#8b5cf6;" onclick="abrirAsignar(<%= o.id %>, 'tecnico', 0)" title="Asignar"><i class="fas fa-user-cog"></i></button>
+            <button class="btn-icon" style="color:#10b981;" onclick="abrirCerrar(<%= o.id %>)" title="Cerrar"><i class="fas fa-clipboard-check"></i></button>
+            <button class="btn-icon" style="color:#ef4444;" onclick="abrirCancelar(<%= o.id %>)" title="Cancelar"><i class="fas fa-ban"></i></button>
+          </td>
+        </tr>
+        <% }); } %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- TAB: CERRADAS -->
+<div id="tabCerradas" class="tab-content" style="display:none;">
+  <div class="card">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Tipo</th>
+          <th>Cliente</th>
+          <th>Detalles</th>
+          <th>Zona</th>
+          <th>Cerrada por</th>
+          <th style="text-align:center;">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (ordenesCerradas.length === 0) { %>
+        <tr><td colspan="7" style="text-align:center;padding:30px;color:var(--text-muted);">No hay órdenes cerradas</td></tr>
+        <% } else { ordenesCerradas.forEach(function(o) { %>
+        <tr>
+          <td style="font-weight:600;">#<%= o.id %></td>
+          <td><span class="badge badge-muted"><%= o.tipo %></span></td>
+          <td><%= o.cliente_nombre || '—' %></td>
+          <td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"><%= o.detalle || '—' %></td>
+          <td><%= o.zona_nombre || '—' %></td>
+          <td><%= o.cerrado_por || '—' %></td>
+          <td style="text-align:center;">
+          </td>
+        </tr>
+        <% }); } %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- MODAL NUEVA ORDEN -->
+<div id="modalNuevaOrden" class="modal-overlay">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3><i class="fas fa-plus" style="color:var(--accent-primary);"></i> Nueva Orden de Servicio</h3>
+      <button class="modal-close" onclick="closeModal('modalNuevaOrden')">&times;</button>
+    </div>
+    <form id="formNuevaOrden" onsubmit="return crearOrden(event)">
+      <div class="form-group">
+        <label class="form-label">Tipo de Orden <span style="color:red;">*</span></label>
+        <select id="noTipo" class="form-select" required>
+          <option value="">Seleccionar...</option>
+          <option value="instalacion">Instalación</option>
+          <option value="traslado">Traslado</option>
+          <option value="reparacion">Reparación</option>
+          <option value="retiro">Retiro</option>
+          <option value="otro">Otro</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Buscar Cliente <span style="color:red;">*</span></label>
+        <input type="text" id="noSearch" class="form-control" placeholder="Nombre, cédula o teléfono..." autocomplete="off" oninput="noSearchInput()">
+        <div id="noSearchResults" style="border:1px solid var(--border-color);border-radius:6px;max-height:200px;overflow-y:auto;display:none;margin-top:4px;"></div>
+        <input type="hidden" id="noClienteId" value="">
+      </div>
+      <div id="noClienteInfo" style="display:none;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:10px 14px;margin-bottom:15px;">
+        <div style="font-weight:600;color:#166534;"><i class="fas fa-user"></i> <span id="noClienteNombre"></span></div>
+      </div>
+      <div id="noServiciosBox" style="display:none;margin-bottom:15px;">
+        <label class="form-label">Servicio (opcional)</label>
+        <div id="noServiciosList"></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Detalles / Dirección</label>
+        <textarea id="noDetalle" class="form-control" rows="3" placeholder="Describa la dirección y detalles de la orden..."></textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Zona</label>
+          <select id="noZona" class="form-select">
+            <option value="">Sin zona</option>
+            <% (zonas || []).forEach(function(z) { %>
+            <option value="<%= z.id %>"><%= z.nombre %></option>
+            <% }); %>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Coordenadas (opcional)</label>
+          <input type="text" id="noCoordenadas" class="form-control" placeholder="Ej: 18.472, -69.931">
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;justify-content:flex-end;">
+        <button type="button" class="btn btn-outline" onclick="closeModal('modalNuevaOrden')">Cancelar</button>
+        <button type="submit" id="btnCrearOrden" class="btn btn-primary"><i class="fas fa-plus"></i> Crear Orden</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL CERRAR ORDEN (DomISP exacto) -->
+<div class="modal-overlay" id="modalCerrar">
+  <div class="modal-content" style="width:500px;">
+    <div class="modal-header">
+      <h3><i class="fas fa-clipboard-check" style="color:#10b981;"></i> Cerrar Orden <span id="cerrarTipoLabel" style="font-size:0.8rem;color:var(--text-muted);"></span></h3>
+      <button class="btn-modal-close" onclick="closeModal('modalCerrar')"><i class="fas fa-times"></i> Cerrar</button>
+    </div>
+    <div style="padding:16px 20px;">
+      <form onsubmit="return confirmarCerrar(event)">
+        <input type="hidden" name="id_orden" id="idCerrar">
+        <input type="hidden" id="idCerrarTipo" value="">
+        <input type="hidden" id="idCerrarServicioId" value="0">
+        
+        <div class="form-group">
+          <label id="lblCerrarPersona" class="form-label"><i class="fas fa-user-cog" style="color:#8b5cf6;"></i> Técnico</label>
+          <div style="position:relative;">
+            <input type="text" id="cerrar_tec_search" class="form-control" placeholder="Buscar personal..." autocomplete="off" onfocus="tecSearchShow('cerrar')" oninput="tecSearchFilter('cerrar')">
+            <input type="hidden" name="tecnico_id" id="cerrar_tecnico" required>
+            <div id="cerrar_tec_list" style="display:none; position:absolute; top:100%; left:0; right:0; background:white; border:1px solid #e2e8f0; border-radius:6px; max-height:180px; overflow-y:auto; z-index:100; box-shadow:0 4px 12px rgba(0,0,0,0.12);"></div>
+          </div>
+        </div>
+        
+        <!-- SECCION TRASLADO: solo visible cuando tipo=traslado -->
+        <div id="cerrarTrasladoSection" style="display:none; margin-bottom:12px; border:1px solid #bfdbfe; border-radius:8px; padding:12px; background:#f0f9ff;">
+          <h4 style="margin:0 0 10px;font-size:0.85rem;color:#0369a1;"><i class="fas fa-exchange-alt"></i> Gestión de ONU para Traslado</h4>
+          
+          <div id="cerrarOnuVieja" style="margin-bottom:8px;font-size:0.82rem;color:#334155;"></div>
+          
+          <div class="form-group" style="margin-bottom:8px;">
+            <label class="form-label" style="font-size:0.78rem;">OLT Destino</label>
+            <select id="cerrarOltSelect" class="form-select" onchange="onCerrarOltChange()">
+              <option value="">Seleccionar OLT...</option>
+            </select>
+          </div>
+          
+          <div id="cerrarOnuActions" style="display:none;">
+            <button type="button" class="btn btn-sm btn-primary" onclick="scanearOnusCerrar()" id="btnScanOnus" style="margin-bottom:8px;font-size:0.78rem;">
+              <i class="fas fa-search"></i> Scanear ONUs Disponibles
+            </button>
+            <div id="cerrarScanResults" style="max-height:150px;overflow-y:auto;border:1px solid #e2e8f0;border-radius:6px;background:white;display:none;"></div>
+            <input type="hidden" id="cerrarNewOnuSn" value="">
+            <input type="hidden" id="cerrarNewOnuModel" value="">
+            <div id="cerrarNewOnuSelected" style="display:none;padding:6px 10px;background:#dcfce7;border:1px solid #86efac;border-radius:6px;font-size:0.82rem;margin-top:4px;"></div>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Observaciones</label>
+          <textarea id="cerrarObs" class="form-control" required placeholder="Observaciones..." rows="3"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%; margin-top:6px;">Confirmar</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CANCELAR ORDEN (DomISP exacto) -->
+<div class="modal-overlay" id="modalCancelar">
+  <div class="modal-content" style="width:400px;">
+    <div class="modal-header">
+      <h3 style="color:#ef4444;"><i class="fas fa-ban"></i> Cancelar Orden</h3>
+      <button class="btn-modal-close" onclick="closeModal('modalCancelar')"><i class="fas fa-times"></i> Cerrar</button>
+    </div>
+    <div style="padding:16px 20px;">
+      <form onsubmit="return confirmarCancelar(event)">
+        <input type="hidden" name="id_orden" id="idCancel">
+        <textarea id="cancelMotivo" class="form-control" required placeholder="Motivo obligatorio..." rows="3"></textarea>
+        <button type="submit" class="btn btn-primary" style="width:100%; background:#ef4444; margin-top:12px;">Confirmar Cancelacion</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ASIGNAR ORDEN (DomISP style) -->
+<div class="modal-overlay" id="modalAsignar">
+  <div class="modal-content" style="width:450px;">
+    <div class="modal-header">
+      <h3><i class="fas fa-user-tag" style="color:#8b5cf6;"></i> Asignar Orden</h3>
+      <button class="btn-modal-close" onclick="closeModal('modalAsignar')"><i class="fas fa-times"></i> Cerrar</button>
+    </div>
+    <div style="padding:16px 20px;">
+      <input type="hidden" id="asignarOrdenId">
+      <div class="form-group" style="margin-bottom:12px;">
+        <label id="lblAsignarPersona" class="form-label" style="font-weight:600;"><i class="fas fa-user-cog" style="color:#8b5cf6;"></i> Técnico</label>
+        <div style="position:relative;">
+          <input type="text" id="asignar_tec_search" class="form-control" placeholder="Buscar personal..." autocomplete="off" onfocus="tecSearchShow('asignar')" oninput="tecSearchFilter('asignar')">
+          <input type="hidden" id="asignar_tecnico">
+          <div id="asignar_tec_list" style="display:none; position:absolute; top:100%; left:0; right:0; background:white; border:1px solid #e2e8f0; border-radius:6px; max-height:180px; overflow-y:auto; z-index:100; box-shadow:0 4px 12px rgba(0,0,0,0.12);"></div>
+        </div>
+      </div>
+      <div id="asignarInfo" style="display:none; background:#f0f9ff; border:1px solid #bae6fd; border-radius:8px; padding:10px; margin-bottom:12px; font-size:0.85rem; color:#0369a1;">
+        <i class="fas fa-info-circle"></i> <span id="asignarInfoText"></span>
+      </div>
+      <button type="button" class="btn btn-primary" style="width:100%; margin-top:5px;" onclick="confirmarAsignacion()">
+        <i class="fas fa-paper-plane"></i> Asignar y Notificar
+      </button>
+      <button onclick="closeModal('modalAsignar')" class="btn btn-primary" style="width:100%; margin-top:5px; background:#94a3b8;">Volver</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DETALLE -->
+<div id="modalDetalle" class="modal-overlay">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3><i class="fas fa-info-circle" style="color:var(--accent-primary);"></i> Detalle de Orden <span id="detIdLabel"></span></h3>
+      <button class="modal-close" onclick="closeModal('modalDetalle')">&times;</button>
+    </div>
+    <div id="detContent">
+      <div style="text-align:center;padding:30px;color:var(--text-muted);"><i class="fas fa-spinner fa-spin"></i> Cargando...</div>
+    </div>
+  </div>
+</div>
+
+<script>
+// TABS
+function switchTab(tab, btn) {
+  document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+  btn.classList.add('active');
+  document.getElementById('tabPendientes').style.display = tab === 'pendientes' ? 'block' : 'none';
+  document.getElementById('tabCerradas').style.display = tab === 'cerradas' ? 'block' : 'none';
+}
+
+// NUEVA ORDEN
+function abrirNuevaOrden() {
+  document.getElementById('formNuevaOrden').reset();
+  document.getElementById('noClienteId').value = '';
+  document.getElementById('noClienteInfo').style.display = 'none';
+  document.getElementById('noServiciosBox').style.display = 'none';
+  document.getElementById('noSearchResults').style.display = 'none';
+  document.getElementById('modalNuevaOrden').classList.add('active');
+}
+
+let noSearchTimer = null;
+function noSearchInput() {
+  clearTimeout(noSearchTimer);
+  const q = document.getElementById('noSearch').value.trim();
+  if (q.length < 2) { document.getElementById('noSearchResults').style.display = 'none'; return; }
+  noSearchTimer = setTimeout(function() {
+    fetch('/api/traslados/buscar-cliente?q=' + encodeURIComponent(q))
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      const box = document.getElementById('noSearchResults');
+      if (!data.length) {
+        box.innerHTML = '<div style="padding:12px;color:var(--text-muted);font-size:0.85rem;">Sin resultados</div>';
+        box.style.display = 'block'; return;
+      }
+      box.innerHTML = data.map(function(c) {
+        return '<div class="client-result-item" onclick="noSeleccionarCliente(' + c.id + ',\'' + c.name.replace(/'/g,"\\'") + '\')">' +
+          '<div style="font-weight:600;font-size:0.9rem;">' + c.name + '</div>' +
+          '<div style="font-size:0.8rem;color:var(--text-muted);">' + (c.cedula ? 'Céd: ' + c.cedula : '') + (c.phone ? ' | Tel: ' + c.phone : '') + '</div></div>';
+      }).join('');
+      box.style.display = 'block';
+    });
+  }, 300);
+}
+
+function noSeleccionarCliente(id, name) {
+  document.getElementById('noSearchResults').style.display = 'none';
+  document.getElementById('noSearch').value = name;
+  document.getElementById('noClienteId').value = id;
+  document.getElementById('noClienteNombre').textContent = name;
+  document.getElementById('noClienteInfo').style.display = 'block';
+  // Load services
+  fetch('/api/traslados/servicios/' + id)
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    if (d.status === 'success' && d.data.length) {
+      document.getElementById('noServiciosBox').style.display = 'block';
+      document.getElementById('noServiciosList').innerHTML = d.data.map(function(s) {
+        return '<label style="display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid #e2e8f0;border-radius:6px;margin-bottom:4px;cursor:pointer;">' +
+          '<input type="radio" name="noServicio" value="' + s.id + '">' +
+          '<span style="font-weight:600;font-size:0.85rem;">' + s.plan_name + '</span>' +
+          '<span class="badge ' + (s.status === 'active' ? 'badge-success' : 'badge-danger') + '" style="margin-left:auto;">' + (s.status === 'active' ? 'Activo' : 'Suspendido') + '</span></label>';
+      }).join('');
+    }
+  });
+}
+
+function crearOrden(e) {
+  e.preventDefault();
+  const tipo = document.getElementById('noTipo').value;
+  const clienteId = document.getElementById('noClienteId').value;
+  const detalle = document.getElementById('noDetalle').value.trim();
+  const zona = document.getElementById('noZona').value;
+  const coord = document.getElementById('noCoordenadas').value.trim();
+  const servicioRadio = document.querySelector('input[name="noServicio"]:checked');
+  const servicioId = servicioRadio ? servicioRadio.value : null;
+
+  if (!tipo) { alert('Seleccione el tipo de orden'); return; }
+  if (!clienteId) { alert('Seleccione un cliente'); return; }
+
+  const btn = document.getElementById('btnCrearOrden');
+  btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creando...';
+
+  var detalles = tipo.toUpperCase() + (detalle ? ' - ' + detalle : '');
+  if (coord) detalles += ' | Coord: ' + coord;
+
+  fetch('/api/ordenes', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ tipo: tipo, cliente_id: parseInt(clienteId), servicio_id: servicioId ? parseInt(servicioId) : null, detalle: detalles, zona_id: zona ? parseInt(zona) : null })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    btn.disabled = false; btn.innerHTML = '<i class="fas fa-plus"></i> Crear Orden';
+    if (d.status === 'success') {
+      document.getElementById('modalNuevaOrden').classList.remove('active');
+      location.reload();
+    } else { alert(d.msg || 'Error al crear orden'); }
+  })
+  .catch(function(e) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-plus"></i> Crear Orden'; alert('Error: ' + e.message); });
+  return false;
+}
+
+// TECNICO SEARCH (DomISP style)
+var _tecnicos = [<% (empleados || []).forEach(function(e) { %>{ id:<%= e.id %>, name:'<%= e.nombre.replace(/'/g,"\\'") %>', role:'tecnico' },<% }); %>];
+var _todosUsuarios = _tecnicos; // For now use tecnicos as all users
+var _cerrarDept = 'tecnico';
+var _asignarDept = 'tecnico';
+
+function tecSearchShow(prefix) {
+  tecSearchFilter(prefix);
+  document.getElementById(prefix + '_tec_list').style.display = 'block';
+}
+
+function tecSearchFilter(prefix) {
+  var q = document.getElementById(prefix + '_tec_search').value.toLowerCase();
+  var list = document.getElementById(prefix + '_tec_list');
+  var dept = "tecnico";
+  if (prefix === "cerrar" || prefix === "co") dept = _cerrarDept || "tecnico";
+  else if (prefix === "asignar") dept = _asignarDept || "tecnico";
+  
+  var showRole = (dept === "administrativo");
+  var source = showRole ? _todosUsuarios.filter(function(u) { return u.role && u.role.toLowerCase() !== "tecnico"; }) : _tecnicos;
+  var h = "";
+  source.forEach(function(t) {
+    var name = t.name || "";
+    var role = t.role || "";
+    if (q && name.toLowerCase().indexOf(q) === -1) return;
+    var label = name + (showRole ? " (" + role + ")" : "");
+    var data = JSON.stringify({prefix: prefix, id: t.id, name: name});
+    h += '<div class="tec-result-item" data-info="' + data.replace(/"/g,'&quot;').replace(/'/g,"&apos;") + '" style="padding:10px 12px;cursor:pointer;border-bottom:1px solid #f1f5f9;font-size:0.85rem;">';
+    h += '<i class="fas fa-user" style="color:#8b5cf6;margin-right:6px;"></i>' + label + '</div>';
+  });
+  if (!h) h = '<div style="padding:12px;text-align:center;color:#94a3b8;font-size:0.82rem;">Sin resultados</div>';
+  list.innerHTML = h;
+  
+  // Add event listeners via delegation (no inline handlers)
+  list.querySelectorAll(".tec-result-item").forEach(function(el) {
+    var info = JSON.parse(el.getAttribute("data-info"));
+    el.addEventListener("mouseover", function() { this.style.background = "#f0f9ff"; });
+    el.addEventListener("mouseout", function() { this.style.background = "white"; });
+    el.addEventListener("click", function() {
+      tecSearchSelect(info.prefix, info.id, info.name);
+    });
+  });
+}
+
+function tecSearchSelect(prefix, id, name) {
+  document.getElementById(prefix + '_tecnico').value = id;
+  document.getElementById(prefix + '_tec_search').value = name;
+  document.getElementById(prefix + '_tec_list').style.display = 'none';
+}
+
+// CERRAR ORDEN (DomISP exacto)
+function abrirCerrar(id, dept) {
+  _cerrarDept = dept || 'tecnico';
+  document.getElementById('idCerrar').value = id;
+  document.getElementById('cerrar_tecnico').value = '';
+  document.getElementById('cerrar_tec_search').value = '';
+  document.getElementById('idCerrarTipo').value = '';
+  document.getElementById('idCerrarServicioId').value = '0';
+  document.getElementById('cerrarTipoLabel').textContent = '';
+  document.getElementById('cerrarTrasladoSection').style.display = 'none';
+  document.getElementById('cerrarOnuVieja').innerHTML = '';
+  document.getElementById('cerrarOltSelect').innerHTML = '<option value="">Seleccionar OLT...</option>';
+  document.getElementById('cerrarOnuActions').style.display = 'none';
+  document.getElementById('cerrarScanResults').style.display = 'none';
+  document.getElementById('cerrarNewOnuSn').value = '';
+  document.getElementById('cerrarNewOnuSelected').style.display = 'none';
+  document.getElementById('modalCerrar').style.display = 'flex';
+  
+  // Fetch order details to check tipo
+  fetch('/api/ordenes/detalle/' + id)
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    if (d.status !== 'success' || !d.data) return;
+    var o = d.data;
+    document.getElementById('idCerrarTipo').value = o.tipo;
+    document.getElementById('cerrarTipoLabel').textContent = '(' + o.tipo + ')';
+    document.getElementById('idCerrarServicioId').value = o.servicio_id || 0;
+    
+    // If traslado, show ONU section
+    if (o.tipo === 'traslado') {
+      document.getElementById('cerrarTrasladoSection').style.display = 'block';
+      
+      // Show old ONU info
+      if (o.servicio_id) {
+        fetch('/api/ordenes/servicio-info/' + o.servicio_id)
+        .then(function(r2) { return r2.json(); })
+        .then(function(svc) {
+          if (svc.status === 'success' && svc.data) {
+            var html = '<div style="background:#f8fafc;border-radius:6px;padding:8px;font-size:0.8rem;">' +
+              '<b style="color:#64748b;">ONU Actual:</b> ' + (svc.data.onu_sn || 'Sin ONU') +
+              ' | IP: ' + (svc.data.ip || '—') + 
+              '</div>';
+            document.getElementById('cerrarOnuVieja').innerHTML = html;
+          }
+        })
+        .catch(function(e){});
+      }
+      
+      // Cargar lista de OLTs
+      fetch('/api/olts')
+      .then(function(r3) { return r3.json(); })
+      .then(function(olts) {
+        if (olts && olts.length) {
+          var sel = '<option value="">Seleccionar OLT...</option>';
+          olts.forEach(function(ol) { sel += '<option value="' + ol.id + '">' + ol.nombre + '</option>'; });
+          document.getElementById('cerrarOltSelect').innerHTML = sel;
+        }
+      })
+      .catch(function(e){});
+    }
+  })
+  .catch(function(e){});
+}
+
+function onCerrarOltChange() {
+  var oltId = document.getElementById('cerrarOltSelect').value;
+  document.getElementById('cerrarOnuActions').style.display = oltId ? 'block' : 'none';
+  document.getElementById('cerrarScanResults').style.display = 'none';
+  document.getElementById('cerrarNewOnuSn').value = '';
+  document.getElementById('cerrarNewOnuSelected').style.display = 'none';
+}
+
+function scanearOnusCerrar() {
+  var oltId = document.getElementById('cerrarOltSelect').value;
+  if (!oltId) { alert('Seleccione una OLT primero'); return; }
+  var resultsBox = document.getElementById('cerrarScanResults');
+  resultsBox.innerHTML = '<div style="padding:12px;text-align:center;color:#64748b;"><i class="fas fa-spinner fa-spin"></i> Escaneando...</div>';
+  resultsBox.style.display = 'block';
+  
+  fetch('/api/cambio-onu/scan-onus?olt_id=' + oltId + '&mode=smartolt')
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    if (!d.success || !d.onus || !d.onus.length) {
+      resultsBox.innerHTML = '<div style="padding:12px;text-align:center;color:#ef4444;">No se encontraron ONUs disponibles</div>';
+      return;
+    }
+    var html = '';
+    d.onus.forEach(function(onu) {
+      html += '<div class="onu-result-item" data-sn="' + (onu.sn || '') + '" data-model="' + (onu.model || '') + '" data-port="' + (onu.interface || '') + '" style="padding:8px 10px;cursor:pointer;border-bottom:1px solid #f1f5f9;font-size:0.8rem;" onclick="seleccionarOnuCerrar(this)" onmouseover="this.style.background=\'#eff6ff\'" onmouseout="this.style.background=\'white\'">' +
+        '<div><b>SN:</b> ' + (onu.sn || '—') + ' <span style="color:#64748b;">(' + (onu.model || 'desconocido') + ')</span></div>' +
+        '<div style="color:#64748b;font-size:0.75rem;">Interface: ' + (onu.interface || '—') + '</div></div>';
+    });
+    if (!html) html = '<div style="padding:12px;text-align:center;color:#ef4444;">No se encontraron ONUs disponibles</div>';
+    resultsBox.innerHTML = html;
+  })
+  .catch(function(e) {
+    resultsBox.innerHTML = '<div style="padding:12px;text-align:center;color:#ef4444;">Error: ' + e.message + '</div>';
+  });
+}
+
+function seleccionarOnuCerrar(el) {
+  var sn = el.getAttribute('data-sn');
+  var model = el.getAttribute('data-model');
+  document.getElementById('cerrarNewOnuSn').value = sn;
+  document.getElementById('cerrarNewOnuModel').value = model;
+  document.getElementById('cerrarNewOnuSelected').innerHTML = 
+    '<i class="fas fa-check-circle" style="color:#16a34a;"></i> ONU seleccionada: <b>' + sn + '</b> (' + model + ')';
+  document.getElementById('cerrarNewOnuSelected').style.display = 'block';
+  // Highlight selected
+  document.querySelectorAll('#cerrarScanResults .onu-result-item').forEach(function(i) { i.style.background = 'white'; });
+  el.style.background = '#dcfce7';
+}
+
+function confirmarCerrar(e) {
+  e.preventDefault();
+  var id = document.getElementById('idCerrar').value;
+  var tipo = document.getElementById('idCerrarTipo').value;
+  var obs = document.getElementById('cerrarObs').value.trim();
+  if (!obs) { alert('Las observaciones son obligatorias'); return; }
+  
+  var btn = document.querySelector('#modalCerrar .btn-primary');
+  btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+  
+  var body = { observaciones: obs };
+  
+  // If traslado with ONU swap
+  if (tipo === 'traslado') {
+    var newOnuSn = document.getElementById('cerrarNewOnuSn').value;
+    var servicioId = parseInt(document.getElementById('idCerrarServicioId').value);
+    var oltId = parseInt(document.getElementById('cerrarOltSelect').value) || 0;
+    
+    body.servicio_id = servicioId;
+    body.olt_id = oltId;
+    body.new_onu_sn = newOnuSn;
+    
+    // Only send swap data if an ONU was selected
+    if (newOnuSn) {
+      var clientId = 0;
+      // Get client id from the row's data attributes stored on open
+      body.desvincular_onu_vieja = true;
+      body.vincular_onu_nueva = true;
+    }
+  }
+  
+  fetch('/api/ordenes/' + id + '/completar', {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify(body)
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    btn.disabled = false; btn.innerHTML = 'Confirmar';
+    if (d.status === 'success') { closeModal('modalCerrar'); location.reload(); }
+    else { alert(d.msg || 'Error'); }
+  })
+  .catch(function(e) { btn.disabled = false; btn.innerHTML = 'Confirmar'; alert('Error: ' + e.message); });
+  return false;
+}
+
+// CANCELAR ORDEN (DomISP exacto)
+function abrirCancelar(id) {
+  document.getElementById('idCancel').value = id;
+  document.getElementById('cancelMotivo').value = '';
+  document.getElementById('modalCancelar').style.display = 'flex';
+}
+
+function confirmarCancelar(e) {
+  e.preventDefault();
+  var id = document.getElementById('idCancel').value;
+  var motivo = document.getElementById('cancelMotivo').value.trim();
+  if (!motivo) { alert('El motivo es obligatorio'); return; }
+  var btn = document.querySelector('#modalCancelar .btn-primary');
+  btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cancelando...';
+  fetch('/api/ordenes/' + id + '/cancelar', {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ motivo: motivo })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    btn.disabled = false; btn.innerHTML = 'Confirmar Cancelacion';
+    if (d.status === 'success') { closeModal('modalCancelar'); location.reload(); }
+    else { alert(d.msg || 'Error'); }
+  })
+  .catch(function(e) { btn.disabled = false; btn.innerHTML = 'Confirmar Cancelacion'; alert('Error: ' + e.message); });
+  return false;
+}
+
+// ASIGNAR ORDEN (DomISP style)
+function abrirAsignar(id, dept, currentTecId) {
+  _asignarDept = dept || 'tecnico';
+  document.getElementById('asignarOrdenId').value = id;
+  document.getElementById('asignar_tec_search').value = '';
+  document.getElementById('asignar_tecnico').value = '';
+  if (currentTecId > 0) {
+    document.getElementById('asignarInfo').style.display = 'block';
+  } else {
+    document.getElementById('asignarInfo').style.display = 'none';
+  }
+  document.getElementById('modalAsignar').style.display = 'flex';
+}
+
+function confirmarAsignacion() {
+  var ordId = document.getElementById('asignarOrdenId').value;
+  var tecId = document.getElementById('asignar_tecnico').value;
+  if (!tecId) { alert('Debe seleccionar un personal'); return; }
+  var btn = document.querySelector('#modalAsignar .btn-primary');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Asignando...';
+
+  fetch('/api/ordenes/' + ordId + '/asignar', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ tecnico_id: parseInt(tecId) })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    btn.disabled = false; btn.innerHTML = '<i class="fas fa-paper-plane"></i> Asignar y Notificar';
+    if (d.status === 'success' || d.success) {
+      closeModal('modalAsignar');
+      location.reload();
+    } else { alert(d.msg || 'Error al asignar'); }
+  })
+  .catch(function(e) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-paper-plane"></i> Asignar y Notificar'; alert('Error: ' + e.message); });
+}
+
+// GPS (abre Google Maps con la orden)
+function gpsOrden(orderId, coord) {
+  if (coord && coord.trim()) {
+    window.open('https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(coord.trim()), '_blank');
+    return;
+  }
+  // No coordinates - show modal
+  if (!document.getElementById('modalGpsAdd')) {
+    var div = document.createElement('div');
+    // Build GPS modal without inline onclick (use JS event later)
+    div.innerHTML = '<div class="modal-overlay" id="modalGpsAdd" style="display:none;">' +
+      '<div class="modal-content" style="width:400px;text-align:center;padding:0;">' +
+      '<div class="modal-header"><h3><i class="fas fa-map-marker-alt" style="color:#0369a1;"></i> Sin Coordenada GPS</h3>' +
+      '<button class="btn-modal-close" id="btnGpsClose"><i class="fas fa-times"></i> Cerrar</button></div>' +
+      '<div style="padding:20px;">' +
+      '<p style="color:#64748b;margin-bottom:16px;">Esta orden no tiene coordenadas GPS registradas.</p>' +
+      '<div class="form-group"><input type="text" id="gpsCoordInput" class="form-control" placeholder="Ej: 18.472, -69.931"></div>' +
+      '<button class="btn btn-primary" id="btnGpsSave" style="width:100%;">Guardar y Abrir GPS</button>' +
+      '</div></div></div>';
+    // Add event listeners after DOM insertion
+    setTimeout(function() {
+      document.getElementById('btnGpsClose').onclick = function() { closeModal('modalGpsAdd'); };
+      document.getElementById('btnGpsSave').onclick = function() {
+        var coord = document.getElementById('gpsCoordInput').value.trim();
+        if (!coord) { alert('Ingrese las coordenadas'); return; }
+        closeModal('modalGpsAdd');
+        window.open('https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(coord), '_blank');
+      };
+    }, 50);
+    document.body.appendChild(div);
+  }
+  document.getElementById('modalGpsAdd').style.display = 'flex';
+}
+
+// DETALLE
+function abrirDetalleOrden(id) {
+  document.getElementById('detIdLabel').textContent = '#' + id;
+  document.getElementById('detContent').innerHTML = '<div style="text-align:center;padding:30px;color:var(--text-muted);"><i class="fas fa-spinner fa-spin"></i> Cargando...</div>';
+  document.getElementById('modalDetalle').classList.add('active');
+
+  fetch('/api/ordenes/detalle/' + id)
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    if (d.status !== 'success' || !d.data) {
+      document.getElementById('detContent').innerHTML = '<div style="text-align:center;padding:20px;color:var(--accent-danger);">Error al cargar detalle</div>';
+      return;
+    }
+    var o = d.data;
+    var estadoColor = o.estado === 'completada' ? 'badge-success' : 'badge-warning';
+    var estadoText = o.estado === 'completada' ? 'Completada' : 'Pendiente';
+    document.getElementById('detContent').innerHTML =
+      '<div class="det-info-grid">' +
+        '<div class="det-card"><h4>Orden</h4>' +
+          '<div class="info-line"><b>#</b> ' + o.id + '</div>' +
+          '<div class="info-line"><b>Tipo:</b> ' + o.tipo + ' <span class="badge ' + estadoColor + '">' + estadoText + '</span></div>' +
+          '<div class="info-line"><b>Fecha:</b> ' + new Date(o.created_at).toLocaleString('es-DO') + '</div>' +
+        '</div>' +
+        '<div class="det-card"><h4>Cliente</h4>' +
+          '<div class="info-line"><b>Nombre:</b> ' + (o.cliente_nombre || '—') + '</div>' +
+          '<div class="info-line"><b>Cédula:</b> ' + (o.cedula || '—') + '</div>' +
+          '<div class="info-line"><b>Dirección:</b> ' + (o.direccion || '—') + '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="det-card" style="margin-bottom:16px;"><h4>Detalles</h4>' +
+        '<div class="info-line">' + (o.detalle || 'Sin detalles') + '</div>' +
+        '<div class="info-line" style="margin-top:6px;"><b>Zona:</b> ' + (o.zona_nombre || '—') + '</div>' +
+        (o.tecnico_nombre ? '<div class="info-line"><b>Técnico:</b> ' + o.tecnico_nombre + '</div>' : '') +
+        (o.fecha_completada ? '<div class="info-line"><b>Completada:</b> ' + new Date(o.fecha_completada).toLocaleString('es-DO') + '</div>' : '') +
+      '</div>';
+  })
+  .catch(function(e) { document.getElementById('detContent').innerHTML = '<div style="text-align:center;padding:20px;color:var(--accent-danger);">Error: ' + e.message + '</div>'; });
+}
+
+// CANCELAR
+// Cancelar ahora usa modal Cancelar (DomISP)
+function _old_cancelarOrden(id) {
+  if (!confirm('¿Cancelar la orden #' + id + '?')) return;
+  fetch('/api/ordenes/' + id + '/cancelar', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({}) })
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    if (d.status === 'success') location.reload();
+    else alert(d.msg || 'Error');
+  })
+  .catch(function(e) { alert('Error: ' + e.message); });
+}
+
+// CERRAR MODAL
+function cerrarModal(id) {
+  document.getElementById(id).classList.remove('active');
+}
+
+document.addEventListener('click', function(e) {
+  ['cerrar','asignar'].forEach(function(p) {
+    var list = document.getElementById(p+'_tec_list');
+    if (list && !e.target.closest('#'+p+'_tec_search') && !e.target.closest('#'+p+'_tec_list')) list.style.display = 'none';
+  });
+});
+
+function closeModal(id) { document.getElementById(id).style.display='none'; }
+
+// Cerrar con click fuera
+document.querySelectorAll('.modal-overlay').forEach(function(m) {
+  m.addEventListener('click', function(e) { if (e.target === this) this.classList.remove('active'); });
+});
+
+// Click fuera de resultados búsqueda
+document.addEventListener('click', function(e) {
+  if (!document.getElementById('noSearch').contains(e.target) &&
+      !document.getElementById('noSearchResults').contains(e.target)) {
+    document.getElementById('noSearchResults').style.display = 'none';
+  }
+});
+</script>

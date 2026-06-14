@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en" class="smartolt-night">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Buscar ONU | ISP Total</title>
+<link href="/public/smartolt-files/bootstrap-custom.css" rel="stylesheet">
+<link href="/public/smartolt-files/styles.css" rel="stylesheet">
+<link href="/public/smartolt-files/toast.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+<link href="/public/smartolt-files/dashboard-smartolt-night.css" rel="stylesheet">
+<script src="/public/smartolt-files/jquery.min.js"></script>
+</head>
+<body class="smartolt-site">
+
+<div class="smartolt-landing-hero-bg" aria-hidden="true"></div>
+<div id="content-wrapper">
+
+  <div class="navbar navbar-default navbar-fixed-top default-menu">
+    <div class="container">
+      <div class="navbar-header">
+        <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#navbar-main" aria-expanded="false" aria-controls="navbar">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand text-ellipsis max-width-250" href="/modulo?pagina=GPONManager" title="GPON Manager">GPON Manager</a>
+      </div>
+      <div class="navbar-collapse collapse" id="navbar-main">
+        <ul class="nav navbar-nav">
+          <li><a href="/modulo?pagina=GPONManager">Dashboard</a></li>
+          <li><a href="/modulo?pagina=SmartoltConfigured">Configuradas</a></li>
+          <li><a href="/modulo?pagina=SmartoltUnconfigured">No configuradas</a></li>
+          <li><a href="/modulo?pagina=SmartoltOnuTypes">Tipos ONU</a></li>
+          <li><a href="/modulo?pagina=SmartoltSpeedProfiles">Velocidad</a></li>
+          <li><a href="/modulo?pagina=SmartoltLocations">Zonas</a></li>
+          <li><a href="/modulo?pagina=SmartoltDashboard">SmartOLT</a></li>
+        </ul>
+        <ul class="nav navbar-nav navbar-right">
+          <li><a href="/logout"></a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="container-fluid content-wrap">
+
+<style>
+:root {
+  --bo-primary: #6366f1;
+  --bo-success: #16a34a;
+  --bo-warning: #d97706;
+  --bo-danger: #ef4444;
+  --bo-bg: #f8fafc;
+  --bo-border: #e2e8f0;
+  --bo-text: #1e293b;
+  --bo-gray: #64748b;
+  --bo-muted: #94a3b8;
+}
+.bo-wrap { max-width: 1100px; margin: 0 auto; }
+.bo-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
+.bo-header h2 { margin: 0; font-size: 1.3rem; color: var(--bo-text); display: flex; align-items: center; gap: 8px; }
+.bo-subtitle { color: var(--bo-muted); font-size: 0.85rem; margin: 2px 0 0; }
+/* Filters */
+.bo-filters { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 16px; }
+.bo-filters input,.bo-filters select { padding: 9px 12px; border: 1px solid var(--bo-border); border-radius: 8px; font-size: 0.85rem; outline: none; background: #fff; color: var(--bo-text); transition: border-color 0.2s; }
+.bo-filters input:focus,.bo-filters select:focus { border-color: var(--bo-primary); box-shadow: 0 0 0 3px rgba(99,102,241,0.1); }
+.bo-filters input { flex: 1; min-width: 200px; }
+.bo-filters select { width: 160px; }
+.bo-btn { padding: 8px 16px; border: none; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; }
+.bo-btn-primary { background: var(--bo-primary); color: #fff; }
+.bo-btn-primary:hover { opacity: 0.9; }
+.bo-btn-sm { padding: 5px 10px; font-size: 0.78rem; }
+.bo-btn-xs { padding: 3px 7px; font-size: 0.72rem; border-radius: 5px; }
+.bo-btn-secondary { background: #e2e8f0; color: var(--bo-text); }
+.bo-btn-secondary:hover { background: #cbd5e1; }
+.bo-btn-success { background: var(--bo-success); color: #fff; }
+.bo-btn-warning { background: var(--bo-warning); color: #fff; }
+.bo-btn-danger { background: var(--bo-danger); color: #fff; }
+/* Card */
+.bo-card { background: #fff; border-radius: 12px; border: 1px solid var(--bo-border); overflow: hidden; }
+.bo-card-body { padding: 16px; }
+/* Table */
+.bo-table-wrap { overflow-x: auto; }
+.bo-table { width: 100%; border-collapse: collapse; font-size: 0.83rem; }
+.bo-table th { padding: 10px 12px; text-align: left; font-weight: 600; color: var(--bo-gray); border-bottom: 2px solid var(--bo-border); white-space: nowrap; }
+.bo-table td { padding: 10px 12px; border-bottom: 1px solid var(--bo-border); color: var(--bo-text); }
+.bo-table tr:hover td { background: #f1f5f9; }
+.bo-table .text-right { text-align: right; }
+.bo-table .text-center { text-align: center; }
+/* Signal indicator */
+.bo-signal { display: inline-flex; align-items: center; gap: 6px; }
+.bo-signal-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.bo-signal-good .bo-signal-dot { background: var(--bo-success); }
+.bo-signal-warn .bo-signal-dot { background: var(--bo-warning); }
+.bo-signal-bad .bo-signal-dot { background: var(--bo-danger); }
+.bo-signal-na .bo-signal-dot { background: var(--bo-muted); }
+.bo-signal-val { font-weight: 600; font-size: 0.82rem; }
+/* Badges */
+.bo-badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 0.72rem; font-weight: 600; }
+.bo-badge-ok { background: #dcfce7; color: #166534; }
+.bo-badge-err { background: #fef2f2; color: #991b1b; }
+.bo-badge-warn { background: #fef3c7; color: #92400e; }
+.bo-code { background: #eef2ff; padding: 2px 6px; border-radius: 4px; font-size: 0.78rem; color: #4338ca; font-weight: 600; font-family: monospace; }
+/* Pagination */
+.bo-pagination { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 14px 0; }
+.bo-page-btn { padding: 6px 12px; border: 1px solid var(--bo-border); border-radius: 6px; font-size: 0.82rem; cursor: pointer; color: var(--bo-text); background: #fff; transition: all 0.15s; }
+.bo-page-btn:hover { border-color: var(--bo-primary); color: var(--bo-primary); }
+.bo-page-btn.active { background: var(--bo-primary); color: #fff; border-color: var(--bo-primary); }
+.bo-page-btn:disabled { opacity: 0.4; cursor: default; }
+.bo-page-info { font-size: 0.82rem; color: var(--bo-gray); padding: 0 8px; }
+/* Modal */
+.bo-modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 9999; justify-content: center; align-items: center; }
+.bo-modal { background: #fff; border-radius: 14px; width: 520px; max-width: 95vw; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 40px rgba(0,0,0,0.15); }
+.bo-modal-header { padding: 16px 20px; border-bottom: 1px solid var(--bo-border); display: flex; align-items: center; justify-content: space-between; }
+.bo-modal-header h3 { margin: 0; font-size: 1rem; }
+.bo-modal-close { background: none; border: none; font-size: 1.3rem; cursor: pointer; color: var(--bo-gray); padding: 0 4px; }
+.bo-modal-body { padding: 20px; }
+.bo-modal-footer { padding: 12px 20px; border-top: 1px solid var(--bo-border); display: flex; gap: 8px; justify-content: flex-end; }
+/* Detail modal */
+.bo-detail-row { display: flex; padding: 8px 0; border-bottom: 1px solid #f1f5f9; font-size: 0.88rem; }
+.bo-detail-label { width: 120px; font-weight: 600; color: var(--bo-gray); flex-shrink: 0; }
+.bo-detail-value { flex: 1; color: var(--bo-text); }
+/* Empty state */
+.bo-empty { text-align: center; padding: 50px 20px; color: var(--bo-muted); }
+.bo-empty i { font-size: 2.5rem; opacity: 0.3; margin-bottom: 10px; display: block; }
+.bo-empty p { margin: 0; font-size: 0.9rem; }
+/* Loading */
+.bo-loading { text-align: center; padding: 40px; color: var(--bo-muted); }
+/* Responsive */
+@media(max-width:768px) {
+  .bo-filters { flex-direction: column; align-items: stretch; }
+  .bo-filters input { min-width: 0; }
+  .bo-filters select { width: 100%; }
+  .bo-modal { width: 100%; max-width: 100vw; border-radius: 0; max-height: 100vh; }
+}
+</style>
+
+<div class="page-header">
+  <h2><i class="fas fa-search"></i> Buscar ONU</h2>
+</div>
+
+<div class="bo-wrap">
+  <div class="bo-header">
+    <div>
+      <h2><i class="fas fa-microchip" style="color:var(--bo-primary)"></i> Buscador de ONUs</h2>
+      <p class="bo-subtitle">Busque por SN, nombre, IP, cliente o puerto OLT</p>
+    </div>
+  </div>
+
+  <div class="bo-filters">
+    <input type="text" id="boSearch" placeholder="Buscar por SN, nombre, cliente, IP, puerto OLT..." oninput="boSearchOnu()">
+    <select id="boOltFilter" onchange="boSearchOnu()">
+      <option value="">Todas las OLTs</option>
+      <% (olts || []).forEach(function(o){ %>
+      <option value="<%= o.id %>"><%= o.nombre %></option>
+      <% }); %>
+    </select>
+    <button class="bo-btn bo-btn-primary" onclick="_boSearch()"><i class="fas fa-search"></i> Buscar</button>
+  </div>
+
+  <div class="bo-card">
+    <div class="bo-card-body" style="padding:0;">
+      <div class="bo-table-wrap">
+        <table class="bo-table" id="boTable">
+          <thead>
+            <tr>
+              <th>SN</th>
+              <th>Nombre ONU</th>
+              <th>Estado</th>
+              <th>OLT</th>
+              <th>Puerto OLT</th>
+              <th>Cliente</th>
+              <th>Señal</th>
+              <th>Última vez</th>
+              <th class="text-right">Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="boTbody">
+            <tr><td colspan="9" class="text-center" style="padding:50px;color:var(--bo-muted);">
+              <i class="fas fa-search" style="font-size:2rem;opacity:0.3;display:block;margin-bottom:10px;"></i>
+              Ingrese términos de búsqueda o seleccione una OLT para comenzar
+            </td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="bo-pagination" id="boPagination"></div>
+</div>
+
+<!-- Detail Modal -->
+<div class="bo-modal-overlay" id="boDetailModal">
+  <div class="bo-modal">
+    <div class="bo-modal-header">
+      <h3><i class="fas fa-microchip"></i> Detalle de ONU</h3>
+      <button class="bo-modal-close" onclick="boCloseModal('boDetailModal')">&times;</button>
+    </div>
+    <div class="bo-modal-body" id="boDetailBody"></div>
+    <div class="bo-modal-footer" id="boDetailFooter"></div>
+  </div>
+</div>
+
+<!-- Edit Modal -->
+<div class="bo-modal-overlay" id="boEditModal">
+  <div class="bo-modal">
+    <div class="bo-modal-header">
+      <h3><i class="fas fa-pencil-alt"></i> Editar ONU</h3>
+      <button class="bo-modal-close" onclick="boCloseModal('boEditModal')">&times;</button>
+    </div>
+    <form id="boEditForm" onsubmit="return boSaveEdit(event)">
+      <div class="bo-modal-body">
+        <input type="hidden" id="boEditId">
+        <div class="form-group">
+          <label>SN</label>
+          <input type="text" id="boEditSn" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label>Nombre ONU</label>
+          <input type="text" id="boEditNombre" class="form-control">
+        </div>
+        <div class="form-group">
+          <label>OLT</label>
+          <select id="boEditOlt" class="form-control">
+            <option value="">Seleccione OLT</option>
+            <% (olts || []).forEach(function(o){ %>
+            <option value="<%= o.id %>"><%= o.nombre %></option>
+            <% }); %>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Puerto OLT</label>
+          <input type="number" id="boEditPuerto" class="form-control" min="0">
+        </div>
+        <div id="boEditResult"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="boCloseModal('boEditModal')">Cancelar</button>
+        <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Guardar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+var boCurrentPage = 1;
+var boPerPage = 20;
+var boSearchTimer = null;
+
+function _boSearchFetch(page) {
+  if (page) boCurrentPage = page;
+  else boCurrentPage = 1;
+
+  var q = document.getElementById('boSearch').value.trim();
+  var oltId = document.getElementById('boOltFilter').value;
+
+  document.getElementById('boTbody').innerHTML = '<tr><td colspan="9" class="text-center" style="padding:40px;color:var(--bo-muted);"><i class="fas fa-spinner fa-spin"></i> Buscando...</td></tr>';
+  document.getElementById('boPagination').innerHTML = '';
+
+  fetch('/modulo?pagina=BuscarOnu&ajax=search&q=' + encodeURIComponent(q) + '&olt_id=' + encodeURIComponent(oltId) + '&page=' + boCurrentPage)
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (d.error || !d.success) {
+        document.getElementById('boTbody').innerHTML = '<tr><td colspan="9" class="text-center" style="padding:40px;color:#ef4444;"><i class="fas fa-exclamation-triangle"></i> ' + (d.msg || 'Error al buscar') + '</td></tr>';
+        return;
+      }
+      var rows = d.data || [];
+      if (rows.length === 0) {
+        document.getElementById('boTbody').innerHTML = '<tr><td colspan="9" class="text-center" style="padding:50px;color:var(--bo-muted);"><i class="fas fa-search" style="font-size:2rem;opacity:0.3;display:block;margin-bottom:10px;"></i>No se encontraron resultados</td></tr>';
+        document.getElementById('boPagination').innerHTML = '';
+        return;
+      }
+      var h = '';
+      rows.forEach(function(o) {
+        var estadoClass = o.estado === 'activo' ? 'bo-badge-ok' : o.estado === 'suspendido' ? 'bo-badge-warn' : 'bo-badge-err';
+        var estadoText = o.estado ? o.estado.charAt(0).toUpperCase() + o.estado.slice(1) : 'N/A';
+        // Signal
+        var sigClass = 'bo-signal-na';
+        var sigVal = 'N/A';
+        if (o.senial !== null && o.senial !== undefined) {
+          sigVal = parseFloat(o.senial).toFixed(1) + ' dBm';
+          if (o.senial > -22) sigClass = 'bo-signal-good';
+          else if (o.senial >= -25) sigClass = 'bo-signal-warn';
+          else sigClass = 'bo-signal-bad';
+        }
+        var ultimaVez = o.ultima_vez || o.created_at || '';
+        if (ultimaVez) {
+          try { ultimaVez = new Date(ultimaVez).toLocaleString('es-DO', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }); } catch(e) {}
+        }
+        h += '<tr class="bo-onu-row" data-id="' + o.id + '" data-estado="' + (o.estado || '') + '" data-olt="' + (o.olt_nombre || '') + '">';
+        h += '<td><code class="bo-code">' + escHtml(o.sn || '-') + '</code></td>';
+        h += '<td><strong>' + escHtml(o.nombre || '-') + '</strong></td>';
+        h += '<td><span class="bo-badge ' + estadoClass + '">' + estadoText + '</span></td>';
+        h += '<td>' + escHtml(o.olt_nombre || '-') + '</td>';
+        h += '<td>' + (o.puerto_olt || '-') + '</td>';
+        h += '<td>' + (o.cliente_nombre ? escHtml(o.cliente_nombre) : '<span style="color:var(--bo-muted);">Sin cliente</span>') + '</td>';
+        h += '<td><div class="bo-signal ' + sigClass + '"><span class="bo-signal-dot"></span><span class="bo-signal-val">' + sigVal + '</span></div></td>';
+        h += '<td style="font-size:0.78rem;color:var(--bo-gray);white-space:nowrap;">' + ultimaVez + '</td>';
+        h += '<td class="text-right"><div style="display:flex;gap:4px;justify-content:flex-end;flex-wrap:wrap;">';
+        h += '<button class="bo-btn bo-btn-xs bo-btn-primary" onclick="boViewDetail(' + o.id + ')" title="Ver detalle"><i class="fas fa-eye"></i></button>';
+        h += '<button class="bo-btn bo-btn-xs bo-btn-warning" onclick="boEditOnu(' + o.id + ')" title="Editar"><i class="fas fa-pencil-alt"></i></button>';
+        h += '<button class="bo-btn bo-btn-xs bo-btn-danger" onclick="boDeleteOnu(' + o.id + ')" title="Eliminar"><i class="fas fa-trash"></i></button>';
+        h += '</div></td>';
+        h += '</tr>';
+      });
+      document.getElementById('boTbody').innerHTML = h;
+
+      // Pagination
+      var total = d.total || 0;
+      var pages = d.pages || 1;
+      var page = d.page || 1;
+      var phtml = '';
+      phtml += '<button class="bo-page-btn" onclick="_boSearchFetch(' + (page - 1) + ')"' + (page <= 1 ? ' disabled' : '') + '><i class="fas fa-chevron-left"></i></button>';
+      var startP = Math.max(1, page - 2);
+      var endP = Math.min(pages, page + 2);
+      for (var i = startP; i <= endP; i++) {
+        phtml += '<button class="bo-page-btn' + (i === page ? ' active' : '') + '" onclick="_boSearchFetch(' + i + ')">' + i + '</button>';
+      }
+      phtml += '<button class="bo-page-btn" onclick="_boSearchFetch(' + (page + 1) + ')"' + (page >= pages ? ' disabled' : '') + '><i class="fas fa-chevron-right"></i></button>';
+      phtml += '<span class="bo-page-info">' + total + ' resultado(s) &mdash; P&aacute;gina ' + page + ' de ' + pages + '</span>';
+      document.getElementById('boPagination').innerHTML = phtml;
+    })
+    .catch(function(e) {
+      document.getElementById('boTbody').innerHTML = '<tr><td colspan="9" class="text-center" style="padding:40px;color:#ef4444;"><i class="fas fa-exclamation-triangle"></i> Error: ' + escHtml(e.message) + '</td></tr>';
+    });
+}
+
+function boSearchOnu() {
+  clearTimeout(boSearchTimer);
+  boSearchTimer = setTimeout(function() { _boSearchFetch(1); }, 300);
+}
+
+function _boSearch() {
+  var q = document.getElementById('boSearch').value.trim();
+  var oltId = document.getElementById('boOltFilter').value;
+  if (!q && !oltId) {
+    document.getElementById('boTbody').innerHTML = '<tr><td colspan="9" class="text-center" style="padding:50px;color:var(--bo-muted);"><i class="fas fa-search" style="font-size:2rem;opacity:0.3;display:block;margin-bottom:10px;"></i>Ingrese t\u00e9rminos de b\u00fasqueda o seleccione una OLT para comenzar</td></tr>';
+    document.getElementById('boPagination').innerHTML = '';
+    return;
+  }
+  _boSearchFetch(1);
+}
+
+function boCloseModal(id) {
+  document.getElementById(id).style.display = 'none';
+}
+
+function boViewDetail(id) {
+  fetch('/modulo?pagina=BuscarOnu&ajax=get_detail&id=' + id)
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (!d.success) { alert('Error: ' + (d.msg || 'No se pudo cargar el detalle')); return; }
+      var o = d.data;
+      var sigClass = 'bo-signal-na';
+      var sigVal = 'N/A';
+      if (o.senial !== null && o.senial !== undefined) {
+        sigVal = parseFloat(o.senial).toFixed(1) + ' dBm';
+        if (o.senial > -22) sigClass = 'bo-signal-good';
+        else if (o.senial >= -25) sigClass = 'bo-signal-warn';
+        else sigClass = 'bo-signal-bad';
+      }
+      var estadoClass = o.estado === 'activo' ? 'bo-badge-ok' : o.estado === 'suspendido' ? 'bo-badge-warn' : 'bo-badge-err';
+      var h = '';
+      h += '<div class="bo-detail-row"><span class="bo-detail-label">SN</span><span class="bo-detail-value"><code class="bo-code">' + escHtml(o.sn || '-') + '</code></span></div>';
+      h += '<div class="bo-detail-row"><span class="bo-detail-label">Nombre</span><span class="bo-detail-value"><strong>' + escHtml(o.nombre || '-') + '</strong></span></div>';
+      h += '<div class="bo-detail-row"><span class="bo-detail-label">Estado</span><span class="bo-detail-value"><span class="bo-badge ' + estadoClass + '">' + (o.estado ? o.estado.charAt(0).toUpperCase() + o.estado.slice(1) : 'N/A') + '</span></span></div>';
+      h += '<div class="bo-detail-row"><span class="bo-detail-label">OLT</span><span class="bo-detail-value">' + escHtml(o.olt_nombre || '-') + '</span></div>';
+      h += '<div class="bo-detail-row"><span class="bo-detail-label">Puerto OLT</span><span class="bo-detail-value">' + (o.puerto_olt || '-') + '</span></div>';
+      h += '<div class="bo-detail-row"><span class="bo-detail-label">Cliente</span><span class="bo-detail-value">' + (o.cliente_nombre ? escHtml(o.cliente_nombre) : '<span style="color:var(--bo-muted);">Sin cliente</span>') + '</span></div>';
+      h += '<div class="bo-detail-row"><span class="bo-detail-label">Se&ntilde;al</span><span class="bo-detail-value"><div class="bo-signal ' + sigClass + '"><span class="bo-signal-dot"></span><span class="bo-signal-val">' + sigVal + '</span></div></span></div>';
+      h += '<div class="bo-detail-row"><span class="bo-detail-label">Servicio</span><span class="bo-detail-value">' + (o.servicio_id ? 'ID: ' + o.servicio_id : '<span style="color:var(--bo-muted);">Sin servicio</span>') + '</span></div>';
+      h += '<div class="bo-detail-row"><span class="bo-detail-label">Creado</span><span class="bo-detail-value">' + (o.created_at || '-') + '</span></div>';
+      document.getElementById('boDetailBody').innerHTML = h;
+
+      var fhtml = '';
+      if (o.cliente_id) {
+        fhtml += '<button class="bo-btn bo-btn-sm bo-btn-primary" onclick="window.location.href=\'/modulo?pagina=VerCliente&id=' + o.cliente_id + '\'"><i class="fas fa-user"></i> Ver cliente</button>';
+      }
+      if (o.olt_id) {
+        fhtml += '<button class="bo-btn bo-btn-sm bo-btn-secondary" onclick="window.location.href=\'/modulo?pagina=Gpon&olt_id=' + o.olt_id + '\'"><i class="fas fa-network-wired"></i> Ver OLT</button>';
+      }
+      fhtml += '<button class="bo-btn bo-btn-sm bo-btn-warning" onclick="boCloseModal(\'boDetailModal\');boEditOnu(' + o.id + ')"><i class="fas fa-pencil-alt"></i> Editar</button>';
+      fhtml += '<button class="bo-btn bo-btn-sm bo-btn-danger" onclick="boCloseModal(\'boDetailModal\');boDeleteOnu(' + o.id + ')"><i class="fas fa-trash"></i> Eliminar</button>';
+      fhtml += '<button class="bo-btn bo-btn-sm bo-btn-secondary" onclick="boCloseModal(\'boDetailModal\')">Cerrar</button>';
+      document.getElementById('boDetailFooter').innerHTML = fhtml;
+      document.getElementById('boDetailModal').style.display = 'flex';
+    })
+    .catch(function(e) { alert('Error: ' + e.message); });
+}
+
+function boEditOnu(id) {
+  fetch('/modulo?pagina=BuscarOnu&ajax=get_detail&id=' + id)
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (!d.success) { alert('Error: ' + (d.msg || 'No se pudo cargar')); return; }
+      var o = d.data;
+      document.getElementById('boEditId').value = o.id;
+      document.getElementById('boEditSn').value = o.sn || '';
+      document.getElementById('boEditNombre').value = o.nombre || '';
+      document.getElementById('boEditOlt').value = o.olt_id || '';
+      document.getElementById('boEditPuerto').value = o.puerto_olt || '';
+      document.getElementById('boEditResult').innerHTML = '';
+      document.getElementById('boEditModal').style.display = 'flex';
+    })
+    .catch(function(e) { alert('Error: ' + e.message); });
+}
+
+function boSaveEdit(e) {
+  e.preventDefault();
+  var id = parseInt(document.getElementById('boEditId').value) || 0;
+  var sn = document.getElementById('boEditSn').value.trim();
+  var nombre = document.getElementById('boEditNombre').value.trim();
+  var oltId = parseInt(document.getElementById('boEditOlt').value) || 0;
+  var puerto = parseInt(document.getElementById('boEditPuerto').value) || 0;
+
+  if (!sn) { document.getElementById('boEditResult').innerHTML = '<div style="color:#ef4444;padding:6px 0;font-size:0.85rem;"><i class="fas fa-exclamation-circle"></i> El SN es obligatorio</div>'; return; }
+
+  var btn = e.target.querySelector('button[type="submit"]');
+  btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+
+  fetch('/modulo?pagina=BuscarOnu&ajax=edit', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id: id, sn: sn, nombre: nombre, olt_id: oltId, puerto_olt: puerto })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    btn.disabled = false; btn.innerHTML = '<i class="fas fa-save"></i> Guardar';
+    if (d.success) {
+      document.getElementById('boEditResult').innerHTML = '<div style="color:#16a34a;padding:8px 10px;background:#f0fdf4;border-radius:6px;font-weight:600;"><i class="fas fa-check-circle"></i> ONU actualizada</div>';
+      setTimeout(function() { boCloseModal('boEditModal'); _boSearchFetch(boCurrentPage); }, 1000);
+    } else {
+      document.getElementById('boEditResult').innerHTML = '<div style="color:#ef4444;padding:8px 10px;background:#fef2f2;border-radius:6px;">' + (d.msg || 'Error al guardar') + '</div>';
+    }
+  })
+  .catch(function(e) {
+    btn.disabled = false; btn.innerHTML = '<i class="fas fa-save"></i> Guardar';
+    document.getElementById('boEditResult').innerHTML = '<div style="color:#ef4444;padding:6px 0;">Error: ' + e.message + '</div>';
+  });
+  return false;
+}
+
+function boDeleteOnu(id) {
+  if (!confirm('¿Eliminar esta ONU? Esta acción no se puede deshacer.')) return;
+  fetch('/modulo?pagina=BuscarOnu&ajax=delete', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id: id })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    if (d.success) { _boSearchFetch(boCurrentPage); }
+    else { alert('Error: ' + (d.msg || 'No se pudo eliminar')); }
+  })
+  .catch(function(e) { alert('Error: ' + e.message); });
+}
+
+function escHtml(s) {
+  if (!s) return '';
+  var d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+// Close modal on overlay click
+document.addEventListener('click', function(e) {
+  if (e.target.classList.contains('bo-modal-overlay')) e.target.style.display = 'none';
+});
+</script>
+
+
+  </div><!-- content-wrap -->
+</div><!-- content-wrapper -->
+</body>
+</html>

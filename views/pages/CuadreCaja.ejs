@@ -1,0 +1,927 @@
+<style>
+:root { --cc-green: #10b981; --cc-green-dark: #059669; }
+
+/* Header */
+.cc-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:12px; }
+.cc-title { font-size:1.5rem; font-weight:700; color:var(--text-main); margin:0; display:flex; align-items:center; gap:10px; }
+
+/* Tabs */
+.cc-tabs { display:flex; gap:4px; background:var(--bg-card); border-radius:10px; padding:4px; margin-bottom:24px; width:fit-content; }
+.cc-tab { padding:10px 22px; border-radius:8px; border:none; background:transparent; color:var(--text-gray); font-weight:600; font-size:0.92rem; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; gap:7px; text-decoration:none; }
+.cc-tab:hover { color:var(--text-main); background:rgba(255,255,255,0.5); }
+.cc-tab.active { background:var(--bg-primary); color:var(--text-main); box-shadow:0 1px 3px rgba(0,0,0,0.1); }
+
+/* Cards */
+.cc-card { background:var(--bg-card); border-radius:12px; border:1px solid var(--border-color); overflow:hidden; margin-bottom:20px; }
+.cc-card-header { padding:18px 22px; border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center; }
+.cc-card-title { font-size:1.05rem; font-weight:700; color:var(--text-main); display:flex; align-items:center; gap:8px; }
+.cc-card-body { padding:22px; }
+
+/* Form inline */
+.cc-form-row { display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; }
+.cc-form-group { flex:1; min-width:200px; }
+.cc-form-label { display:block; font-weight:600; color:var(--text-gray); margin-bottom:6px; font-size:0.88rem; }
+.cc-form-input { width:100%; padding:10px 14px; border:1px solid var(--border-color); border-radius:8px; font-size:0.95rem; background:var(--bg-input); }
+.cc-form-input:focus { outline:none; border-color:var(--cc-green); box-shadow:0 0 0 3px rgba(16,185,129,0.12); }
+
+/* Pendiente box */
+.cc-pend-box { margin-top:18px; padding:20px; background:linear-gradient(135deg,#ecfdf5,#d1fae5); border:2px solid var(--cc-green); border-radius:12px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:15px; }
+.cc-pend-left { display:flex; align-items:center; gap:15px; }
+.cc-pend-amount { font-size:1.8rem; font-weight:800; color:var(--cc-green-dark); }
+.cc-pend-count { font-size:0.88rem; color:#047857; }
+.cc-pend-empty { margin-top:18px; padding:20px; background:var(--bg-card); border-radius:12px; text-align:center; color:var(--text-gray); }
+.cc-pend-empty i { color:#cbd5e1; font-size:1.5rem; margin-bottom:6px; display:block; }
+
+.btn-cuadrar { background:linear-gradient(135deg,var(--cc-green),var(--cc-green-dark)); color:white; border:none; padding:12px 28px; border-radius:8px; font-weight:700; cursor:pointer; font-size:0.95rem; display:flex; align-items:center; gap:8px; transition:all 0.2s; white-space:nowrap; }
+.btn-cuadrar:hover { transform:translateY(-1px); box-shadow:0 4px 12px rgba(16,185,129,0.3); }
+.btn-cuadrar:disabled { background:#cbd5e1; cursor:not-allowed; transform:none; box-shadow:none; }
+
+/* Resultado cuadre recien generado */
+.cc-result { margin-top:20px; border:2px solid var(--cc-green); border-radius:12px; overflow:hidden; animation:ccSlideIn 0.3s ease-out; }
+@keyframes ccSlideIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+.cc-result-header { background:linear-gradient(135deg,#ecfdf5,#d1fae5); padding:16px 20px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; }
+.cc-result-title { font-weight:700; color:#065f46; font-size:1.05rem; display:flex; align-items:center; gap:8px; }
+.cc-result-amount { font-size:1.4rem; font-weight:800; color:var(--cc-green-dark); }
+.cc-result-body { padding:16px 20px; max-height:350px; overflow-y:auto; }
+.cc-result-actions { padding:14px 20px; border-top:1px solid var(--border-color); background:var(--bg-card); display:flex; gap:10px; justify-content:flex-end; }
+.cc-result-table { width:100%; border-collapse:collapse; font-size:0.88rem; }
+.cc-result-table th { background:var(--bg-card); padding:8px 10px; text-align:left; font-weight:600; color:var(--text-gray); font-size:0.8rem; text-transform:uppercase; }
+.cc-result-table td { padding:8px 10px; border-bottom:1px solid var(--border-color); }
+.cc-result-table td.monto-col { text-align:right; font-weight:700; color:var(--cc-green-dark); font-family:'Courier New',monospace; }
+
+/* Historial table */
+.cc-table { width:100%; border-collapse:collapse; }
+.cc-table th { background:var(--bg-card); padding:12px 16px; text-align:left; font-weight:600; color:var(--text-gray); font-size:0.82rem; text-transform:uppercase; letter-spacing:0.5px; border-bottom:2px solid var(--border-color); }
+.cc-table td { padding:14px 16px; border-bottom:1px solid var(--border-color); color:var(--text-main); font-size:0.93rem; }
+.cc-table tr:hover { background:var(--bg-card); }
+.cc-table .monto { font-weight:700; color:var(--cc-green); font-size:1.05rem; }
+
+.btn-print { background:var(--bg-card); color:var(--text-gray); border:1px solid var(--border-color); padding:8px 16px; border-radius:6px; cursor:pointer; display:flex; align-items:center; gap:6px; font-size:0.85rem; transition:all 0.2s; }
+.btn-print:hover { background:var(--border-color); color:var(--text-main); }
+
+.empty-state { text-align:center; padding:50px 20px; color:var(--text-gray); }
+.empty-state i { font-size:3.5rem; color:#cbd5e1; margin-bottom:15px; }
+
+/* Dropdown */
+.cc-dropdown { position:fixed; background:var(--bg-primary); border:1px solid var(--border-color); border-radius:8px; max-height:260px; overflow-y:auto; z-index:99990; box-shadow:0 8px 24px rgba(0,0,0,0.13); display:none; min-width:220px; }
+.cc-dropdown-item { padding:12px 16px; cursor:pointer; border-bottom:1px solid var(--border-color); font-size:0.9rem; color:var(--text-main); }
+.cc-dropdown-item:hover { background:var(--bg-card); }
+.cc-dropdown-item:last-child { border-bottom:none; }
+.cc-dropdown-empty { padding:12px 16px; color:var(--text-gray); font-size:0.85rem; }
+
+/* Metodo badges */
+.metodo-badge { display:inline-flex; align-items:center; gap:6px; background:var(--bg-card); border:1px solid var(--border-color); border-radius:8px; padding:5px 12px; font-size:0.82rem; }
+.metodo-badge .met-icon { width:10px; height:10px; border-radius:50%; }
+</style>
+
+<!-- ========== HEADER ========== -->
+<div class="cc-header">
+    <h1 class="cc-title"><i class="fas fa-cash-register" style="color:var(--cc-green);"></i> Cuadre de Caja</h1>
+</div>
+
+<!-- ========== TABS ========== -->
+<div class="cc-tabs">
+    <a class="cc-tab active" data-tab="caja" onclick="ccSwitchTab('caja')"><i class="fas fa-cash-register"></i> Caja</a>
+    <a class="cc-tab" data-tab="historial" onclick="ccSwitchTab('historial')"><i class="fas fa-list"></i> Historial</a>
+</div>
+
+<!-- ================================================================ -->
+<!-- TAB: CAJA                                                        -->
+<!-- ================================================================ -->
+<div id="ccTabCaja">
+
+<div class="cc-card" id="cardNuevoCuadre">
+    <div class="cc-card-header">
+        <div class="cc-card-title"><i class="fas fa-plus-circle" style="color:var(--cc-green);"></i> Nuevo Cuadre</div>
+    </div>
+    <div class="cc-card-body">
+        <div class="cc-form-row">
+            <div class="cc-form-group" style="position:relative;">
+                <label class="cc-form-label">Cuadrar a</label>
+                <input type="text" id="ccBuscarUsuario" class="cc-form-input" placeholder="Buscar usuario..." oninput="ccFiltrarUsuarios()" onfocus="ccFiltrarUsuarios()" autocomplete="off">
+                <input type="hidden" id="ccSelectUsuario" value="">
+                <div class="cc-dropdown" id="ccDropUsuarios"></div>
+            </div>
+        </div>
+
+        <!-- Info ultimo cuadre -->
+        <div id="ccUltimoCuadreInfo" style="display:none;">
+            <div style="background:var(--bg-card); padding:10px 15px; border-radius:8px; margin-top:15px;">
+                <span style="color:var(--text-gray); font-size:0.85rem;">
+                    <i class="fas fa-history" style="margin-right:6px;"></i>
+                    <strong>Ultimo cuadre:</strong> <span id="ccUltimoCuadreFecha">-</span>
+                </span>
+            </div>
+        </div>
+
+        <!-- Pendiente info -->
+        <div id="ccPendienteArea" style="display:none;">
+            <div class="cc-pend-box">
+                <div class="cc-pend-left">
+                    <div>
+                        <div class="cc-pend-amount" id="ccTotalPendiente">$0.00</div>
+                        <div class="cc-pend-count" id="ccCantidadPagos">0 pagos</div>
+                        <div id="ccDesglose" style="margin-top:10px; display:flex; gap:6px; flex-wrap:wrap;"></div>
+                    </div>
+                </div>
+                <button class="btn-cuadrar" id="ccBtnCuadrar" onclick="ccAbrirModalBilletes()" disabled>
+                    <i class="fas fa-check-circle"></i> Realizar Cuadre
+                </button>
+            </div>
+        </div>
+
+        <div id="ccSinPendiente" style="display:none;">
+            <div class="cc-pend-empty">
+                <i class="fas fa-check-circle" style="color:var(--cc-green);"></i>
+                No hay pagos pendientes de cuadrar
+                <div id="ccSinPendienteUltimo" style="margin-top:6px; font-size:0.85rem; color:var(--text-gray);"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Resultado de cuadre recien generado -->
+<div id="ccResultadoArea" style="display:none;">
+    <div class="cc-result">
+        <div class="cc-result-header">
+            <div class="cc-result-title"><i class="fas fa-check-circle"></i> Cuadre Generado</div>
+            <div class="cc-result-amount" id="ccResTotal"></div>
+        </div>
+        <div class="cc-result-body">
+            <div style="display:flex; gap:20px; flex-wrap:wrap; margin-bottom:12px; font-size:0.88rem; color:var(--text-gray);">
+                <div><strong>Usuario:</strong> <span id="ccResUsuario"></span></div>
+                <div><strong>Fecha:</strong> <span id="ccResFecha"></span></div>
+                <div><strong>Pagos:</strong> <span id="ccResCantidad"></span></div>
+                <div><strong>Desde:</strong> <span id="ccResDesde"></span></div>
+            </div>
+            <div id="ccResDesglose" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px;"></div>
+            <table class="cc-result-table">
+                <thead><tr><th>Cliente</th><th>Descripcion</th><th>Fecha Pago</th><th>Metodo</th><th style="text-align:right;">Monto</th></tr></thead>
+                <tbody id="ccResDetalles"></tbody>
+            </table>
+        </div>
+        <div class="cc-result-actions">
+            <button class="btn-print" onclick="ccImprimirCuadre(ccUltimoCuadreId)"><i class="fas fa-print"></i> Imprimir</button>
+            <button class="btn-cuadrar" onclick="ccNuevoOtroCuadre()" style="font-size:0.88rem; padding:10px 18px;"><i class="fas fa-plus"></i> Nuevo Cuadre</button>
+        </div>
+    </div>
+</div>
+
+</div><!-- /tabCaja -->
+
+<!-- ================================================================ -->
+<!-- TAB: HISTORIAL                                                   -->
+<!-- ================================================================ -->
+<div id="ccTabHistorial" style="display:none;">
+    <div class="cc-card">
+        <div class="cc-card-header">
+            <div class="cc-card-title"><i class="fas fa-history" style="color:var(--cc-green);"></i> Historial de Cuadres</div>
+        </div>
+        <div class="cc-card-body">
+            <table class="cc-table">
+                <thead><tr><th>#</th><th>Usuario</th><th>Desde</th><th>Hasta</th><th>Pagos</th><th>Total</th><th style="text-align:right;">Accion</th></tr></thead>
+                <tbody id="ccHistorialBody">
+                    <tr><td colspan="7" class="empty-state"><i class="fas fa-spinner fa-spin"></i><br>Cargando...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<style>
+/* ===== MODAL CONTEO BILLETES - ESTILO CRISTAL MEJORADO ===== */
+.cc-modal-overlay {
+    display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+    background:rgba(0,0,0,0.55);
+    z-index:99999; align-items:center; justify-content:center;
+    backdrop-filter:blur(3px);
+    animation:ccModalFadeIn 0.2s ease-out;
+}
+@keyframes ccModalFadeIn {
+    from { opacity:0; } to { opacity:1; }
+}
+@keyframes ccModalSlideUp {
+    from { opacity:0; transform:translateY(30px) scale(0.97); }
+    to { opacity:1; transform:translateY(0) scale(1); }
+}
+.cc-modal-glass {
+    width:540px; max-width:94%; max-height:92vh;
+    background:rgba(255,255,255,0.75);
+    backdrop-filter:blur(20px);
+    -webkit-backdrop-filter:blur(20px);
+    border-radius:18px;
+    border:1px solid rgba(255,255,255,0.5);
+    box-shadow:
+        0 25px 80px rgba(0,0,0,0.25),
+        inset 0 1px 0 rgba(255,255,255,0.6);
+    overflow:hidden;
+    animation:ccModalSlideUp 0.3s ease-out;
+}
+.cc-modal-glass.dark {
+    background:rgba(30,41,59,0.85);
+    backdrop-filter:blur(20px);
+    border:1px solid rgba(255,255,255,0.08);
+    box-shadow:0 25px 80px rgba(0,0,0,0.4);
+}
+
+/* Header */
+.cc-modal-header {
+    padding:20px 26px 16px;
+    display:flex; align-items:flex-start; justify-content:space-between;
+}
+.cc-modal-header-left {
+    display:flex; flex-direction:column; gap:2px;
+}
+.cc-modal-header-title {
+    font-size:1.15rem; font-weight:700; color:var(--text-main);
+    display:flex; align-items:center; gap:10px;
+}
+.cc-modal-header-title i {
+    color:var(--cc-green);
+    font-size:1.2rem;
+    filter:drop-shadow(0 2px 4px rgba(16,185,129,0.3));
+}
+.cc-modal-header-badge {
+    font-size:0.75rem; color:var(--text-gray);
+    display:flex; align-items:center; gap:5px;
+    margin-top:2px;
+}
+
+/* Pendiente pill */
+.cc-modal-pendiente-box {
+    text-align:right;
+    background:rgba(16,185,129,0.08);
+    border:1px solid rgba(16,185,129,0.15);
+    border-radius:10px;
+    padding:6px 14px;
+}
+.cc-modal-pendiente-label {
+    font-size:0.7rem; font-weight:600; text-transform:uppercase;
+    letter-spacing:0.4px; color:var(--text-gray);
+}
+.cc-modal-pendiente-monto {
+    font-size:1.15rem; font-weight:800; color:var(--cc-green-dark);
+}
+
+/* Body */
+.cc-modal-body {
+    padding:0 26px 8px;
+    overflow-y:auto;
+    max-height:calc(92vh - 250px);
+}
+.cc-modal-body::-webkit-scrollbar {
+    width:5px;
+}
+.cc-modal-body::-webkit-scrollbar-track {
+    background:transparent;
+}
+.cc-modal-body::-webkit-scrollbar-thumb {
+    background:rgba(0,0,0,0.12);
+    border-radius:3px;
+}
+
+/* Divider con Monedas label */
+.cc-divider {
+    display:flex; align-items:center; gap:12px;
+    margin:14px 0 10px;
+    padding:0 2px;
+}
+.cc-divider::before,
+.cc-divider::after {
+    content:''; flex:1; height:1px;
+    background:linear-gradient(to right, transparent, var(--border-color), transparent);
+}
+.cc-divider-label {
+    font-size:0.72rem; font-weight:700; text-transform:uppercase;
+    letter-spacing:1px; color:var(--text-gray);
+    display:flex; align-items:center; gap:5px;
+}
+.cc-divider-label i {
+    font-size:0.7rem;
+}
+
+/* Tabla de billetes */
+.cc-billetes-table {
+    width:100%; border-collapse:separate; border-spacing:0 3px;
+    font-size:0.92rem;
+}
+.cc-billetes-table th {
+    text-align:left; padding:4px 6px 6px 0;
+    font-weight:600; color:var(--text-gray); font-size:0.72rem; text-transform:uppercase;
+    letter-spacing:0.5px;
+    border-bottom:1px solid var(--border-color);
+}
+.cc-billetes-table th:last-child { text-align:right; }
+.cc-billetes-table td {
+    padding:4px 0;
+    vertical-align:middle;
+}
+.cc-billete-fila {
+    transition:background 0.15s;
+    border-radius:8px;
+}
+.cc-billete-fila:hover {
+    background:rgba(16,185,129,0.04);
+}
+.cc-billete-nombre {
+    font-weight:600; color:var(--text-main);
+    padding-left:6px;
+}
+.cc-billete-input-wrapper {
+    display:flex; align-items:center; justify-content:center;
+}
+.cc-billete-input {
+    width:72px; text-align:center;
+    padding:6px 8px;
+    border:1.5px solid var(--border-color);
+    border-radius:8px;
+    font-size:0.95rem;
+    font-weight:600;
+    background:rgba(255,255,255,0.5);
+    backdrop-filter:blur(4px);
+    transition:all 0.2s;
+    outline:none;
+}
+.cc-billete-input:focus {
+    border-color:var(--cc-green);
+    box-shadow:0 0 0 3px rgba(16,185,129,0.15);
+    background:white;
+}
+.cc-billete-input:hover {
+    border-color:#94a3b8;
+}
+.cc-billete-subtotal {
+    text-align:right; padding-right:6px;
+    font-weight:700; font-family:'Courier New',monospace;
+    color:var(--text-main);
+    font-size:0.95rem;
+}
+
+/* Card resumen */
+.cc-resumen-card {
+    margin-top:16px; margin-bottom:8px;
+    padding:16px 20px;
+    background:linear-gradient(135deg, rgba(16,185,129,0.06), rgba(5,150,105,0.1));
+    border:1.5px solid rgba(16,185,129,0.2);
+    border-radius:12px;
+    backdrop-filter:blur(4px);
+}
+.cc-resumen-row {
+    display:flex; justify-content:space-between; align-items:center;
+    flex-wrap:wrap; gap:10px;
+}
+.cc-resumen-left {
+    display:flex; flex-direction:column; gap:2px;
+}
+.cc-resumen-label {
+    font-size:0.75rem; font-weight:600; text-transform:uppercase;
+    letter-spacing:0.5px; color:var(--text-gray);
+}
+.cc-resumen-total-contado {
+    font-weight:700; font-size:1.3rem; color:var(--cc-green-dark);
+}
+.cc-resumen-right {
+    text-align:right;
+}
+.cc-resumen-diff {
+    font-weight:700; font-size:0.9rem;
+    padding:4px 12px; border-radius:6px;
+    display:inline-block;
+}
+.cc-resumen-diff.sobrante {
+    background:rgba(217,119,6,0.1); color:#d97706;
+    border:1px solid rgba(217,119,6,0.2);
+}
+.cc-resumen-diff.faltante {
+    background:rgba(220,38,38,0.1); color:#dc2626;
+    border:1px solid rgba(220,38,38,0.2);
+}
+.cc-resumen-diff.exacto {
+    background:rgba(5,150,105,0.1); color:#059669;
+    border:1px solid rgba(5,150,105,0.2);
+}
+
+/* Footer */
+.cc-modal-footer {
+    padding:14px 26px 18px;
+    border-top:1px solid var(--border-color);
+    display:flex; gap:10px; justify-content:flex-end;
+    background:rgba(0,0,0,0.02);
+}
+.cc-modal-footer .btn-cancelar {
+    padding:10px 22px;
+    border:1.5px solid var(--border-color);
+    border-radius:10px;
+    background:transparent;
+    color:var(--text-gray); font-weight:600;
+    cursor:pointer; font-size:0.88rem;
+    transition:all 0.2s;
+}
+.cc-modal-footer .btn-cancelar:hover {
+    background:rgba(0,0,0,0.04);
+    color:var(--text-main);
+}
+.cc-modal-footer .btn-confirmar {
+    background:linear-gradient(135deg,var(--cc-green),var(--cc-green-dark));
+    color:white; border:none;
+    padding:10px 22px; border-radius:10px;
+    font-weight:700; cursor:pointer; font-size:0.88rem;
+    display:flex; align-items:center; gap:7px;
+    transition:all 0.25s;
+    box-shadow:0 3px 10px rgba(16,185,129,0.25);
+}
+.cc-modal-footer .btn-confirmar:hover {
+    transform:translateY(-1px);
+    box-shadow:0 5px 16px rgba(16,185,129,0.35);
+}
+</style>
+
+<!-- ================================================================ -->
+<!-- MODAL: CONTEO DE BILLETES (ESTILO CRISTAL MEJORADO)              -->
+<!-- ================================================================ -->
+<div id="ccModalBilletes" class="cc-modal-overlay" onclick="if(event.target===this)ccCerrarModalBilletes()">
+    <div class="cc-modal-glass">
+        <!-- Header -->
+        <div class="cc-modal-header">
+            <div class="cc-modal-header-left">
+                <div class="cc-modal-header-title">
+                    <i class="fas fa-money-bill-wave"></i> Conteo de Billetes
+                </div>
+                <div class="cc-modal-header-badge">
+                    <i class="fas fa-user"></i> <span id="ccModalUsuarioLabel">-</span>
+                </div>
+            </div>
+            <div class="cc-modal-pendiente-box">
+                <div class="cc-modal-pendiente-label">Pendiente segun sistema</div>
+                <div class="cc-modal-pendiente-monto" id="ccModalTotalPendiente">$0.00</div>
+            </div>
+        </div>
+
+        <!-- Body -->
+        <div class="cc-modal-body">
+            <!-- Billetes -->
+            <div style="margin-bottom:4px;"><span style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-gray);display:flex;align-items:center;gap:5px;"><i class="fas fa-coins" style="font-size:0.65rem;"></i> BILLETES</span></div>
+            <table class="cc-billetes-table">
+                <thead>
+                    <tr>
+                        <th style="width:80px;">Denominaci&oacute;n</th>
+                        <th style="text-align:center;">Cantidad</th>
+                        <th style="text-align:right;padding-right:2px;">Sub-Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="cc-billete-fila"><td><span class="cc-billete-nombre">RD$2,000</span></td>
+                        <td><div class="cc-billete-input-wrapper"><input type="number" id="billete2000" class="cc-billete-input" min="0" oninput="ccCalcularBilletes()" onfocus="this.select()"></div></td>
+                        <td><span class="cc-billete-subtotal" id="billete2000_sub">0</span></td></tr>
+                    <tr class="cc-billete-fila"><td><span class="cc-billete-nombre">RD$1,000</span></td>
+                        <td><div class="cc-billete-input-wrapper"><input type="number" id="billete1000" class="cc-billete-input" min="0" oninput="ccCalcularBilletes()" onfocus="this.select()"></div></td>
+                        <td><span class="cc-billete-subtotal" id="billete1000_sub">0</span></td></tr>
+                    <tr class="cc-billete-fila"><td><span class="cc-billete-nombre">RD$500</span></td>
+                        <td><div class="cc-billete-input-wrapper"><input type="number" id="billete500" class="cc-billete-input" min="0" oninput="ccCalcularBilletes()" onfocus="this.select()"></div></td>
+                        <td><span class="cc-billete-subtotal" id="billete500_sub">0</span></td></tr>
+                    <tr class="cc-billete-fila"><td><span class="cc-billete-nombre">RD$200</span></td>
+                        <td><div class="cc-billete-input-wrapper"><input type="number" id="billete200" class="cc-billete-input" min="0" oninput="ccCalcularBilletes()" onfocus="this.select()"></div></td>
+                        <td><span class="cc-billete-subtotal" id="billete200_sub">0</span></td></tr>
+                    <tr class="cc-billete-fila"><td><span class="cc-billete-nombre">RD$100</span></td>
+                        <td><div class="cc-billete-input-wrapper"><input type="number" id="billete100" class="cc-billete-input" min="0" oninput="ccCalcularBilletes()" onfocus="this.select()"></div></td>
+                        <td><span class="cc-billete-subtotal" id="billete100_sub">0</span></td></tr>
+                    <tr class="cc-billete-fila"><td><span class="cc-billete-nombre">RD$50</span></td>
+                        <td><div class="cc-billete-input-wrapper"><input type="number" id="billete50" class="cc-billete-input" min="0" oninput="ccCalcularBilletes()" onfocus="this.select()"></div></td>
+                        <td><span class="cc-billete-subtotal" id="billete50_sub">0</span></td></tr>
+                    <tr class="cc-billete-fila"><td><span class="cc-billete-nombre">RD$25</span></td>
+                        <td><div class="cc-billete-input-wrapper"><input type="number" id="billete25" class="cc-billete-input" min="0" oninput="ccCalcularBilletes()" onfocus="this.select()"></div></td>
+                        <td><span class="cc-billete-subtotal" id="billete25_sub">0</span></td></tr>
+                    <tr class="cc-billete-fila"><td><span class="cc-billete-nombre">RD$10</span></td>
+                        <td><div class="cc-billete-input-wrapper"><input type="number" id="billete10" class="cc-billete-input" min="0" oninput="ccCalcularBilletes()" onfocus="this.select()"></div></td>
+                        <td><span class="cc-billete-subtotal" id="billete10_sub">0</span></td></tr>
+                    <tr class="cc-billete-fila"><td><span class="cc-billete-nombre">RD$5</span></td>
+                        <td><div class="cc-billete-input-wrapper"><input type="number" id="billete5" class="cc-billete-input" min="0" oninput="ccCalcularBilletes()" onfocus="this.select()"></div></td>
+                        <td><span class="cc-billete-subtotal" id="billete5_sub">0</span></td></tr>
+                </tbody>
+            </table>
+
+            <!-- Card resumen -->
+            <div class="cc-resumen-card">
+                <div class="cc-resumen-row">
+                    <div class="cc-resumen-left">
+                        <span class="cc-resumen-label"><i class="fas fa-calculator"></i> Total contado</span>
+                        <span class="cc-resumen-total-contado" id="ccModalTotalSinGastos">$0.00</span>
+                    </div>
+                    <div class="cc-resumen-right">
+                        <div style="font-size:0.7rem;font-weight:600;text-transform:uppercase;letter-spacing:0.4px;color:var(--text-gray);margin-bottom:3px;">Cuadre del d&iacute;a</div>
+                        <div id="ccModalDiferencia" class="cc-resumen-diff">Sin datos</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="cc-modal-footer">
+            <button onclick="ccCerrarModalBilletes()" class="btn-cancelar"><i class="fas fa-times"></i> Cancelar</button>
+            <button onclick="ccRealizarCuadre()" class="btn-confirmar"><i class="fas fa-check-circle"></i> Confirmar Cuadre</button>
+        </div>
+    </div>
+</div>
+
+<!-- Print area (hidden) -->
+<div id="ccPrintArea" style="display:none;">
+    <div class="print-content" id="ccPrintContent"></div>
+</div>
+
+<script>
+let ccUsuariosList = [];
+let ccPendienteData = null;
+let ccUltimoCuadreId = null;
+
+// ====== TABS ======
+function ccSwitchTab(tab) {
+    document.querySelectorAll('.cc-tab').forEach(function(t) { t.classList.remove('active'); });
+    document.querySelector('.cc-tab[data-tab="'+tab+'"]').classList.add('active');
+    document.getElementById('ccTabCaja').style.display = tab === 'caja' ? 'block' : 'none';
+    document.getElementById('ccTabHistorial').style.display = tab === 'historial' ? 'block' : 'none';
+    if (tab === 'historial') ccCargarHistorial();
+}
+
+// ====== USUARIOS DROPDOWN ======
+function ccFiltrarUsuarios() {
+    var inp = document.getElementById('ccBuscarUsuario');
+    var drop = document.getElementById('ccDropUsuarios');
+    if (!inp || !drop) return;
+    var q = inp.value.toLowerCase().trim();
+    var rect = inp.getBoundingClientRect();
+    drop.style.top = (rect.bottom + 4) + 'px';
+    drop.style.left = rect.left + 'px';
+    drop.style.width = Math.max(rect.width, 220) + 'px';
+    
+    var filtered = ccUsuariosList.filter(function(u) {
+        return !q || u.label.toLowerCase().indexOf(q) !== -1;
+    });
+    
+    if (!filtered.length) {
+        drop.innerHTML = '<div class="cc-dropdown-empty">Sin resultados</div>';
+    } else {
+        drop.innerHTML = filtered.map(function(u) {
+            return '<div class="cc-dropdown-item" onmousedown="ccSeleccionarUsuario(\'' + u.value.replace(/'/g, "\\'") + '\',\'' + u.label.replace(/'/g, "\\'") + '\')">' + u.label + '</div>';
+        }).join('');
+    }
+    drop.style.display = 'block';
+}
+
+function ccSeleccionarUsuario(value, label) {
+    document.getElementById('ccBuscarUsuario').value = label;
+    document.getElementById('ccSelectUsuario').value = value;
+    document.getElementById('ccDropUsuarios').style.display = 'none';
+    ccCargarPendiente(value);
+}
+
+document.addEventListener('click', function(e) {
+    var inp = document.getElementById('ccBuscarUsuario');
+    var drop = document.getElementById('ccDropUsuarios');
+    if (inp && drop && !inp.contains(e.target) && !drop.contains(e.target)) {
+        drop.style.display = 'none';
+    }
+});
+
+window.addEventListener('scroll', function() {
+    var drop = document.getElementById('ccDropUsuarios');
+    if (!drop || drop.style.display === 'none') return;
+    var inp = document.getElementById('ccBuscarUsuario');
+    if (!inp) return;
+    var rect = inp.getBoundingClientRect();
+    drop.style.top = (rect.bottom + 4) + 'px';
+    drop.style.left = rect.left + 'px';
+}, true);
+
+// ====== CARGAR PENDIENTE ======
+function ccCargarPendiente(usuario) {
+    if (!usuario) {
+        document.getElementById('ccPendienteArea').style.display = 'none';
+        document.getElementById('ccSinPendiente').style.display = 'none';
+        document.getElementById('ccBtnCuadrar').disabled = true;
+        return;
+    }
+    
+    fetch('/modulo?pagina=CuadreCaja&ajax=get_pendientes_cuadre&usuario=' + encodeURIComponent(usuario))
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+        if (d.status !== 'success') { return; }
+        
+        // Ultimo cuadre info
+        var ui = document.getElementById('ccUltimoCuadreInfo');
+        if (d.data.ultimo_cuadre) {
+            document.getElementById('ccUltimoCuadreFecha').textContent = new Date(d.data.ultimo_cuadre).toLocaleString('es-DO', {day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'});
+            ui.style.display = 'block';
+        } else {
+            ui.style.display = 'none';
+        }
+        
+        if (d.data.pagos.length === 0) {
+            document.getElementById('ccPendienteArea').style.display = 'none';
+            document.getElementById('ccSinPendiente').style.display = 'block';
+            var spu = document.getElementById('ccSinPendienteUltimo');
+            spu.innerHTML = d.data.ultimo_cuadre
+                ? '<i class="fas fa-history"></i> Ultimo cuadre: ' + new Date(d.data.ultimo_cuadre).toLocaleString('es-DO', {day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'})
+                : '<i class="fas fa-history"></i> Ultimo cuadre: Nunca';
+            document.getElementById('ccBtnCuadrar').disabled = true;
+        } else {
+            document.getElementById('ccPendienteArea').style.display = 'block';
+            document.getElementById('ccSinPendiente').style.display = 'none';
+            document.getElementById('ccTotalPendiente').textContent = '$' + d.data.total.toFixed(2);
+            document.getElementById('ccCantidadPagos').textContent = d.data.cantidad + ' pago(s)';
+            document.getElementById('ccBtnCuadrar').disabled = false;
+            
+            // Desglose por metodo
+            var colores = {'EFECTIVO':'#15803d','VERIFONE':'#1d4ed8','TARJETA':'#7c3aed','TRANSFERENCIA':'#d97706'};
+            var desHtml = Object.keys(d.data.desglose).map(function(met) {
+                var m = d.data.desglose[met];
+                var col = colores[met] || 'var(--text-gray)';
+                return '<div class="metodo-badge">'
+                    + '<span class="met-icon" style="background:'+col+';"></span>'
+                    + '<span style="font-weight:600;color:'+col+';">'+met+':</span>'
+                    + '<span style="font-weight:700;color:var(--text-main);">$'+m.total.toFixed(2)+'</span>'
+                    + '<span style="color:var(--text-gray);font-size:0.75rem;">('+m.cantidad+')</span>'
+                    + '</div>';
+            }).join('');
+            document.getElementById('ccDesglose').innerHTML = desHtml;
+        }
+    })
+    .catch(function() {
+        // Silently fail
+    });
+}
+
+// ====== MODAL BILLETES ======
+function ccAbrirModalBilletes() {
+    var usuario = document.getElementById('ccSelectUsuario').value;
+    if (!usuario) { return; }
+    
+    // Mostrar nombre de usuario en el badge
+    document.getElementById('ccModalUsuarioLabel').textContent = document.getElementById('ccBuscarUsuario').value || usuario;
+    
+    var totalPendiente = parseFloat(document.getElementById('ccTotalPendiente').textContent.replace(/[^0-9.-]/g, '')) || 0;
+    document.getElementById('ccModalTotalPendiente').textContent = '$' + totalPendiente.toFixed(2);
+    document.getElementById('ccModalTotalSinGastos').textContent = '$' + totalPendiente.toFixed(2);
+    
+    // Resetear cantidades
+    var inputs = document.querySelectorAll('.cc-billete-input');
+    inputs.forEach(function(inp) { inp.value = ''; });
+    ccCalcularBilletes();
+    
+    document.getElementById('ccModalBilletes').style.display = 'flex';
+    document.getElementById('ccModalBilletes').querySelector('.cc-modal-body').scrollTop = 0;
+}
+
+function ccCerrarModalBilletes() {
+    document.getElementById('ccModalBilletes').style.display = 'none';
+}
+
+function ccCalcularBilletes() {
+    var denominaciones = [
+        { id: 'billete2000', val: 2000 },
+        { id: 'billete1000', val: 1000 },
+        { id: 'billete500', val: 500 },
+        { id: 'billete200', val: 200 },
+        { id: 'billete100', val: 100 },
+        { id: 'billete50', val: 50 },
+        { id: 'billete25', val: 25 },
+        { id: 'billete10', val: 10 },
+        { id: 'billete5', val: 5 },
+    ];
+    var total = 0;
+    denominaciones.forEach(function(d) {
+        var input = document.getElementById(d.id);
+        var cant = parseInt(input.value) || 0;
+        var sub = cant * d.val;
+        document.getElementById(d.id + '_sub').textContent = sub.toLocaleString('es-DO');
+        total += sub;
+    });
+    document.getElementById('ccModalTotalSinGastos').textContent = '$' + total.toFixed(2);
+    var pendiente = parseFloat(document.getElementById('ccModalTotalPendiente').textContent.replace(/[^0-9.-]/g, '')) || 0;
+    var diff = total - pendiente;
+    var diffEl = document.getElementById('ccModalDiferencia');
+    // Quitar clases previas
+    diffEl.classList.remove('sobrante','faltante','exacto');
+    if (diff === 0) {
+        diffEl.textContent = ' ✓ CUADRE EXACTO';
+        diffEl.classList.add('exacto');
+    } else if (diff > 0) {
+        diffEl.textContent = ' ⬆ SOBRANTE: $' + diff.toFixed(2);
+        diffEl.classList.add('sobrante');
+    } else {
+        diffEl.textContent = ' ⬇ FALTANTE: $' + Math.abs(diff).toFixed(2);
+        diffEl.classList.add('faltante');
+    }
+}
+
+// ====== REALIZAR CUADRE (desde el modal) ======
+function ccRealizarCuadre() {
+    var usuario = document.getElementById('ccSelectUsuario').value;
+    if (!usuario) { return; }
+    
+    // Recolectar conteo de billetes
+    var denominaciones = [2000, 1000, 500, 200, 100, 50, 25, 10, 5];
+    var billetes = {};
+    var totalConteo = 0;
+    denominaciones.forEach(function(d) {
+        var input = document.getElementById('billete' + d);
+        var cant = parseInt(input.value) || 0;
+        if (cant > 0) {
+            billetes[d] = cant;
+            totalConteo += cant * d;
+        }
+    });
+    
+    var fd = new FormData();
+    fd.append('usuario', usuario);
+    fd.append('conteo_billetes', JSON.stringify(billetes));
+    fd.append('total_conteo', totalConteo);
+    
+    ccCerrarModalBilletes();
+    
+    var btn = document.getElementById('ccBtnCuadrar');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
+    
+    fetch('/modulo?pagina=CuadreCaja&ajax=crear_cuadre_usuario', { method: 'POST', body: fd })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-check-circle"></i> Realizar Cuadre';
+        
+        if (d.status === 'success') {
+            ccUltimoCuadreId = d.cuadre_id;
+            ccMostrarResultado(d);
+            setTimeout(function() { ccImprimirCuadre(d.cuadre_id); }, 800);
+        } else {
+            alert('Error: ' + (d.msg || 'desconocido'));
+        }
+    })
+    .catch(function() {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-check-circle"></i> Realizar Cuadre';
+        alert('Error de conexion');
+    });
+}
+
+function ccMostrarResultado(d) {
+    // Ocultar formulario
+    document.getElementById('cardNuevoCuadre').style.display = 'none';
+    
+    // Llenar resultado
+    document.getElementById('ccResTotal').textContent = '$' + (d.total || 0).toFixed(2);
+    document.getElementById('ccResUsuario').textContent = document.getElementById('ccSelectUsuario').value;
+    document.getElementById('ccResFecha').textContent = new Date().toLocaleString('es-DO', {day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'});
+    document.getElementById('ccResCantidad').textContent = (d.cantidad || d.detalles.length) + ' pago(s)';
+    document.getElementById('ccResDesde').textContent = d.desde ? new Date(d.desde).toLocaleString('es-DO', {day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'}) : 'Inicio';
+    
+    // Desglose por metodo
+    var colores = {'EFECTIVO':'#15803d','VERIFONE':'#1d4ed8','TARJETA':'#7c3aed','TRANSFERENCIA':'#d97706'};
+    var desHtml = '';
+    if (d.metodos) {
+        desHtml = Object.keys(d.metodos).map(function(met) {
+            var m = d.metodos[met];
+            var col = colores[met] || 'var(--text-gray)';
+            return '<div class="metodo-badge">'
+                + '<span class="met-icon" style="background:'+col+';"></span>'
+                + '<span style="font-weight:600;color:'+col+';">'+met+':</span>'
+                + '<span style="font-weight:700;color:var(--text-main);">$'+m.total.toFixed(2)+'</span>'
+                + '</div>';
+        }).join('');
+    }
+    document.getElementById('ccResDesglose').innerHTML = desHtml;
+    
+    // Detalles
+    var tbody = document.getElementById('ccResDetalles');
+    tbody.innerHTML = '';
+    (d.detalles || []).forEach(function(p) {
+        var fp = p.fecha ? new Date(p.fecha).toLocaleDateString('es-DO', {day:'2-digit', month:'short', year:'numeric'}) : '-';
+        var desc = 'Pago de servicio';
+        var metCol = colores[p.metodo] || 'var(--text-gray)';
+        var metBadge = '<span style="font-size:0.72rem;font-weight:600;color:'+metCol+';background:var(--bg-card);border:1px solid var(--border-color);border-radius:5px;padding:2px 7px;white-space:nowrap;"><i class="fas fa-credit-card" style="font-size:0.6rem;"></i> '+(p.metodo||'EFECTIVO')+'</span>';
+        tbody.innerHTML += '<tr><td>'+(p.cliente||'N/A')+'</td><td>'+desc+'</td><td>'+fp+'</td><td>'+metBadge+'</td><td class="monto-col">$'+p.monto.toFixed(2)+'</td></tr>';
+    });
+    
+    document.getElementById('ccResultadoArea').style.display = 'block';
+    document.getElementById('ccResultadoArea').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function ccNuevoOtroCuadre() {
+    document.getElementById('ccResultadoArea').style.display = 'none';
+    document.getElementById('cardNuevoCuadre').style.display = 'block';
+    document.getElementById('ccBtnCuadrar').disabled = true;
+    document.getElementById('ccBtnCuadrar').innerHTML = '<i class="fas fa-check-circle"></i> Realizar Cuadre';
+    ccPendienteData = null;
+    ccUltimoCuadreId = null;
+    var usuario = document.getElementById('ccSelectUsuario').value;
+    if (usuario) ccCargarPendiente(usuario);
+}
+
+// ====== IMPRIMIR ======
+function ccImprimirCuadre(cuadreId) {
+    if (!cuadreId) return;
+    fetch('/modulo?pagina=CuadreCaja&ajax=get_cuadre_detalle&cuadre_id=' + cuadreId)
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+        if (d.status !== 'success') return;
+        
+        var c = d.cuadre;
+        var det = d.detalles;
+        var tot = '$' + (c.total_pagos || 0).toFixed(2);
+        
+        var fechaCorta = new Date(c.fecha || c.fecha_hasta || new Date()).toLocaleDateString('es-DO', {day:'2-digit', month:'2-digit', year:'numeric'});
+        var titulo = 'Cuadre ' + (c.usuario_nombre || 'Caja') + ' - ' + fechaCorta;
+        
+        var filas = '';
+        var totalesMet = {};
+        (det || []).forEach(function(p) {
+            var fp = p.created_at ? new Date(p.created_at).toLocaleDateString('es-DO') : '-';
+            filas += '<tr><td>'+(p.cliente_nombre||'N/A')+'</td><td>'+fp+'</td><td style="font-weight:600;">'+(p.metodo||'EFECTIVO')+'</td><td style="text-align:right;font-weight:700;">$'+parseFloat(p.monto||0).toFixed(2)+'</td></tr>';
+            var met = p.metodo || 'EFECTIVO';
+            totalesMet[met] = (totalesMet[met] || 0) + parseFloat(p.monto || 0);
+        });
+        
+        var desgloseHtml = Object.keys(totalesMet).map(function(m) {
+            return '<div style="display:flex;align-items:center;gap:8px;"><span style="font-weight:700;color:#334155;background:#e2e8f0;padding:3px 10px;border-radius:4px;">'+m+'</span><span style="font-weight:700;color:#1e293b;">$'+totalesMet[m].toFixed(2)+'</span></div>';
+        }).join('');
+        
+        var html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>'+titulo+'</title>'
+            +'<style>'
+            +'*{margin:0;padding:0;box-sizing:border-box}'
+            +'body{font-family:Arial,Helvetica,sans-serif;font-size:15px;color:#1e293b}'
+            +'.page{width:100%;padding:25px 30px}'
+            +'h1{text-align:center;font-size:20px;margin-bottom:4px}'
+            +'.subtitle{text-align:center;color:#666;font-size:13px;margin-bottom:6px}'
+            +'.meta{display:flex;gap:20px;flex-wrap:wrap;justify-content:center;font-size:12px;color:#475569;margin-bottom:18px}'
+            +'th{background:#e2e8f0;padding:10px 12px;font-size:14px;border:1px solid #cbd5e1;font-weight:700}'
+            +'td{padding:10px 12px;border:1px solid #e2e8f0;font-size:14px}'
+            +'tr:nth-child(even){background:#f8fafc}'
+            +'.desglose{display:flex;gap:12px;flex-wrap:wrap;margin:14px 0 4px;padding:12px 14px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;}'
+            +'.total-bar{text-align:right;font-weight:700;font-size:17px;padding:14px 12px;border-top:2px solid #334155;margin-top:6px}'
+            +'.footer{text-align:center;font-size:11px;color:#94a3b8;margin-top:10px;padding-top:8px;border-top:1px solid #e2e8f0}'
+            +'@media print{@page{margin:12mm}body{padding:0}.page{padding:0}.no-print{display:none}}'
+            +'@media screen{body{background:#f1f5f9;display:flex;flex-direction:column;align-items:center;padding:20px}.page{background:#fff;max-width:960px;width:100%;box-shadow:0 2px 10px rgba(0,0,0,.1);border-radius:4px;margin-bottom:20px}.no-print{text-align:center;margin-bottom:15px}}'
+            +'</style></head><body>'
+            +'<div class="no-print"><button onclick="window.print()" style="padding:10px 30px;font-size:14px;font-weight:700;background:#2563eb;color:#fff;border:none;border-radius:8px;cursor:pointer;">Imprimir / PDF</button></div>'
+            +'<div class="page"><h1>Cuadre de Caja</h1><div class="subtitle">'+(c.usuario_nombre||'Caja')+'</div>'
+            +'<div class="meta"><span><strong>Pagos:</strong> '+(det||[]).length+'</span></div>'
+            +'<table><thead><tr><th>Cliente</th><th>Fecha</th><th>Metodo</th><th style="text-align:right;">Monto</th></tr></thead>'
+            +'<tbody>'+filas+'</tbody></table>'
+            +'<div class="desglose">'+desgloseHtml+'</div>'
+            +'<div class="total-bar">TOTAL: '+tot+'</div>'
+            +'<div class="footer">Cuadre #'+c.id+' &mdash; '+titulo+'</div></div>'
+            +'<script>window.onload=function(){window.focus();window.print();};<\/script>'
+            +'</body></html>';
+        
+        var w = window.open('', '_blank', 'width=800,height=600');
+        w.document.write(html);
+        w.document.close();
+    });
+}
+
+// ====== HISTORIAL ======
+function ccCargarHistorial() {
+    var tb = document.getElementById('ccHistorialBody');
+    tb.innerHTML = '<tr><td colspan="7" class="empty-state"><i class="fas fa-spinner fa-spin"></i><br>Cargando...</td></tr>';
+    
+    fetch('/modulo?pagina=CuadreCaja&ajax=history&limit=100')
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+        if (d.status !== 'success') {
+            tb.innerHTML = '<tr><td colspan="7" class="empty-state"><i class="fas fa-exclamation-triangle" style="color:#ef4444;"></i><br>Error al cargar</td></tr>';
+            return;
+        }
+        if (!d.data || d.data.length === 0) {
+            tb.innerHTML = '<tr><td colspan="7" class="empty-state"><i class="fas fa-cash-register"></i><br>No hay cuadres realizados</td></tr>';
+            return;
+        }
+        var h = '';
+        d.data.forEach(function(c) {
+            var desde = c.fecha_desde ? new Date(c.fecha_desde).toLocaleString('es-DO', {day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'}) : '-';
+            var hasta = c.fecha_hasta ? new Date(c.fecha_hasta).toLocaleString('es-DO', {day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'}) : (c.fecha || '-');
+            h += '<tr>';
+            h += '<td style="font-weight:700;">#' + c.id + '</td>';
+            h += '<td>' + (c.usuario_nombre || '-') + '</td>';
+            h += '<td style="font-size:0.82rem;color:var(--text-gray);">' + desde + '</td>';
+            h += '<td style="font-size:0.82rem;color:var(--text-gray);">' + hasta + '</td>';
+            h += '<td>' + (c.pagos_count || 0) + '</td>';
+            h += '<td class="monto">$' + (c.total_pagos || 0).toFixed(2) + '</td>';
+            h += '<td style="text-align:right;"><button class="btn-print" onclick="ccImprimirCuadre(' + c.id + ')" style="padding:4px 10px;font-size:0.78rem;"><i class="fas fa-print"></i></button></td>';
+            h += '</tr>';
+        });
+        tb.innerHTML = h;
+    })
+    .catch(function() {
+        tb.innerHTML = '<tr><td colspan="7" class="empty-state"><i class="fas fa-exclamation-triangle" style="color:#ef4444;"></i><br>Error de conexion</td></tr>';
+    });
+}
+
+// ====== INIT ======
+(function() {
+    // Cargar usuarios
+    fetch('/modulo?pagina=CuadreCaja&ajax=list_usuarios_cuadre')
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+        if (d.status === 'success') ccUsuariosList = d.data || [];
+    });
+})();
+</script>

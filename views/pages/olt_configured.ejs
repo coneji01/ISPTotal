@@ -1,0 +1,131 @@
+<!DOCTYPE html><html lang="en" class="smartolt-night"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ONUs Configuradas - JOEL WIFI</title>
+<link href="/public/smartolt-files/bootstrap-custom.css" rel="stylesheet">
+<link href="/public/smartolt-files/styles.css" rel="stylesheet">
+<link href="/public/smartolt-files/toast.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+<link href="/public/smartolt-files/inter-fonts.css" rel="stylesheet">
+<link href="/public/smartolt-files/dashboard-smartolt-night.css" rel="stylesheet">
+<script src="/public/smartolt-files/jquery.min.js"></script>
+<style>
+body { font-family: 'Inter', -apple-system, sans-serif; background: #1a1d23; color: #e0e0e0; }
+.table th { font-weight: 600; background: #2a2d35; border-color: #3a3d45; color: #ccc; }
+.table td { border-color: #3a3d45; vertical-align: middle; }
+.table-hover tbody tr:hover { background: #2a2d35; }
+.badge-working { background: #28a745; color: #fff; display:inline-block; padding:2px 8px; border-radius:12px; font-size:11px; }
+.badge-offline { background: #dc3545; color: #fff; display:inline-block; padding:2px 8px; border-radius:12px; font-size:11px; }
+.status-bar { display:flex; gap:15px; margin-bottom:20px; flex-wrap:wrap; }
+.status-item { background:#2a2d35; border-radius:8px; padding:12px 20px; flex:1; min-width:100px; text-align:center; }
+.status-item .num { font-size:24px; font-weight:bold; }
+.status-item .label { font-size:12px; color:#999; margin-top:2px; }
+.navbar { background:#1a1d23; border-color:#2a2d35; }
+.navbar a { color:#999; }
+.navbar .active a { color:#fff !important; }
+.spinner { text-align:center; padding:40px; }
+.spinner i { font-size:32px; color:#666; }
+#search-input { background:#2a2d35; border:1px solid #3a3d45; color:#e0e0e0; padding:6px 12px; border-radius:4px; width:200px; }
+</style>
+</head>
+<body class="smartolt-site">
+<div class="navbar navbar-default navbar-fixed-top">
+  <div class="container">
+    <div class="navbar-header">
+      <a class="navbar-brand" href="/modulo?pagina=GPONManager" style="color:#e0e0e0;">GPON Manager</a>
+    </div>
+    <ul class="nav navbar-nav">
+      <li><a href="/modulo?pagina=GPONManager">Dashboard</a></li>
+      <li class="active"><a href="/modulo?pagina=olt_configured">Configuradas</a></li>
+      <li><a href="/modulo?pagina=olt_unconfigured">No configuradas</a></li>
+    </ul>
+  </div>
+</div>
+
+<div class="container-fluid content-wrap" style="margin-top:60px;padding:20px;">
+  <h2 style="margin-top:0;"><i class="fa fa-check-circle text-success"></i> ONUs Configuradas</h2>
+  <p class="text-muted">Datos obtenidos directamente de la OLT ZTE C300. <span id="last-update"></span></p>
+  
+  <div class="status-bar" id="status-bar"></div>
+  
+  <div style="margin-bottom:15px;">
+    <input type="text" id="search-input" placeholder="Buscar por SN o Puerto..." onkeyup="filterTable()">
+    <span class="text-muted" style="margin-left:10px;" id="count-label"></span>
+  </div>
+  
+  <div id="configured-content">
+    <div class="spinner"><i class="fa fa-spinner fa-spin"></i><p>Cargando ONUs configuradas...</p></div>
+  </div>
+</div>
+
+<script>
+var allOnus = [];
+
+function loadConfigured() {
+  var now = new Date();
+  document.getElementById('last-update').textContent = 'Actualizado: ' + now.toLocaleTimeString();
+  
+  fetch('/api/olt/dashboard', { credentials: 'same-origin' })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      var data = d.data || {};
+      allOnus = data.onus || [];
+      renderTable(allOnus);
+      
+      // Status bar
+      var total = data.total || 0;
+      var online = data.online || 0;
+      var offline = data.offline || 0;
+      document.getElementById('status-bar').innerHTML = 
+        '<div class="status-item"><div class="num text-success">' + online + '</div><div class="label">Online</div></div>' +
+        '<div class="status-item"><div class="num text-muted">' + total + '</div><div class="label">Total</div></div>' +
+        '<div class="status-item"><div class="num text-danger">' + offline + '</div><div class="label">Offline</div></div>' +
+        '<div class="status-item"><div class="num text-warning">' + (data.pwrfail || 0) + '</div><div class="label">PwrFail</div></div>' +
+        '<div class="status-item"><div class="num text-info">' + (data.los || 0) + '</div><div class="label">LoS</div></div>';
+    })
+    .catch(function(e) {
+      document.getElementById('configured-content').innerHTML = '<div class="alert alert-danger"><i class="fa fa-exclamation-circle"></i> Error: ' + e.message + '</div>';
+    });
+}
+
+function renderTable(onus) {
+  var html = '<div class="table-responsive"><table class="table table-striped table-hover" id="onu-table">' +
+    '<thead><tr><th>PON</th><th>Board</th><th>Port</th><th>Index</th><th>Admin</th><th>Status</th><th>Oper</th><th>Reason</th></tr></thead><tbody>';
+  
+  onus.forEach(function(o) {
+    var statusClass = o.status === 'working' ? 'badge-working' : 'badge-offline';
+    var adminIcon = o.admin === 'enable' ? 'fa fa-check-circle text-success' : 'fa fa-times-circle text-danger';
+    
+    html += '<tr class="onu-row">' +
+      '<td><span class="' + statusClass + '">GPON</span></td>' +
+      '<td>' + o.board + '</td>' +
+      '<td><strong>' + o.port + '</strong></td>' +
+      '<td>' + o.index + '</td>' +
+      '<td><i class="' + adminIcon + '"></i> ' + o.admin + '</td>' +
+      '<td><span class="' + statusClass + '">' + o.status + '</span></td>' +
+      '<td>' + (o.oper || '-') + '</td>' +
+      '<td><small>' + (o.reason || '-') + '</small></td>' +
+    '</tr>';
+  });
+  html += '</tbody></table></div>';
+  
+  document.getElementById('configured-content').innerHTML = html;
+  document.getElementById('count-label').textContent = onus.length + ' ONU(s)';
+}
+
+function filterTable() {
+  var q = document.getElementById('search-input').value.toLowerCase();
+  var filtered = allOnus.filter(function(o) {
+    return ('' + o.board).indexOf(q) >= 0 || ('' + o.port).indexOf(q) >= 0 || ('' + o.index).indexOf(q) >= 0 ||
+           (o.reason || '').toLowerCase().indexOf(q) >= 0 || (o.status || '').toLowerCase().indexOf(q) >= 0;
+  });
+  renderTable(filtered);
+}
+
+$(document).ready(function() {
+  loadConfigured();
+  setInterval(loadConfigured, 5000);
+});
+</script>
+</body>
+</html>

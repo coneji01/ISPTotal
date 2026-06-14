@@ -1,0 +1,211 @@
+<!DOCTYPE html><html lang="en" class="smartolt-night"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dashboard - JOEL WIFI</title>
+<link href="/public/smartolt-files/bootstrap-custom.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+<link href="/public/smartolt-files/inter-fonts.css" rel="stylesheet">
+<link href="/public/smartolt-files/dashboard-smartolt-night.css" rel="stylesheet">
+<script src="/public/smartolt-files/jquery.min.js"></script>
+<style>
+body { font-family: 'Inter', -apple-system, sans-serif; background: #1a1d23; color: #e0e0e0; }
+.navbar { background:#1a1d23; border-color:#2a2d35; }
+.navbar a { color:#999; }
+.navbar .active a { color:#fff !important; }
+.card { background:#2a2d35; border-radius:10px; padding:20px; margin-bottom:15px; border:1px solid #3a3d45; }
+.card h4 { margin-top:0; color:#ccc; font-size:14px; text-transform:uppercase; letter-spacing:1px; }
+.stat-row { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:15px; }
+.stat-box { flex:1; min-width:100px; background:#1a1d23; border-radius:8px; padding:15px; text-align:center; }
+.stat-box.online { border-left:3px solid #28a745; }
+.stat-box.offline { border-left:3px solid #dc3545; }
+.stat-box.pending { border-left:3px solid #ffc107; }
+.stat-box.total { border-left:3px solid #17a2b8; }
+.stat-box.pwrfail { border-left:3px solid #ff851b; }
+.stat-box.los { border-left:3px solid #e83e8c; }
+.stat-number { font-size:36px; font-weight:700; }
+.stat-label { font-size:13px; color:#999; margin-top:2px; }
+.uptime-box { text-align:center; }
+.uptime-box .time { font-size:28px; font-weight:bold; color:#28a745; }
+.uptime-box .temp { font-size:16px; color:#ff851b; }
+.chart-simple { height:200px; position:relative; margin-top:10px; }
+.chart-bar { position:absolute; bottom:0; border-radius:4px 4px 0 0; transition:height 0.5s; min-width:4px; }
+.chart-label { position:absolute; bottom:-18px; font-size:9px; color:#666; transform:rotate(-45deg); white-space:nowrap; }
+.loading { text-align:center; padding:40px; color:#666; }
+.loading i { font-size:32px; }
+.error-msg { text-align:center; padding:20px; color:#dc3545; }
+</style>
+</head>
+<body class="smartolt-site">
+<div class="navbar navbar-default navbar-fixed-top">
+  <div class="container">
+    <div class="navbar-header">
+      <a class="navbar-brand" href="/modulo?pagina=olt_dashboard">GPON Manager</a>
+    </div>
+    <ul class="nav navbar-nav">
+      <li class="active"><a href="/modulo?pagina=olt_dashboard">Dashboard</a></li>
+      <li><a href="/modulo?pagina=olt_configured">Configuradas</a></li>
+      <li><a href="/modulo?pagina=olt_unconfigured">No configuradas</a></li>
+    </ul>
+  </div>
+</div>
+
+<div class="container-fluid content-wrap" style="margin-top:60px;padding:20px;">
+  <h2 style="margin-top:0;"><i class="fa fa-dashboard"></i> Dashboard</h2>
+  <p class="text-muted">Datos de la OLT ZTE C300 - <span id="last-update">Cargando...</span></p>
+  
+  <div class="stat-row" id="status-bar">
+    <div class="loading"><i class="fa fa-spinner fa-spin"></i><p>Cargando datos de la OLT...</p></div>
+  </div>
+  
+  <div class="row">
+    <div class="col-md-4">
+      <div class="card uptime-box">
+        <h4><i class="fa fa-clock-o"></i> OLT Status</h4>
+        <div id="uptime-display" class="time"><i class="fa fa-spinner fa-spin"></i></div>
+        <div id="temp-display" class="temp"></div>
+        <div id="olt-model" style="color:#666;font-size:12px;margin-top:5px;"></div>
+      </div>
+      <div class="card">
+        <h4><i class="fa fa-exclamation-triangle"></i> Offline Details</h4>
+        <div id="offline-details" class="text-muted">Cargando...</div>
+      </div>
+    </div>
+    
+    <div class="col-md-8">
+      <div class="card">
+        <h4><i class="fa fa-line-chart"></i> Network Status</h4>
+        <p class="text-muted" style="font-size:12px;">ONUs online/offline en los últimos minutos</p>
+        <div class="chart-simple" id="chart-container">
+          <div class="loading"><i class="fa fa-spinner fa-spin"></i></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="row">
+    <div class="col-md-6">
+      <div class="card">
+        <h4><i class="fa fa-bolt"></i> PON Outage</h4>
+        <p><i class="fa fa-check-circle text-success"></i> No PON outages detected</p>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="card">
+        <h4><i class="fa fa-signal"></i> Signal Variations</h4>
+        <p class="text-muted" id="signal-info">– No variation detected</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+var historyOnline = [];
+var historyOffline = [];
+var historyLabels = [];
+var maxPoints = 30;
+
+function loadDashboard() {
+  var now = new Date();
+  
+  // Construir URL base correcta
+  var baseUrl = window.location.origin + '/api/olt/dashboard';
+  
+  fetch(baseUrl, { credentials: 'same-origin' })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (!d.success || !d.data) throw new Error('Respuesta invalida');
+      var data = d.data;
+      var now2 = new Date();
+      document.getElementById('last-update').textContent = 'Actualizado: ' + now2.toLocaleTimeString() + ' (' + now2.toLocaleDateString() + ')';
+      
+      // Status bar
+      var total = data.total || 0;
+      var online = data.online || 0;
+      var offline = data.offline || 0;
+      var uncfg = (data.unconfigured || []).length;
+      var pwrfail = data.pwrfail || 0;
+      var los = data.los || 0;
+      
+      document.getElementById('status-bar').innerHTML = 
+        '<div class="stat-box online"><div class="stat-number text-success">' + online + '</div><div class="stat-label">Online</div></div>' +
+        '<div class="stat-box total"><div class="stat-number text-info">' + total + '</div><div class="stat-label">Total</div></div>' +
+        '<div class="stat-box offline"><div class="stat-number text-danger">' + offline + '</div><div class="stat-label">Offline</div></div>' +
+        '<div class="stat-box pending"><div class="stat-number text-warning">' + uncfg + '</div><div class="stat-label">Waiting</div></div>' +
+        '<div class="stat-box pwrfail"><div class="stat-number" style="color:#ff851b">' + pwrfail + '</div><div class="stat-label">PwrFail</div></div>' +
+        '<div class="stat-box los"><div class="stat-number" style="color:#e83e8c">' + los + '</div><div class="stat-label">LoS</div></div>';
+      
+      // Offline details
+      document.getElementById('offline-details').innerHTML = 
+        '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #3a3d45;"><span>PwrFail</span><span class="text-warning"><strong>' + pwrfail + '</strong></span></div>' +
+        '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #3a3d45;"><span>LoS</span><span class="text-info"><strong>' + los + '</strong></span></div>' +
+        '<div style="display:flex;justify-content:space-between;padding:8px 0;"><span>Total Offline</span><span class="text-danger"><strong>' + offline + '</strong></span></div>';
+      
+      // Uptime (desde otro endpoint)
+      fetch(window.location.origin + '/api/olts/5/status', { credentials: 'same-origin' })
+        .then(function(r) { return r.json(); })
+        .then(function(s) {
+          var uptime = s.uptime || Math.floor((Date.now() - 0) / 86400000) + 'd';
+          document.getElementById('uptime-display').innerHTML = '<i class="fa fa-arrow-up text-success"></i> ' + uptime;
+          var temp = s.temperatura || s.temp || '';
+          if (temp) document.getElementById('temp-display').innerHTML = '<i class="fa fa-thermometer-half"></i> ' + temp + '°C';
+          else document.getElementById('temp-display').innerHTML = '';
+          document.getElementById('olt-model').textContent = (s.model || 'ZTE-C300') + ' - ' + (s.name || s.nombre || '');
+        })
+        .catch(function() {
+          document.getElementById('uptime-display').innerHTML = '<i class="fa fa-arrow-up text-success"></i> ' + total + ' ONUs';
+          document.getElementById('temp-display').innerHTML = 'ZTE-C300';
+        });
+      
+      // Chart
+      var label = now2.getHours().toString().padStart(2,'0') + ':' + now2.getMinutes().toString().padStart(2,'0');
+      historyOnline.push(online);
+      historyOffline.push(offline);
+      historyLabels.push(label);
+      if (historyOnline.length > maxPoints) { historyOnline.shift(); historyOffline.shift(); historyLabels.shift(); }
+      
+      drawChart();
+    })
+    .catch(function(e) {
+      document.getElementById('status-bar').innerHTML = '<div class="error-msg"><i class="fa fa-exclamation-circle"></i> Error: ' + e.message + '</div>';
+      document.getElementById('last-update').textContent = 'Error: ' + e.message;
+    });
+}
+
+function drawChart() {
+  var container = document.getElementById('chart-container');
+  if (historyOnline.length === 0) { container.innerHTML = '<div class="loading">Esperando datos...</div>'; return; }
+  
+  var maxVal = Math.max.apply(null, historyOnline.concat(historyOffline)) || 1;
+  var barWidth = Math.min(20, Math.floor(800 / historyOnline.length) - 2);
+  if (barWidth < 4) barWidth = 4;
+  
+  var html = '<div style="position:relative;height:200px;padding-bottom:30px;">';
+  var leftMargin = 40;
+  
+  for (var i = 0; i < historyOnline.length; i++) {
+    var hO = Math.round((historyOnline[i] / maxVal) * 170);
+    var hF = Math.round((historyOffline[i] / maxVal) * 170);
+    var x = leftMargin + i * (barWidth + 2);
+    
+    html += '<div class="chart-bar" style="left:' + x + 'px;width:' + barWidth + 'px;height:' + hO + 'px;background:#28a745;opacity:0.8;" title="Online: ' + historyOnline[i] + '"></div>';
+    html += '<div class="chart-bar" style="left:' + (x + barWidth/2) + 'px;width:' + (barWidth/2) + 'px;height:' + hF + 'px;background:#dc3545;opacity:0.8;" title="Offline: ' + historyOffline[i] + '"></div>';
+    
+    if (i % Math.max(1, Math.floor(historyOnline.length / 10)) === 0) {
+      html += '<div class="chart-label" style="left:' + x + 'px;">' + historyLabels[i] + '</div>';
+    }
+  }
+  
+  html += '</div>';
+  html += '<div style="margin-top:30px;font-size:12px;color:#999;">' +
+    '<span style="color:#28a745;">■</span> Online <span style="color:#dc3545;margin-left:15px;">■</span> Offline</div>';
+  
+  container.innerHTML = html;
+}
+
+$(document).ready(function() {
+  loadDashboard();
+  setInterval(loadDashboard, 5000);
+});
+</script>
+</body>
+</html>

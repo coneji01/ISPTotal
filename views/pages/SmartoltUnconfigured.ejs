@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en" class="smartolt-night">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Unconfigured ONUs - JOEL WIFI</title>
+
+<!-- Bootstrap -->
+<link href="/public/smartolt-files/bootstrap-custom.css" rel="stylesheet">
+<link href="/public/smartolt-files/styles.css" rel="stylesheet">
+<link href="/public/smartolt-files/toast.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+<link href="/public/smartolt-files/messagebox.css" rel="stylesheet">
+<link href="/public/smartolt-files/inter-fonts.css" rel="stylesheet">
+<link href="/public/smartolt-files/dashboard-smartolt-night.css" rel="stylesheet">
+
+<!-- jQuery FIRST -->
+<script src="/public/smartolt-files/jquery.min.js"></script>
+<script src="/public/smartolt-files/toast.js"></script>
+<script src="/public/smartolt-files/polling.js"></script>
+<script src="/public/smartolt-files/common.js"></script>
+
+<style>
+body { font-family: 'Inter', -apple-system, sans-serif; }
+.table th { font-weight: 600; color: #2b2b2b; background-color: #f5f7f8; }
+.table td, .table th { vertical-align: middle !important; }
+</style>
+</head>
+<body class="smartolt-site">
+
+<div id="content-wrapper">
+    <div class="navbar navbar-default navbar-fixed-top default-menu">
+    <div class="container">
+      <div class="navbar-header">
+        <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#navbar-main" aria-expanded="false" aria-controls="navbar">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand text-ellipsis max-width-250" href="/modulo?pagina=GPONManager" title="GPON Manager">GPON Manager</a>
+      </div>
+      <div class="navbar-collapse collapse" id="navbar-main">
+        <ul class="nav navbar-nav">
+          <li><a href="/modulo?pagina=GPONManager">Dashboard</a></li>
+          <li><a href="/modulo?pagina=SmartoltConfigured">Configuradas</a></li>
+          <li><a href="/modulo?pagina=SmartoltUnconfigured">No configuradas</a></li>
+          <li><a href="/modulo?pagina=SmartoltOnuTypes">Tipos ONU</a></li>
+          <li><a href="/modulo?pagina=SmartoltSpeedProfiles">Velocidad</a></li>
+          <li><a href="/modulo?pagina=SmartoltLocations">Zonas</a></li>
+          <li class="dropdown">
+            <a class="dropdown-toggle" data-toggle="dropdown" href="#">Settings <span class="caret"></span></a>
+            <ul class="dropdown-menu">
+              <li><a href="/modulo?pagina=smartolt_olt">OLTs</a></li>
+              <li><a href="/modulo?pagina=smartolt_general">General</a></li>
+              <li><a href="/modulo?pagina=smartolt_billing">Billing</a></li>
+              <li><a href="/modulo?pagina=SmartoltDashboard">SmartOLT</a></li>
+              <li><a href="/modulo?pagina=smartolt_presets_full">Presets</a></li>
+              <li><a href="/modulo?pagina=smartolt_diagnostics_full">Diagnostics</a></li>
+              <li><a href="/modulo?pagina=smartolt_graphs">Graphs</a></li>
+            </ul>
+          </li>
+        </ul>
+        <ul class="nav navbar-nav navbar-right">
+          <li><a href="/logout"></a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="container-fluid content-wrap" id="unconfigured_div">
+      <h2>Unconfigured ONUs</h2>
+
+      <form class="form-inline unconfigured" id="filterForm">
+        <div class="margin-bottom">
+          <div class="form-group">
+            <label class="control-label" for="olt">OLT</label>
+            <select id="olt" class="form-control input-220" style="width:220px">
+              <option value="1" selected>1 - JOEL WIFI</option>
+            </select>
+          </div>
+          <div class="form-group margin-left">
+            <label class="control-label" for="pon">PON</label>
+            <input type="text" id="pon" class="form-control" style="width:160px" placeholder="Filter by PON...">
+          </div>
+          <div class="form-group margin-left">
+            <a href="javascript:void(0)" class="btn btn-primary get-unconfigured" id="btnRefresh">Refresh</a>
+          </div>
+          <div class="form-group margin-left">
+            <a href="/modulo?pagina=SmartoltAuthorizeOnu" class="btn btn-success"><i class="fa fa-plus"></i> Authorize new</a>
+          </div>
+        </div>
+      </form>
+
+      <div id="gpon_epon_unconfigured">
+        <div id="gpon-epon-unconfigured-1">
+          <h4>1 - JOEL WIFI
+            <a href="javascript:void(0)" class="refresh-single-olt text-blue" style="margin-left:8px;font-size:16px" title="Refresh this OLT only">
+              <i class="fa fa-refresh"></i>
+            </a>
+          </h4>
+          <div class="text-muted margin-bottom-sm">
+            Last scan: <span id="lastScan">Just now</span>
+          </div>
+
+          <table class="table table-striped" id="onuTable">
+            <thead>
+              <tr>
+                <th class="col-md-1">PON type</th>
+                <th class="col-md-1">Board</th>
+                <th class="col-md-1">Port</th>
+                <th class="col-md-2">PON description</th>
+                <th class="col-md-2">SN</th>
+                <th>Type</th>
+                <th class="col-md-4 text-center">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td colspan="7" class="text-center text-muted">Scanning OLT for unconfigured ONUs...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="waitingOLT" class="loadingoverlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(255,255,255,0.8);z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;">
+  <i class="fa fa-spinner fa-spin" style="font-size:100px;"></i>
+  <div style="font-size:50px;white-space:nowrap;">Waiting for OLT</div>
+</div>
+
+<script src="/public/smartolt-files/messagebox.min.js"></script>
+<script src="/public/smartolt-files/loadingoverlay.custom.js"></script>
+
+<script>
+// ====== ISPTotal: Unconfigured ONUs ======
+$(document).ready(function() {
+  window.form_data = { olt_id: [1], pon: '' };
+  
+  function cargarUnconfigured() {
+    $('#onuTable tbody').html('<tr><td colspan="7" class="text-center"><i class="fa fa-spinner fa-spin"></i> Scanning...</td></tr>');
+    
+    $.ajax({
+      url: '/api/olt/unconfigured-onus',
+      method: 'GET',
+      timeout: 15000,
+      success: function(r) {
+        if (!r.success || !r.data || !r.data.length) {
+          $('#onuTable tbody').html('<tr><td colspan="7" class="text-center text-muted">No unconfigured ONUs found</td></tr>');
+          $('#lastScan').text('Just now');
+          return;
+        }
+        
+        // Apply PON filter
+        var ponFilter = $('#pon').val().trim().toLowerCase();
+        var filtered = r.data;
+        if (ponFilter !== '') {
+          filtered = r.data.filter(function(o) {
+            var boardPort = String(o.board) + '/' + String(o.port);
+            return boardPort.indexOf(ponFilter) !== -1;
+          });
+        }
+        
+        if (!filtered.length) {
+          $('#onuTable tbody').html('<tr><td colspan="7" class="text-center text-muted">No unconfigured ONUs match the filter</td></tr>');
+          $('#lastScan').text('Just now');
+          return;
+        }
+        
+        var html = '';
+        filtered.forEach(function(o) {
+          var ponDesc = (o.board || '') + '/' + (o.port || '');
+          var sn = o.sn || '';
+          html += '<tr class="valign-center">' +
+            '<td>GPON</td>' +
+            '<td>' + o.board + '</td>' +
+            '<td>' + o.port + '</td>' +
+            '<td>' + ponDesc + '</td>' +
+            '<td>' + (sn || 'N/A') + '</td>' +
+            '<td class="text-nowrap">Auto-detect</td>' +
+            '<td class="text-center">' +
+            '<a href="/modulo?pagina=SmartoltAuthorizeOnu&board=' + o.board + '&port=' + o.port + '&sn=' + encodeURIComponent(sn) + '" class="btn btn-sm btn-primary"><i class="fa fa-check"></i> Authorize</a>' +
+            '</td></tr>';
+        });
+        
+        $('#onuTable tbody').html(html);
+        $('#lastScan').text('Just now');
+      },
+      error: function() {
+        $('#onuTable tbody').html('<tr><td colspan="7" class="text-center text-danger"><i class="fa fa-exclamation-triangle"></i> Error connecting to OLT</td></tr>');
+      }
+    });
+  }
+  
+  // Cargar inicial
+  cargarUnconfigured();
+  
+  // Auto-refresh cada 30s
+  setInterval(cargarUnconfigured, 30000);
+  
+  // Boton refresh manual
+  $('#btnRefresh, .refresh-single-olt').on('click', cargarUnconfigured);
+  
+  // PON filter on input change
+  $('#pon').on('input', cargarUnconfigured);
+});
+</script>
+
+</body>
+</html>

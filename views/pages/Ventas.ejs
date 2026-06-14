@@ -1,0 +1,419 @@
+<div class="page-header">
+  <h2><i class="fas fa-shopping-cart"></i> Venta de Productos</h2>
+  <div class="btn-group">
+    <button class="btn btn-primary btn-sm" onclick="vtToggleHistorial()" id="vtBtnHistorial" style="background:#7c3aed;"><i class="fas fa-history"></i> Historial</button>
+  </div>
+</div>
+
+<div class="card" style="max-width:700px;margin:0 auto;overflow:visible;">
+  <!-- Buscar Articulo -->
+  <div style="padding:20px;border-bottom:1px solid var(--border);">
+    <label style="font-weight:700;font-size:0.88rem;color:var(--text-gray);margin-bottom:8px;display:block;"><i class="fas fa-barcode"></i> Código del producto</label>
+    <div style="display:flex;gap:8px;">
+      <input type="text" id="vtCodigo" class="form-control" placeholder="Escanee o escriba el código" autocomplete="off" style="flex:1;font-family:monospace;font-size:1.05rem;text-transform:uppercase;" oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')vtBuscarArticulo()">
+      <button type="button" class="btn btn-primary" onclick="vtBuscarArticulo()" style="flex-shrink:0;"><i class="fas fa-search"></i> Buscar</button>
+    </div>
+    <div id="vtArticuloResult" style="display:none;margin-top:14px;padding:16px;background:linear-gradient(135deg,#f0fdf4,#ecfdf5);border:2px solid #86efac;border-radius:10px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+        <div>
+          <div style="font-size:0.78rem;color:#64748b;text-transform:uppercase;font-weight:700;letter-spacing:0.5px;" id="vtArtCategoria"></div>
+          <div style="font-size:1.1rem;font-weight:700;color:#1e293b;margin-top:2px;" id="vtArtNombre"></div>
+          <div style="font-size:0.78rem;color:#64748b;margin-top:2px;">Código: <span id="vtArtCodigo" style="font-family:monospace;font-weight:600;"></span></div>
+        </div>
+        <div><div style="font-size:2rem;font-weight:800;color:#16a34a;line-height:1;" id="vtArtPrecio"></div></div>
+      </div>
+      <!-- Cantidad -->
+      <div style="margin-top:12px;display:flex;align-items:center;gap:10px;">
+        <label style="font-size:0.82rem;font-weight:600;color:#475569;"><i class="fas fa-cubes"></i> Cantidad:</label>
+        <input type="number" id="vtCantidad" value="1" min="1" class="form-control" style="width:80px;text-align:center;font-size:1rem;" onchange="vtUpdateTotal()" oninput="vtUpdateTotal()">
+        <span style="font-size:0.78rem;color:#94a3b8;">Stock: <strong id="vtStockDisp">-</strong></span>
+        <span style="margin-left:auto;font-weight:700;font-size:1.1rem;color:#16a34a;" id="vtTotalDisplay">$0.00</span>
+      </div>
+    </div>
+    <div id="vtArticuloError" style="display:none;margin-top:10px;padding:12px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;color:#991b1b;font-size:0.88rem;"></div>
+  </div>
+
+  <!-- Cliente (obligatorio) -->
+  <div id="vtClienteSection" style="padding:20px;border-bottom:1px solid var(--border);display:none;overflow:visible;">
+    <label style="font-weight:700;font-size:0.88rem;color:var(--text-gray);margin-bottom:8px;display:block;"><i class="fas fa-user"></i> Cliente <span style="color:#ef4444;">*</span></label>
+    <div id="vtClienteSearchWrap" style="position:relative;">
+      <input type="text" id="vtClienteInput" class="form-control" placeholder="Buscar por nombre, cédula, apodo..." autocomplete="off" oninput="vtBuscarCliente()">
+      <div id="vtClienteDropdown" style="display:none;position:absolute;top:100%;left:0;right:0;z-index:9000;background:#fff;border:1px solid #d1d5db;border-radius:0 0 8px 8px;max-height:350px;overflow-y:auto;box-shadow:0 12px 30px rgba(0,0,0,0.18);"></div>
+    </div>
+    <!-- Campo manual para no-clientes -->
+    <div style="margin-top:8px;"><button type="button" onclick="vtNoEsCliente()" style="background:none;border:none;color:#7c3aed;font-size:0.8rem;cursor:pointer;padding:0;"><i class="fas fa-user-slash"></i> La persona no es cliente</button></div>
+    <div id="vtNoClienteWrap" style="display:none;margin-top:10px;padding:14px;background:#fefce8;border:1px solid #fde68a;border-radius:8px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <label style="font-weight:700;font-size:0.85rem;color:#92400e;"><i class="fas fa-user-slash"></i> Persona (no es cliente)</label>
+        <button type="button" onclick="vtVolverBusqueda()" style="background:none;border:none;color:#94a3b8;cursor:pointer;font-size:1.1rem;" title="Volver a buscar cliente"><i class="fas fa-times"></i></button>
+      </div>
+      <input type="text" id="vtNoClienteNombre" class="form-control" placeholder="Nombre de la persona..." autocomplete="off" style="font-size:0.95rem;" oninput="vtCheckNoCliente()">
+    </div>
+    <div id="vtClienteSelected" style="display:none;margin-top:10px;padding:14px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div>
+          <div style="font-weight:700;color:#1e40af;font-size:0.95rem;" id="vtSelClientName"></div>
+          <div style="font-size:0.78rem;color:#64748b;" id="vtSelClientInfo"></div>
+        </div>
+        <button type="button" onclick="vtClearClient()" style="background:none;border:none;color:#94a3b8;cursor:pointer;font-size:1.1rem;" title="Cambiar cliente"><i class="fas fa-times"></i></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Boton Vender -->
+  <div id="vtAccionSection" style="padding:20px;display:none;">
+    <button type="button" id="vtBtnVender" class="btn btn-primary" onclick="vtVender()" style="width:100%;padding:14px;font-size:1.05rem;background:#16a34a;border-radius:10px;">
+      <i class="fas fa-cash-register"></i> Vender
+    </button>
+  </div>
+</div>
+
+<!-- Modal Modo Pago -->
+<div id="vtModalModo" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;display:none;align-items:center;justify-content:center;backdrop-filter:blur(2px);">
+  <div style="background:#fff;width:90%;max-width:400px;border-radius:12px;padding:28px;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,0.2);border-top:5px solid #16a34a;">
+    <div style="font-size:2.5rem;margin-bottom:8px;"><i class="fas fa-question-circle" style="color:#16a34a;"></i></div>
+    <div style="font-size:1.1rem;font-weight:700;color:#1e293b;margin-bottom:6px;">¿Cómo pagará?</div>
+    <div style="color:#64748b;font-size:0.88rem;margin-bottom:22px;" id="vtModalModoInfo"></div>
+    <!-- Método de pago -->
+    <div style="margin-bottom:16px;">
+      <label style="font-size:0.82rem;font-weight:600;color:#475569;display:block;margin-bottom:6px;">Método de pago</label>
+      <select id="vtModalMetodo" class="form-control" style="width:100%;">
+        <option value="EFECTIVO">Efectivo</option>
+        <option value="TRANSFERENCIA">Transferencia</option>
+        <option value="TARJETA">Tarjeta</option>
+        <option value="CHEQUE">Cheque</option>
+      </select>
+    </div>
+    <!-- Nota opcional -->
+    <div style="margin-bottom:16px;">
+      <label style="font-size:0.82rem;font-weight:600;color:#475569;display:block;margin-bottom:6px;">Nota (opcional)</label>
+      <textarea id="vtModalNota" class="form-control" style="width:100%;resize:vertical;min-height:50px;" placeholder="Observaciones..."></textarea>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:center;">
+      <button onclick="vtEjecutar('contado')" style="flex:1;padding:12px;border:none;border-radius:8px;background:#16a34a;color:#fff;font-weight:700;font-size:0.95rem;cursor:pointer;"><i class="fas fa-money-bill-wave"></i> Confirmar Venta</button>
+    </div>
+    <button onclick="document.getElementById('vtModalModo').style.display='none'" style="margin-top:12px;background:none;border:none;color:#94a3b8;cursor:pointer;font-size:0.85rem;">Cancelar</button>
+  </div>
+</div>
+
+<!-- Modal Resultado -->
+<div id="vtModalResult" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:99999;display:none;align-items:center;justify-content:center;backdrop-filter:blur(2px);">
+  <div id="vtResultBox" style="background:#fff;width:90%;max-width:420px;border-radius:12px;padding:28px;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,0.2);border-top:5px solid #16a34a;">
+    <div id="vtResultIcon" style="font-size:3rem;margin-bottom:10px;"></div>
+    <div id="vtResultTitle" style="font-size:1.15rem;font-weight:700;color:#1e293b;margin-bottom:8px;"></div>
+    <div id="vtResultMsg" style="color:#475569;margin-bottom:20px;font-size:0.92rem;"></div>
+    <div id="vtResultActions" style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;"></div>
+  </div>
+</div>
+
+<!-- Historial de Ventas -->
+<div id="vtHistorialSection" style="display:none;max-width:900px;margin:20px auto 0;">
+  <div class="card" style="overflow:visible;">
+    <h3 style="margin:0 0 16px;font-size:1.05rem;color:#1e293b;display:flex;align-items:center;gap:8px;"><i class="fas fa-history" style="color:#7c3aed;"></i> Historial de Ventas</h3>
+    <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
+      <input type="text" id="vtHistSearch" class="form-control" placeholder="Buscar por cliente o producto..." oninput="vtHistPage=1;vtCargarHistorial()" style="flex:1;min-width:180px;">
+      <select id="vtHistModo" class="form-control" onchange="vtHistPage=1;vtCargarHistorial()" style="width:auto;min-width:150px;">
+        <option value="">Todos los modos</option>
+        <option value="contado">Pago al contado</option>
+      </select>
+      <input type="date" id="vtHistDesde" class="form-control" onchange="vtHistPage=1;vtCargarHistorial()" style="width:auto;" title="Desde">
+      <input type="date" id="vtHistHasta" class="form-control" onchange="vtHistPage=1;vtCargarHistorial()" style="width:auto;" title="Hasta">
+    </div>
+    <div style="overflow-x:auto;">
+      <table style="width:100%;border-collapse:collapse;">
+        <thead>
+          <tr>
+            <th style="padding:10px 8px;color:#64748b;border-bottom:1px solid var(--border);font-size:0.78rem;text-transform:uppercase;text-align:left;">Código</th>
+            <th style="padding:10px 8px;color:#64748b;border-bottom:1px solid var(--border);font-size:0.78rem;text-transform:uppercase;text-align:left;">Cliente</th>
+            <th style="padding:10px 8px;color:#64748b;border-bottom:1px solid var(--border);font-size:0.78rem;text-transform:uppercase;text-align:left;">Producto</th>
+            <th style="padding:10px 8px;color:#64748b;border-bottom:1px solid var(--border);font-size:0.78rem;text-transform:uppercase;text-align:right;">Total</th>
+            <th style="padding:10px 8px;color:#64748b;border-bottom:1px solid var(--border);font-size:0.78rem;text-transform:uppercase;text-align:center;">Modo</th>
+            <th style="padding:10px 8px;color:#64748b;border-bottom:1px solid var(--border);font-size:0.78rem;text-transform:uppercase;text-align:left;">Fecha</th>
+            <th style="padding:10px 8px;color:#64748b;border-bottom:1px solid var(--border);font-size:0.78rem;text-transform:uppercase;text-align:left;">Cobrado por</th>
+          </tr>
+        </thead>
+        <tbody id="vtHistBody"></tbody>
+      </table>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding-top:12px;border-top:1px solid var(--border);">
+      <button onclick="vtHistCambiarPag(-1)" style="padding:6px 14px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:6px;cursor:pointer;font-weight:600;font-size:0.82rem;color:var(--text-gray);">&lsaquo; Anterior</button>
+      <span id="vtHistPagInfo" style="font-size:0.82rem;color:#94a3b8;">Pág 1</span>
+      <button onclick="vtHistCambiarPag(1)" style="padding:6px 14px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:6px;cursor:pointer;font-weight:600;font-size:0.82rem;color:var(--text-gray);">Siguiente &rsaquo;</button>
+    </div>
+  </div>
+</div>
+
+<script>
+var _vtTimer=null, vtArticulo=null, vtClienteData=null, vtSearchResults=[];
+var vtHistPage=1, vtHistTotalPages=1, vtHistVisible=false, vtIsNoCliente=false;
+
+function vtEsc(s){var d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
+
+function vtUpdateTotal(){
+  if(!vtArticulo)return;
+  var qty=parseInt(document.getElementById('vtCantidad').value)||1;
+  var total=(parseFloat(vtArticulo.precio_venta||vtArticulo.precio)||0)*qty;
+  document.getElementById('vtTotalDisplay').textContent='$'+total.toFixed(2);
+}
+
+function vtBuscarArticulo(){
+  var cod=document.getElementById('vtCodigo').value.trim().toUpperCase();
+  if(!cod)return;
+  document.getElementById('vtArticuloResult').style.display='none';
+  document.getElementById('vtArticuloError').style.display='none';
+  var url='/modulo?pagina=Ventas&ajax=buscar_articulo&codigo='+encodeURIComponent(cod);
+  fetch(url)
+  .then(function(r){return r.json();})
+  .then(function(d){
+    if(d.found){
+      vtArticulo=d.articulo;
+      document.getElementById('vtArtCategoria').textContent=d.articulo.categoria||'';
+      document.getElementById('vtArtNombre').textContent=d.articulo.nombre||'';
+      document.getElementById('vtArtCodigo').textContent=d.articulo.codigo;
+      document.getElementById('vtArtPrecio').textContent='$'+parseFloat(d.articulo.precio_venta||d.articulo.precio).toFixed(2);
+      document.getElementById('vtStockDisp').textContent=d.articulo.stock||0;
+      document.getElementById('vtCantidad').value=1;
+      vtUpdateTotal();
+      document.getElementById('vtArticuloResult').style.display='block';
+      document.getElementById('vtClienteSection').style.display='block';
+      document.getElementById('vtAccionSection').style.display=vtClienteData||vtIsNoCliente?'block':'none';
+    }else{
+      vtArticulo=null;
+      document.getElementById('vtArticuloError').style.display='block';
+      document.getElementById('vtArticuloError').textContent=d.message||'No encontrado o no es de venta';
+      document.getElementById('vtClienteSection').style.display='none';
+      document.getElementById('vtAccionSection').style.display='none';
+    }
+  })
+  .catch(function(e){
+    document.getElementById('vtArticuloError').style.display='block';
+    document.getElementById('vtArticuloError').textContent='Error: '+e.message;
+  });
+}
+
+function vtBuscarCliente(){
+  clearTimeout(_vtTimer);
+  var term=document.getElementById('vtClienteInput').value.trim();
+  var dd=document.getElementById('vtClienteDropdown');
+  if(term.length<2){dd.style.display='none';return;}
+  _vtTimer=setTimeout(function(){
+    fetch('/modulo?pagina=Ventas&ajax=buscar_cliente&q='+encodeURIComponent(term))
+    .then(function(r){return r.json();})
+    .then(function(data){
+      vtSearchResults=data.data||data||[];
+      if(!vtSearchResults.length){dd.style.display='none';return;}
+      var h='';
+      vtSearchResults.forEach(function(c,idx){
+        var alias=c.alias?' ('+c.alias+')':'';
+        var svcCount=c.svc_count||0;
+        h+='<div onclick="vtSelectClient('+idx+')" style="padding:12px 14px;cursor:pointer;border-bottom:1px solid #f1f5f9;" onmouseover="this.style.background=\'#f0f9ff\'" onmouseout="this.style.background=\'#fff\'">';
+        h+='<div style="font-weight:600;color:#1e293b;font-size:0.9rem;word-break:break-word;">'+vtEsc(c.name||c.nombre)+alias+'</div>';
+        h+='<div style="font-size:0.75rem;color:#64748b;margin-top:2px;">Céd: '+(c.cedula||'-')+' | '+svcCount+' servicio(s)</div>';
+        h+='</div>';
+      });
+      dd.innerHTML=h;
+      dd.style.display='block';
+    });
+  },300);
+}
+
+function vtSelectClient(idx){
+  var c=vtSearchResults[idx];
+  vtClienteData=c;
+  vtIsNoCliente=false;
+  document.getElementById('vtClienteDropdown').style.display='none';
+  document.getElementById('vtClienteInput').style.display='none';
+  document.getElementById('vtClienteSelected').style.display='block';
+  document.getElementById('vtSelClientName').textContent=(c.name||c.nombre)+(c.alias?' ('+c.alias+')':'');
+  document.getElementById('vtSelClientInfo').textContent='Céd: '+(c.cedula||'-')+' | Tel: '+(c.telefono||c.phone||'-');
+  document.getElementById('vtAccionSection').style.display=vtArticulo?'block':'none';
+}
+
+function vtClearClient(){
+  vtClienteData=null;
+  vtIsNoCliente=false;
+  document.getElementById('vtClienteInput').value='';
+  document.getElementById('vtClienteInput').style.display='block';
+  document.getElementById('vtClienteSelected').style.display='none';
+  document.getElementById('vtAccionSection').style.display='none';
+  document.getElementById('vtClienteSearchWrap').style.display='block';
+  document.getElementById('vtNoClienteWrap').style.display='none';
+  var ni=document.getElementById('vtNoClienteNombre'); if(ni) ni.value='';
+}
+
+function vtNoEsCliente(){
+  vtClienteData=null;
+  vtIsNoCliente=true;
+  document.getElementById('vtClienteSearchWrap').style.display='none';
+  document.getElementById('vtClienteSelected').style.display='none';
+  document.getElementById('vtNoClienteWrap').style.display='block';
+  document.getElementById('vtNoClienteNombre').value='';
+  document.getElementById('vtNoClienteNombre').focus();
+  document.getElementById('vtAccionSection').style.display=vtArticulo?'block':'none';
+}
+
+function vtVolverBusqueda(){
+  vtIsNoCliente=false;
+  document.getElementById('vtNoClienteWrap').style.display='none';
+  document.getElementById('vtClienteSearchWrap').style.display='block';
+  document.getElementById('vtClienteInput').style.display='block';
+  document.getElementById('vtAccionSection').style.display='none';
+}
+
+function vtCheckNoCliente(){
+  var nombre=document.getElementById('vtNoClienteNombre').value.trim();
+  document.getElementById('vtAccionSection').style.display=(nombre.length>0&&vtArticulo)?'block':'none';
+}
+
+function vtVender(){
+  if(!vtArticulo){alert('Busque un artículo primero');return;}
+  if(vtIsNoCliente){
+    var nombre=document.getElementById('vtNoClienteNombre').value.trim();
+    if(!nombre){alert('Ingrese el nombre de la persona');return;}
+  }else if(!vtClienteData){
+    alert('Debe seleccionar un cliente');
+    return;
+  }
+  // Show payment method modal
+  var info=vtArticulo.categoria+' - '+vtArticulo.nombre;
+  if(vtClienteData) info+=' a '+vtEsc(vtClienteData.name||vtClienteData.nombre);
+  document.getElementById('vtModalModoInfo').innerHTML=info;
+  document.getElementById('vtModalModo').style.display='flex';
+}
+
+function vtEjecutar(modo){
+  document.getElementById('vtModalModo').style.display='none';
+  var btn=document.getElementById('vtBtnVender');
+  btn.disabled=true;
+  btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> Procesando...';
+  
+  var qty=parseInt(document.getElementById('vtCantidad').value)||1;
+  var fd=new URLSearchParams();
+  fd.append('codigo',vtArticulo.codigo);
+  fd.append('cantidad',qty);
+  fd.append('client_id',vtIsNoCliente?0:(vtClienteData?vtClienteData.id:0));
+  fd.append('modo',modo);
+  fd.append('metodo_pago',document.getElementById('vtModalMetodo').value);
+  fd.append('nota',document.getElementById('vtModalNota').value);
+  if(vtIsNoCliente) fd.append('no_cliente_nombre',document.getElementById('vtNoClienteNombre').value.trim());
+  
+  fetch('/modulo?pagina=Ventas&ajax=ejecutar_venta',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:fd.toString()})
+  .then(function(r){return r.json();})
+  .then(function(d){
+    btn.disabled=false;
+    btn.innerHTML='<i class="fas fa-cash-register"></i> Vender';
+    if(d.success){
+      vtShowResult(true,'Venta Exitosa',d.msg,d);
+      if(d.payment_id) vtImprimirRecibo(d.payment_id);
+    }else{
+      vtShowResult(false,'Error',d.msg||'Error al procesar',null);
+    }
+  })
+  .catch(function(e){
+    btn.disabled=false;
+    btn.innerHTML='<i class="fas fa-cash-register"></i> Vender';
+    vtShowResult(false,'Error',e.message,null);
+  });
+}
+
+function vtShowResult(ok,title,msg,data){
+  document.getElementById('vtResultIcon').innerHTML=ok?'<i class="fas fa-check-circle" style="color:#16a34a;"></i>':'<i class="fas fa-times-circle" style="color:#ef4444;"></i>';
+  document.getElementById('vtResultBox').style.borderTopColor=ok?'#16a34a':'#ef4444';
+  document.getElementById('vtResultTitle').textContent=title;
+  document.getElementById('vtResultMsg').textContent=msg;
+  var btns='<button onclick="vtReset()" class="btn btn-secondary">Nueva Venta</button>';
+  if(ok&&data&&data.venta_id){
+    btns+='<button onclick="vtImprimirRecibo('+data.venta_id+')" class="btn btn-primary" style="background:#7c3aed;"><i class="fas fa-print"></i> Imprimir Recibo</button>';
+  }
+  document.getElementById('vtResultActions').innerHTML=btns;
+  document.getElementById('vtModalResult').style.display='flex';
+}
+
+function vtImprimirRecibo(ventaId){
+  window.open('/modulo?pagina=Ventas&ajax=recibo_venta&id='+ventaId,'_blank');
+}
+
+function vtReset(){
+  document.getElementById('vtModalResult').style.display='none';
+  vtArticulo=null;
+  vtSearchResults=[];
+  vtIsNoCliente=false;
+  document.getElementById('vtCodigo').value='';
+  document.getElementById('vtArticuloResult').style.display='none';
+  document.getElementById('vtArticuloError').style.display='none';
+  document.getElementById('vtClienteSection').style.display='none';
+  document.getElementById('vtAccionSection').style.display='none';
+  vtClearClient();
+  document.getElementById('vtCodigo').focus();
+}
+
+document.addEventListener('click',function(e){
+  if(!e.target.closest('#vtClienteInput')&&!e.target.closest('#vtClienteDropdown')){
+    document.getElementById('vtClienteDropdown').style.display='none';
+  }
+});
+
+// ===== HISTORIAL DE VENTAS =====
+function vtToggleHistorial(){
+  var sec=document.getElementById('vtHistorialSection');
+  if(!sec)return;
+  vtHistVisible=!vtHistVisible;
+  sec.style.display=vtHistVisible?'block':'none';
+  var btn=document.getElementById('vtBtnHistorial');
+  if(btn){
+    btn.style.background=vtHistVisible?'#6d28d9':'#7c3aed';
+    btn.innerHTML=vtHistVisible?'<i class="fas fa-times"></i> Cerrar Historial':'<i class="fas fa-history"></i> Historial';
+  }
+  if(vtHistVisible){vtHistPage=1;vtCargarHistorial();}
+}
+
+function vtCargarHistorial(){
+  var body=document.getElementById('vtHistBody');
+  if(!body)return;
+  body.innerHTML='<tr><td colspan="7" style="text-align:center;padding:20px;color:#94a3b8;">Cargando...</td></tr>';
+  var q=(document.getElementById('vtHistSearch')||{}).value||'';
+  var modo=(document.getElementById('vtHistModo')||{}).value||'';
+  var desde=(document.getElementById('vtHistDesde')||{}).value||'';
+  var hasta=(document.getElementById('vtHistHasta')||{}).value||'';
+  var url='/modulo?pagina=Ventas&ajax=historial&page='+vtHistPage+'&q='+encodeURIComponent(q)+'&modo='+encodeURIComponent(modo)+'&desde='+encodeURIComponent(desde)+'&hasta='+encodeURIComponent(hasta);
+  fetch(url)
+  .then(function(r){return r.json();})
+  .then(function(d){
+    if(!d.success||!d.data||!d.data.length){
+      body.innerHTML='<tr><td colspan="7" style="text-align:center;padding:30px;color:#94a3b8;"><i class="fas fa-inbox" style="font-size:1.3rem;display:block;margin-bottom:6px;"></i>Sin ventas registradas</td></tr>';
+      document.getElementById('vtHistPagInfo').textContent='Pág 0';
+      vtHistTotalPages=1;
+      return;
+    }
+    var html='';
+    for(var i=0;i<d.data.length;i++){
+      var v=d.data[i];
+      var itemsRaw=v.items||'';
+      var codArticulo=v.codigo||'-';
+      var producto=v.producto||itemsRaw;
+      var precio=v.total||0;
+      var fechaStr=v.created_at?v.created_at.substring(0,16).replace('T',' '):'-';
+      html+='<tr>';
+      html+='<td style="padding:10px 8px;border-bottom:1px solid var(--border);font-family:monospace;font-size:0.82rem;font-weight:600;color:#1e293b;">'+vtEsc(codArticulo)+'</td>';
+      html+='<td style="padding:10px 8px;border-bottom:1px solid var(--border);font-weight:600;font-size:0.88rem;color:#1e293b;">'+vtEsc(v.cliente_nombre||v.client_name||'-')+'</td>';
+      html+='<td style="padding:10px 8px;border-bottom:1px solid var(--border);font-size:0.85rem;color:#475569;">'+vtEsc(producto)+'</td>';
+      html+='<td style="padding:10px 8px;border-bottom:1px solid var(--border);text-align:right;font-weight:700;color:#16a34a;font-size:0.9rem;">$'+parseFloat(precio).toFixed(2)+'</td>';
+      html+='<td style="padding:10px 8px;border-bottom:1px solid var(--border);text-align:center;"><span style="background:#dcfce7;color:#166534;padding:2px 8px;border-radius:4px;font-size:0.75rem;font-weight:600;">Pagado</span></td>';
+      html+='<td style="padding:10px 8px;border-bottom:1px solid var(--border);font-size:0.82rem;color:#64748b;">'+vtEsc(fechaStr)+'</td>';
+      html+='<td style="padding:10px 8px;border-bottom:1px solid var(--border);font-size:0.82rem;color:#475569;">'+vtEsc(v.cobrado_por||'-')+'</td>';
+      html+='</tr>';
+    }
+    body.innerHTML=html;
+    vtHistTotalPages=d.pages||1;
+    document.getElementById('vtHistPagInfo').textContent='Pág '+d.page+' de '+d.pages+' ('+d.total+')';
+  })
+  .catch(function(e){
+    body.innerHTML='<tr><td colspan="7" style="text-align:center;padding:20px;color:#ef4444;">Error: '+e.message+'</td></tr>';
+  });
+}
+
+function vtHistCambiarPag(dir){
+  var n=vtHistPage+dir;
+  if(n>=1&&n<=vtHistTotalPages){vtHistPage=n;vtCargarHistorial();}
+}
+</script>

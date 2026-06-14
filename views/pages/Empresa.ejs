@@ -1,0 +1,193 @@
+<div class="page-header" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
+  <h2 class="page-title" style="margin:0;font-size:1.3rem;font-weight:700;color:var(--text-dark,#1e293b);display:flex;align-items:center;gap:10px;">
+    <i class="fas fa-building" style="color:var(--accent,#6366f1);"></i> Datos de la Empresa
+  </h2>
+  <a href="/modulo?pagina=Configuracion" class="btn-empresa-volver" style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;border:1px solid var(--border-color,#e2e8f0);background:var(--bg-card,#fff);color:var(--text-gray,#475569);text-decoration:none;font-weight:600;font-size:0.85rem;transition:all 0.15s;">
+    <i class="fas fa-arrow-left"></i> Volver a Configuración
+  </a>
+</div>
+
+<div class="card" style="max-width:850px;margin:0 auto;background:var(--bg-card,#fff);border:1px solid var(--border-color,#e2e8f0);border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.06);overflow:hidden;">
+  <form id="formEmpresa" method="POST" enctype="multipart/form-data" style="padding:25px;">
+    <div class="logos-grid">
+      <div class="logo-card">
+        <div class="logo-card-title"><i class="fas fa-file-invoice" style="color:var(--accent,#6366f1);"></i> Logo General</div>
+        <div class="logo-card-preview" id="previewGeneral">
+          <% if (empresa_logo) { %>
+            <img src="<%= empresa_logo %>" alt="Logo General">
+          <% } else { %>
+            <i class="fas fa-image" style="font-size:2rem;color:#cbd5e1;"></i>
+          <% } %>
+        </div>
+        <label class="btn-upload"><i class="fas fa-upload"></i> Subir</label>
+        <input type="file" name="logo_general" accept="image/*" style="display:none;" onchange="previewLogo(this, 'previewGeneral')">
+        <div class="logo-card-hint">PNG, JPG • 200x200px</div>
+      </div>
+      <div class="logo-card">
+        <div class="logo-card-title"><i class="fas fa-file-alt" style="color:#16a34a;"></i> Logo Reportes</div>
+        <div class="logo-card-preview" id="previewReportes">
+          <% if (empresa_logo_reportes) { %>
+            <img src="<%= empresa_logo_reportes %>" alt="Logo Reportes">
+          <% } else { %>
+            <i class="fas fa-image" style="font-size:2rem;color:#cbd5e1;"></i>
+          <% } %>
+        </div>
+        <label class="btn-upload"><i class="fas fa-upload"></i> Subir</label>
+        <input type="file" name="logo_reportes" accept="image/*" style="display:none;" onchange="previewLogo(this, 'previewReportes')">
+        <div class="logo-card-hint">PNG, JPG • 200x200px</div>
+      </div>
+      <div class="logo-card">
+        <div class="logo-card-title"><i class="fas fa-id-card-alt" style="color:#2563eb;"></i> Logo Portal Cliente</div>
+        <div class="logo-card-preview" id="previewPortal">
+          <% if (empresa_logo_portal) { %>
+            <img src="<%= empresa_logo_portal %>" alt="Logo Portal">
+          <% } else { %>
+            <i class="fas fa-image" style="font-size:2rem;color:#cbd5e1;"></i>
+          <% } %>
+        </div>
+        <label class="btn-upload"><i class="fas fa-upload"></i> Subir</label>
+        <input type="file" name="logo_portal" accept="image/*" style="display:none;" onchange="previewLogo(this, 'previewPortal')">
+        <div class="logo-card-hint">PNG, JPG • 200x200px</div>
+      </div>
+    </div>
+
+    <div class="form-grid-empresa">
+      <div class="form-group full-width">
+        <label class="form-label">Nombre de la Empresa <span class="required">*</span></label>
+        <input type="text" name="empresa_nombre" class="form-control" value="<%= empresa_nombre || '' %>" placeholder="Ej: Mi ISP SRL" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">RNC</label>
+        <input type="text" name="empresa_rnc" class="form-control" value="<%= empresa_rnc || '' %>" placeholder="Ej: 123456789">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Teléfono <span class="required">*</span></label>
+        <input type="text" name="empresa_telefono" class="form-control" value="<%= empresa_telefono || '' %>" placeholder="Ej: 8090000000" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Correo Electrónico</label>
+        <input type="email" name="empresa_correo" class="form-control" value="<%= empresa_correo || '' %>" placeholder="Ej: info@miisp.com">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Moneda</label>
+        <select name="empresa_moneda" class="form-control">
+          <option value="DOP" <%= empresa_moneda === 'DOP' ? 'selected' : '' %>>DOP (Peso Dominicano)</option>
+          <option value="USD" <%= empresa_moneda === 'USD' ? 'selected' : '' %>>USD (Dólar)</option>
+        </select>
+      </div>
+      <div class="form-group full-width">
+        <label class="form-label">Dirección</label>
+        <textarea name="empresa_direccion" class="form-control" rows="3" placeholder="Dirección de la empresa"><%= empresa_direccion || '' %></textarea>
+      </div>
+      <div class="form-group full-width">
+        <label class="form-label">Notas / Información Adicional</label>
+        <textarea name="empresa_notas" class="form-control" rows="2" placeholder="Información adicional (se muestra en recibos)"><%= empresa_notas || '' %></textarea>
+      </div>
+    </div>
+
+    <!-- SMTP Configuration -->
+    <div style="margin-top:30px;padding-top:20px;border-top:2px solid var(--border-color,#e2e8f0);">
+      <h3 style="font-size:1rem;font-weight:700;color:var(--text-dark,#1e293b);display:flex;align-items:center;gap:8px;margin:0 0 16px;">
+        <i class="fas fa-envelope" style="color:#2563eb;"></i> Configuración de Correo (SMTP)
+      </h3>
+      <p style="font-size:0.82rem;color:#64748b;margin-bottom:16px;">Necesario para enviar correos de confirmación a los nuevos usuarios registrados.</p>
+      <div class="form-grid-empresa">
+        <div class="form-group">
+          <label class="form-label">Correo SMTP</label>
+          <input type="email" name="smtp_email" class="form-control" value="<%= smtp_email || '' %>" placeholder="Ej: isptotal@gmail.com">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Contraseña SMTP</label>
+          <input type="password" name="smtp_password" class="form-control" value="<%= smtp_password || '' %>" placeholder="Contraseña de aplicación">
+          <small style="font-size:0.72rem;color:#94a3b8;display:block;margin-top:3px;">Usa una contraseña de aplicación de Gmail, no tu contraseña personal.</small>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Host SMTP</label>
+          <input type="text" name="smtp_host" class="form-control" value="<%= smtp_host || 'smtp.gmail.com' %>" placeholder="smtp.gmail.com">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Puerto SMTP</label>
+          <input type="number" name="smtp_port" class="form-control" value="<%= smtp_port || '587' %>" placeholder="587">
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:25px;padding-top:20px;border-top:1px solid var(--border-color,#e2e8f0);">
+      <a href="/modulo?pagina=Configuracion" class="btn-cancel" style="text-decoration:none;display:inline-flex;align-items:center;gap:6px;padding:10px 24px;border-radius:8px;border:1px solid var(--border-color);background:#f1f5f9;color:#475569;font-weight:600;font-size:0.9rem;cursor:pointer;transition:all 0.15s;">
+        <i class="fas fa-times"></i> Cancelar
+      </a>
+      <button type="submit" class="btn-submit" style="display:inline-flex;align-items:center;gap:6px;padding:10px 28px;border:none;border-radius:8px;background:linear-gradient(135deg,var(--accent,#6366f1) 0%,#4f46e5 100%);color:#fff;font-weight:600;font-size:0.9rem;cursor:pointer;transition:all 0.2s;">
+        <i class="fas fa-save"></i> Guardar Cambios
+      </button>
+    </div>
+  </form>
+</div>
+
+<style>
+  .logos-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:20px; margin-bottom:25px; padding-bottom:20px; border-bottom:1px solid var(--border-color,#e2e8f0); }
+  .logo-card { background:var(--bg-body,#f8fafc); border:1px solid var(--border-color,#e2e8f0); border-radius:10px; padding:15px; text-align:center; }
+  .logo-card-title { font-size:0.82rem; font-weight:700; color:var(--text-dark,#334155); margin-bottom:10px; display:flex; align-items:center; justify-content:center; gap:6px; }
+  .logo-card-preview { width:100%; height:90px; border-radius:8px; border:2px dashed var(--border-color,#d1d5db); display:flex; align-items:center; justify-content:center; overflow:hidden; background:var(--bg-card,#fff); margin-bottom:10px; }
+  .logo-card-preview img { max-width:100%; max-height:100%; object-fit:contain; }
+  .logo-card-preview i { color:var(--text-muted,#cbd5e1); }
+  .logo-card-hint { font-size:0.72rem; color:var(--text-muted,#94a3b8); margin-top:6px; }
+  .btn-upload { display:inline-flex;align-items:center;gap:4px;cursor:pointer;padding:5px 14px;background:#eff6ff;color:var(--accent,#6366f1);border:1px solid #bfdbfe;border-radius:6px;font-size:0.78rem;font-weight:600;transition:background 0.15s; }
+  .btn-upload:hover { background:#dbeafe; }
+  .btn-empresa-volver:hover { background:var(--bg-body,#f8fafc); border-color:var(--accent,#6366f1); color:var(--accent,#6366f1); }
+
+  .form-grid-empresa { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+  .full-width { grid-column:span 2; }
+  .form-group { margin-bottom:0; }
+  .form-label { display:block; font-weight:600; color:var(--text-dark,#334155); margin-bottom:6px; font-size:0.85rem; }
+  .form-label .required { color:#ef4444; }
+  .form-control { width:100%; padding:10px 14px; border:1px solid var(--border-color,#e2e8f0); border-radius:8px; font-size:0.9rem; transition:all 0.2s; font-family:inherit; box-sizing:border-box; background:var(--bg-input,#fff); color:var(--text-dark,#1e293b); }
+  .form-control:focus { outline:none; border-color:var(--accent,#6366f1); box-shadow:0 0 0 3px rgba(99,102,241,0.1); }
+  textarea.form-control { resize:vertical; }
+  select.form-control { cursor:pointer; appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 12px center; background-size:16px; padding-right:36px; }
+
+  @media (max-width:768px) { .logos-grid { grid-template-columns:1fr; } .form-grid-empresa { grid-template-columns:1fr; } .full-width { grid-column:span 1; } }
+</style>
+
+<script>
+function previewLogo(input, previewId) {
+  if (input.files && input.files[0]) {
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      var preview = document.getElementById(previewId);
+      preview.innerHTML = '<img src="' + e.target.result + '" alt="Preview">';
+    };
+    reader.readAsDataURL(input.files[0]);
+  }
+}
+
+document.getElementById('formEmpresa')?.addEventListener('submit', function(e) {
+  e.preventDefault();
+  var form = this;
+  var btn = form.querySelector('button[type="submit"]');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+
+  var formData = new FormData(form);
+  formData.append('ajax', 'save');
+
+  fetch('/modulo?pagina=Empresa&ajax=save', {
+    method: 'POST',
+    body: formData
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-save"></i> Guardar Cambios';
+    if (d.status === 'success') {
+      showToast(d.msg || 'Empresa actualizada correctamente', 'success');
+    } else {
+      showToast('Error: ' + (d.msg || 'No se pudo guardar'), 'error');
+    }
+  })
+  .catch(function() {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-save"></i> Guardar Cambios';
+    showToast('Error de conexión', 'error');
+  });
+});
+</script>

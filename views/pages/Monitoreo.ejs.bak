@@ -1,0 +1,937 @@
+<div class="page-header">
+  <h2><i class="fas fa-desktop"></i> Monitoreo</h2>
+</div>
+
+<style>
+:root {
+  --mon-bg: var(--card-bg, #fff);
+  --mon-border: var(--border-color, #e2e8f0);
+  --mon-text: var(--text-primary, #1e293b);
+  --mon-muted: var(--text-muted, #64748b);
+  --mon-light: var(--bg-light, #f8fafc);
+  --mon-primary: #2563eb;
+  --mon-success: #10b981;
+  --mon-danger: #ef4444;
+  --mon-warning: #f59e0b;
+}
+.mon-wrap{font-family:'Inter',sans-serif;font-size:0.88rem;color:var(--mon-text);}
+.mon-tabs{display:flex;gap:4px;padding:0 0 12px;border-bottom:2px solid var(--mon-border);margin-bottom:16px;flex-wrap:wrap;overflow-x:auto;}
+.mon-tab{padding:8px 16px;border:none;background:var(--bg-secondary, #f1f5f9);color:var(--mon-muted);font-weight:600;font-size:0.84rem;border-radius:8px 8px 0 0;cursor:pointer;transition:all 0.15s;display:flex;align-items:center;gap:6px;white-space:nowrap;}
+.mon-tab:hover{background:var(--bg-hover, #e2e8f0);color:var(--mon-text);}.mon-tab.active{background:var(--mon-primary);color:#fff;}
+.mon-section{display:none;}.mon-section.active{display:block;}
+.mon-card{background:var(--mon-bg);border:1px solid var(--mon-border);border-radius:10px;padding:20px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,0.04);}
+.mon-btn{padding:8px 16px;border:none;border-radius:6px;font-weight:600;font-size:0.82rem;cursor:pointer;transition:all 0.15s;display:inline-flex;align-items:center;gap:5px;}
+.mon-btn-primary{background:var(--mon-primary);color:#fff;}.mon-btn-primary:hover{background:#1d4ed8;}
+.mon-btn-sm{padding:5px 10px;font-size:0.78rem;}
+.mon-btn-danger{background:var(--mon-danger);color:#fff;}.mon-btn-danger:hover{background:#dc2626;}
+.mon-btn-muted{background:var(--bg-secondary, #f1f5f9);color:var(--mon-muted);}.mon-btn-muted:hover{background:var(--bg-hover, #e2e8f0);}
+.mon-btn-success{background:var(--mon-success);color:#fff;}.mon-btn-success:hover{background:#059669;}
+.mon-equipo-item{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border:1px solid var(--mon-border);border-radius:8px;margin-bottom:8px;transition:all 0.15s;}
+.mon-equipo-item:hover{border-color:#bfdbfe;background:var(--bg-hover, #f8fafc);}
+.mon-equipo-name{font-weight:700;color:var(--mon-text);}.mon-equipo-ip{font-family:monospace;color:var(--mon-muted);font-size:0.82rem;margin-left:8px;}
+.mon-badge{padding:2px 8px;border-radius:10px;font-size:0.72rem;font-weight:700;display:inline-block;margin-right:4px;}
+.mon-badge-blue{background:#dbeafe;color:#1d4ed8;}.mon-badge-green{background:#dcfce7;color:#166534;}.mon-badge-red{background:#fee2e2;color:#991b1b;}.mon-badge-yellow{background:#fef3c7;color:#92400e;}
+.mon-stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:16px;}
+.mon-stat-box{background:var(--bg-secondary, #f8fafc);border:1px solid var(--mon-border);border-radius:8px;padding:14px;text-align:center;}
+.mon-stat-value{font-size:1.6rem;font-weight:800;line-height:1.2;color:var(--mon-text);}
+.mon-stat-label{font-size:0.75rem;color:var(--mon-muted);margin-top:4px;text-transform:uppercase;letter-spacing:0.5px;}
+.mon-stat-box.green .mon-stat-value{color:var(--mon-success);}
+.mon-stat-box.blue .mon-stat-value{color:var(--mon-primary);}
+.mon-stat-box.orange .mon-stat-value{color:var(--mon-warning);}
+.mon-stat-box.red .mon-stat-value{color:var(--mon-danger);}
+.mon-filter-bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px;}
+.mon-select{padding:6px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:0.82rem;background:var(--mon-bg);color:var(--mon-text);}
+.mon-empty{text-align:center;padding:40px;color:var(--mon-muted);}
+.mon-empty i{font-size:2rem;display:block;margin-bottom:10px;}
+.mon-iface-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--bg-hover, #f1f5f9);font-size:0.84rem;}
+.mon-iface-row:last-child{border-bottom:none;}
+.mon-iface-name{font-weight:600;color:var(--mon-text);min-width:140px;font-family:monospace;font-size:0.82rem;}
+.mon-iface-alias{color:var(--mon-muted);flex:1;font-size:0.8rem;min-width:0;overflow:hidden;text-overflow:ellipsis;}
+.mon-toggle{position:relative;width:36px;height:20px;display:inline-block;flex-shrink:0;}
+.mon-toggle input{opacity:0;width:0;height:0;}
+.mon-toggle .sl{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:#cbd5e1;border-radius:20px;transition:0.2s;}
+.mon-toggle .sl:before{content:'';position:absolute;height:14px;width:14px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:0.2s;}
+.mon-toggle input:checked+.sl{background:var(--mon-primary);}
+.mon-toggle input:checked+.sl:before{transform:translateX(16px);}
+.mon-chart-wrap{background:var(--mon-bg);border:1px solid var(--mon-border);border-radius:10px;padding:16px;margin-bottom:14px;}
+.mon-chart-title{font-weight:700;font-size:0.88rem;margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+.mon-wan-tag{background:#dbeafe;color:#1d4ed8;padding:1px 6px;border-radius:4px;font-size:0.7rem;font-weight:700;}
+.lease-list{max-height:360px;overflow-y:auto;}
+.lease-item{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-bottom:1px solid var(--bg-hover, #f1f5f9);font-size:0.82rem;}
+.lease-item:last-child{border-bottom:none;}
+.lease-ip{font-family:monospace;font-weight:600;color:var(--mon-text);}
+.lease-mac{font-family:monospace;font-size:0.75rem;color:var(--mon-muted);}
+.lease-host{color:var(--mon-text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:160px;}
+.mon-alert-item{padding:10px 14px;border-radius:8px;margin-bottom:6px;font-size:0.82rem;display:flex;align-items:flex-start;gap:10px;}
+.mon-alert-item.warning{background:#fffbeb;border:1px solid #fde68a;color:#92400e;}
+.mon-alert-item.error{background:#fef2f2;border:1px solid #fecaca;color:#991b1b;}
+.mon-alert-item.info{background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af;}
+.mon-alert-item.success{background:#f0fdf4;border:1px solid #bbf7d0;color:#166534;}
+.mon-bar-bg{background:var(--bg-hover, #e2e8f0);border-radius:4px;height:8px;overflow:hidden;margin-top:6px;}
+.mon-bar-fill{height:100%;border-radius:4px;transition:width 0.5s;}
+.mon-bar-fill.green{background:var(--mon-success);}
+.mon-bar-fill.blue{background:var(--mon-primary);}
+.mon-bar-fill.orange{background:var(--mon-warning);}
+.mon-bar-fill.red{background:var(--mon-danger);}
+@media(max-width:600px){.mon-tabs{gap:2px;}.mon-tab{padding:6px 10px;font-size:0.78rem;}.mon-iface-row{flex-wrap:wrap;gap:6px;}}
+@keyframes monPulse{0%,100%{opacity:1;}50%{opacity:0.3;}}
+</style>
+
+<!-- Status Summary Bar -->
+<div id="monStatusBar" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:16px;">
+  <div class="mon-stat-box green"><div class="mon-stat-value" id="monRoutersOnline">-</div><div class="mon-stat-label">Routers Online</div></div>
+  <div class="mon-stat-box red"><div class="mon-stat-value" id="monRoutersOffline">-</div><div class="mon-stat-label">Routers Offline</div></div>
+  <div class="mon-stat-box blue"><div class="mon-stat-value" id="monLatencyAvg">-</div><div class="mon-stat-label">Latencia Prom.</div></div>
+  <div class="mon-stat-box orange"><div class="mon-stat-value" id="monPingTargets">-</div><div class="mon-stat-label">Targets Ping</div></div>
+</div>
+
+<div class="mon-wrap">
+  <!-- Tabs -->
+  <div class="mon-tabs">
+    <button class="mon-tab active" onclick="monTab('trafico')"><i class="fas fa-chart-line"></i> Tráfico</button>
+    <button class="mon-tab" onclick="monTab('latencia')"><i class="fas fa-stopwatch"></i> Latencia</button>
+    <button class="mon-tab" onclick="monTab('equipos')"><i class="fas fa-server"></i> Equipos</button>
+    <button class="mon-tab" onclick="monTab('sistema')"><i class="fas fa-microchip"></i> Sistema</button>
+    <button class="mon-tab" onclick="monTab('dhcp')"><i class="fas fa-network-wired"></i> DHCP</button>
+    <button class="mon-tab" onclick="monTab('alertas')"><i class="fas fa-bell"></i> Alertas</button>
+  </div>
+
+  <!-- ===================== TRÁFICO ===================== -->
+  <div class="mon-section active" id="monSecTrafico">
+    <div class="mon-filter-bar">
+      <select id="monTraficoHoras" class="mon-select" onchange="monLoadTrafico()">
+        <option value="2">2 horas</option>
+        <option value="6">6 horas</option>
+        <option value="24" selected>24 horas</option>
+        <option value="72">3 días</option>
+        <option value="168">7 días</option>
+      </select>
+      <select id="monRouterFilter" class="mon-select" onchange="monLoadTrafico()">
+        <option value="0">Todos los routers</option>
+      </select>
+    </div>
+    <!-- WAN Total -->
+    <div id="monWanTotal" style="display:none;margin-bottom:16px;padding:20px;background:linear-gradient(135deg,#0f172a,#1e293b);border-radius:12px;color:#fff;">
+      <div style="font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#94a3b8;margin-bottom:12px;"><i class="fas fa-globe"></i> Tráfico WAN Total (última lectura)</div>
+      <div style="display:flex;gap:30px;flex-wrap:wrap;">
+        <div><div style="font-size:0.72rem;color:#86efac;">▼ ENTRANTE (IN)</div><div id="monWanIn" style="font-size:2.2rem;font-weight:800;color:#4ade80;line-height:1.1;">-</div></div>
+        <div><div style="font-size:0.72rem;color:#93c5fd;">▲ SALIENTE (OUT)</div><div id="monWanOut" style="font-size:2.2rem;font-weight:800;color:#60a5fa;line-height:1.1;">-</div></div>
+      </div>
+      <div style="margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.1);display:flex;gap:30px;flex-wrap:wrap;">
+        <div><div style="font-size:0.65rem;color:#6b7280;text-transform:uppercase;letter-spacing:0.5px;"><i class="fas fa-arrow-up"></i> Máximo IN registrado</div><div id="monWanMaxIn" style="font-size:1.1rem;font-weight:700;color:#86efac;">-</div></div>
+        <div><div style="font-size:0.65rem;color:#6b7280;text-transform:uppercase;letter-spacing:0.5px;"><i class="fas fa-arrow-up"></i> Máximo OUT registrado</div><div id="monWanMaxOut" style="font-size:1.1rem;font-weight:700;color:#93c5fd;">-</div></div>
+      </div>
+    </div>
+    <div id="monTraficoCharts"><div class="mon-empty"><i class="fas fa-chart-area"></i>Sin datos de tráfico.<br><small style="color:#94a3b8;">Configure routers e interfaces WAN, y ejecute el cron.</small></div></div>
+  </div>
+
+  <!-- ===================== LATENCIA ===================== -->
+  <div class="mon-section" id="monSecLatencia">
+    <!-- Google default ping -->
+    <div id="monPingDefault" style="display:none;margin-bottom:16px;padding:24px;background:var(--mon-bg);border:2px solid var(--mon-danger);border-radius:12px;text-align:center;">
+      <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--mon-muted);margin-bottom:4px;"><i class="fas fa-globe"></i> Google DNS (8.8.8.8)</div>
+      <div id="monPingDefaultValue" style="font-size:3rem;font-weight:800;line-height:1.2;"><span style="color:var(--mon-danger);">-</span></div>
+      <div id="monPingDefaultCorte" style="font-size:0.75rem;color:var(--mon-muted);margin-top:6px;"><i class="fas fa-check-circle" style="color:var(--mon-success);"></i> Sin cortes registrados</div>
+      <div style="position:relative;height:100px;margin-top:12px;"><canvas id="monChartPingDefault"></canvas></div>
+    </div>
+    <!-- Custom pings -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <div style="font-weight:700;font-size:0.88rem;color:var(--mon-muted);"><i class="fas fa-satellite-dish"></i> Ping personalizado</div>
+      <button class="mon-btn mon-btn-primary mon-btn-sm" onclick="monNuevoPing()"><i class="fas fa-plus"></i> Nuevo</button>
+    </div>
+    <div id="monPingCustomList"><div class="mon-empty"><i class="fas fa-satellite-dish"></i>Sin pings personalizados.<br><small>Agregue targets para monitorear latencia.</small></div></div>
+
+    <!-- Alertas WhatsApp -->
+    <div style="margin-top:24px;border-top:2px solid var(--mon-border);padding-top:20px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+        <div style="font-weight:700;font-size:0.92rem;color:var(--mon-text);display:flex;align-items:center;gap:8px;">
+          <i class="fab fa-whatsapp" style="color:#25D366;font-size:1.1rem;"></i> Alertas de Conexión
+        </div>
+      </div>
+      <div class="mon-card" style="border-left:4px solid #25D366;">
+        <div style="display:flex;align-items:flex-start;gap:16px;flex-wrap:wrap;">
+          <div style="flex:1;min-width:250px;">
+            <p style="font-size:0.82rem;color:var(--mon-muted);margin:0 0 14px;">
+              Reciba alertas cuando se detecte un <strong style="color:var(--mon-danger);">corte de conexión</strong> o cuando se <strong style="color:var(--mon-success);">reestablezca</strong> la conexión con un equipo monitoreado.
+            </p>
+            <div style="margin-bottom:12px;">
+              <label style="font-size:0.78rem;font-weight:600;color:var(--mon-text);display:block;margin-bottom:4px;">Número de teléfono</label>
+              <input type="text" id="monAlertaTelefono" class="form-control" placeholder="Ej: 18091234567" style="font-family:monospace;max-width:280px;">
+              <div style="font-size:0.72rem;color:var(--mon-muted);margin-top:3px;">Con código de país, sin espacios ni guiones</div>
+            </div>
+            <div style="margin-bottom:14px;display:flex;align-items:center;gap:10px;">
+              <label class="mon-toggle">
+                <input type="checkbox" id="monAlertaActivo">
+                <span class="sl"></span>
+              </label>
+              <span style="font-size:0.84rem;font-weight:600;color:var(--mon-success);" id="monAlertaActivoLabel">Activado</span>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <button class="mon-btn mon-btn-primary" onclick="monGuardarAlertaWa()" style="background:#25D366;"><i class="fas fa-save"></i> Guardar</button>
+              <button class="mon-btn mon-btn-muted" onclick="monTestAlertaWa()" id="btnTestAlerta"><i class="fas fa-paper-plane"></i> Enviar prueba</button>
+            </div>
+            <div id="monAlertaResult" style="display:none;margin-top:10px;padding:8px 12px;border-radius:6px;font-size:0.82rem;"></div>
+          </div>
+          <div style="flex:0 0 auto;min-width:220px;">
+            <div style="background:var(--bg-secondary, #f8fafc);border:1px solid var(--mon-border);border-radius:8px;padding:14px;">
+              <div style="font-size:0.75rem;font-weight:700;color:var(--mon-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;"><i class="fas fa-bell"></i> Ejemplo de alertas</div>
+              <div style="background:#fee2e2;border-radius:6px;padding:8px 10px;margin-bottom:6px;font-size:0.78rem;color:#991b1b;">
+                <i class="fas fa-times-circle"></i> <strong>Fallo de conexión</strong><br>
+                <span style="color:#b91c1c;">con Google DNS 8.8.8.8</span>
+              </div>
+              <div style="background:#dcfce7;border-radius:6px;padding:8px 10px;font-size:0.78rem;color:#166534;">
+                <i class="fas fa-check-circle"></i> <strong>Conexión reestablecida</strong><br>
+                <span style="color:#15803d;">con Google DNS 8.8.8.8 (12.3ms)</span>
+              </div>
+            </div>
+            <div style="margin-top:10px;">
+              <div style="font-size:0.72rem;font-weight:600;color:var(--mon-muted);margin-bottom:6px;cursor:pointer;" onclick="monToggleAlertaLog()"><i class="fas fa-history"></i> Historial de alertas <i class="fas fa-chevron-down" id="monAlertaLogChev" style="font-size:0.6rem;transition:transform 0.2s;"></i></div>
+              <div id="monAlertaLogList" style="display:none;max-height:200px;overflow-y:auto;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== EQUIPOS ===================== -->
+  <div class="mon-section" id="monSecEquipos">
+    <div class="mon-card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
+        <h3 style="margin:0;font-size:1rem;"><i class="fas fa-server" style="color:var(--mon-primary);"></i> Routers Monitoreados</h3>
+        <div style="display:flex;gap:6px;">
+          <button class="mon-btn mon-btn-muted" onclick="monCheckAllRouters()"><i class="fas fa-sync-alt"></i> Verificar Todos</button>
+          <a href="/configuracion" class="mon-btn mon-btn-primary"><i class="fas fa-plus"></i> Añadir Router</a>
+        </div>
+      </div>
+      <div id="monEquiposList"><div class="mon-empty"><i class="fas fa-spinner fa-spin" style="font-size:1.5rem;"></i><br>Cargando equipos...</div></div>
+    </div>
+    <!-- Interfaces panel -->
+    <div class="mon-card" id="monIfacesPanel" style="display:none;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+        <h3 style="margin:0;font-size:1rem;"><i class="fas fa-network-wired" style="color:#7c3aed;"></i> Interfaces: <span id="monIfacesEqName"></span></h3>
+        <button class="mon-btn mon-btn-muted mon-btn-sm" onclick="document.getElementById('monIfacesPanel').style.display='none'"><i class="fas fa-times"></i> Cerrar</button>
+      </div>
+      <div id="monIfacesLoading" style="text-align:center;padding:20px;color:var(--mon-muted);"><i class="fas fa-spinner fa-spin"></i> Consultando interfaces...</div>
+      <div id="monIfacesList" style="display:none;"></div>
+    </div>
+  </div>
+
+  <!-- ===================== SISTEMA ===================== -->
+  <div class="mon-section" id="monSecSistema">
+    <div class="mon-card" id="monSistemaContent">
+      <div class="mon-empty"><i class="fas fa-spinner fa-spin" style="font-size:1.5rem;"></i><br>Cargando datos del sistema...</div>
+    </div>
+  </div>
+
+  <!-- ===================== DHCP ===================== -->
+  <div class="mon-section" id="monSecDhcp">
+    <div class="mon-card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <h3 style="margin:0;font-size:0.95rem;"><i class="fas fa-network-wired" style="color:var(--mon-primary);"></i> Leases DHCP activos <span id="monDhcpCount" style="font-weight:400;color:var(--mon-muted);font-size:0.8rem;"></span></h3>
+        <select id="monDhcpRouter" class="mon-select" onchange="monLoadDhcp()">
+          <option value="">Seleccione router...</option>
+        </select>
+      </div>
+      <div id="monDhcpContent">
+        <div class="mon-empty"><i class="fas fa-spinner fa-spin" style="font-size:1.5rem;"></i><br>Cargando leases...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== ALERTAS ===================== -->
+  <div class="mon-section" id="monSecAlertas">
+    <div class="mon-card" id="monAlertasContent">
+      <div class="mon-empty"><i class="fas fa-spinner fa-spin" style="font-size:1.5rem;"></i><br>Cargando alertas...</div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Nuevo/Editar Ping -->
+<div id="monModalPing" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;display:none;align-items:center;justify-content:center;backdrop-filter:blur(2px);">
+  <div style="background:var(--mon-bg);width:92%;max-width:380px;border-radius:12px;padding:24px;box-shadow:0 20px 50px rgba(0,0,0,0.2);border-top:4px solid var(--mon-warning);">
+    <h3 style="margin:0 0 16px;font-size:1rem;"><i class="fas fa-satellite-dish" style="color:var(--mon-warning);"></i> <span id="monPingModalTitle">Nuevo Ping</span></h3>
+    <input type="hidden" id="monPingEditId" value="">
+    <div style="margin-bottom:12px;"><label style="font-size:0.78rem;font-weight:600;color:var(--mon-text);display:block;margin-bottom:4px;">Nombre</label><input type="text" id="monPingNombre" class="form-control" placeholder="Ej: Proveedor XYZ"></div>
+    <div style="margin-bottom:12px;"><label style="font-size:0.78rem;font-weight:600;color:var(--mon-text);display:block;margin-bottom:4px;">IP</label><input type="text" id="monPingIp" class="form-control" placeholder="1.1.1.1" style="font-family:monospace;"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;">
+      <button class="mon-btn mon-btn-muted" onclick="document.getElementById('monModalPing').style.display='none'">Cancelar</button>
+      <button class="mon-btn mon-btn-primary" onclick="monGuardarPing()" style="background:var(--mon-warning);"><i class="fas fa-save"></i> Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Live Traffic Modal -->
+<div id="monLiveModal" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:9999;display:none;align-items:center;justify-content:center;backdrop-filter:blur(3px);">
+  <div style="background:#0f172a;border-radius:16px;width:95%;max-width:700px;box-shadow:0 25px 60px rgba(0,0,0,0.4);overflow:hidden;">
+    <div style="padding:16px 20px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #1e293b;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="width:10px;height:10px;background:var(--mon-danger);border-radius:50%;animation:monPulse 1s infinite;"></div>
+        <div>
+          <div style="font-weight:700;color:#f1f5f9;font-size:1rem;" id="monLiveTitle">Interface</div>
+          <div style="font-size:0.75rem;color:#94a3b8;" id="monLiveStatus">Conectando...</div>
+        </div>
+      </div>
+      <button onclick="monLiveStop()" style="padding:8px 16px;background:var(--mon-danger);color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:0.85rem;display:flex;align-items:center;gap:6px;">
+        <i class="fas fa-stop"></i> Detener
+      </button>
+    </div>
+    <div style="padding:16px 20px;display:flex;gap:20px;justify-content:center;">
+      <div style="text-align:center;">
+        <div style="font-size:0.72rem;color:#64748b;text-transform:uppercase;font-weight:600;letter-spacing:1px;">▼ Download</div>
+        <div style="font-size:1.6rem;font-weight:800;color:var(--mon-primary);font-family:monospace;" id="monLiveIn">-- Mbps</div>
+      </div>
+      <div style="width:1px;background:#1e293b;"></div>
+      <div style="text-align:center;">
+        <div style="font-size:0.72rem;color:#64748b;text-transform:uppercase;font-weight:600;letter-spacing:1px;">▲ Upload</div>
+        <div style="font-size:1.6rem;font-weight:800;color:var(--mon-success);font-family:monospace;" id="monLiveOut">-- Mbps</div>
+      </div>
+    </div>
+    <div style="padding:0 20px 20px;height:250px;">
+      <canvas id="monLiveCanvas"></canvas>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+var monCharts={}, monLiveTimer=null, monLivePrev=null, monLiveChart=null;
+var monLiveData={labels:[],bpsIn:[],bpsOut:[]}, monLiveMaxPoints=60, monLiveEma={in:0,out:0,samples:0};
+
+function monTab(t){
+  document.querySelectorAll('.mon-tab').forEach(function(b){b.classList.remove('active');});
+  document.querySelectorAll('.mon-section').forEach(function(s){s.classList.remove('active');});
+  var tabId = 'monSec'+t.charAt(0).toUpperCase()+t.slice(1);
+  document.querySelector('.mon-tab[onclick*="'+t+'"]').classList.add('active');
+  document.getElementById(tabId).classList.add('active');
+  if(t==='trafico') monLoadTrafico();
+  if(t==='latencia'){monLoadLatencia();monLoadAlertaWa();}
+  if(t==='equipos'){monLoadEquipos();monUpdateStatusBar();}
+  if(t==='sistema') monLoadSistema();
+  if(t==='dhcp') monLoadDhcp();
+  if(t==='alertas') monLoadAlertas();
+}
+
+function monApi(action,data){
+  var fd=new FormData();if(data)Object.keys(data).forEach(function(k){fd.append(k,data[k]);});
+  return fetch('/modulo?pagina=Monitoreo&ajax='+action,{method:'POST',body:fd}).then(function(r){return r.json();});
+}
+function monEsc(s){var d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
+
+function monFormatBps(bps){
+  if(bps>=1e9) return (bps/1e9).toFixed(2)+' Gbps';
+  if(bps>=1e6) return (bps/1e6).toFixed(2)+' Mbps';
+  if(bps>=1e3) return (bps/1e3).toFixed(1)+' Kbps';
+  return Math.round(bps)+' bps';
+}
+function monFormatBytes(b){
+  if(b>=1e9) return (b/1e9).toFixed(2)+' GB';
+  if(b>=1e6) return (b/1e6).toFixed(2)+' MB';
+  if(b>=1e3) return (b/1e3).toFixed(1)+' KB';
+  return b+' B';
+}
+
+// ===== STATUS BAR =====
+function monUpdateStatusBar(){
+  Promise.all([
+    fetch('/api/routers').then(function(r){return r.json();}).catch(function(){return[];}),
+    monApi('listar_ping_targets').then(function(d){return d.success?d.targets||[]:[];}).catch(function(){return[];})
+  ]).then(function(results){
+    var routers=results[0], targets=results[1];
+    if(!routers||routers.length===0) return;
+    var online=0, offline=0;
+    routers.forEach(function(r){if(r.connected)online++;else offline++;});
+    document.getElementById('monRoutersOnline').textContent=online;
+    document.getElementById('monRoutersOffline').textContent=offline;
+    document.getElementById('monPingTargets').textContent=targets.length||0;
+    // Average latency from ping data
+    monApi('datos_latencia',{horas:1}).then(function(d){
+      if(d.success&&d.targets){
+        var total=0, count=0;
+        d.targets.forEach(function(t){
+          if(t.last_rtt!==null&&t.last_rtt!==undefined){total+=parseFloat(t.last_rtt);count++;}
+        });
+        document.getElementById('monLatencyAvg').textContent=count>0?(total/count).toFixed(1)+'ms':'N/A';
+      }
+    }).catch(function(){});
+  });
+}
+
+// ===== TRÁFICO WAN =====
+function monLoadTrafico(){
+  var h=document.getElementById('monTraficoHoras').value;
+  var routerId=document.getElementById('monRouterFilter').value;
+  var ct=document.getElementById('monTraficoCharts');
+  ct.innerHTML='<div class="mon-empty"><i class="fas fa-spinner fa-spin" style="font-size:1.5rem;"></i><br>Cargando...</div>';
+  document.getElementById('monWanTotal').style.display='none';
+  Object.keys(monCharts).forEach(function(k){if(monCharts[k]){try{monCharts[k].destroy();}catch(e){}}});monCharts={};
+
+  monApi('datos_trafico',{horas:h,router_id:routerId}).then(function(d){
+    if(!d.success||!d.data||d.data.length===0){
+      ct.innerHTML='<div class="mon-empty"><i class="fas fa-chart-area"></i>Sin datos de tráfico.<br><small>Configure routers con interfaces WAN, y ejecute el cron.</small></div>';
+      return;
+    }
+
+    // Group by router
+    var routers={}, wanByTs={}, wanLastIn=0, wanLastOut=0, wanMaxIn=0, wanMaxOut=0;
+    d.data.forEach(function(r){
+      var rn=r.router_name||'Router #'+r.router_id;
+      if(!routers[rn]) routers[rn]={data:[]};
+      routers[rn].data.push(r);
+      // Sum WAN
+      if(!wanByTs[r.ts]) wanByTs[r.ts]={in:0,out:0};
+      wanByTs[r.ts].in+=(parseFloat(r.bps_in)||0);
+      wanByTs[r.ts].out+=(parseFloat(r.bps_out)||0);
+    });
+
+    // Calculate last readings
+    Object.keys(routers).forEach(function(rn){
+      var rd=routers[rn].data;
+      if(rd.length>0){var last=rd[rd.length-1];wanLastIn+=parseFloat(last.bps_in)||0;wanLastOut+=parseFloat(last.bps_out)||0;}
+    });
+    Object.keys(wanByTs).forEach(function(ts){
+      if(wanByTs[ts].in>wanMaxIn) wanMaxIn=wanByTs[ts].in;
+      if(wanByTs[ts].out>wanMaxOut) wanMaxOut=wanByTs[ts].out;
+    });
+
+    // WAN Total panel
+    document.getElementById('monWanTotal').style.display='block';
+    document.getElementById('monWanIn').textContent=monFormatBps(wanLastIn);
+    document.getElementById('monWanOut').textContent=monFormatBps(wanLastOut);
+    document.getElementById('monWanMaxIn').textContent=monFormatBps(wanMaxIn);
+    document.getElementById('monWanMaxOut').textContent=monFormatBps(wanMaxOut);
+
+    // Build per-router charts
+    var html='', eqIdx=0;
+    Object.keys(routers).forEach(function(rn){
+      var rd=routers[rn].data;
+      var totalIn=parseFloat(rd[rd.length-1].bps_in)||0;
+      var totalOut=parseFloat(rd[rd.length-1].bps_out)||0;
+      html+='<div class="mon-chart-wrap" style="padding:0;">';
+      html+='<div onclick="monToggleRouterTrafico('+eqIdx+')" style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;cursor:pointer;user-select:none;" onmouseover="this.style.background=\''+'#f8fafc'+'\'" onmouseout="this.style.background=\'transparent\'">';
+      html+='<div style="display:flex;align-items:center;gap:10px;"><i class="fas fa-server" style="color:var(--mon-primary);"></i><div>';
+      html+='<div style="font-weight:700;font-size:0.9rem;">'+monEsc(rn)+'</div>';
+      html+='<div style="font-size:0.75rem;color:var(--mon-muted);">'+rd.length+' lectura(s)</div>';
+      html+='</div></div>';
+      html+='<div style="display:flex;gap:16px;align-items:center;">';
+      html+='<div style="text-align:right;font-size:0.8rem;"><span style="color:#4ade80;font-weight:700;">▼ '+monFormatBps(totalIn)+'</span></div>';
+      html+='<div style="text-align:right;font-size:0.8rem;"><span style="color:#60a5fa;font-weight:700;">▲ '+monFormatBps(totalOut)+'</span></div>';
+      html+='<i class="fas fa-chevron-down" id="monEqChev'+eqIdx+'" style="color:var(--mon-muted);transition:transform 0.2s;"></i>';
+      html+='</div></div>';
+      html+='<div id="monEqIfaces'+eqIdx+'" style="display:none;border-top:1px solid var(--mon-border);padding:12px 16px;">';
+      html+='<div style="position:relative;height:200px;"><canvas id="monChartT'+eqIdx+'"></canvas></div>';
+      html+='<div style="display:flex;gap:16px;margin-top:8px;font-size:0.75rem;flex-wrap:wrap;">';
+      html+='<div><span style="color:var(--mon-muted);">Máx IN:</span> <strong style="color:var(--mon-primary);">'+monFormatBps(d.max_in||0)+'</strong></div>';
+      html+='<div><span style="color:var(--mon-muted);">Máx OUT:</span> <strong style="color:var(--mon-success);">'+monFormatBps(d.max_out||0)+'</strong></div>';
+      html+='</div></div></div>';
+      eqIdx++;
+    });
+    ct.innerHTML=html;
+
+    // Store data for lazy rendering
+    window._monTraficoData={routers:routers,eqKeys:Object.keys(routers)};
+  });
+}
+
+function monToggleRouterTrafico(eqIdx){
+  var panel=document.getElementById('monEqIfaces'+eqIdx);
+  var chev=document.getElementById('monEqChev'+eqIdx);
+  if(panel.style.display==='none'){
+    panel.style.display='block';chev.style.transform='rotate(180deg)';
+    if(!panel.dataset.rendered){
+      panel.dataset.rendered='1';
+      var keys=window._monTraficoData.eqKeys;
+      if(!keys||eqIdx>=keys.length) return;
+      var rn=keys[eqIdx];
+      var rd=window._monTraficoData.routers[rn].data;
+      var labels=rd.map(function(r){return r.ts;});
+      var bIn=rd.map(function(r){return (parseFloat(r.bps_in)/1e6).toFixed(2);});
+      var bOut=rd.map(function(r){return (parseFloat(r.bps_out)/1e6).toFixed(2);});
+      var ctx=document.getElementById('monChartT'+eqIdx);
+      if(ctx){
+        monCharts['t'+eqIdx]=new Chart(ctx,{
+          type:'line',
+          data:{labels:labels,datasets:[
+            {label:'IN',data:bIn,borderColor:'#2563eb',backgroundColor:'rgba(37,99,235,0.08)',fill:true,tension:0.3,pointRadius:0,borderWidth:1.5},
+            {label:'OUT',data:bOut,borderColor:'#10b981',backgroundColor:'rgba(16,185,129,0.08)',fill:true,tension:0.3,pointRadius:0,borderWidth:1.5}
+          ]},
+          options:{
+            responsive:true,maintainAspectRatio:false,animation:{duration:200},
+            interaction:{intersect:false,mode:'index'},
+            plugins:{legend:{labels:{font:{size:9},boxWidth:10,padding:6}}},
+            scales:{
+              x:{ticks:{maxTicksLimit:8,font:{size:8},callback:function(v,i){var dt=new Date(labels[i]);return dt.getHours()+':'+String(dt.getMinutes()).padStart(2,'0');}}},
+              y:{beginAtZero:true,ticks:{font:{size:8}}}
+            }
+          }
+        });
+      }
+    }
+  }else{panel.style.display='none';chev.style.transform='rotate(0deg)';}
+}
+
+// ===== EQUIPOS (ROUTERS) =====
+function monLoadEquipos(){
+  fetch('/api/routers').then(function(r){return r.json();}).then(function(routers){
+    var el=document.getElementById('monEquiposList');
+    if(!routers||routers.length===0){
+      el.innerHTML='<div class="mon-empty"><i class="fas fa-server"></i>No hay routers configurados.<br><small>Configure routers desde Configuración.</small></div>';
+      return;
+    }
+    var h='';
+    routers.forEach(function(r){
+      var status=r.connected?'green':'red';
+      var statusText=r.connected?'Online':'Offline';
+      var lastSync=r.last_sync?'<small style="color:var(--mon-muted);font-size:0.7rem;">'+r.last_sync+'</small>':'<small style="color:var(--mon-muted);font-size:0.7rem;">Nunca sincronizado</small>';
+      h+='<div class="mon-equipo-item">';
+      h+='<div style="min-width:0;">';
+      h+='<div><span class="mon-equipo-name">'+monEsc(r.name)+'</span><span class="mon-equipo-ip">'+monEsc(r.ip)+':'+(r.port||8728)+'</span></div>';
+      h+='<div style="margin-top:4px;display:flex;align-items:center;gap:8px;">';
+      h+='<span class="mon-badge mon-badge-'+status+'">'+statusText+'</span>';
+      h+='<span class="mon-badge mon-badge-blue">MikroTik API</span>';
+      h+='</div>';
+      h+='<div style="margin-top:3px;">'+lastSync+'</div>';
+      h+='</div>';
+      h+='<div style="display:flex;gap:4px;flex-shrink:0;">';
+      h+='<button class="mon-btn mon-btn-muted mon-btn-sm" onclick="monTestRouter('+r.id+')" title="Probar conexión"><i class="fas fa-plug"></i></button>';
+      h+='<button class="mon-btn mon-btn-success mon-btn-sm" onclick="monDescubrirIfaces('+r.id+',\''+monEsc(r.name).replace(/'/g,"\\'")+'\')" title="Interfaces"><i class="fas fa-network-wired"></i></button>';
+      h+='</div></div>';
+    });
+    el.innerHTML=h;
+  }).catch(function(){
+    document.getElementById('monEquiposList').innerHTML='<div class="mon-empty" style="color:var(--mon-danger);"><i class="fas fa-exclamation-triangle"></i>Error al cargar routers</div>';
+  });
+}
+
+function monTestRouter(id){
+  var btn=event&&event.target?event.target.closest('button'):null;
+  if(btn){btn.disabled=true;btn.innerHTML='<i class="fas fa-spinner fa-spin"></i>';}
+  monApi('test_router',{router_id:id}).then(function(d){
+    if(btn){btn.disabled=false;btn.innerHTML='<i class="fas fa-plug"></i>';}
+    var msg='Router '+(d.success?'OK: ':'Error: ')+(d.success?d.msg:((d.msg||'Conexión fallida')+' ('+(d.error||'')+')'));
+    alert(msg);
+  }).catch(function(){
+    if(btn){btn.disabled=false;btn.innerHTML='<i class="fas fa-plug"></i>';}
+    alert('Error de red al probar router');
+  });
+}
+
+function monCheckAllRouters(){
+  monApi('check_all_routers').then(function(d){
+    if(d.success) monLoadEquipos();
+    alert(d.success?('Verificación completada. '+d.msg||''):(d.msg||'Error al verificar'));
+  });
+}
+
+function monDescubrirIfaces(id,nombre){
+  var panel=document.getElementById('monIfacesPanel');panel.style.display='block';
+  document.getElementById('monIfacesLoading').style.display='block';
+  document.getElementById('monIfacesList').style.display='none';
+  document.getElementById('monIfacesEqName').textContent=nombre||'...';
+
+  var fd=new FormData();fd.append('router_id',id);
+  fetch('/modulo?pagina=Monitoreo&ajax=descubrir_interfaces',{method:'POST',body:fd})
+  .then(function(r){return r.json();})
+  .then(function(d){
+    document.getElementById('monIfacesLoading').style.display='none';
+    var list=document.getElementById('monIfacesList');list.style.display='block';
+    if(!d.success){list.innerHTML='<div style="padding:16px;color:var(--mon-danger);background:#fef2f2;border-radius:8px;"><i class="fas fa-exclamation-triangle"></i> '+monEsc(d.msg)+'</div>';return;}
+    document.getElementById('monIfacesEqName').textContent=d.router||nombre;
+    var h='<div style="padding:8px 12px;background:#f0f9ff;border-radius:6px;margin-bottom:10px;font-size:0.78rem;color:#1d4ed8;"><i class="fas fa-info-circle"></i> Interfaces encontradas: '+(d.interfaces?d.interfaces.length:0)+'</div>';
+    if(!d.interfaces||d.interfaces.length===0){list.innerHTML=h+'<div style="padding:16px;color:var(--mon-muted);">Sin interfaces</div>';return;}
+    h+='<div style="display:flex;padding:6px 12px;font-size:0.72rem;font-weight:700;color:var(--mon-muted);text-transform:uppercase;border-bottom:2px solid var(--mon-border);gap:10px;">';
+    h+='<div style="min-width:140px;">Interface</div><div style="flex:1;">Name</div><div style="width:70px;text-align:center;">Es WAN</div></div>';
+    d.interfaces.forEach(function(i){
+      var chkWan=i.wan?'checked':'';
+      h+='<div class="mon-iface-row">';
+      h+='<div class="mon-iface-name">'+monEsc(i.name||i.interface_name||i.iface||'?')+'</div>';
+      h+='<div class="mon-iface-alias">'+monEsc(i.display_name||i.alias||'-')+'</div>';
+      h+='<div style="width:70px;text-align:center;"><label class="mon-toggle"><input type="checkbox" '+chkWan+' disabled><span class="sl"></span></label></div>';
+      h+='</div>';
+    });
+    list.innerHTML=h;
+  }).catch(function(e){
+    document.getElementById('monIfacesLoading').style.display='none';
+    document.getElementById('monIfacesList').style.display='block';
+    document.getElementById('monIfacesList').innerHTML='<div style="padding:16px;color:var(--mon-danger);background:#fef2f2;border-radius:8px;font-size:0.85rem;"><i class="fas fa-bug"></i> <strong>Error:</strong> '+monEsc(e.message)+'</div>';
+  });
+}
+
+// ===== LATENCIA / PING =====
+function monLoadLatencia(){
+  Object.keys(monCharts).forEach(function(k){if(k.startsWith('l')&&monCharts[k]){try{monCharts[k].destroy();}catch(e){}}delete monCharts[k];});
+
+  monApi('datos_latencia',{horas:24}).then(function(d){
+    if(!d.success||!d.targets||d.targets.length===0){
+      document.getElementById('monPingDefault').style.display='none';
+      document.getElementById('monPingCustomList').innerHTML='<div class="mon-empty"><i class="fas fa-satellite-dish"></i>Sin datos. Ejecute el cron de monitoreo.</div>';
+      return;
+    }
+    var defTarget=null,customs=[];
+    d.targets.forEach(function(t){if(t.es_default)defTarget=t;else customs.push(t);});
+
+    // Default (Google DNS)
+    if(defTarget){
+      var panel=document.getElementById('monPingDefault');panel.style.display='block';
+      var rtt=defTarget.last_rtt;
+      var valEl=document.getElementById('monPingDefaultValue');
+      if(rtt===null||rtt===undefined){
+        valEl.innerHTML='<span style="color:var(--mon-danger);">Timeout</span>';
+        panel.style.borderColor='var(--mon-danger)';
+      }else{
+        var ms=parseFloat(rtt);
+        var color=ms<=35?'var(--mon-success)':ms<=70?'var(--mon-warning)':'var(--mon-danger)';
+        valEl.innerHTML='<span style="color:'+color+';">'+ms.toFixed(1)+' ms</span>';
+        panel.style.borderColor=color;
+      }
+      var corteEl=document.getElementById('monPingDefaultCorte');
+      if(defTarget.ultimo_corte){
+        var dt=new Date(defTarget.ultimo_corte);
+        corteEl.innerHTML='<i class="fas fa-exclamation-triangle" style="color:var(--mon-danger);"></i> Último corte: '+dt.toLocaleDateString('es-DO',{day:'2-digit',month:'short',year:'numeric'})+' '+dt.toLocaleTimeString('es-DO',{hour:'2-digit',minute:'2-digit'});
+      }else{corteEl.innerHTML='<i class="fas fa-check-circle" style="color:var(--mon-success);"></i> Sin cortes registrados';}
+      // Mini chart
+      if(defTarget.data&&defTarget.data.length>1){
+        var labels=defTarget.data.map(function(r){return r.ts;});
+        var vals=defTarget.data.map(function(r){return r.rtt_ms!==null?parseFloat(r.rtt_ms):null;});
+        var ctx=document.getElementById('monChartPingDefault');
+        if(ctx){monCharts['ldef']=new Chart(ctx,{type:'line',data:{labels:labels,datasets:[{data:vals,borderColor:'#2563eb',backgroundColor:'rgba(37,99,235,0.06)',fill:true,tension:0.3,pointRadius:0,borderWidth:1.5}]},options:{responsive:true,maintainAspectRatio:false,animation:{duration:200},plugins:{legend:{display:false}},scales:{x:{ticks:{maxTicksLimit:6,font:{size:8},callback:function(v,i){var dt=new Date(labels[i]);return dt.getHours()+':'+String(dt.getMinutes()).padStart(2,'0');}}},y:{beginAtZero:true,ticks:{font:{size:8},callback:function(v){return v+'ms';}}}}}});}
+    }else{document.getElementById('monPingDefault').style.display='none';}
+
+    // Custom pings
+    var listEl=document.getElementById('monPingCustomList');
+    if(customs.length===0){listEl.innerHTML='<div style="text-align:center;padding:16px;color:var(--mon-muted);font-size:0.82rem;">No hay pings personalizados</div>';return;}
+    var h='';
+    customs.forEach(function(t){
+      var rtt=t.last_rtt;
+      var rttText=rtt!==null&&rtt!==undefined?parseFloat(rtt).toFixed(1)+' ms':'<span style="color:var(--mon-danger);font-weight:700;">Timeout</span>';
+      var corteText='Sin cortes';
+      if(t.ultimo_corte){var dt2=new Date(t.ultimo_corte);corteText=dt2.toLocaleDateString('es-DO',{day:'2-digit',month:'short'})+' '+dt2.toLocaleTimeString('es-DO',{hour:'2-digit',minute:'2-digit'});}
+      h+='<div style="display:flex;align-items:center;gap:12px;padding:10px 14px;border:1px solid var(--mon-border);border-radius:8px;margin-bottom:6px;background:var(--mon-bg);">';
+      h+='<div style="flex:1;min-width:0;"><div style="font-weight:600;font-size:0.84rem;color:var(--mon-text);">'+monEsc(t.nombre)+'</div>';
+      h+='<div style="font-size:0.72rem;color:var(--mon-muted);font-family:monospace;">'+monEsc(t.ip)+'</div></div>';
+      h+='<div style="text-align:center;min-width:70px;"><div style="font-size:1.1rem;font-weight:700;color:var(--mon-text);">'+rttText+'</div></div>';
+      h+='<div style="text-align:right;min-width:100px;font-size:0.72rem;color:var(--mon-muted);"><i class="fas fa-bolt" style="color:var(--mon-warning);"></i> '+corteText+'</div>';
+      h+='<div style="display:flex;gap:4px;">';
+      h+='<button class="mon-btn mon-btn-sm" style="background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe;" onclick=\'monEditarPing('+JSON.stringify({id:t.id,nombre:t.nombre,ip:t.ip}).replace(/'/g,"&#39;")+')\' title="Editar"><i class="fas fa-pen"></i></button>';
+      h+='<button class="mon-btn mon-btn-danger mon-btn-sm" onclick="monEliminarPing('+t.id+',\''+monEsc(t.nombre).replace(/'/g,"\\'")+'\')"><i class="fas fa-trash"></i></button>';
+      h+='</div></div>';
+    });
+    listEl.innerHTML=h;
+  });
+}
+
+function monNuevoPing(){
+  document.getElementById('monPingEditId').value='';
+  document.getElementById('monPingNombre').value='';
+  document.getElementById('monPingIp').value='';
+  document.getElementById('monPingModalTitle').textContent='Nuevo Ping';
+  document.getElementById('monModalPing').style.display='flex';
+}
+
+function monEditarPing(t){
+  document.getElementById('monPingEditId').value=t.id;
+  document.getElementById('monPingNombre').value=t.nombre;
+  document.getElementById('monPingIp').value=t.ip;
+  document.getElementById('monPingModalTitle').textContent='Editar Ping';
+  document.getElementById('monModalPing').style.display='flex';
+}
+
+function monGuardarPing(){
+  var editId=document.getElementById('monPingEditId').value;
+  var nombre=document.getElementById('monPingNombre').value.trim();
+  var ip=document.getElementById('monPingIp').value.trim();
+  if(!nombre||!ip){alert('Nombre e IP obligatorios');return;}
+  var action=editId?'editar_ping_target':'guardar_ping_target';
+  var data={nombre:nombre,ip:ip};
+  if(editId) data.id=editId;
+  monApi(action,data).then(function(d){
+    if(d.success){document.getElementById('monModalPing').style.display='none';monLoadLatencia();}
+    else alert(d.msg||'Error');
+  });
+}
+
+function monEliminarPing(id,nombre){
+  if(!confirm('¿Eliminar ping "'+nombre+'"?')) return;
+  monApi('eliminar_ping_target',{id:id}).then(function(){monLoadLatencia();});
+}
+
+// ===== ALERTAS WHATSAPP =====
+function monLoadAlertaWa(){
+  monApi('get_alerta_wa').then(function(d){
+    if(!d.success||!d.config) return;
+    var c=d.config;
+    document.getElementById('monAlertaTelefono').value=c.telefono||'';
+    document.getElementById('monAlertaActivo').checked=parseInt(c.activo)===1;
+    monUpdateAlertaLabel();
+  });
+}
+
+function monUpdateAlertaLabel(){
+  var on=document.getElementById('monAlertaActivo').checked;
+  var lbl=document.getElementById('monAlertaActivoLabel');
+  lbl.textContent=on?'Activado':'Desactivado';
+  lbl.style.color=on?'var(--mon-success)':'var(--mon-muted)';
+}
+document.addEventListener('DOMContentLoaded',function(){
+  var cb=document.getElementById('monAlertaActivo');
+  if(cb) cb.addEventListener('change',monUpdateAlertaLabel);
+});
+
+function monGuardarAlertaWa(){
+  var telefono=document.getElementById('monAlertaTelefono').value.trim();
+  var activo=document.getElementById('monAlertaActivo').checked?1:0;
+  monApi('save_alerta_wa',{telefono:telefono,activo:activo}).then(function(d){
+    var r=document.getElementById('monAlertaResult');
+    r.style.display='block';
+    if(d.success){
+      r.style.background='#f0fdf4';r.style.border='1px solid #bbf7d0';r.style.color='#166534';
+      r.innerHTML='<i class="fas fa-check-circle"></i> '+monEsc(d.msg);
+    }else{
+      r.style.background='#fef2f2';r.style.border='1px solid #fecaca';r.style.color='#991b1b';
+      r.innerHTML='<i class="fas fa-times-circle"></i> '+monEsc(d.msg);
+    }
+    setTimeout(function(){r.style.display='none';},4000);
+  });
+}
+
+function monTestAlertaWa(){
+  var btn=document.getElementById('btnTestAlerta');
+  btn.disabled=true;btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> Enviando...';
+  monApi('test_alerta_wa').then(function(d){
+    var r=document.getElementById('monAlertaResult');
+    r.style.display='block';
+    if(d.success){
+      r.style.background='#f0fdf4';r.style.border='1px solid #bbf7d0';r.style.color='#166534';
+      r.innerHTML='<i class="fas fa-check-circle"></i> '+monEsc(d.msg);
+    }else{
+      r.style.background='#fef2f2';r.style.border='1px solid #fecaca';r.style.color='#991b1b';
+      r.innerHTML='<i class="fas fa-times-circle"></i> '+monEsc(d.msg);
+    }
+    btn.disabled=false;btn.innerHTML='<i class="fas fa-paper-plane"></i> Enviar prueba';
+    setTimeout(function(){r.style.display='none';},5000);
+  }).catch(function(){
+    btn.disabled=false;btn.innerHTML='<i class="fas fa-paper-plane"></i> Enviar prueba';
+  });
+}
+
+function monToggleAlertaLog(){
+  var el=document.getElementById('monAlertaLogList');
+  var chev=document.getElementById('monAlertaLogChev');
+  if(el.style.display==='none'){
+    el.style.display='block';chev.style.transform='rotate(180deg)';
+    monLoadAlertaLog();
+  }else{el.style.display='none';chev.style.transform='rotate(0deg)';}
+}
+
+function monLoadAlertaLog(){
+  monApi('get_alerta_log').then(function(d){
+    var el=document.getElementById('monAlertaLogList');
+    if(!d.success||!d.logs||d.logs.length===0){
+      el.innerHTML='<div style="font-size:0.75rem;color:var(--mon-muted);padding:8px;text-align:center;">Sin alertas enviadas</div>';return;
+    }
+    var h='';
+    d.logs.forEach(function(l){
+      var isCorte=l.tipo==='corte';
+      var bg=isCorte?'#fef2f2':'#f0fdf4';
+      var color=isCorte?'#991b1b':'#166534';
+      var icon=isCorte?'fa-times-circle':'fa-check-circle';
+      var dt3=new Date(l.created_at);
+      var time=dt3.toLocaleDateString('es-DO',{day:'2-digit',month:'short'})+' '+dt3.toLocaleTimeString('es-DO',{hour:'2-digit',minute:'2-digit'});
+      h+='<div style="padding:5px 8px;margin-bottom:3px;border-radius:4px;background:'+bg+';font-size:0.72rem;color:'+color+';">';
+      h+='<i class="fas '+icon+'"></i> ';
+      h+='<strong>'+(l.target_nombre||'?')+'</strong> ';
+      h+='<span style="float:right;opacity:0.7;">'+time+'</span>';
+      h+='</div>';
+    });
+    el.innerHTML=h;
+  });
+}
+
+// ===== SISTEMA =====
+function monLoadSistema(){
+  var el=document.getElementById('monSistemaContent');
+  el.innerHTML='<div class="mon-empty"><i class="fas fa-spinner fa-spin" style="font-size:1.5rem;"></i><br>Cargando...</div>';
+  monApi('system').then(function(d){
+    if(!d.success){
+      el.innerHTML='<div class="mon-empty"><i class="fas fa-exclamation-triangle" style="color:var(--mon-danger);"></i>Error al cargar datos del sistema</div>';
+      return;
+    }
+    var cpu=d.cpu||0;
+    var ram=d.ram||{used:0,total:1,percent:0};
+    var disk=d.disk||{used:0,total:1,percent:0};
+    var uptime=d.uptime||'N/A';
+    var cpuColor=cpu<50?'green':cpu<80?'orange':'red';
+    var ramColor=ram.percent<50?'green':ram.percent<80?'blue':'orange';
+    var diskColor=disk.percent<70?'green':disk.percent<85?'orange':'red';
+
+    el.innerHTML='<div class="mon-stat-grid">'+
+      '<div class="mon-stat-box '+cpuColor+'"><div class="mon-stat-value">'+cpu.toFixed(1)+'%</div><div class="mon-stat-label">CPU</div><div class="mon-bar-bg"><div class="mon-bar-fill '+cpuColor+'" style="width:'+cpu+'%"></div></div></div>'+
+      '<div class="mon-stat-box '+ramColor+'"><div class="mon-stat-value">'+monFormatBytes(ram.used)+'</div><div class="mon-stat-label">RAM ('+ram.percent.toFixed(0)+'%)</div><div class="mon-bar-bg"><div class="mon-bar-fill '+ramColor+'" style="width:'+ram.percent+'%"></div></div></div>'+
+      '<div class="mon-stat-box '+diskColor+'"><div class="mon-stat-value">'+monFormatBytes(disk.used)+'</div><div class="mon-stat-label">Disco ('+disk.percent.toFixed(0)+'%)</div><div class="mon-bar-bg"><div class="mon-bar-fill '+diskColor+'" style="width:'+disk.percent+'%"></div></div></div>'+
+      '</div>'+
+      '<div style="display:flex;gap:20px;flex-wrap:wrap;justify-content:center;padding:8px;font-size:0.85rem;color:var(--mon-text);"><span><i class="fas fa-clock"></i> Uptime: '+monEsc(uptime)+'</span></div>';
+  });
+}
+
+// ===== DHCP =====
+function monLoadDhcp(){
+  var el=document.getElementById('monDhcpContent');
+  el.innerHTML='<div class="mon-empty"><i class="fas fa-spinner fa-spin" style="font-size:1.5rem;"></i><br>Cargando...</div>';
+  var routerId=document.getElementById('monDhcpRouter').value;
+  monApi('dhcp_leases',{router_id:routerId}).then(function(d){
+    if(!d.success){
+      el.innerHTML='<div class="mon-empty"><i class="fas fa-exclamation-triangle" style="color:var(--mon-danger);"></i>'+monEsc(d.msg||'Error al cargar leases')+'</div>';
+      return;
+    }
+    var leases=d.leases||[];
+    document.getElementById('monDhcpCount').textContent='('+leases.length+' activos)';
+    if(leases.length===0){
+      el.innerHTML='<div class="mon-empty"><i class="fas fa-network-wired"></i>No hay leases DHCP activos</div>';
+      return;
+    }
+    var h='<div class="lease-list">';
+    leases.forEach(function(l){
+      var statusColor=(l.status||'bound')==='bound'?'var(--mon-success)':'var(--mon-warning)';
+      h+='<div class="lease-item">'+
+        '<div><div class="lease-ip">'+monEsc(l.address)+'</div><div class="lease-mac">'+monEsc(l.mac_address||'-')+'</div></div>'+
+        '<div class="lease-host">'+monEsc(l.host_name||'-')+'</div>'+
+        '<div><span style="color:'+statusColor+';font-weight:600;font-size:0.75rem;">'+(l.status||'bound')+'</span></div>'+
+        '</div>';
+    });
+    h+='</div>';
+    el.innerHTML=h;
+  });
+}
+
+// ===== ALERTAS =====
+function monLoadAlertas(){
+  var el=document.getElementById('monAlertasContent');
+  el.innerHTML='<div class="mon-empty"><i class="fas fa-spinner fa-spin" style="font-size:1.5rem;"></i><br>Cargando...</div>';
+  monApi('alerts').then(function(d){
+    if(!d.success){
+      el.innerHTML='<div class="mon-empty"><i class="fas fa-exclamation-triangle" style="color:var(--mon-danger);"></i>Error al cargar alertas</div>';
+      return;
+    }
+    var alerts=d.alerts||[];
+    if(alerts.length===0){
+      el.innerHTML='<div class="mon-empty"><i class="fas fa-check-circle" style="color:var(--mon-success);"></i>No hay alertas activas</div>';
+      return;
+    }
+    var h='';
+    alerts.forEach(function(a){
+      var type=a.type||'info';
+      var icon=type==='error'?'fa-times-circle':type==='warning'?'fa-exclamation-triangle':type==='success'?'fa-check-circle':'fa-info-circle';
+      h+='<div class="mon-alert-item '+type+'"><i class="fas '+icon+'" style="margin-top:2px;"></i><div>'+monEsc(a.message||'')+'<br><small style="opacity:0.6;">'+monEsc(a.created_at||'')+'</small></div></div>';
+    });
+    el.innerHTML=h;
+  });
+}
+
+// ===== LIVE TRAFFIC =====
+function monLiveStart(ifaceId,ifName,routerName){
+  monLivePrev=null;
+  monLiveData={labels:[],bpsIn:[],bpsOut:[]};
+  monLiveEma={in:0,out:0,samples:0};
+  if(monLiveChart){try{monLiveChart.destroy();}catch(e){}monLiveChart=null;}
+
+  document.getElementById('monLiveTitle').textContent=ifName+' - '+routerName;
+  document.getElementById('monLiveIn').textContent='-- Mbps';
+  document.getElementById('monLiveOut').textContent='-- Mbps';
+  document.getElementById('monLiveStatus').textContent='Conectando...';
+  document.getElementById('monLiveStatus').style.color='#f59e0b';
+  document.getElementById('monLiveModal').style.display='flex';
+
+  var ctx=document.getElementById('monLiveCanvas');
+  monLiveChart=new Chart(ctx,{
+    type:'line',
+    data:{labels:[],datasets:[
+      {label:'IN',data:[],borderColor:'#2563eb',backgroundColor:'rgba(37,99,235,0.1)',fill:true,tension:0.3,pointRadius:0,borderWidth:2},
+      {label:'OUT',data:[],borderColor:'#10b981',backgroundColor:'rgba(16,185,129,0.1)',fill:true,tension:0.3,pointRadius:0,borderWidth:2}
+    ]},
+    options:{
+      responsive:true,maintainAspectRatio:false,animation:{duration:0},
+      interaction:{intersect:false,mode:'index'},
+      plugins:{legend:{labels:{font:{size:10},boxWidth:12,padding:8}}},
+      scales:{
+        x:{display:true,ticks:{maxTicksLimit:8,font:{size:9},callback:function(v,i){return monLiveData.labels[i]||'';}}},
+        y:{beginAtZero:true,title:{display:true,text:'Mbps',font:{size:10}},ticks:{font:{size:9}}}
+      }
+    }
+  });
+
+  monLivePoll();
+  monLiveTimer=setInterval(monLivePoll,3000);
+}
+
+function monLivePoll(){
+  monApi('snmp_live',{iface_id:monLiveIfaceId||0}).then(function(d){
+    if(!d.success){
+      document.getElementById('monLiveStatus').textContent='Error: '+(d.msg||'');
+      document.getElementById('monLiveStatus').style.color='#ef4444';
+      return;
+    }
+    document.getElementById('monLiveStatus').textContent='En vivo';
+    document.getElementById('monLiveStatus').style.color='#10b981';
+
+    var now=d.ts;
+    var bpsIn=parseFloat(d.bps_in||d.bytes_in||0);
+    var bpsOut=parseFloat(d.bps_out||d.bytes_out||0);
+
+    if(monLivePrev){
+      var mbpsIn=bpsIn/1e6;
+      var mbpsOut=bpsOut/1e6;
+
+      var alpha=0.3;
+      if(monLiveEma.samples===0){monLiveEma.in=mbpsIn;monLiveEma.out=mbpsOut;}
+      else{monLiveEma.in=alpha*mbpsIn+(1-alpha)*monLiveEma.in;monLiveEma.out=alpha*mbpsOut+(1-alpha)*monLiveEma.out;}
+      monLiveEma.samples++;
+
+      if(mbpsIn>=1000) document.getElementById('monLiveIn').textContent=(mbpsIn/1000).toFixed(2)+' Gbps';
+      else document.getElementById('monLiveIn').textContent=mbpsIn.toFixed(2)+' Mbps';
+      if(mbpsOut>=1000) document.getElementById('monLiveOut').textContent=(mbpsOut/1000).toFixed(2)+' Gbps';
+      else document.getElementById('monLiveOut').textContent=mbpsOut.toFixed(2)+' Mbps';
+
+      var timeLabel=new Date().toLocaleTimeString('es',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+      monLiveData.labels.push(timeLabel);
+      monLiveData.bpsIn.push(mbpsIn);
+      monLiveData.bpsOut.push(mbpsOut);
+      if(monLiveData.labels.length>monLiveMaxPoints){monLiveData.labels.shift();monLiveData.bpsIn.shift();monLiveData.bpsOut.shift();}
+
+      monLiveChart.data.labels=monLiveData.labels;
+      monLiveChart.data.datasets[0].data=monLiveData.bpsIn;
+      monLiveChart.data.datasets[1].data=monLiveData.bpsOut;
+      monLiveChart.update('none');
+    }
+    monLivePrev={ts:now,bpsIn:bpsIn,bpsOut:bpsOut};
+  }).catch(function(){});
+}
+
+var monLiveIfaceId=0;
+
+function monLiveStop(){
+  if(monLiveTimer){clearInterval(monLiveTimer);monLiveTimer=null;}
+  monLivePrev=null;
+  monLiveIfaceId=0;
+  document.getElementById('monLiveModal').style.display='none';
+  if(monLiveChart){try{monLiveChart.destroy();}catch(e){}monLiveChart=null;}
+}
+
+// ===== INIT =====
+(function(){
+  // Cargar routers en selects
+  fetch('/api/routers').then(function(r){return r.json();}).then(function(routers){
+    var selT=document.getElementById('monRouterFilter');
+    var selD=document.getElementById('monDhcpRouter');
+    routers.forEach(function(r){
+      var o1=document.createElement('option');
+      o1.value=r.id;o1.textContent=r.name;
+      selT.appendChild(o1);
+      var o2=document.createElement('option');
+      o2.value=r.id;o2.textContent=r.name;
+      selD.appendChild(o2);
+    });
+  }).catch(function(){});
+  monLoadTrafico();
+  monUpdateStatusBar();
+})();
+</script>

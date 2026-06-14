@@ -1,0 +1,440 @@
+<style>
+.emp-header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:18px}
+.emp-title{font-size:1.3rem;font-weight:700;color:#1e293b;display:flex;align-items:center;gap:10px}.emp-title i{color:#2563eb}
+.emp-card{background:#fff;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,.06);border:1px solid #e2e8f0;overflow:hidden}
+.emp-toolbar{padding:14px 16px;border-bottom:1px solid #e2e8f0;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.emp-search{padding:8px 14px;border:1px solid #e2e8f0;border-radius:8px;font-size:0.88rem;flex:1;min-width:200px;outline:none}.emp-search:focus{border-color:#2563eb}
+.emp-btn{padding:8px 16px;border:none;border-radius:8px;font-size:0.85rem;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all .15s}
+.emp-btn-primary{background:#2563eb;color:#fff}.emp-btn-primary:hover{background:#1d4ed8}
+.emp-btn-green{background:#16a34a;color:#fff}.emp-btn-green:hover{background:#15803d}
+.emp-btn-red{background:#dc2626;color:#fff;font-size:0.8rem;padding:5px 10px}.emp-btn-red:hover{background:#b91c1c}
+.emp-btn-gray{background:#f1f5f9;color:#475569;border:1px solid #e2e8f0}.emp-btn-gray:hover{background:#e2e8f0}
+.emp-btn-sm{font-size:0.8rem;padding:5px 12px}
+.emp-table{width:100%;border-collapse:collapse}
+.emp-table th{text-align:left;padding:10px 14px;font-size:0.75rem;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.5px;border-bottom:2px solid #e2e8f0;background:#f8fafc}
+.emp-table td{padding:10px 14px;border-bottom:1px solid #f1f5f9;font-size:0.88rem;color:#334155}
+.emp-table tr{cursor:pointer;transition:background .1s}.emp-table tr:hover{background:#eff6ff}
+.emp-name{font-weight:700;color:#1e293b}
+.emp-type{font-size:0.75rem;padding:2px 8px;border-radius:4px;font-weight:600;display:inline-block}
+.emp-type-Tecnico{background:#dbeafe;color:#1e40af}.emp-type-Secretaria{background:#fce7f3;color:#9d174d}
+.emp-type-Contable{background:#d1fae5;color:#065f46}.emp-type-Cobrador{background:#fef3c7;color:#92400e}.emp-type-Otro{background:#f1f5f9;color:#475569}
+.emp-salary{font-weight:700;color:#16a34a}.emp-loan{font-size:0.78rem;color:#dc2626;font-weight:600}
+.emp-empty{padding:40px;text-align:center;color:#94a3b8}.emp-loading{padding:30px;text-align:center;color:#94a3b8}
+.emp-pag{display:flex;gap:4px;align-items:center;justify-content:center;padding:12px 16px;flex-wrap:wrap}
+.emp-pag-btn{min-width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center;border:1px solid #e2e8f0;border-radius:6px;background:#fff;color:#475569;font-size:0.8rem;cursor:pointer;font-weight:500;transition:all .15s}
+.emp-pag-btn:hover:not(:disabled):not(.emp-pag-active){background:#f1f5f9}.emp-pag-btn:disabled{opacity:.3;cursor:not-allowed}
+.emp-pag-active{background:#2563eb;color:#fff;border-color:#2563eb}.emp-pag-info{font-size:0.75rem;color:#94a3b8;margin:0 6px}
+.emp-modal{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.4);z-index:3000;display:none;align-items:center;justify-content:center;padding:16px}
+.emp-modal-box{background:#fff;border-radius:14px;width:100%;max-width:600px;max-height:90vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.emp-modal-head{padding:16px 20px;border-bottom:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center}
+.emp-modal-head h3{margin:0;font-size:1rem;color:#1e293b;display:flex;align-items:center;gap:8px}
+.emp-modal-close{cursor:pointer;font-size:1.4rem;color:#94a3b8}.emp-modal-close:hover{color:#ef4444}
+.emp-modal-body{overflow-y:auto;flex:1;padding:20px}.emp-modal-foot{padding:12px 20px;border-top:1px solid #e2e8f0;display:flex;justify-content:flex-end;gap:8px}
+.emp-field{margin-bottom:14px}.emp-field label{display:block;font-size:0.8rem;font-weight:600;color:#475569;margin-bottom:4px}
+.emp-field input,.emp-field select,.emp-field textarea{width:100%;padding:8px 12px;border:1px solid #e2e8f0;border-radius:8px;font-size:0.88rem;outline:none;box-sizing:border-box}
+.emp-field input:focus,.emp-field select:focus{border-color:#2563eb}
+.emp-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.emp-detail-tabs{display:flex;gap:0;border-bottom:2px solid #e2e8f0;margin-bottom:16px}
+.emp-detail-tab{padding:10px 18px;font-size:0.85rem;font-weight:600;color:#64748b;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s}
+.emp-detail-tab:hover{color:#334155}.emp-detail-tab.active{color:#2563eb;border-bottom-color:#2563eb}
+.emp-info-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.emp-info-item{padding:10px 14px;background:#f8fafc;border-radius:8px}
+.emp-info-label{font-size:0.72rem;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:.3px}
+.emp-info-val{font-size:0.95rem;font-weight:600;color:#1e293b;margin-top:2px}
+.emp-order-row{padding:10px 14px;border-bottom:1px solid #f1f5f9;display:flex;justify-content:space-between;align-items:center;font-size:0.85rem}.emp-order-row:hover{background:#f8fafc}
+.emp-loan-row{padding:10px 14px;border:1px solid #f1f5f9;border-radius:8px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:0.85rem}
+.emp-loan-active{border-left:3px solid #dc2626}.emp-loan-paid{border-left:3px solid #16a34a;opacity:.6}
+.emp-status-badge{font-size:0.72rem;padding:2px 8px;border-radius:4px;font-weight:600}
+@media(max-width:600px){.emp-row,.emp-info-grid{grid-template-columns:1fr}.emp-toolbar{flex-direction:column}.emp-search{width:100%}}
+</style>
+
+<div class="emp-header">
+    <div class="emp-title"><i class="fas fa-user-tie"></i> Empleados</div>
+    <button class="emp-btn emp-btn-primary" onclick="empOpenForm(0)"><i class="fas fa-plus"></i> Nuevo Empleado</button>
+</div>
+
+<div class="emp-card">
+    <div class="emp-toolbar">
+        <input type="text" class="emp-search" id="empSearch" placeholder="Buscar por nombre, cédula o teléfono..." oninput="if(empTimer)clearTimeout(empTimer);empTimer=setTimeout(function(){empLoad(1)},400)">
+    </div>
+    <div id="empTableWrap"><div class="emp-loading"><i class="fas fa-spinner fa-spin"></i> Cargando...</div></div>
+    <div class="emp-pag" id="empPag"></div>
+</div>
+
+<!-- Modal Formulario Nuevo/Editar -->
+<div class="emp-modal" id="empFormModal">
+    <div class="emp-modal-box" style="max-width:550px;">
+        <div class="emp-modal-head"><h3 id="empFormTitle"><i class="fas fa-user-plus" style="color:#2563eb;"></i> Nuevo Empleado</h3><span class="emp-modal-close" onclick="empCloseForm()">&times;</span></div>
+        <div class="emp-modal-body">
+            <input type="hidden" id="empFormId" value="0">
+            <div class="emp-field"><label>Nombre completo *</label><input type="text" id="empName"></div>
+            <div class="emp-row">
+                <div class="emp-field"><label>Cédula</label><input type="text" id="empCedula"></div>
+                <div class="emp-field"><label>Teléfono</label><input type="text" id="empPhone"></div>
+            </div>
+            <div class="emp-row">
+                <div class="emp-field"><label>Tipo de empleado</label>
+                    <select id="empType" onchange="document.getElementById('empTypeOtherWrap').style.display=this.value==='Otro'?'':'none'">
+                        <option value="Tecnico">Técnico</option><option value="Secretaria">Secretaria</option>
+                        <option value="Contable">Contable</option><option value="Cobrador">Cobrador</option><option value="Otro">Otro</option>
+                    </select></div>
+                <div class="emp-field" id="empTypeOtherWrap" style="display:none;"><label>Especificar</label><input type="text" id="empTypeOther"></div>
+            </div>
+            <div class="emp-row">
+                <div class="emp-field"><label>Periodo</label>
+                    <select id="empPeriod" onchange="document.getElementById('empPayDay2Wrap').style.display=this.value==='quincenal'?'':'none';document.getElementById('empSalaryLabel').textContent=this.value==='quincenal'?'Salario Quincenal RD$':'Salario Mensual RD$'">
+                        <option value="mensual">Mensual</option><option value="quincenal">Quincenal</option>
+                    </select></div>
+                <div class="emp-field"><label id="empSalaryLabel">Salario Mensual RD$</label><input type="number" id="empSalary" step="0.01" min="0"></div>
+            </div>
+            <div class="emp-row">
+                <div class="emp-field"><label>Día de pago 1</label><input type="number" id="empPayDay1" min="1" max="31" value="1"></div>
+                <div class="emp-field" id="empPayDay2Wrap" style="display:none;"><label>Día de pago 2</label><input type="number" id="empPayDay2" min="1" max="31" value="15"></div>
+            </div>
+            <div class="emp-row">
+                <div class="emp-field"><label>Fecha de ingreso</label><input type="date" id="empHireDate"></div>
+                <div class="emp-field"><label>Asociar a usuario</label>
+                    <select id="empUserId"><option value="0">-- Sin asociar --</option>
+                    <% if (typeof usuarios !== 'undefined' && usuarios) { %>
+                      <% usuarios.forEach(function(u) { %>
+                        <option value="<%= u.id %>"><%= u.nombre || u.username %> (<%= u.rol || 'Usuario' %>)</option>
+                      <% }); %>
+                    <% } %>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="emp-modal-foot">
+            <button class="emp-btn emp-btn-gray" onclick="empCloseForm()">Cancelar</button>
+            <button class="emp-btn emp-btn-primary" onclick="empSave()"><i class="fas fa-save"></i> Guardar</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Detalle Empleado -->
+<div class="emp-modal" id="empDetailModal">
+    <div class="emp-modal-box" style="max-width:680px;">
+        <div class="emp-modal-head"><h3><i class="fas fa-user" style="color:#2563eb;"></i> <span id="empDetailName"></span></h3><span class="emp-modal-close" onclick="document.getElementById('empDetailModal').style.display='none'">&times;</span></div>
+        <div class="emp-modal-body" style="padding:0;">
+            <div class="emp-detail-tabs">
+                <div class="emp-detail-tab active" onclick="empDTab('info',this)">Información</div>
+                <div class="emp-detail-tab" onclick="empDTab('orders',this)">Órdenes</div>
+                <div class="emp-detail-tab" onclick="empDTab('loans',this)">Préstamos</div>
+            </div>
+            <div style="padding:16px 20px;">
+                <div id="empDInfo"></div><div id="empDOrders" style="display:none;"></div><div id="empDLoans" style="display:none;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Préstamo -->
+<div class="emp-modal" id="empLoanModal">
+    <div class="emp-modal-box" style="max-width:420px;">
+        <div class="emp-modal-head"><h3 id="empLoanTitle"><i class="fas fa-hand-holding-usd" style="color:#2563eb;"></i> Préstamo</h3><span class="emp-modal-close" onclick="document.getElementById('empLoanModal').style.display='none'">&times;</span></div>
+        <div class="emp-modal-body">
+            <input type="hidden" id="empLoanId" value="0">
+            <div class="emp-field"><label>Monto (RD$) *</label><input type="number" id="empLoanAmount" step="0.01" min="0"></div>
+            <div class="emp-field"><label>Descripción</label><input type="text" id="empLoanDesc"></div>
+            <div class="emp-field"><label>Fecha</label><input type="date" id="empLoanDate"></div>
+        </div>
+        <div class="emp-modal-foot">
+            <button class="emp-btn emp-btn-gray" onclick="document.getElementById('empLoanModal').style.display='none'">Cancelar</button>
+            <button class="emp-btn emp-btn-primary" onclick="empSaveLoan()"><i class="fas fa-save"></i> Guardar</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Abonar -->
+<div class="emp-modal" id="empPayModal">
+    <div class="emp-modal-box" style="max-width:380px;">
+        <div class="emp-modal-head"><h3><i class="fas fa-coins" style="color:#16a34a;"></i> Abonar</h3><span class="emp-modal-close" onclick="document.getElementById('empPayModal').style.display='none'">&times;</span></div>
+        <div class="emp-modal-body">
+            <input type="hidden" id="empPayLoanId" value="0">
+            <div style="margin-bottom:12px;font-size:0.85rem;color:#64748b;">Restante: <b id="empPayMax" style="color:#dc2626;">$0.00</b></div>
+            <div class="emp-field"><label>Monto a abonar (RD$)</label><input type="number" id="empPayAmount" step="0.01" min="0"></div>
+        </div>
+        <div class="emp-modal-foot">
+            <button class="emp-btn emp-btn-gray" onclick="document.getElementById('empPayModal').style.display='none'">Cancelar</button>
+            <button class="emp-btn emp-btn-green" onclick="empDoPayLoan()"><i class="fas fa-check"></i> Abonar</button>
+        </div>
+    </div>
+</div>
+
+<script>
+var empTimer=null, empCurrentId=0;
+
+var fmt=function(n){return '$'+parseFloat(n||0).toLocaleString('es-DO',{minimumFractionDigits:2,maximumFractionDigits:2});};
+
+function empLoad(page){
+    var search=document.getElementById('empSearch').value.trim();
+    var wrap=document.getElementById('empTableWrap');
+    wrap.innerHTML='<div class="emp-loading"><i class="fas fa-spinner fa-spin"></i> Cargando...</div>';
+    var xhr=new XMLHttpRequest();
+    xhr.open('GET','/api/empleados?page='+(page||1)+'&search='+encodeURIComponent(search));
+    xhr.setRequestHeader('X-Requested-With','XMLHttpRequest');
+    xhr.onload=function(){
+        try{var d=JSON.parse(xhr.responseText);}catch(e){wrap.innerHTML='<div class="emp-empty">Error al cargar datos</div>';return;}
+        if(!d.success){wrap.innerHTML='<div class="emp-empty">'+(d.message||'Error')+'</div>';return;}
+        if(!d.data.length){wrap.innerHTML='<div class="emp-empty"><i class="fas fa-user-slash" style="font-size:1.5rem;display:block;margin-bottom:8px;opacity:.4;"></i>No se encontraron empleados</div>';document.getElementById('empPag').innerHTML='';return;}
+        var h='<table class="emp-table"><thead><tr><th>Nombre</th><th>Tipo</th><th>Teléfono</th><th>Salario</th><th>Periodo</th><th>Préstamos</th></tr></thead><tbody>';
+        for(var i=0;i<d.data.length;i++){
+            var e=d.data[i],tp=e.tipo==='Otro'?(e.tipo_otro||'Otro'):e.tipo,lb=parseFloat(e.deuda||0);
+            h+='<tr onclick="empOpenDetail('+e.id+')">';
+            h+='<td><span class="emp-name">'+e.nombre+'</span><br><span style="font-size:0.75rem;color:#94a3b8;">'+(e.cedula||'-')+(e.usuario_nombre?' | <i class="fas fa-link" style="font-size:0.6rem;"></i> '+e.usuario_nombre:'')+'</span></td>';
+            h+='<td><span class="emp-type emp-type-'+e.tipo+'">'+tp+'</span></td>';
+            h+='<td>'+(e.telefono||'-')+'</td><td><span class="emp-salary">'+fmt(e.salario)+'</span></td>';
+            h+='<td style="font-size:0.82rem;">'+(e.periodo==='quincenal'?'Quincenal':'Mensual')+'</td>';
+            h+='<td>'+(lb>0?'<span class="emp-loan">'+fmt(lb)+'</span>':'<span style="color:#16a34a;font-size:0.8rem;">Sin deuda</span>')+'</td></tr>';
+        }
+        h+='</tbody></table>';wrap.innerHTML=h;
+        var pg='';
+        if(d.pages>1){pg+='<button class="emp-pag-btn" onclick="empLoad(1)" '+(d.page<=1?'disabled':'')+'><i class="fas fa-angle-double-left"></i></button>';
+        pg+='<button class="emp-pag-btn" onclick="empLoad('+(d.page-1)+')" '+(d.page<=1?'disabled':'')+'><i class="fas fa-angle-left"></i></button>';
+        var s=Math.max(1,d.page-2),en=Math.min(d.pages,d.page+2);for(var p=s;p<=en;p++){pg+='<button class="emp-pag-btn '+(p===d.page?'emp-pag-active':'')+'" onclick="empLoad('+p+')">'+p+'</button>';}
+        pg+='<button class="emp-pag-btn" onclick="empLoad('+(d.page+1)+')" '+(d.page>=d.pages?'disabled':'')+'><i class="fas fa-angle-right"></i></button>';
+        pg+='<button class="emp-pag-btn" onclick="empLoad('+d.pages+')" '+(d.page>=d.pages?'disabled':'')+'><i class="fas fa-angle-double-right"></i></button>';}
+        pg+='<span class="emp-pag-info">Pág '+d.page+' de '+d.pages+'</span>';
+        document.getElementById('empPag').innerHTML=pg;
+    };xhr.send();
+}
+
+function empOpenForm(id){
+    document.getElementById('empFormId').value=id;
+    document.getElementById('empFormTitle').innerHTML=id?'<i class="fas fa-user-edit" style="color:#2563eb;"></i> Editar Empleado':'<i class="fas fa-user-plus" style="color:#2563eb;"></i> Nuevo Empleado';
+    if(id){
+        var xhr=new XMLHttpRequest();xhr.open('GET','/api/empleados/'+id);
+        xhr.setRequestHeader('X-Requested-With','XMLHttpRequest');
+        xhr.onload=function(){try{var d=JSON.parse(xhr.responseText);if(d.success){var e=d.data;
+            document.getElementById('empName').value=e.nombre||'';
+            document.getElementById('empCedula').value=e.cedula||'';
+            document.getElementById('empPhone').value=e.telefono||'';
+            document.getElementById('empSalary').value=e.salario||'';
+            document.getElementById('empPeriod').value=e.periodo||'mensual';
+            document.getElementById('empPayDay1').value=e.dia_pago1||1;
+            document.getElementById('empPayDay2').value=e.dia_pago2||15;
+            document.getElementById('empType').value=e.tipo||'Tecnico';
+            document.getElementById('empTypeOther').value=e.tipo_otro||'';
+            document.getElementById('empHireDate').value=e.fecha_ingreso||'';
+            document.getElementById('empUserId').value=e.usuario_id||0;
+            document.getElementById('empPayDay2Wrap').style.display=e.periodo==='quincenal'?'':'none';
+            document.getElementById('empSalaryLabel').textContent=e.periodo==='quincenal'?'Salario Quincenal RD$':'Salario Mensual RD$';
+            document.getElementById('empTypeOtherWrap').style.display=e.tipo==='Otro'?'':'none';
+        }}catch(e){}};xhr.send();
+    } else {
+        ['empName','empCedula','empPhone','empSalary','empTypeOther','empHireDate'].forEach(function(x){document.getElementById(x).value='';});
+        document.getElementById('empPeriod').value='mensual';document.getElementById('empPayDay1').value='1';document.getElementById('empPayDay2').value='15';
+        document.getElementById('empType').value='Tecnico';document.getElementById('empUserId').value='0';
+        document.getElementById('empPayDay2Wrap').style.display='none';document.getElementById('empTypeOtherWrap').style.display='none';
+        document.getElementById('empSalaryLabel').textContent='Salario Mensual RD$';
+    }
+    document.getElementById('empFormModal').style.display='flex';
+}
+function empCloseForm(){document.getElementById('empFormModal').style.display='none';}
+
+function empSave(){
+    var body={
+        id: document.getElementById('empFormId').value,
+        nombre: document.getElementById('empName').value,
+        cedula: document.getElementById('empCedula').value,
+        telefono: document.getElementById('empPhone').value,
+        salario: document.getElementById('empSalary').value,
+        periodo: document.getElementById('empPeriod').value,
+        dia_pago1: document.getElementById('empPayDay1').value,
+        dia_pago2: document.getElementById('empPayDay2').value,
+        tipo: document.getElementById('empType').value,
+        tipo_otro: document.getElementById('empTypeOther').value,
+        fecha_ingreso: document.getElementById('empHireDate').value,
+        usuario_id: document.getElementById('empUserId').value
+    };
+    var xhr=new XMLHttpRequest();xhr.open('POST','/api/empleados/save');
+    xhr.setRequestHeader('Content-Type','application/json');
+    xhr.setRequestHeader('X-Requested-With','XMLHttpRequest');
+    xhr.onload=function(){try{var d=JSON.parse(xhr.responseText);if(d.success){empCloseForm();empLoad(1);}else alert(d.message||'Error al guardar');}catch(e){alert('Error de conexión');}};
+    xhr.send(JSON.stringify(body));
+}
+
+function empOpenDetail(id){
+    empCurrentId=id;
+    var xhr=new XMLHttpRequest();xhr.open('GET','/api/empleados/'+id);
+    xhr.setRequestHeader('X-Requested-With','XMLHttpRequest');
+    xhr.onload=function(){
+        try{var d=JSON.parse(xhr.responseText);}catch(e){return;}if(!d.success)return;var e=d.data;
+        document.getElementById('empDetailName').textContent=e.nombre;
+        var tp=e.tipo==='Otro'?(e.tipo_otro||'Otro'):e.tipo;
+        var hireFmt=e.fecha_ingreso?new Date(e.fecha_ingreso+'T12:00:00').toLocaleDateString('es-DO'):'No registrada';
+        var payDays=e.dia_pago1+(e.periodo==='quincenal'?' y '+e.dia_pago2:'');
+        var h='<div class="emp-info-grid">';
+        h+='<div class="emp-info-item"><div class="emp-info-label">Nombre</div><div class="emp-info-val">'+e.nombre+'</div></div>';
+        h+='<div class="emp-info-item"><div class="emp-info-label">Cédula</div><div class="emp-info-val">'+(e.cedula||'-')+'</div></div>';
+        h+='<div class="emp-info-item"><div class="emp-info-label">Teléfono</div><div class="emp-info-val">'+(e.telefono||'-')+'</div></div>';
+        h+='<div class="emp-info-item"><div class="emp-info-label">Tipo</div><div class="emp-info-val"><span class="emp-type emp-type-'+e.tipo+'">'+tp+'</span></div></div>';
+        h+='<div class="emp-info-item"><div class="emp-info-label">Salario</div><div class="emp-info-val" style="color:#16a34a;">'+fmt(e.salario)+'</div></div>';
+        h+='<div class="emp-info-item"><div class="emp-info-label">Periodo</div><div class="emp-info-val">'+(e.periodo==='quincenal'?'Quincenal':'Mensual')+'</div></div>';
+        h+='<div class="emp-info-item"><div class="emp-info-label">Días de pago</div><div class="emp-info-val">'+payDays+'</div></div>';
+        h+='<div class="emp-info-item"><div class="emp-info-label">Ingreso</div><div class="emp-info-val">'+hireFmt+'</div></div>';
+        h+='<div class="emp-info-item"><div class="emp-info-label">Usuario asociado</div><div class="emp-info-val">'+(e.usuario_nombre||'<span style="color:#94a3b8;">Sin asociar</span>')+'</div></div>';
+        h+='</div>';
+        h+='<div style="margin-top:16px;display:flex;gap:8px;">';
+        h+='<button class="emp-btn emp-btn-primary emp-btn-sm" onclick="empOpenForm('+e.id+');document.getElementById(\'empDetailModal\').style.display=\'none\'"><i class="fas fa-edit"></i> Editar</button>';
+        h+='<button class="emp-btn emp-btn-red" onclick="empDelete('+e.id+')"><i class="fas fa-trash"></i> Eliminar</button>';
+        h+='</div>';
+        document.getElementById('empDInfo').innerHTML=h;
+        document.querySelectorAll('.emp-detail-tab').forEach(function(t,i){t.classList.toggle('active',i===0);});
+        document.getElementById('empDInfo').style.display='';document.getElementById('empDOrders').style.display='none';document.getElementById('empDLoans').style.display='none';
+        document.getElementById('empDetailModal').style.display='flex';
+    };xhr.send();
+}
+
+function empDTab(tab,el){
+    document.querySelectorAll('.emp-detail-tab').forEach(function(t){t.classList.remove('active');});el.classList.add('active');
+    document.getElementById('empDInfo').style.display=tab==='info'?'':'none';
+    document.getElementById('empDOrders').style.display=tab==='orders'?'':'none';
+    document.getElementById('empDLoans').style.display=tab==='loans'?'':'none';
+    if(tab==='orders')empLoadOrders();if(tab==='loans')empLoadLoans();
+}
+
+function empLoadOrders(mes,anio){
+    var now=new Date();if(!mes)mes=now.getMonth()+1;if(!anio)anio=now.getFullYear();
+    var wrap=document.getElementById('empDOrders');
+    wrap.innerHTML='<div class="emp-loading"><i class="fas fa-spinner fa-spin"></i></div>';
+    var xhr=new XMLHttpRequest();
+    xhr.open('GET','/api/empleados/'+empCurrentId+'/ordenes?mes='+mes+'&anio='+anio);
+    xhr.setRequestHeader('X-Requested-With','XMLHttpRequest');
+    xhr.onload=function(){
+        try{var d=JSON.parse(xhr.responseText);}catch(e){wrap.innerHTML='<div class="emp-empty">Error</div>';return;}
+        if(!d.success){wrap.innerHTML='<div class="emp-empty">'+(d.message||'Error')+'</div>';return;}
+        var mN=['','Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+        var h='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;">';
+        h+='<div style="font-size:0.85rem;color:#64748b;"><b>'+d.total+'</b> órdenes | <b style="color:#16a34a;">'+d.completadas+'</b> completadas</div>';
+        h+='<div style="display:flex;gap:4px;"><select style="padding:4px 8px;border:1px solid #e2e8f0;border-radius:6px;font-size:0.82rem;" onchange="empLoadOrders(this.value,'+anio+')">';
+        for(var m=1;m<=12;m++){h+='<option value="'+m+'" '+(m==mes?'selected':'')+'>'+mN[m]+'</option>';}
+        h+='</select><select style="padding:4px 8px;border:1px solid #e2e8f0;border-radius:6px;font-size:0.82rem;" onchange="empLoadOrders('+mes+',this.value)">';
+        for(var y=now.getFullYear();y>=now.getFullYear()-2;y--){h+='<option value="'+y+'" '+(y==anio?'selected':'')+'>'+y+'</option>';}
+        h+='</select></div></div>';
+        if(!d.data.length){h+='<div class="emp-empty">Sin órdenes para este período</div>';}
+        else{for(var i=0;i<d.data.length;i++){var o=d.data[i];
+            var stColors={completada:'#16a34a',completed:'#16a34a',in_progress:'#2563eb',pendiente:'#f59e0b',cancelada:'#dc2626',cancelled:'#dc2626',cerrada:'#16a34a'};
+            var stNames={completada:'Completada',completed:'Completada',in_progress:'En progreso',pendiente:'Pendiente',cancelada:'Cancelada',cancelled:'Cancelada',cerrada:'Cerrada'};
+            var stC=stColors[o.estado]||'#94a3b8',stN=stNames[o.estado]||o.estado;
+            var dt=o.created_at?new Date(o.created_at).toLocaleDateString('es-DO'):'';
+            h+='<div class="emp-order-row"><div style="min-width:0;flex:1;"><div style="font-weight:600;">#'+o.id+' '+(o.tipo||'')+'</div>';
+            h+='<div style="font-size:0.78rem;color:#64748b;">'+(o.detalle||'')+'</div>';
+            h+='<div style="font-size:0.75rem;color:#94a3b8;margin-top:2px;">'+(o.cliente_nombre?'<span style="color:#2563eb;">'+o.cliente_nombre+'</span>':'')+(o.zona_nombre?' | '+o.zona_nombre:'')+' | '+dt+'</div></div>';
+            h+='<span class="emp-status-badge" style="background:'+stC+'15;color:'+stC+';">'+stN+'</span></div>';
+        }}
+        wrap.innerHTML=h;
+    };xhr.send();
+}
+
+function empLoadLoans(){
+    var wrap=document.getElementById('empDLoans');
+    wrap.innerHTML='<div class="emp-loading"><i class="fas fa-spinner fa-spin"></i></div>';
+    var xhr=new XMLHttpRequest();xhr.open('GET','/api/empleados/'+empCurrentId+'/prestamos');
+    xhr.setRequestHeader('X-Requested-With','XMLHttpRequest');
+    xhr.onload=function(){
+        try{var d=JSON.parse(xhr.responseText);}catch(e){wrap.innerHTML='<div class="emp-empty">Error</div>';return;}
+        if(!d.success){wrap.innerHTML='<div class="emp-empty">'+(d.message||'Error')+'</div>';return;}
+        var h='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">';
+        h+='<div style="font-size:0.85rem;">Deuda: <b style="color:'+(d.balance>0?'#dc2626':'#16a34a')+';">'+fmt(d.balance)+'</b></div>';
+        h+='<button class="emp-btn emp-btn-primary emp-btn-sm" onclick="empOpenLoanForm(0)"><i class="fas fa-plus"></i> Nuevo Préstamo</button></div>';
+        if(!d.data.length){h+='<div class="emp-empty">Sin préstamos registrados</div>';}
+        else{for(var i=0;i<d.data.length;i++){var l=d.data[i];
+            var rem=parseFloat(l.restante||0);var pag=parseFloat(l.monto)-rem;
+            var cls=rem<=0?'emp-loan-paid':'emp-loan-active';
+            h+='<div class="emp-loan-row '+cls+'"><div style="min-width:0;flex:1;">';
+            h+='<div style="font-weight:600;">'+fmt(l.monto)+(l.descripcion?' - '+l.descripcion:'')+'</div>';
+            h+='<div style="font-size:0.75rem;color:#94a3b8;">'+(l.fecha?new Date(l.fecha+'T12:00:00').toLocaleDateString('es-DO'):'')+' | Pagado: '+fmt(pag)+' | Resta: '+fmt(Math.max(0,rem))+'</div></div>';
+            h+='<div style="display:flex;gap:4px;flex-shrink:0;">';
+            if(rem>0){
+                h+='<button class="emp-btn emp-btn-green emp-btn-sm" onclick="event.stopPropagation();empOpenPayLoan('+l.id+','+rem.toFixed(2)+')"><i class="fas fa-coins"></i></button>';
+                h+='<button class="emp-btn emp-btn-sm" style="background:#dbeafe;color:#2563eb;" onclick="event.stopPropagation();empOpenLoanForm('+l.id+')"><i class="fas fa-edit"></i></button>';
+                h+='<button class="emp-btn emp-btn-red emp-btn-sm" onclick="event.stopPropagation();empDeleteLoan('+l.id+')"><i class="fas fa-trash"></i></button>';
+            } else { h+='<span style="color:#16a34a;font-size:0.78rem;font-weight:600;">Saldado</span>'; }
+            h+='</div></div>';
+        }}
+        wrap.innerHTML=h;
+    };xhr.send();
+}
+
+function empOpenLoanForm(loanId){
+    document.getElementById('empLoanId').value=loanId;
+    document.getElementById('empLoanTitle').innerHTML=loanId?'<i class="fas fa-edit" style="color:#2563eb;"></i> Editar Préstamo':'<i class="fas fa-hand-holding-usd" style="color:#2563eb;"></i> Nuevo Préstamo';
+    if(loanId){
+        var xhr=new XMLHttpRequest();xhr.open('GET','/api/empleados/'+empCurrentId+'/prestamos');
+        xhr.setRequestHeader('X-Requested-With','XMLHttpRequest');
+        xhr.onload=function(){try{var dd=JSON.parse(xhr.responseText);if(dd.success){
+            for(var i=0;i<dd.data.length;i++){if(dd.data[i].id==loanId){var l=dd.data[i];
+                document.getElementById('empLoanAmount').value=l.monto;
+                document.getElementById('empLoanDesc').value=l.descripcion||'';
+                document.getElementById('empLoanDate').value=l.fecha;break;}}
+        }}catch(e){}};xhr.send();
+    } else {
+        document.getElementById('empLoanAmount').value='';
+        document.getElementById('empLoanDesc').value='';
+        document.getElementById('empLoanDate').value=new Date().toISOString().split('T')[0];
+    }
+    document.getElementById('empLoanModal').style.display='flex';
+}
+
+function empSaveLoan(){
+    var loanId=parseInt(document.getElementById('empLoanId').value);
+    var body={
+        monto: document.getElementById('empLoanAmount').value,
+        descripcion: document.getElementById('empLoanDesc').value,
+        fecha: document.getElementById('empLoanDate').value
+    };
+    var xhr=new XMLHttpRequest();
+    if(loanId>0){
+        body.loan_id=loanId;
+        xhr.open('POST','/api/empleados/prestamo');
+    } else {
+        body.empleado_id=empCurrentId;
+        xhr.open('POST','/api/empleados/prestamo');
+    }
+    xhr.setRequestHeader('Content-Type','application/json');
+    xhr.setRequestHeader('X-Requested-With','XMLHttpRequest');
+    xhr.onload=function(){try{var d=JSON.parse(xhr.responseText);if(d.success){document.getElementById('empLoanModal').style.display='none';empLoadLoans();empLoad(1);}else alert(d.message||'Error');}catch(e){alert('Error de conexión');}};
+    xhr.send(JSON.stringify(body));
+}
+
+function empOpenPayLoan(loanId,maxAmt){
+    document.getElementById('empPayLoanId').value=loanId;
+    document.getElementById('empPayMax').textContent=fmt(maxAmt);
+    document.getElementById('empPayAmount').value='';
+    document.getElementById('empPayAmount').max=maxAmt;
+    document.getElementById('empPayModal').style.display='flex';
+}
+
+function empDoPayLoan(){
+    var loanId=document.getElementById('empPayLoanId').value;
+    var amount=parseFloat(document.getElementById('empPayAmount').value);
+    if(!amount||amount<=0)return;
+    var body=JSON.stringify({loan_id:loanId,monto:amount});
+    var xhr=new XMLHttpRequest();xhr.open('POST','/api/empleados/prestamo/abonar');
+    xhr.setRequestHeader('Content-Type','application/json');
+    xhr.setRequestHeader('X-Requested-With','XMLHttpRequest');
+    xhr.onload=function(){try{var d=JSON.parse(xhr.responseText);if(d.success){document.getElementById('empPayModal').style.display='none';empLoadLoans();empLoad(1);}else alert(d.message||'Error');}catch(e){}};
+    xhr.send(body);
+}
+
+function empDeleteLoan(loanId){
+    if(!confirm('Eliminar este préstamo?'))return;
+    var body=JSON.stringify({loan_id:loanId,_delete:'1'});
+    var xhr=new XMLHttpRequest();xhr.open('POST','/api/empleados/prestamo/abonar');
+    xhr.setRequestHeader('Content-Type','application/json');
+    xhr.setRequestHeader('X-Requested-With','XMLHttpRequest');
+    xhr.onload=function(){try{var d=JSON.parse(xhr.responseText);if(d.success){empLoadLoans();empLoad(1);}}catch(e){}};
+    xhr.send(body);
+}
+
+function empDelete(id){
+    if(!confirm('Eliminar este empleado y sus préstamos?'))return;
+    var xhr=new XMLHttpRequest();xhr.open('POST','/api/empleados/'+id+'/delete');
+    xhr.setRequestHeader('X-Requested-With','XMLHttpRequest');
+    xhr.onload=function(){try{var d=JSON.parse(xhr.responseText);if(d.success){document.getElementById('empDetailModal').style.display='none';empLoad(1);}}catch(e){}};
+    xhr.send();
+}
+
+empLoad(1);
+</script>

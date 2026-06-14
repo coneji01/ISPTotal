@@ -1,0 +1,37 @@
+node_modules/
+data/*.db
+backups/
+uploads/
+.env
+*.log
+test_backup*.zip
+smartolt-clone/
+ISPTotal-ARCHITECTURE.html
+PROJECT-MAP.md
+*.ps1
+*.db
+*.db-shm
+*.db-wal
+cookies.txt
+olt_commands.txt
+_error.log
+_snmp.log
+fix_*.js
+*.py
+scripts/
+references/
+puppeteer_data/
+vendor/
+content/
+public/smartolt-full/*.html
+public/content/
+public/assets/
+public/fonts/
+public/vendor/
+assets/
+
+# managed
+**.data.json
+**.node-persist**
+**_IGNORE_**
+# end managed

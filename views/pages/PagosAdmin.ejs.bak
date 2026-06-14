@@ -1,0 +1,966 @@
+<style>
+/* -- Layout -- */
+.pa-wrap{max-width:920px;margin:0 auto}
+.pa-header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:20px}
+.pa-title{font-size:1.3rem;font-weight:700;color:#1e293b;display:flex;align-items:center;gap:9px}
+.pa-title i{color:#2563eb}
+
+/* -- Botones -- */
+.pa-btn{padding:9px 18px;border:none;border-radius:9px;font-size:0.87rem;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:all .15s;white-space:nowrap}
+.pa-btn:disabled{opacity:.5;cursor:not-allowed}
+.pa-btn-primary{background:#2563eb;color:#fff}.pa-btn-primary:hover:not(:disabled){background:#1d4ed8}
+.pa-btn-green{background:#16a34a;color:#fff}.pa-btn-green:hover:not(:disabled){background:#15803d}
+.pa-btn-gray{background:#f1f5f9;color:#475569;border:1px solid #e2e8f0}.pa-btn-gray:hover:not(:disabled){background:#e2e8f0}
+.pa-btn-amber{background:#d97706;color:#fff}.pa-btn-amber:hover:not(:disabled){background:#b45309}
+.pa-btn-sm{padding:5px 11px;font-size:0.8rem;border-radius:7px}
+
+/* -- Card / tabla -- */
+.pa-card{background:#fff;border-radius:13px;box-shadow:0 1px 4px rgba(0,0,0,.07);border:1px solid #e2e8f0;overflow:hidden}
+.pa-card-head{padding:13px 18px;border-bottom:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center;gap:10px;background:#f8fafc;flex-wrap:wrap}
+.pa-card-title{font-size:0.9rem;font-weight:700;color:#1e293b;display:flex;align-items:center;gap:7px}
+.pa-search{padding:7px 13px;border:1px solid #e2e8f0;border-radius:8px;font-size:0.86rem;outline:none;min-width:180px}
+.pa-search:focus{border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+
+/* -- Filas lista -- */
+.pa-list{margin:0;padding:0;list-style:none}
+.pa-row{display:flex;justify-content:space-between;align-items:center;padding:12px 18px;border-bottom:1px solid #f1f5f9;gap:10px;cursor:pointer;transition:background .1s}
+.pa-row:last-child{border-bottom:none}
+.pa-row:hover{background:#f8fafc}
+.pa-row-name{font-weight:600;color:#1e293b;font-size:0.9rem}
+.pa-row-sub{font-size:0.77rem;color:#64748b;margin-top:2px}
+.pa-empty{text-align:center;padding:32px 20px;color:#94a3b8;font-size:0.88rem}
+.pa-empty i{font-size:1.8rem;display:block;margin-bottom:7px}
+.pa-loading{text-align:center;padding:28px;color:#94a3b8}
+
+/* -- Badges -- */
+.pa-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:0.74rem;font-weight:600;white-space:nowrap}
+.pa-badge-red{background:#fee2e2;color:#dc2626}
+.pa-badge-green{background:#dcfce7;color:#16a34a}
+.pa-badge-yellow{background:#fef3c7;color:#b45309}
+.pa-badge-blue{background:#dbeafe;color:#2563eb}
+.pa-badge-orange{background:#ffedd5;color:#c2410c}
+
+/* -- Dropdown "Nuevo Pago" -- */
+.pa-dropdown-wrap{position:relative;display:inline-block}
+.pa-dropdown-menu{position:absolute;top:calc(100% + 6px);right:0;background:#fff;border:1px solid #e2e8f0;border-radius:11px;box-shadow:0 8px 28px rgba(0,0,0,.13);min-width:200px;z-index:999;overflow:hidden;display:none;animation:paFadeIn .14s ease}
+.pa-dropdown-menu.open{display:block}
+@keyframes paFadeIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+.pa-dropdown-item{display:flex;align-items:center;gap:10px;padding:11px 16px;font-size:0.88rem;font-weight:600;color:#1e293b;cursor:pointer;transition:background .1s;border:none;background:none;width:100%;text-align:left}
+.pa-dropdown-item:hover{background:#f1f5f9}
+.pa-dropdown-item i{width:18px;text-align:center;font-size:1rem}
+
+/* -- Modales -- */
+.pa-overlay{position:fixed;inset:0;background:rgba(0,0,0,.44);z-index:9000;display:none;align-items:center;justify-content:center;padding:16px}
+.pa-overlay.open{display:flex}
+.pa-modal{background:#fff;border-radius:16px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.18);animation:paSlide .18s ease}
+@keyframes paSlide{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+.pa-modal-sm{max-width:440px}
+.pa-modal-head{padding:17px 20px 13px;border-bottom:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:#fff;z-index:2}
+.pa-modal-title{font-size:1rem;font-weight:700;color:#1e293b;display:flex;align-items:center;gap:8px}
+.pa-modal-x{background:none;border:none;font-size:1.15rem;color:#94a3b8;cursor:pointer;padding:4px 6px;border-radius:6px;line-height:1}
+.pa-modal-x:hover{background:#f1f5f9;color:#475569}
+.pa-modal-body{padding:18px 20px}
+.pa-modal-foot{padding:13px 20px;border-top:1px solid #e2e8f0;display:flex;justify-content:flex-end;gap:8px}
+
+/* -- Formulario -- */
+.pa-field{margin-bottom:14px}
+.pa-label{display:block;font-size:0.81rem;font-weight:600;color:#475569;margin-bottom:5px}
+.pa-input,.pa-select,.pa-textarea{width:100%;padding:9px 12px;border:1px solid #e2e8f0;border-radius:8px;font-size:0.87rem;outline:none;box-sizing:border-box;font-family:inherit;color:#1e293b}
+.pa-input:focus,.pa-select:focus,.pa-textarea:focus{border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.08)}
+.pa-textarea{resize:vertical;min-height:68px}
+.pa-grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:460px){.pa-grid2{grid-template-columns:1fr}}
+
+/* -- Resumen factura -- */
+.pa-summary{background:#f8fafc;border:1px solid #e2e8f0;border-radius:9px;padding:12px 14px;margin-bottom:16px;font-size:0.84rem}
+.pa-summary-row{display:flex;justify-content:space-between;margin-bottom:3px}
+.pa-summary-row:last-child{border-top:1px solid #e2e8f0;padding-top:6px;margin-top:4px;margin-bottom:0;font-weight:700}
+
+/* -- Advertencia prstamo -- */
+.pa-warn{background:#fef3c7;border:1px solid #fcd34d;border-radius:9px;padding:11px 13px;margin-bottom:14px;display:flex;gap:9px}
+.pa-warn i{color:#d97706;margin-top:1px;flex-shrink:0}
+.pa-warn-text{font-size:0.83rem;color:#78350f}
+.pa-warn-text b{display:block;margin-bottom:2px}
+
+/* -- Info salario -- */
+.pa-salary-box{background:#eff6ff;border:1px solid #bfdbfe;border-radius:9px;padding:11px 13px;margin-bottom:14px;font-size:0.84rem;color:#1e40af}
+
+/* -- Historial reciente -- */
+.pa-hist-row{display:flex;align-items:center;gap:10px;padding:11px 18px;border-bottom:1px solid #f1f5f9}
+.pa-hist-row:last-child{border-bottom:none}
+.pa-hist-icon{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:0.9rem;flex-shrink:0}
+.pa-hist-desc{flex:1;min-width:0}
+.pa-hist-name{font-size:0.87rem;font-weight:600;color:#1e293b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pa-hist-meta{font-size:0.75rem;color:#94a3b8;margin-top:1px}
+.pa-hist-amt{font-weight:700;font-size:0.9rem;white-space:nowrap}
+
+/* -- Facturas -- */
+.pa-inv-row{display:flex;justify-content:space-between;align-items:center;padding:13px 18px;border-bottom:1px solid #f1f5f9;gap:10px}
+.pa-inv-row:last-child{border-bottom:none}
+.pa-inv-concept{font-weight:600;color:#1e293b;font-size:0.88rem}
+.pa-inv-meta{font-size:0.76rem;color:#64748b;margin-top:3px}
+.pa-overdue{color:#dc2626!important;font-weight:600}
+</style>
+
+<div class="pa-wrap">
+
+    <!-- Header -->
+    <div class="pa-header">
+        <div class="pa-title"><i class="fas fa-money-bill-wave"></i> Pagos</div>
+        <div class="pa-dropdown-wrap" id="paNuevoWrap">
+            <button class="pa-btn pa-btn-primary" onclick="paToggleDropdown()">
+                <i class="fas fa-plus"></i> Nuevo Pago <i class="fas fa-chevron-down" style="font-size:.75rem;"></i>
+            </button>
+            <div class="pa-dropdown-menu" id="paDrop">
+                <button class="pa-dropdown-item" onclick="paOpenType('proveedor')">
+                    <i class="fas fa-truck" style="color:#7c3aed;"></i> Pago a Proveedor
+                </button>
+                <button class="pa-dropdown-item" onclick="paOpenType('empleado')">
+                    <i class="fas fa-user-tie" style="color:#0891b2;"></i> Pago a Empleado
+                </button>
+                <button class="pa-dropdown-item" onclick="paOpenType('otro')">
+                    <i class="fas fa-receipt" style="color:#d97706;"></i> Otro Pago
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Historial reciente -->
+    <div class="pa-card">
+        <div class="pa-card-head">
+            <div class="pa-card-title"><i class="fas fa-clock" style="color:#2563eb;"></i> Pagos Recientes</div>
+        </div>
+        <div id="paRecentBody">
+            <div class="pa-loading"><i class="fas fa-spinner fa-spin"></i></div>
+        </div>
+    </div>
+
+</div>
+
+<!-- ----------------------------------------------------------
+     MODAL: Seleccionar Proveedor
+---------------------------------------------------------- -->
+<div class="pa-overlay" id="paModalSup">
+    <div class="pa-modal">
+        <div class="pa-modal-head">
+            <div class="pa-modal-title"><i class="fas fa-truck" style="color:#7c3aed;"></i> Seleccionar Proveedor</div>
+            <button class="pa-modal-x" onclick="paClose('paModalSup')"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="pa-modal-body" style="padding:14px 18px">
+            <input type="text" class="pa-search pa-input" id="paSupSearch" placeholder="Buscar proveedor..." oninput="paLoadSuppliers()" style="width:100%;margin-bottom:12px;">
+            <div class="pa-card" style="box-shadow:none;border-radius:9px;">
+                <ul class="pa-list" id="paSupList">
+                    <li class="pa-loading"><i class="fas fa-spinner fa-spin"></i></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ----------------------------------------------------------
+     MODAL: Facturas pendientes del proveedor
+---------------------------------------------------------- -->
+<div class="pa-overlay" id="paModalInv">
+    <div class="pa-modal">
+        <div class="pa-modal-head">
+            <div class="pa-modal-title"><i class="fas fa-file-invoice-dollar" style="color:#7c3aed;"></i> <span id="paInvTitle">Facturas pendientes</span></div>
+            <button class="pa-modal-x" onclick="paClose('paModalInv')"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="pa-modal-body" style="padding:0">
+            <div id="paInvBody"></div>
+        </div>
+        <div class="pa-modal-foot">
+            <button class="pa-btn pa-btn-gray" onclick="paClose('paModalInv')">Cerrar</button>
+        </div>
+    </div>
+</div>
+
+<!-- ----------------------------------------------------------
+     MODAL: Pagar / Abonar factura
+---------------------------------------------------------- -->
+<div class="pa-overlay" id="paModalPayInv">
+    <div class="pa-modal pa-modal-sm">
+        <div class="pa-modal-head">
+            <div class="pa-modal-title"><i class="fas fa-coins" style="color:#16a34a;"></i> Registrar Pago</div>
+            <button class="pa-modal-x" onclick="paClose('paModalPayInv')"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="pa-modal-body">
+            <input type="hidden" id="paPayInvId">
+            <div class="pa-summary">
+                <div class="pa-summary-row"><span style="color:#64748b;">Concepto</span><span id="paSumConcept" style="font-weight:600;max-width:240px;text-align:right;"></span></div>
+                <div class="pa-summary-row"><span style="color:#64748b;">Total factura</span><span id="paSumTotal"></span></div>
+                <div class="pa-summary-row"><span style="color:#64748b;">Ya pagado</span><span id="paSumPaid" style="color:#16a34a;"></span></div>
+                <div class="pa-summary-row"><span>Pendiente</span><span id="paSumRemaining" style="color:#dc2626;font-size:1rem;"></span></div>
+            </div>
+            <div class="pa-field">
+                <label class="pa-label">Monto a pagar *</label>
+                <input type="number" class="pa-input" id="paPayInvAmt" min="0.01" step="0.01" placeholder="0.00">
+            </div>
+            <div class="pa-grid2">
+                <div class="pa-field">
+                    <label class="pa-label">M\u00e9todo de pago</label>
+                    <select class="pa-select" id="paPayInvMethod">
+                        <option>Efectivo</option><option>Transferencia</option><option>Cheque</option><option>Tarjeta</option><option>Otro</option>
+                    </select>
+                </div>
+                <div class="pa-field">
+                    <label class="pa-label">N\u00fam. Transacci\u00f3n <small style="color:#94a3b8;">(opcional)</small></label>
+                    <input type="text" class="pa-input" id="paPayInvRef" placeholder="# cheque, transferencia...">
+                </div>
+            </div>
+            <div class="pa-field">
+                <label class="pa-label">Notas</label>
+                <textarea class="pa-textarea" id="paPayInvNotes" placeholder="Opcional..."></textarea>
+            </div>
+        </div>
+        <div class="pa-modal-foot">
+            <button class="pa-btn pa-btn-gray" onclick="paClose('paModalPayInv')">Cancelar</button>
+            <button class="pa-btn pa-btn-green" id="paBtnPayInv" onclick="paSubmitPayInv()"><i class="fas fa-check-circle"></i> Confirmar Pago</button>
+        </div>
+    </div>
+</div>
+
+<!-- ----------------------------------------------------------
+     MODAL: Seleccionar Empleado
+---------------------------------------------------------- -->
+<div class="pa-overlay" id="paModalEmp">
+    <div class="pa-modal">
+        <div class="pa-modal-head">
+            <div class="pa-modal-title"><i class="fas fa-user-tie" style="color:#0891b2;"></i> Seleccionar Empleado</div>
+            <button class="pa-modal-x" onclick="paClose('paModalEmp')"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="pa-modal-body" style="padding:14px 18px">
+            <input type="text" class="pa-search pa-input" id="paEmpSearch" placeholder="Buscar empleado..." oninput="paLoadEmployees()" style="width:100%;margin-bottom:12px;">
+            <div class="pa-card" style="box-shadow:none;border-radius:9px;">
+                <ul class="pa-list" id="paEmpList">
+                    <li class="pa-loading"><i class="fas fa-spinner fa-spin"></i></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ----------------------------------------------------------
+     MODAL: Pagar a Empleado
+---------------------------------------------------------- -->
+<div class="pa-overlay" id="paModalPayEmp">
+    <div class="pa-modal pa-modal-sm">
+        <div class="pa-modal-head">
+            <div class="pa-modal-title"><i class="fas fa-user-tie" style="color:#0891b2;"></i> Pagar a <span id="paEmpPayName">--</span></div>
+            <button class="pa-modal-x" onclick="paClose('paModalPayEmp')"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="pa-modal-body">
+            <input type="hidden" id="paEmpPayId">
+            <div class="pa-warn" id="paEmpLoanWarn" style="display:none">
+                <i class="fas fa-exclamation-triangle"></i>
+                <div class="pa-warn-text">
+                    <b>Empleado con pr\u00e9stamos activos</b>
+                    <span id="paEmpLoanText"></span>
+                </div>
+            </div>
+            <div class="pa-salary-box" id="paEmpSalaryBox"></div>
+            <div class="pa-field">
+                <label class="pa-label">Monto a pagar *</label>
+                <input type="number" class="pa-input" id="paEmpPayAmt" min="0.01" step="0.01" placeholder="0.00">
+            </div>
+            <div class="pa-field">
+                <label class="pa-label">Periodo / Descripci\u00f3n</label>
+                <input type="text" class="pa-input" id="paEmpPayPeriod" placeholder="Ej: Quincena 1 - Marzo 2025">
+            </div>
+            <div class="pa-grid2">
+                <div class="pa-field">
+                    <label class="pa-label">M\u00e9todo de pago</label>
+                    <select class="pa-select" id="paEmpPayMethod">
+                        <option>Efectivo</option><option>Transferencia</option><option>Cheque</option><option>Tarjeta</option><option>Otro</option>
+                    </select>
+                </div>
+                <div class="pa-field">
+                    <label class="pa-label">Referencia</label>
+                    <input type="text" class="pa-input" id="paEmpPayRef" placeholder="Opcional...">
+                </div>
+            </div>
+            <div class="pa-field">
+                <label class="pa-label">Notas</label>
+                <textarea class="pa-textarea" id="paEmpPayNotes" placeholder="Opcional..."></textarea>
+            </div>
+            <div id="paEmpHistWrap" style="display:none">
+                <div style="font-size:0.78rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">\u00daltimos pagos registrados</div>
+                <div id="paEmpHistList" style="border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;"></div>
+            </div>
+        </div>
+        <div class="pa-modal-foot">
+            <button class="pa-btn pa-btn-gray" onclick="paClose('paModalPayEmp')">Cancelar</button>
+            <button class="pa-btn pa-btn-primary" id="paBtnPayEmp" onclick="paSubmitPayEmp()"><i class="fas fa-check-circle"></i> Confirmar Pago</button>
+        </div>
+    </div>
+</div>
+
+<!-- ----------------------------------------------------------
+     MODAL: Otro Pago
+---------------------------------------------------------- -->
+<div class="pa-overlay" id="paModalOtro">
+    <div class="pa-modal pa-modal-sm">
+        <div class="pa-modal-head">
+            <div class="pa-modal-title"><i class="fas fa-receipt" style="color:#d97706;"></i> Otro Pago</div>
+            <button class="pa-modal-x" onclick="paClose('paModalOtro')"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="pa-modal-body">
+            <div class="pa-field">
+                <label class="pa-label">Concepto *</label>
+                <input type="text" class="pa-input" id="paOtroConcept" placeholder="Ej: Renta, luz, internet...">
+            </div>
+            <div class="pa-field">
+                <label class="pa-label">Monto *</label>
+                <input type="number" class="pa-input" id="paOtroAmt" min="0.01" step="0.01" placeholder="0.00">
+            </div>
+            <div class="pa-field" style="margin-bottom:14px;">
+                <label class="pa-label">Tipo de Gasto *</label>
+                <div style="display:flex;gap:16px;margin-top:4px;">
+                    <label style="cursor:pointer;display:flex;align-items:center;gap:6px;font-weight:600;padding:8px 14px;border:2px solid #e2e8f0;border-radius:8px;flex:1;transition:all 0.2s;" id="labelGastoEmpresa" onclick="selectGastoType('empresa')">
+                        <input type="radio" name="gasto_tipo" value="empresa" checked style="accent-color:#2563eb;">
+                        <span>🏢 Empresa</span>
+                    </label>
+                    <label style="cursor:pointer;display:flex;align-items:center;gap:6px;font-weight:600;padding:8px 14px;border:2px solid #e2e8f0;border-radius:8px;flex:1;transition:all 0.2s;" id="labelGastoPersonal" onclick="selectGastoType('personal')">
+                        <input type="radio" name="gasto_tipo" value="personal" style="accent-color:#d97706;">
+                        <span>👤 Personal</span>
+                    </label>
+                </div>
+            </div>
+            <div class="pa-grid2">
+                <div class="pa-field">
+                    <label class="pa-label">M\u00e9todo de pago</label>
+                    <select class="pa-select" id="paOtroMethod">
+                        <option>Efectivo</option><option>Transferencia</option><option>Cheque</option><option>Tarjeta</option><option>Otro</option>
+                    </select>
+                </div>
+                <div class="pa-field">
+                    <label class="pa-label">Referencia</label>
+                    <input type="text" class="pa-input" id="paOtroRef" placeholder="Opcional...">
+                </div>
+            </div>
+            <div class="pa-field">
+                <label class="pa-label">Notas</label>
+                <textarea class="pa-textarea" id="paOtroNotes" placeholder="Opcional..."></textarea>
+            </div>
+            <div class="pa-field">
+                <label class="pa-label">Fecha del Gasto</label>
+                <input type="date" class="pa-input" id="paOtroFecha">
+            </div>
+        </div>
+        <div class="pa-modal-foot">
+            <button class="pa-btn pa-btn-gray" onclick="paClose('paModalOtro')">Cancelar</button>
+            <button class="pa-btn pa-btn-amber" id="paBtnOtro" onclick="paSubmitOtro()"><i class="fas fa-save"></i> Guardar Pago</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: Editar Otro Pago -->
+<div class="pa-overlay" id="paModalEditOtro">
+    <div class="pa-modal pa-modal-sm">
+        <div class="pa-modal-head">
+            <div class="pa-modal-title"><i class="fas fa-pencil-alt" style="color:#2563eb;"></i> Editar Gasto</div>
+            <button class="pa-modal-x" onclick="paClose('paModalEditOtro')"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="pa-modal-body">
+            <input type="hidden" id="paEditOtroId">
+            <div class="pa-field">
+                <label class="pa-label">Concepto *</label>
+                <input type="text" class="pa-input" id="paEditConcept" placeholder="Ej: Renta, luz, internet...">
+            </div>
+            <div class="pa-field">
+                <label class="pa-label">Monto *</label>
+                <input type="number" class="pa-input" id="paEditAmt" min="0.01" step="0.01" placeholder="0.00">
+            </div>
+            <div class="pa-field">
+                <label class="pa-label">Tipo de Gasto *</label>
+                <div style="display:flex;gap:16px;margin-top:4px;">
+                    <label style="cursor:pointer;display:flex;align-items:center;gap:6px;font-weight:600;padding:8px 14px;border:2px solid #e2e8f0;border-radius:8px;flex:1;transition:all 0.2s;" id="labelEditEmpresa" onclick="selectEditGastoType('empresa')">
+                        <input type="radio" name="edit_gasto_tipo" value="empresa" checked style="accent-color:#2563eb;">
+                        <span>🏢 Empresa</span>
+                    </label>
+                    <label style="cursor:pointer;display:flex;align-items:center;gap:6px;font-weight:600;padding:8px 14px;border:2px solid #e2e8f0;border-radius:8px;flex:1;transition:all 0.2s;" id="labelEditPersonal" onclick="selectEditGastoType('personal')">
+                        <input type="radio" name="edit_gasto_tipo" value="personal" style="accent-color:#d97706;">
+                        <span>👤 Personal</span>
+                    </label>
+                </div>
+            </div>
+            <div class="pa-grid2">
+                <div class="pa-field">
+                    <label class="pa-label">Método de pago</label>
+                    <select class="pa-select" id="paEditMethod">
+                        <option>Efectivo</option><option>Transferencia</option><option>Cheque</option><option>Tarjeta</option><option>Otro</option>
+                    </select>
+                </div>
+                <div class="pa-field">
+                    <label class="pa-label">Referencia</label>
+                    <input type="text" class="pa-input" id="paEditRef" placeholder="Opcional...">
+                </div>
+            </div>
+            <div class="pa-field">
+                <label class="pa-label">Notas</label>
+                <textarea class="pa-textarea" id="paEditNotes" placeholder="Opcional..."></textarea>
+            </div>
+            <div class="pa-field">
+                <label class="pa-label">Fecha del Gasto</label>
+                <input type="date" class="pa-input" id="paEditFecha">
+            </div>
+        </div>
+        <div class="pa-modal-foot">
+            <button class="pa-btn pa-btn-gray" onclick="paClose('paModalEditOtro')">Cancelar</button>
+            <button class="pa-btn pa-btn-primary" id="paBtnEditOtro" onclick="paSubmitEditOtro()"><i class="fas fa-save"></i> Guardar Cambios</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: Confirmar Abono a Pr\u00e9stamo -->
+<div class="pa-overlay" id="paModalLoanConfirm">
+    <div class="pa-modal pa-modal-sm" style="max-width:420px;">
+        <div class="pa-modal-head">
+            <div class="pa-modal-title"><i class="fas fa-hand-holding-usd" style="color:#d97706;"></i> Abono a Pr\u00e9stamo</div>
+            <button class="pa-modal-x" onclick="paClose('paModalLoanConfirm')"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="pa-modal-body" style="text-align:center; padding:24px 20px;">
+            <div style="width:56px;height:56px;border-radius:50%;background:#fef3c7;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;">
+                <i class="fas fa-exclamation-triangle" style="color:#d97706;font-size:1.4rem;"></i>
+            </div>
+            <div style="font-size:0.92rem;color:#1e293b;font-weight:600;margin-bottom:8px;">Monto inferior al salario</div>
+            <div id="paLoanConfirmText" style="font-size:0.85rem;color:#64748b;line-height:1.5;margin-bottom:6px;"></div>
+            <div id="paLoanConfirmAmount" style="font-size:1.3rem;font-weight:800;color:#d97706;margin:10px 0;"></div>
+        </div>
+        <div class="pa-modal-foot" style="justify-content:center;gap:10px;">
+            <button class="pa-btn pa-btn-gray" onclick="paLoanConfirmResolve(false)" style="min-width:100px;">No, solo pagar</button>
+            <button class="pa-btn" onclick="paLoanConfirmResolve(true)" style="min-width:100px;background:#d97706;color:#fff;">S\u00ed, abonar</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: Confirmar Eliminaci\u00f3n -->
+<div class="pa-overlay" id="paModalDeleteConfirm">
+    <div class="pa-modal pa-modal-sm" style="max-width:400px;">
+        <div class="pa-modal-head">
+            <div class="pa-modal-title"><i class="fas fa-trash-alt" style="color:#ef4444;"></i> Eliminar Pago</div>
+            <button class="pa-modal-x" onclick="paClose('paModalDeleteConfirm')"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="pa-modal-body" style="text-align:center;padding:24px 20px;">
+            <div style="width:56px;height:56px;border-radius:50%;background:#fee2e2;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;">
+                <i class="fas fa-exclamation-triangle" style="color:#ef4444;font-size:1.4rem;"></i>
+            </div>
+            <div id="paDeleteConfirmText" style="font-size:0.88rem;color:#64748b;line-height:1.5;"></div>
+        </div>
+        <div class="pa-modal-foot" style="justify-content:center;gap:10px;">
+            <button class="pa-btn pa-btn-gray" onclick="paClose('paModalDeleteConfirm')" style="min-width:100px;">Cancelar</button>
+            <button class="pa-btn" id="paDeleteConfirmBtn" onclick="paDeleteConfirmExec()" style="min-width:100px;background:#ef4444;color:#fff;">Eliminar</button>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Notification -->
+<div id="paToast" style="position:fixed;top:20px;right:20px;z-index:9999;display:none;max-width:380px;width:90%;animation:paSlide .2s ease;">
+    <div id="paToastInner" style="padding:14px 18px;border-radius:10px;box-shadow:0 8px 25px rgba(0,0,0,0.15);display:flex;align-items:center;gap:10px;">
+        <i id="paToastIcon" style="font-size:1.1rem;flex-shrink:0;"></i>
+        <div id="paToastMsg" style="font-size:0.88rem;font-weight:600;flex:1;"></div>
+        <button onclick="document.getElementById('paToast').style.display='none'" style="background:none;border:none;font-size:1rem;cursor:pointer;opacity:0.5;color:inherit;">&times;</button>
+    </div>
+</div>
+
+<script>
+(function(){
+// -- Utilidades ----------------------------------------------------------------
+function fmt(n){ return 'RD$ '+parseFloat(n||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function fmtDate(s){ if(!s) return ''; var p=s.substring(0,10).split('-'); return p[2]+'/'+p[1]+'/'+p[0]; }
+function isOverdue(d){ return d && new Date(d+'T00:00:00') < new Date(); }
+function esc(s){ var d=document.createElement('div'); d.textContent=String(s||''); return d.innerHTML; }
+var BASE_URL = '/modulo?pagina=PagosAdmin';
+function api(url){ return fetch(url).then(function(r){return r.json();}); }
+function apiPost(url,fd){ return fetch(url,{method:'POST',body:fd}).then(function(r){return r.json();}); }
+function setBtn(id,on,html){ var b=document.getElementById(id); b.disabled=!on; if(html) b.innerHTML=html; }
+
+window.paClose = function(id){ document.getElementById(id).classList.remove('open'); };
+window.paOpen  = function(id){ document.getElementById(id).classList.add('open'); };
+
+// Toast notification
+window.paToast = function(msg, type) {
+    var toast = document.getElementById('paToast');
+    var inner = document.getElementById('paToastInner');
+    var icon = document.getElementById('paToastIcon');
+    var text = document.getElementById('paToastMsg');
+    text.textContent = msg;
+    if (type === 'success') {
+        inner.style.background = '#f0fdf4'; inner.style.color = '#166534'; inner.style.border = '1px solid #bbf7d0';
+        icon.className = 'fas fa-check-circle'; icon.style.color = '#16a34a';
+    } else if (type === 'error') {
+        inner.style.background = '#fef2f2'; inner.style.color = '#991b1b'; inner.style.border = '1px solid #fecaca';
+        icon.className = 'fas fa-times-circle'; icon.style.color = '#ef4444';
+    } else {
+        inner.style.background = '#eff6ff'; inner.style.color = '#1e40af'; inner.style.border = '1px solid #bfdbfe';
+        icon.className = 'fas fa-info-circle'; icon.style.color = '#3b82f6';
+    }
+    toast.style.display = 'block';
+    clearTimeout(window._paToastTimer);
+    window._paToastTimer = setTimeout(function(){ toast.style.display = 'none'; }, 4000);
+};
+
+// Delete confirm
+window._paDeleteCallback = null;
+window.paDeleteConfirm = function(msg, callback) {
+    document.getElementById('paDeleteConfirmText').innerHTML = msg;
+    window._paDeleteCallback = callback;
+    paOpen('paModalDeleteConfirm');
+};
+window.paDeleteConfirmExec = function() {
+    paClose('paModalDeleteConfirm');
+    if (window._paDeleteCallback) window._paDeleteCallback();
+};
+
+// -- Dropdown "Nuevo Pago" -----------------------------------------------------
+window.paToggleDropdown = function(){
+    document.getElementById('paDrop').classList.toggle('open');
+};
+document.addEventListener('click', function(e){
+    var wrap = document.getElementById('paNuevoWrap');
+    if(wrap && !wrap.contains(e.target)) document.getElementById('paDrop').classList.remove('open');
+});
+
+window.paOpenType = function(type){
+    document.getElementById('paDrop').classList.remove('open');
+    if(type==='proveedor'){ paLoadSuppliers(); paOpen('paModalSup'); }
+    else if(type==='empleado'){ paLoadEmployees(); paOpen('paModalEmp'); }
+    else if(type==='otro'){ paResetOtro(); paOpen('paModalOtro'); }
+};
+
+// -- Cerrar con ESC o clic fondo -----------------------------------------------
+var overlays=['paModalSup','paModalInv','paModalPayInv','paModalEmp','paModalPayEmp','paModalOtro','paModalLoanConfirm','paModalDeleteConfirm'];
+overlays.forEach(function(id){
+    document.getElementById(id).addEventListener('click',function(e){ if(e.target===this) paClose(id); });
+});
+document.addEventListener('keydown',function(e){ if(e.key==='Escape') overlays.forEach(paClose); });
+
+// ----------------------------------------------------------------------------
+// PROVEEDORES
+// ----------------------------------------------------------------------------
+var _supCurrentId = 0;
+var _supCurrentName = '';
+
+window.paLoadSuppliers = function(){
+    var search = document.getElementById('paSupSearch').value;
+    var list = document.getElementById('paSupList');
+    list.innerHTML='<li class="pa-loading"><i class="fas fa-spinner fa-spin"></i></li>';
+    api(BASE_URL+'&ajax=pa_suppliers&search='+encodeURIComponent(search))
+    .then(function(d){
+        if(d.status!=='success'||!d.data.length){
+            list.innerHTML='<li class="pa-empty"><i class="fas fa-search"></i>Sin proveedores encontrados</li>'; return;
+        }
+        var supMap = {};
+        list.innerHTML = d.data.map(function(s){
+            supMap[s.id] = s.name;
+            var debt = parseFloat(s.pending_debt);
+            var badge = debt > 0
+                ? '<span class="pa-badge pa-badge-red">'+fmt(debt)+'</span>'
+                : '<span class="pa-badge pa-badge-green"><i class="fas fa-check"></i> Al d\u00eda</span>';
+            return '<li class="pa-row" data-sup-id="'+s.id+'">'
+                +'<div><div class="pa-row-name">'+esc(s.name)+'</div>'
+                +'<div class="pa-row-sub">'+(s.rnc?'RNC: '+esc(s.rnc)+' \u00b7 ':'')+s.pending_count+' factura(s) pendiente(s)</div></div>'
+                +badge+'</li>';
+        }).join('');
+        list.querySelectorAll('[data-sup-id]').forEach(function(li){
+            li.addEventListener('click', function(){ paOpenInvoices(this.dataset.supId, supMap[this.dataset.supId]); });
+        });
+    });
+};
+
+window.paOpenInvoices = function(supId, supName){
+    _supCurrentId = supId;
+    _supCurrentName = supName;
+    document.getElementById('paInvTitle').textContent = supName;
+    var body = document.getElementById('paInvBody');
+    body.innerHTML='<div class="pa-loading"><i class="fas fa-spinner fa-spin"></i></div>';
+    paClose('paModalSup');
+    paOpen('paModalInv');
+    paRefreshInvoices();
+};
+
+function paRefreshInvoices(){
+    var body = document.getElementById('paInvBody');
+    api(BASE_URL+'&ajax=pa_invoices&supplier_id='+_supCurrentId)
+    .then(function(d){
+        if(d.status!=='success'){
+            body.innerHTML='<div class="pa-empty">Error al cargar facturas</div>'; return;
+        }
+        if(!d.data.length){
+            body.innerHTML='<div class="pa-empty"><i class="fas fa-check-circle" style="color:#16a34a;font-size:2rem;"></i><br>Este proveedor no tiene facturas pendientes.<br>\u00a1Est\u00e1 al d\u00eda!</div>';
+            return;
+        }
+        body.innerHTML = d.data.map(function(inv){
+            var rem = parseFloat(inv.remaining);
+            var over = isOverdue(inv.due_date);
+            var dueTxt = inv.due_date
+                ? ' \u00b7 Vence: <span class="'+(over?'pa-overdue':'')+'">'+fmtDate(inv.due_date)+(over?' \u23f0':'')+'</span>'
+                : '';
+            var stBadge = inv.status==='partial'
+                ? '<span class="pa-badge pa-badge-yellow">Abono</span>'
+                : '<span class="pa-badge pa-badge-red">Pendiente</span>';
+            return '<div class="pa-inv-row">'
+                +'<div style="flex:1;min-width:0;">'
+                +'<div class="pa-inv-concept">'+(inv.invoice_number?'#'+esc(inv.invoice_number)+' - ':'')+esc(inv.concept)+'</div>'
+                +'<div class="pa-inv-meta">Total: <b>'+fmt(inv.total)+'</b> \u00b7 Pagado: <b style="color:#16a34a;">'+fmt(inv.paid_amount)+'</b> \u00b7 <b style="color:#dc2626;">Resta: '+fmt(rem)+'</b>'+dueTxt+'</div>'
+                +'</div>'
+                +'<div style="display:flex;gap:6px;align-items:center;flex-shrink:0;">'+stBadge
+                +'<button class="pa-btn pa-btn-green pa-btn-sm pa-pay-inv-btn"'
+                +' data-id="'+inv.id+'"'
+                +' data-total="'+parseFloat(inv.total).toFixed(2)+'"'
+                +' data-paid="'+parseFloat(inv.paid_amount).toFixed(2)+'"'
+                +' data-concept="'+esc(inv.concept).replace(/"/g,'&quot;')+'">'
+                +'<i class="fas fa-coins"></i> Pagar</button>'
+                +'</div></div>';
+        }).join('');
+        body.querySelectorAll('.pa-pay-inv-btn').forEach(function(btn){
+            btn.addEventListener('click', function(){
+                paOpenPayInv(
+                    this.dataset.id,
+                    parseFloat(this.dataset.total),
+                    parseFloat(this.dataset.paid),
+                    this.dataset.concept
+                );
+            });
+        });
+    });
+}
+
+var _invData = {};
+window.paOpenPayInv = function(invId, total, paid, concept){
+    _invData = {id:invId, total:parseFloat(total), paid:parseFloat(paid)};
+    var rem = Math.round((total - paid)*100)/100;
+    document.getElementById('paPayInvId').value = invId;
+    document.getElementById('paSumConcept').textContent = concept;
+    document.getElementById('paSumTotal').textContent = fmt(total);
+    document.getElementById('paSumPaid').textContent = fmt(paid);
+    document.getElementById('paSumRemaining').textContent = fmt(rem);
+    document.getElementById('paPayInvAmt').value = rem.toFixed(2);
+    document.getElementById('paPayInvAmt').max = rem;
+    document.getElementById('paPayInvMethod').value = 'Efectivo';
+    document.getElementById('paPayInvRef').value = '';
+    document.getElementById('paPayInvNotes').value = '';
+    setBtn('paBtnPayInv', true, '<i class="fas fa-check-circle"></i> Confirmar Pago');
+    paOpen('paModalPayInv');
+};
+
+window.paSubmitPayInv = function(){
+    var amount = parseFloat(document.getElementById('paPayInvAmt').value);
+    if(!amount || amount <= 0){ paToast('Ingrese un monto v\u00e1lido', 'error'); return; }
+    var maxRem = _invData.total - _invData.paid;
+    if(amount > maxRem + 0.009){ paToast('El monto supera el saldo pendiente ('+fmt(maxRem)+')', 'error'); return; }
+    setBtn('paBtnPayInv', false, '<i class="fas fa-spinner fa-spin"></i> Procesando...');
+    var fd = new FormData();
+    fd.append('invoice_id', _invData.id);
+    fd.append('amount', amount);
+    fd.append('method', document.getElementById('paPayInvMethod').value);
+    fd.append('reference', document.getElementById('paPayInvRef').value.trim());
+    fd.append('notes', document.getElementById('paPayInvNotes').value.trim());
+    apiPost(BASE_URL+'&ajax=pa_pay_invoice', fd)
+    .then(function(d){
+        if(d.status==='success'){
+            paClose('paModalPayInv');
+            paRefreshInvoices();
+            paLoadRecent();
+        } else { paToast('Error: '+(d.msg||'Desconocido'), 'error'); }
+    })
+    .catch(function(){ paToast('Error de conexi\u00f3n', 'error'); })
+    .finally(function(){ setBtn('paBtnPayInv', true, '<i class="fas fa-check-circle"></i> Confirmar Pago'); });
+};
+
+// ----------------------------------------------------------------------------
+// EMPLEADOS
+// ----------------------------------------------------------------------------
+window.paLoadEmployees = function(){
+    var search = document.getElementById('paEmpSearch').value;
+    var list = document.getElementById('paEmpList');
+    list.innerHTML='<li class="pa-loading"><i class="fas fa-spinner fa-spin"></i></li>';
+    api(BASE_URL+'&ajax=pa_employees&search='+encodeURIComponent(search))
+    .then(function(d){
+        if(d.status!=='success'||!d.data.length){
+            list.innerHTML='<li class="pa-empty"><i class="fas fa-search"></i>Sin empleados encontrados</li>'; return;
+        }
+        list.innerHTML = d.data.map(function(e){
+            var loanBadge = parseFloat(e.loan_balance)>0
+                ? ' <span class="pa-badge pa-badge-yellow"><i class="fas fa-exclamation-triangle"></i> Pr\u00e9stamo: '+fmt(e.loan_balance)+'</span>'
+                : '';
+            var tipo = e.employee_type==='Otro'?(e.employee_type_other||'Otro'):e.employee_type;
+            return '<li class="pa-row" onclick="paOpenEmpPay('+e.id+')">'
+                +'<div><div class="pa-row-name">'+esc(e.name)+'</div>'
+                +'<div class="pa-row-sub">'+esc(tipo)+' \u00b7 '+fmt(e.salary)+' '+esc(e.salary_period)+'</div></div>'
+                +'<div style="display:flex;gap:6px;align-items:center;flex-shrink:0;">'+loanBadge
+                +'<span class="pa-badge pa-badge-blue"><i class="fas fa-money-bill"></i> Pagar</span>'
+                +'</div></li>';
+        }).join('');
+    });
+};
+
+window.paOpenEmpPay = function(empId){
+    document.getElementById('paEmpPayId').value = empId;
+    document.getElementById('paEmpPayName').textContent = '...';
+    document.getElementById('paEmpLoanWarn').style.display = 'none';
+    document.getElementById('paEmpSalaryBox').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cargando...';
+    document.getElementById('paEmpPayAmt').value = '';
+    document.getElementById('paEmpPayPeriod').value = '';
+    document.getElementById('paEmpPayMethod').value = 'Efectivo';
+    document.getElementById('paEmpPayRef').value = '';
+    document.getElementById('paEmpPayNotes').value = '';
+    document.getElementById('paEmpHistWrap').style.display = 'none';
+    setBtn('paBtnPayEmp', true, '<i class="fas fa-check-circle"></i> Confirmar Pago');
+    paClose('paModalEmp');
+    paOpen('paModalPayEmp');
+
+    api(BASE_URL+'&ajax=pa_employee_detail&id='+empId)
+    .then(function(d){
+        if(d.status!=='success'){ paToast('Error: '+d.msg, 'error'); paClose('paModalPayEmp'); return; }
+        var e = d.data;
+        document.getElementById('paEmpPayName').textContent = e.name;
+
+        // Advertencia de pr\u00e9stamos
+        window._paCurrentEmp = e;
+        if(parseFloat(e.loan_balance) > 0){
+            document.getElementById('paEmpLoanWarn').style.display = 'flex';
+            document.getElementById('paEmpLoanText').innerHTML =
+                e.active_loans+' pr\u00e9stamo(s) activo(s). Saldo pendiente: '+fmt(e.loan_balance)+'. Considere coordinar el descuento.';
+        }
+
+        // Info salario
+        var period = e.salary_period==='quincenal'?'Quincenal':'Mensual';
+        var days = 'D\u00eda de pago: '+e.pay_day_1+(e.pay_day_2?' y '+e.pay_day_2:'');
+        document.getElementById('paEmpSalaryBox').innerHTML =
+            'Salario establecido: <b>'+fmt(e.salary)+'</b> \u00b7 '+period+' \u00b7 '+days+' <span style="color:#3b82f6;cursor:pointer;font-weight:600;" onclick="document.getElementById(\'paEmpPayAmt\').value=\''+parseFloat(e.salary).toFixed(2)+'\'">\u2192 Usar monto</span>';
+        document.getElementById('paEmpPayAmt').value = parseFloat(e.salary).toFixed(2);
+
+        // Historial
+        if(d.history && d.history.length){
+            document.getElementById('paEmpHistWrap').style.display = 'block';
+            document.getElementById('paEmpHistList').innerHTML = d.history.map(function(h){
+                return '<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 10px;border-bottom:1px solid #f1f5f9;font-size:0.82rem;">'
+                    +'<div><b>'+fmt(h.amount)+'</b>'+(h.period_label?' <span style="color:#64748b;">'+esc(h.period_label)+'</span>':'')+'</div>'
+                    +'<span style="color:#94a3b8;">'+fmtDate(h.payment_date)+' \u00b7 '+esc(h.payment_method)+'</span></div>';
+            }).join('');
+        }
+    });
+};
+
+window.paSubmitPayEmp = function(){
+    var empId  = document.getElementById('paEmpPayId').value;
+    var amount = parseFloat(document.getElementById('paEmpPayAmt').value);
+    if(!amount || amount <= 0){ paToast('Ingrese un monto v\u00e1lido', 'error'); return; }
+
+    var e = window._paCurrentEmp;
+    var salary = e ? parseFloat(e.salary) : 0;
+    var loanBalance = e ? parseFloat(e.loan_balance) : 0;
+
+    // Si tiene pr\u00e9stamo y el monto es inferior al salario, ofrecer abono
+    if(loanBalance > 0 && salary > 0 && amount < salary){
+        var diferencia = Math.min(salary - amount, loanBalance);
+        window._paLoanDeduction = diferencia;
+        document.getElementById('paLoanConfirmText').innerHTML =
+            'El pago de <b>'+fmt(amount)+'</b> es inferior al salario de <b>'+fmt(salary)+'</b>.<br>\u00bfDesea abonar la diferencia al pr\u00e9stamo?';
+        document.getElementById('paLoanConfirmAmount').textContent = fmt(diferencia);
+        paOpen('paModalLoanConfirm');
+        return;
+    }
+
+    paExecutePayEmp(empId, amount, 0);
+};
+
+window.paLoanConfirmResolve = function(accepted){
+    paClose('paModalLoanConfirm');
+    var empId  = document.getElementById('paEmpPayId').value;
+    var amount = parseFloat(document.getElementById('paEmpPayAmt').value);
+    var deduction = accepted ? (window._paLoanDeduction || 0) : 0;
+    paExecutePayEmp(empId, amount, deduction);
+};
+
+function paExecutePayEmp(empId, amount, loanDeduction){
+    setBtn('paBtnPayEmp', false, '<i class="fas fa-spinner fa-spin"></i> Procesando...');
+    var fd = new FormData();
+    fd.append('employee_id', empId);
+    fd.append('amount', amount);
+    fd.append('period_label', document.getElementById('paEmpPayPeriod').value.trim());
+    fd.append('method', document.getElementById('paEmpPayMethod').value);
+    fd.append('reference', document.getElementById('paEmpPayRef').value.trim());
+    fd.append('notes', document.getElementById('paEmpPayNotes').value.trim());
+    fd.append('loan_deduction', loanDeduction);
+    apiPost(BASE_URL+'&ajax=pa_pay_employee', fd)
+    .then(function(d){
+        if(d.status==='success'){
+            paClose('paModalPayEmp');
+            paLoadRecent();
+            if(d.loan_msg) paToast(d.loan_msg, 'success');
+        } else { paToast('Error: '+(d.msg||'Desconocido'), 'error'); }
+    })
+    .catch(function(){ paToast('Error de conexi\u00f3n', 'error'); })
+    .finally(function(){ setBtn('paBtnPayEmp', true, '<i class="fas fa-check-circle"></i> Confirmar Pago'); });
+}
+
+// ----------------------------------------------------------------------------
+// OTRO PAGO
+// ----------------------------------------------------------------------------
+function selectGastoType(type){
+    var emp = document.getElementById('labelGastoEmpresa');
+    var per = document.getElementById('labelGastoPersonal');
+    if(type==='empresa'){
+        emp.style.borderColor='#2563eb'; emp.style.background='#eff6ff';
+        per.style.borderColor='#e2e8f0'; per.style.background='transparent';
+    } else {
+        per.style.borderColor='#d97706'; per.style.background='#fffbeb';
+        emp.style.borderColor='#e2e8f0'; emp.style.background='transparent';
+    }
+}
+
+function selectEditGastoType(type){
+    var emp = document.getElementById('labelEditEmpresa');
+    var per = document.getElementById('labelEditPersonal');
+    if(type==='empresa'){
+        if(emp){emp.style.borderColor='#2563eb'; emp.style.background='#eff6ff';}
+        if(per){per.style.borderColor='#e2e8f0'; per.style.background='transparent';}
+    } else {
+        if(per){per.style.borderColor='#d97706'; per.style.background='#fffbeb';}
+        if(emp){emp.style.borderColor='#e2e8f0'; emp.style.background='transparent';}
+    }
+}
+
+window.paOpenEditOtro = function(idx){
+    var p = _paRecentRows[idx];
+    if(!p) return;
+    document.getElementById('paEditOtroId').value = p.id;
+    document.getElementById('paEditConcept').value = p.descripcion;
+    document.getElementById('paEditAmt').value = p.amount;
+    document.getElementById('paEditMethod').value = p.payment_method || 'Efectivo';
+    document.getElementById('paEditRef').value = p.reference || '';
+    document.getElementById('paEditNotes').value = p.notes || '';
+    document.getElementById('paEditFecha').value = p.payment_date || '';
+    var cat = (p.categoria || 'empresa').toLowerCase();
+    selectEditGastoType(cat === 'personal' ? 'personal' : 'empresa');
+    document.querySelector('input[name="edit_gasto_tipo"][value="' + (cat === 'personal' ? 'personal' : 'empresa') + '"]').checked = true;
+    paOpen('paModalEditOtro');
+};
+
+window.paSubmitEditOtro = function(){
+    var id = document.getElementById('paEditOtroId').value;
+    var concept = document.getElementById('paEditConcept').value.trim();
+    var amount = parseFloat(document.getElementById('paEditAmt').value);
+    if(!concept || !amount || amount<=0){ paToast('Datos inválidos', 'error'); return; }
+    var catEl = document.querySelector('input[name="edit_gasto_tipo"]:checked');
+    var categoria = catEl ? catEl.value : 'empresa';
+    setBtn('paBtnEditOtro', false, '<i class="fas fa-spinner fa-spin"></i> Guardando...');
+    var fd = new FormData();
+    fd.append('id', id);
+    fd.append('concept', concept);
+    fd.append('amount', amount);
+    fd.append('method', document.getElementById('paEditMethod').value);
+    fd.append('reference', document.getElementById('paEditRef').value.trim());
+    fd.append('notes', document.getElementById('paEditNotes').value.trim());
+    fd.append('categoria', categoria);
+    fd.append('payment_date', document.getElementById('paEditFecha').value);
+    apiPost(BASE_URL+'&ajax=pa_edit_other', fd)
+    .then(function(d){
+        if(d.status==='success'){
+            paClose('paModalEditOtro');
+            paLoadRecent();
+        } else { paToast('Error: '+(d.msg||'Desconocido'), 'error'); }
+    })
+    .catch(function(){ paToast('Error de conexión', 'error'); })
+    .finally(function(){ setBtn('paBtnEditOtro', true, '<i class="fas fa-save"></i> Guardar Cambios'); });
+};
+
+function paResetOtro()
+    ['paOtroConcept','paOtroAmt','paOtroRef','paOtroNotes'].forEach(function(id){ document.getElementById(id).value=''; });
+    document.getElementById('paOtroMethod').value = 'Efectivo';
+    document.getElementById('paOtroFecha').value = new Date().toISOString().split('T')[0];
+    selectGastoType('empresa');
+    document.querySelector('input[name="gasto_tipo"][value="empresa"]').checked = true;
+    setBtn('paBtnOtro', true, '<i class="fas fa-save"></i> Guardar Pago');
+}
+
+window.paSubmitOtro = function(){
+    var concept = document.getElementById('paOtroConcept').value.trim();
+    var amount  = parseFloat(document.getElementById('paOtroAmt').value);
+    if(!concept){ paToast('El concepto es requerido', 'error'); return; }
+    if(!amount || amount <= 0){ paToast('Ingrese un monto v\u00e1lido', 'error'); return; }
+    var gastoTipo = document.querySelector('input[name="gasto_tipo"]:checked');
+    var categoria = gastoTipo ? gastoTipo.value : 'empresa';
+    setBtn('paBtnOtro', false, '<i class="fas fa-spinner fa-spin"></i> Guardando...');
+    var fd = new FormData();
+    fd.append('concept', concept);
+    fd.append('amount', amount);
+    fd.append('method', document.getElementById('paOtroMethod').value);
+    fd.append('reference', document.getElementById('paOtroRef').value.trim());
+    fd.append('notes', document.getElementById('paOtroNotes').value.trim());
+    fd.append('categoria', categoria);
+    fd.append('payment_date', document.getElementById('paOtroFecha').value);
+    apiPost(BASE_URL+'&ajax=pa_pay_other', fd)
+    .then(function(d){
+        if(d.status==='success'){
+            paClose('paModalOtro');
+            paLoadRecent();
+        } else { paToast('Error: '+(d.msg||'Desconocido'), 'error'); }
+    })
+    .catch(function(){ paToast('Error de conexi\u00f3n', 'error'); })
+    .finally(function(){ setBtn('paBtnOtro', true, '<i class="fas fa-save"></i> Guardar Pago'); });
+};
+
+// ----------------------------------------------------------------------------
+// HISTORIAL RECIENTE
+// ----------------------------------------------------------------------------
+var paIconMap = {
+    proveedor: {icon:'fa-truck', color:'#7c3aed', bg:'#f3e8ff'},
+    empleado:  {icon:'fa-user-tie', color:'#0891b2', bg:'#e0f2fe'},
+    otro:      {icon:'fa-receipt', color:'#d97706', bg:'#fef3c7'}
+};
+var paLabelMap = {proveedor:'Proveedor', empleado:'Empleado', otro:'Otro'};
+
+var _paRecentRows = [];
+window.paLoadRecent = function(){
+    var body = document.getElementById('paRecentBody');
+    body.innerHTML='<div class="pa-loading"><i class="fas fa-spinner fa-spin"></i></div>';
+    api(BASE_URL+'&ajax=pa_recent')
+    .then(function(d){
+        if(d.status!=='success'||!d.data.length){
+            body.innerHTML='<div class="pa-empty"><i class="fas fa-inbox"></i><br>Sin pagos registrados a\u00fan</div>'; return;
+        }
+        _paRecentRows = d.data;
+        var rows = _paRecentRows;
+        body.innerHTML = rows.map(function(p, idx){
+            var info = paIconMap[p.tipo] || paIconMap.otro;
+            return '<div class="pa-hist-row" data-idx="'+idx+'">'
+                +'<div class="pa-hist-icon" style="background:'+info.bg+';color:'+info.color+';">'
+                +'<i class="fas '+info.icon+'"></i></div>'
+                +'<div class="pa-hist-desc">'
+                +'<div class="pa-hist-name">'+esc(p.descripcion)+'</div>'
+                +'<div class="pa-hist-meta">'+paLabelMap[p.tipo]+' \u00b7 '+esc(p.payment_method)+' \u00b7 '+fmtDate(p.payment_date)+'</div>'
+                +'</div>'
+                +'<div style="display:flex;align-items:center;gap:4px;">'
+                +'<div class="pa-hist-amt" style="color:'+info.color+';">'+fmt(p.amount)+'</div>'
+                +(p.tipo==='otro'?'<button class="pa-btn pa-btn-gray pa-btn-sm" onclick="paOpenEditOtro('+idx+')" title="Editar" style="padding:4px 8px;color:#2563eb;"><i class="fas fa-pencil-alt"></i></button>':'')+'
+                +'<button class="pa-btn pa-btn-gray pa-btn-sm pa-del-btn" data-idx="'+idx+'" title="Eliminar" style="padding:4px 8px;color:#dc2626;border-color:#fecaca;">'
+                +'<i class="fas fa-trash-alt"></i></button>'
+                +'</div></div>';
+        }).join('');
+        body.querySelectorAll('.pa-del-btn').forEach(function(btn){
+            btn.addEventListener('click', function(e){
+                e.stopPropagation();
+                var p = rows[parseInt(this.dataset.idx)];
+                var self = this;
+                paDeleteConfirm('\u00bfEliminar este pago de <b>'+fmt(p.amount)+'</b>?', function(){
+                    self.disabled = true;
+                    var fd = new FormData();
+                    fd.append('tipo', p.tipo);
+                    fd.append('id', p.id);
+                    apiPost(BASE_URL+'&ajax=pa_delete_payment', fd)
+                    .then(function(d){ if(d.status==='success'){ paToast('Pago eliminado', 'success'); paLoadRecent(); } else { paToast('Error: '+(d.msg||'No se pudo eliminar'), 'error'); } })
+                    .catch(function(){ paToast('Error de conexi\u00f3n', 'error'); });
+                });
+            });
+        });
+    });
+};
+
+// -- Iniciar -------------------------------------------------------------------
+paLoadRecent();
+
+})();
+</script>

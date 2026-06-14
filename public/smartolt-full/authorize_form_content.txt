@@ -1,0 +1,125 @@
+	<div class="container-fluid content-wrap" id="authorize_div">
+		<div class="row">
+			<div class="col-lg-12">
+				<h2><i class="fa fa-plus-circle"></i> Authorize ONU</h2>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-md-8 col-md-offset-2">
+				<div class="panel panel-default">
+					<div class="panel-heading"><i class="fa fa-cog"></i> ONU Configuration</div>
+					<div class="panel-body">
+						<form class="form-horizontal" id="authorizeForm">
+							<div class="form-group">
+								<label class="control-label col-sm-3">OLT</label>
+								<div class="col-sm-7">
+									<select class="form-control" disabled><option>1 - JOEL WIFI</option></select>
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="control-label col-sm-3">PON type</label>
+								<div class="col-sm-7">
+									<label class="radio-inline"><input type="radio" name="pon_type" value="GPON" checked disabled> GPON</label>
+									<label class="radio-inline"><input type="radio" name="pon_type" value="EPON" disabled> EPON</label>
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="control-label col-sm-3">Board</label>
+								<div class="col-sm-7">
+									<select name="board" id="board" class="form-control">
+										<option value="2">2</option>
+										<option value="3" selected>3</option>
+										<option value="4">4</option>
+									</select>
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="control-label col-sm-3">Port</label>
+								<div class="col-sm-7">
+									<input type="text" name="port" id="port" class="form-control" value="<%= parseInt(locals.port_param||3) %>" readonly>
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="control-label col-sm-3">SN</label>
+								<div class="col-sm-7">
+									<input type="text" id="sn" name="sn" class="form-control" value="<%= locals.sn_param || '' %>" readonly>
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="control-label col-sm-3">ONU type</label>
+								<div class="col-sm-7">
+									<select name="onu_type_id" id="onu_type_id" class="form-control">
+										<option value="">-- Select ONU type --</option>
+										<% var tipos=['EG8141A5','F679LV9.1','XN020-G3v','HS8545M5','EG8021V5','F673AV9','HG8546M','GPON_ONUV7.1','EG8041V5','ET8145V5CUS','F670LV1.1.01','F670LV9.0','FD504GW','HG8010H','HG8120C','HG8145V5','HG8240H','HG8242H','HG8245H','HG8340M','HG8347R','HG8545M','HS8145V','HS8546V','HSGQ-X100W2','R2','XC220-G3v','XN020-G3','XN020G3','ZTE-F600','ZTE-F601','ZTE-F601V6.0','ZTE-F620','ZTE-F623','ZTE-F625','ZTE-F625G','ZTE-F627','ZTE-F643','ZTE-F643V6.0','ZTE-F660','ZTE-F660V5.0','ZTE-F660V5.2','ZTE-F660V6.0','ZTE-F668','ZXHN-F670L'];
+										var prefMap={HWTC:'EG8141A5',ZTEG:'F679LV9.1',TPLG:'XN020-G3v',ZXIC:'EG8141A5',ECOM:'ET8145V5CUS',CDTC:'EG8041V5',CMDC:'F673AV9',TDTC:'EG8141A5',XPON:'HSGQ-X100W2'};
+										var sug=prefMap[(locals.sn_param||'').substring(0,4)]||'';
+										tipos.forEach(function(t){ %>
+										<option value="<%= t %>" <%= (t===sug)?'selected':'' %>><%= t %></option>
+										<% }); %>
+									</select>
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="control-label col-sm-3">ONU mode</label>
+								<div class="col-sm-7">
+									<label class="radio-inline"><input type="radio" name="mode" value="Routing" checked> Routing</label>
+									<label class="radio-inline"><input type="radio" name="mode" value="Bridging"> Bridging</label>
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="control-label col-sm-3">User VLAN-ID</label>
+								<div class="col-sm-7">
+									<select name="vlan_id" id="vlan" class="form-control">
+										<option value="">-- Select VLAN --</option>
+										<% var vlans=[{v:28,n:'Adriel Wifi'},{v:60,n:'Soltech'},{v:65},{v:100},{v:103,n:'EduardoNet'},{v:110,n:'Alex Computer'},{v:111},{v:134,n:'Will Copy Center'},{v:150},{v:180,n:'Lizandro Almonte'},{v:200,n:'Joel Wifi'},{v:254},{v:300,n:'Zona Joel Wifi'},{v:400,n:'Ignacio'},{v:501,n:'FELIXFRIA'},{v:800,n:'Powernet'},{v:1028,n:'ALEXCOMPUTER'},{v:1721,n:'AlfaServi'},{v:2624,n:'Alex la yaguita'},{v:3030,n:'VLAN TEST 3030'}];
+										vlans.forEach(function(v){ %>
+										<option value="<%= v.v %>"><%= v.v %><%= v.n?' - '+v.n:'' %></option>
+										<% }); %>
+									</select>
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="control-label col-sm-3">Zone</label>
+								<div class="col-sm-7">
+									<select name="location_id" id="location" class="form-control">
+										<option value="">-- Select Zone --</option>
+										<option value="Bella Vista">Bella Vista</option>
+										<option value="default">default</option>
+										<option value="Los Girasoles">Los Girasoles</option>
+										<option value="Reparto Peralta">Reparto Peralta</option>
+										<% for(var z=1;z<=32;z++){ %>
+										<option value="Zone <%= z %>">Zone <%= z %></option>
+										<% } %>
+									</select>
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="control-label col-sm-3">Name</label>
+								<div class="col-sm-7">
+									<input type="text" id="location_name" name="location_name" class="form-control" placeholder="ONU Name">
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="control-label col-sm-3">Address or comment</label>
+								<div class="col-sm-7">
+									<input type="text" id="description" name="description" class="form-control" placeholder="Address or comment (optional)">
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="control-label col-sm-3">ONU external ID</label>
+								<div class="col-sm-7">
+									<input type="text" id="client_external_id" name="client_external_id" class="form-control" value="<%= locals.sn_param || '' %>" placeholder="Use the unique ONU external ID">
+								</div>
+							</div>
+							<div class="form-actions">
+								<div class="col-sm-offset-3 col-sm-7">
+									<button type="button" id="auth_button" class="btn btn-primary btn-lg btn-block"><i class="glyphicon glyphicon-file"></i> Save</button>
+									<a href="/modulo?pagina=smartolt_unconfigured_full" class="btn btn-link">Cancel</a>
+								</div>
+							</div>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>

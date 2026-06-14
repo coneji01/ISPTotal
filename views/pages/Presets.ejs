@@ -1,0 +1,2197 @@
+<!DOCTYPE html>
+<!-- saved from url=(0063)# -->
+<html lang="en" class="smartolt-night"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <script>window.SMARTOLT_DB_THEME='system';</script>
+    <!-- Paint-blocking: resolve theme before first paint. Precedence: per-device override (smartolt-theme-local, set by the header button) > account/DB pref > device (system). -->
+    <script>try{var k='smartolt-night',lk='smartolt-theme-local',dbTheme=window.SMARTOLT_DB_THEME,local=null,pref,n;try{local=localStorage.getItem(lk);}catch(e){}if(local==='night'||local==='light'||local==='system'){pref=local;}else if(dbTheme==='night'||dbTheme==='light'||dbTheme==='system'){pref=dbTheme;}else{pref='system';}if(pref==='system'){n=!!(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);}else if(pref==='night'){n=true;}else{n=false;}try{localStorage.setItem(k,n?'1':'0');}catch(e){}if(n){document.documentElement.classList.add('smartolt-night');}else{document.documentElement.classList.remove('smartolt-night');}document.cookie=k+'='+(n?'1':'0')+'; path=/; max-age=31536000; SameSite=Lax'+(location.protocol==='https:'?'; Secure':'');}catch(e){}</script>
+        <meta http-equiv="content-type" content="text/html; utf-8">
+    
+    <meta http-equiv="Content-Language" content="en">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="#" type="image/x-icon">
+    <link rel="shortcut icon" href="#" type="image/x-icon">
+    
+  <title>Authorization Presets - JOEL WIFI</title>
+
+  <!-- Bootstrap Core CSS -->
+  <link href="/public/smartolt-files/bootstrap-custom.css" rel="stylesheet">
+  <link href="/public/smartolt-files/bootstrap-multiselect.css" rel="stylesheet">
+  <link href="/public/smartolt-files/styles.css" rel="stylesheet">
+  <link href="/public/smartolt-files/toast.css" rel="stylesheet">
+
+  
+  <!-- Custom Fonts -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+  <!-- Message box CSS -->
+  <link href="/public/smartolt-files/messagebox.css" rel="stylesheet" type="text/css">
+
+  <link href="/public/smartolt-files/inter-fonts.css" rel="stylesheet">
+  <link href="/public/smartolt-files/dashboard-smartolt-night.css" rel="stylesheet">
+  <script src="/public/smartolt-files/dashboard-smartolt-night.js" defer=""></script>
+    
+  <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+  <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+  <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+  <!-- jQuery -->
+  <script src="/public/smartolt-files/jquery.min.js"></script>
+
+  
+  
+  <!-- Toast alerts -->
+  <script src="/public/smartolt-files/toast.js"></script>
+
+  <!-- Pauses recurring AJAX polling while the tab is hidden OR the user has been idle, resumes on focus / activity. -->
+  <script src="/public/smartolt-files/polling.js"></script>
+
+  
+  
+</head>
+
+<body class="smartolt-site">
+<script type="text/javascript">
+$( document ).ready(function() {
+	$.ajaxSetup({
+		cache: false
+	});
+	
+	window.jqxhrs = [];
+
+      window.registerJqxhr = function(jqxhr) {
+        jqxhrs.push(jqxhr);
+      }
+
+      window.abortJqxhr = function() {
+        for (var i = jqxhrs.length - 1; i >= 0; i--) {
+          if (jqxhrs[i]) {
+            jqxhrs[i].abort();
+          }
+        }
+
+        window.jqxhrs = [];
+      }
+
+      $(window).bind("beforeunload", function(event) {
+        abortJqxhr();
+      });
+
+      function unregisterJqxhr(event, jqxhr, settings) {
+        var idx = $.inArray(jqxhr, jqxhrs);
+        if (idx != -1) {
+          jqxhrs.splice(idx, 1);
+        }
+      }
+
+      $(document).ajaxComplete(unregisterJqxhr);
+
+      config = {
+        X_TOKEN: '9C23F19BE06B4BEB93046ECFDF50FF91'
+      }
+    });
+  </script>
+
+  <div class="smartolt-landing-hero-bg" aria-hidden="true"></div>
+
+  <div id="content-wrapper">
+    <div class="smartolt-topbar-network" aria-hidden="true">
+      <div class="smartolt-topbar-network-inner">
+        <svg class="smartolt-topbar-network-lines" viewBox="0 0 100 100" preserveAspectRatio="none">
+          <line x1="8" y1="68" x2="23" y2="78"></line>
+          <line x1="23" y1="78" x2="37" y2="63"></line>
+          <line x1="8" y1="68" x2="37" y2="63"></line>
+          <line x1="37" y1="63" x2="65" y2="18"></line>
+          <line x1="65" y1="18" x2="89" y2="34"></line>
+          <line x1="23" y1="78" x2="65" y2="18"></line>
+          <line x1="37" y1="63" x2="89" y2="34"></line>
+        </svg>
+        <span class="smartolt-topbar-node smartolt-topbar-node-a"></span>
+        <span class="smartolt-topbar-node smartolt-topbar-node-b"></span>
+        <span class="smartolt-topbar-node smartolt-topbar-node-c"></span>
+        <span class="smartolt-topbar-node smartolt-topbar-node-d"></span>
+        <span class="smartolt-topbar-node smartolt-topbar-node-e"></span>
+      </div>
+    </div>
+    <div class="navbar navbar-default navbar-fixed-top default-menu">
+      <div class="container">
+        <div class="navbar-header">
+          <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#navbar-main" aria-expanded="false" aria-controls="navbar">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand text-ellipsis max-width-250" href="#" title="JOEL WIFI">JOEL WIFI</a>
+        </div>
+
+        <div class="navbar-collapse collapse" id="navbar-main">
+          <ul class="nav navbar-nav in">
+
+                        
+              <li><a href="#">Unconfigured</a></li>
+            
+                          <li><a href="#">Configured</a></li>
+            
+            
+                        	                <li><a href="#">Graphs</a></li>
+                                                <li><a href="#">Diagnostics</a></li>
+                
+                                <li><a href="#">Tasks</a></li>
+                                
+                                 <li class="dropdown">
+                  <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="settings">Reports <span class="caret"></span></a>
+                  <ul class="dropdown-menu" aria-labelledby="settings">
+                  	                    <li><a href="#">Authorizations</a></li>
+                                                            <li><a href="#">Export</a></li>
+                                                            <li><a href="#">Import</a></li>
+                                                            <li><a href="#">Find config mismatches (DB vs OLT)</a></li>
+                                      </ul>
+                </li>
+                
+                                    <li><a href="#" class="save-configuration-anchor" data-toggle="modal">Save config</a></li>
+                                
+              <li class="dropdown">
+                <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="settings">Settings <span class="caret"></span></a>
+                <ul class="dropdown-menu in" aria-labelledby="settings">
+
+                                        <li><a href="#">Zones</a></li>
+                    
+                                        <li><a href="#">ODBs</a></li>
+                    
+                                        <li><a href="#">ONU types</a></li>
+                    
+                                        <li><a href="#">Speed profiles</a></li>
+                    
+                                        <li><a href="#">OLTs</a></li>
+                    
+                                        <li><a href="#">VPN &amp; TR069</a></li>
+                    
+                                        <li><a href="#" class="active">Authorization presets</a></li>
+                    
+                    
+                                        <li><a href="#">General</a></li>
+                    
+                                        <li><a href="#">Billing</a></li>
+                                    </ul>
+              </li>
+
+              
+            
+          </ul>
+
+          <ul class="nav navbar-nav navbar-right">
+            <li><a href="#" id="smartolt-night-toggle" class="is-pref-night is-resolved is-night" title="Night mode" aria-label="Night mode" data-title-light="Light mode" data-title-night="Night mode" data-title-system="System"><i class="fa fa-sun-o font-size-20 smartolt-theme-icon-light" aria-hidden="true"></i><i class="fa fa-moon-o font-size-20 smartolt-theme-icon-night" aria-hidden="true"></i><i class="fa fa-adjust font-size-20 smartolt-theme-icon-system" aria-hidden="true"></i></a></li>
+            <li><a href="#" title="Edit user joelr802@gmail.com"><i class="fa fa-user glyphicon-white font-size-20"> </i></a></li>
+            <li><a href="#"><i class="glyphicon glyphicon-off glyphicon glyphicon-white"> </i> Log out</a></li>
+                      </ul>
+          
+        </div>
+      </div>
+    </div>
+
+    <!-- Page Content -->
+    <div class="container">
+
+<style>
+	/* Getting Started Panel */
+	.getting-started-panel {
+		border: 1px solid #cecece;
+		border-radius: 4px;
+		margin-bottom: 20px;
+		overflow: hidden;
+	}
+	.getting-started-header {
+		background-color: #ecf0f1;
+		border-bottom: 1px solid #cecece;
+		padding: 15px 20px;
+		cursor: pointer;
+	}
+	.getting-started-header:hover {
+		background-color: #ecf0f1;
+	}
+	.getting-started-header h4 {
+		margin: 0;
+		color: #2c3e50;
+		font-size: 15px;
+		font-weight: 500;
+	}
+	.getting-started-header h4 .fa-lightbulb-o {
+		margin-right: 10px;
+	}
+	.getting-started-header .fa-chevron-down,
+	.getting-started-header .fa-chevron-up {
+		transition: transform 0.3s ease;
+		color: #2c3e50;
+	}
+	.hide-guide-link {
+		color: #2c3e50;
+		opacity: 0.6;
+	}
+	.hide-guide-link:hover {
+		color: #2c3e50;
+		opacity: 1;
+	}
+	.getting-started-body {
+		padding: 0;
+		background-color: #fff;
+	}
+	.getting-started-body.collapse:not(.in) {
+		display: none;
+	}
+
+	/* Section Layout */
+	.guide-section {
+		padding: 25px 30px;
+	}
+	.guide-section-title {
+		font-size: 15px;
+		font-weight: 600;
+		color: #333;
+		margin: 0 0 20px 0;
+		padding-bottom: 10px;
+		border-bottom: 2px solid #eee;
+	}
+	.guide-section-title .fa {
+		margin-right: 10px;
+		color: #31708f;
+	}
+
+	/* Steps - Simple List */
+	.steps-list {
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+	.steps-list li {
+		padding: 6px 0;
+		font-size: 15px;
+		color: #2c3e50;
+	}
+	.step-number {
+		color: #2c3e50;
+		font-weight: 600;
+		margin-right: 8px;
+	}
+	.steps-list strong {
+		color: #333;
+	}
+
+	/* Pattern variable links */
+	.pattern-var-link {
+		cursor: pointer;
+	}
+	.pattern-var-link:hover {
+		background-color: #d9edf7;
+	}
+</style>
+
+<div class="container-fluid content-wrap">
+	<h2>Authorization Presets</h2>
+		
+	
+	<!-- How It Works Panel -->
+	<div class="getting-started-panel" id="gettingStartedPanel">
+		<div class="getting-started-header" data-toggle="collapse" data-target="#gettingStartedBody">
+			<h4>
+				<i class="fa fa-lightbulb-o"></i> How It Works				<span class="pull-right">
+					<a href="#" id="hideGuideBtn" class="hide-guide-link" onclick="event.stopPropagation();"><i class="fa fa-times"></i></a>
+					<i class="fa fa-chevron-down" id="gettingStartedChevron" style="margin-left: 10px;"></i>
+				</span>
+			</h4>
+		</div>
+		<div id="gettingStartedBody" class="getting-started-body collapse in">
+			<div class="guide-section">
+				<ul class="steps-list">
+					<li><span class="step-number">1.</span> <strong>Create Preset</strong> – Set up conditions and ONU settings</li>
+					<li><span class="step-number">2.</span> <strong>Set Conditions</strong> – Define when to apply this preset</li>
+					<li><span class="step-number">3.</span> <strong>Enable Auto-Auth</strong> – Turn on auto-authorization</li>
+					<li><span class="step-number">4.</span> <strong>Done</strong> – ONUs will be authorized automatically</li>
+				</ul>
+			</div>
+		</div>
+	</div>
+
+		<p>
+		<button type="button" class="btn btn-success" id="openWizardBtnTop" style="margin-left: 5px;">
+			<i class="fa fa-magic"></i> Create Preset with Wizard		</button>
+		<a href="#" class="btn btn-success"><span class="glyphicon glyphicon-plus"> </span> Create Preset</a>
+	</p>
+	
+	<p><span>Authorization presets allow you to define ONU settings and conditions that will be automatically applied to ONUs when they come online.</span></p>
+
+	<!-- Search/Filter Bar -->
+	<form method="get" action="#" id="filterForm" class="form-inline margin-bottom">
+		<input type="hidden" name="sort_by" value="created_at">
+		<input type="hidden" name="sort_order" value="desc">
+
+		<div class="form-group">
+			<label class="control-label" for="presetSearch">Search</label>
+			<input type="text" name="search" id="presetSearch" class="form-control input-190" placeholder="Name, Zone, SN..." value="">
+		</div>
+
+		<div class="form-group">
+			<label class="control-label" for="filterOlt">OLT</label>
+			<select name="olt_id" id="filterOlt" class="form-control input-150">
+				<option value="">All</option>
+							</select>
+		</div>
+
+		<div class="form-group">
+			<label class="control-label" for="filterOnuType">ONU type</label>
+			<select name="onu_type_id" id="filterOnuType" class="form-control input-150">
+				<option value="">All</option>
+				<option value="auto-detect">Auto-detect</option>
+							</select>
+		</div>
+
+		<div class="form-group">
+			<label class="control-label" for="filterPon">PON</label>
+			<select name="pon_type" id="filterPon" class="form-control input-90">
+				<option value="">All</option>
+				<option value="gpon">GPON</option>
+				<option value="epon">EPON</option>
+			</select>
+		</div>
+
+		<div class="form-group">
+			<label class="control-label" for="filterMode">Mode</label>
+			<select name="mode" id="filterMode" class="form-control input-90">
+				<option value="">All</option>
+				<option value="Routing">Routing</option>
+				<option value="Bridging">Bridging</option>
+			</select>
+		</div>
+	</form>
+
+<h4>No presets found</h4>
+<p>Create your first authorization preset using the wizard above.</p>
+
+</div>
+
+<!-- Include wizard modal -->
+<!-- Preset Wizard Modal -->
+<div class="modal fade" id="presetWizardModal" tabindex="-1" role="dialog" aria-labelledby="presetWizardModalLabel">
+	<div class="modal-dialog modal-lg" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+				<h4 class="modal-title" id="presetWizardModalLabel">
+					<i class="fa fa-magic"></i> Create Authorization Preset				</h4>
+			</div>
+			<div class="modal-body" id="presetWizardModalBody">
+				<!-- Progress bar -->
+				<div class="wizard-progress">
+					<div class="progress">
+						<div class="progress-bar progress-bar-success" role="progressbar" style="width: 16.67%;" id="wizardProgressBar"></div>
+					</div>
+					<ul class="wizard-steps">
+						<li class="active" data-step="1"><span class="step-num">1</span> Basics</li>
+						<li data-step="2"><span class="step-num">2</span> Conditions</li>
+						<li data-step="3"><span class="step-num">3</span> ONU settings</li>
+						<li data-step="4"><span class="step-num">4</span> TR069 &amp; Mgmt IP Settings</li>
+						<li data-step="5"><span class="step-num">5</span> WiFi</li>
+						<li data-step="6"><span class="step-num">6</span> Review</li>
+					</ul>
+				</div>
+
+				<form action="#" class="form-horizontal" id="wizard_preset_form" method="post" accept-charset="utf-8">
+
+				<!-- Step 1: Basics -->
+				<div class="wizard-step" data-step="1">
+					<div class="wizard-step-header">
+						<h4><i class="fa fa-file-text-o text-success"></i> Basic Information</h4>
+						<p class="text-muted">Give your preset a name and optional description.</p>
+					</div>
+
+					<div class="form-group">
+						<label class="control-label col-sm-3" for="name">Preset Name <span class="text-danger">*</span></label>
+						<div class="col-sm-7">
+							<input type="text" id="name" name="name" class="form-control form-control-sm input-sm" placeholder="e.g., Residential GPON - Main Area" required="">
+						</div>
+					</div>
+
+					<div class="form-group">
+						<label class="control-label col-sm-3" for="description">Description</label>
+						<div class="col-sm-7">
+							<textarea id="description" name="description" class="form-control form-control-sm input-sm" rows="2" placeholder="Optional description of when to use this preset"></textarea>
+						</div>
+					</div>
+				</div>
+
+				<!-- Step 2: Conditions -->
+				<div class="wizard-step" data-step="2" style="display: none;">
+					<div class="wizard-step-header">
+						<h4><i class="fa fa-filter text-success"></i> Conditions</h4>
+						<p class="text-muted">Define which ONUs this preset will match.</p>
+					</div>
+
+					<div class="form-group">
+						<label class="control-label col-sm-3" for="olt_id">OLT <span class="text-danger">*</span></label>
+						<div class="col-sm-7">
+							<span class="multiselect-native-select"><select id="olt_id" name="olt_id" class="form-control form-control-sm input-sm">
+																										<option value="1" data-olt-type="zte" data-show-cvlan="0" data-show-svlan="0" data-tag-transform-mode="default" data-show-other-all="0">1 - JOEL WIFI</option>
+															</select><div class="btn-group full-width"><div class="multiselect dropdown-toggle form-control form-control-sm input-sm" data-toggle="dropdown" style="padding-right: 18px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="1 - JOEL WIFI"><span class="multiselect-selected-text">1 - JOEL WIFI</span> <span class="caret" style="position: absolute; right: 6px; top: 50%; margin-top: -2px;" aria-hidden="true"></span></div><ul class="multiselect-container dropdown-menu" style="max-height: 500px; overflow: hidden auto;"><li class="multiselect-item multiselect-filter" value="0"><div class="input-group"><span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span><input class="form-control multiselect-search" type="text" placeholder="Search"><span class="input-group-btn"><button class="btn btn-default multiselect-clear-filter" type="button"><i class="glyphicon glyphicon-remove-circle"></i></button></span></div></li><li class="active"><a href="#" tabindex="0"><label class="radio"><input type="radio" value="1"> 1 - JOEL WIFI</label></a></li></ul></div></span>
+						</div>
+					</div>
+
+					<div class="form-group">
+						<label class="control-label col-sm-3" for="board">Board</label>
+						<div class="col-sm-7">
+							<input class="form-control form-control-sm input-sm" type="text" id="board" name="board" list="boards" placeholder="All boards" autocomplete="off">
+							<datalist id="boards"><option value="2"></option><option value="3"></option><option value="4"></option></datalist>
+						</div>
+					</div>
+
+					<div class="form-group">
+						<label class="control-label col-sm-3" for="port">Port</label>
+						<div class="col-sm-7">
+							<input class="form-control form-control-sm input-sm" type="text" id="port" name="port" list="ports" placeholder="All ports" autocomplete="off">
+							<datalist id="ports"></datalist>
+							<small class="help-block text-muted">
+								<i class="fa fa-info-circle"></i> Single port, multiple ports separated by comma, or ranges. Examples: <code>3</code>, <code>1, 4, 7</code>, <code>1-4, 6, 8-10</code>
+							</small>
+						</div>
+					</div>
+
+					<div class="form-group">
+						<label class="control-label col-sm-3 radio-inline">PON type</label>
+						<div class="col-sm-7">
+							<label class="radio-inline"><input type="radio" name="pon_type" value="gpon" checked="">GPON</label>
+							<label class="radio-inline"><input type="radio" name="pon_type" value="epon">EPON</label>
+						</div>
+					</div>
+
+					<div class="form-group">
+						<label class="control-label col-sm-3" for="sn_pattern">SN pattern</label>
+						<div class="col-sm-7">
+							<input type="text" id="sn_pattern" name="sn_pattern" class="form-control form-control-sm input-sm" placeholder="All serial numbers">
+							<small class="help-block text-muted">
+								<i class="fa fa-info-circle"></i> e.g. <code>HWTC</code>, <code>ZTEG</code> - separate multiple with commas
+							</small>
+						</div>
+					</div>
+
+					<div class="form-group">
+						<label class="control-label col-sm-3" for="onu_type_id">ONU type</label>
+						<div class="col-sm-7">
+							<span class="multiselect-native-select"><select id="onu_type_id" name="onu_type_id" class="form-control form-control-sm input-sm"><option value="">Auto-detect from ONU</option><option value="81">EG8021V5 (ETH: 4, WiFi: 8)</option><option value="79">EG8041V5 (ETH: 4, WiFi: 1)</option><option value="55">EG8141A5 (ETH: 4, WiFi: 1)</option><option value="72">EG8145V5 (ETH: 4)</option><option value="71">ET8145V5CUS (ETH: 4, WiFi: 10)</option><option value="76">F670LV1.1.01 (ETH: 4)</option><option value="75">F670LV9.0 (ETH: 4, WiFi: 3)</option><option value="47">F673AV9 (ETH: 4, VoIP: 1)</option><option value="80">F679LV9.1 (ETH: 4, WiFi: 4)</option><option value="61">FD504GW (ETH: 4, WiFi: 1)</option><option value="82">GPON_ONUV7.1 (ETH: 4, WiFi: 8)</option><option value="48">HG8010H (ETH: 1)</option><option value="49">HG8120C (ETH: 2, VoIP: 1)</option><option value="56">HG8145V5 (ETH: 4, WiFi: 2, VoIP: 1, CATV)</option><option value="70">HG8145X6---10 (ETH: 4, WiFi: 4)</option><option value="69">HG8145X6--10 (ETH: 4, WiFi: 4)</option><option value="68">HG8145X6-10 (ETH: 4, WiFi: 1)</option><option value="62">HG8240H (ETH: 4, WiFi: 4, VoIP: 2)</option><option value="50">HG8242H (ETH: 4, WiFi: 4, VoIP: 2, CATV)</option><option value="51">HG8245H (ETH: 4, WiFi: 4, VoIP: 2)</option><option value="63">HG8340M (ETH: 4)</option><option value="64">HG8347R (ETH: 4, WiFi: 4, VoIP: 1)</option><option value="52">HG8545M (ETH: 4, WiFi: 4, VoIP: 1)</option><option value="53">HG8546M (ETH: 4, WiFi: 4, VoIP: 1)</option><option value="54">HS8145V (ETH: 4, WiFi: 4, VoIP: 1)</option><option value="78">HS8545M5 (ETH: 4, WiFi: 1)</option><option value="65">HS8546V (ETH: 4, WiFi: 4, VoIP: 1)</option><option value="59">HSGQ-X100W2 (ETH: 1, WiFi: 1)</option><option value="77">R2 (ETH: 4)</option><option value="66">XC220-G3v (ETH: 4, VoIP: 1)</option><option value="57">XN020-G3 (ETH: 1)</option><option value="58">XN020-G3v (ETH: 2, VoIP: 1)</option><option value="60">XN020G3 (ETH: 1, WiFi: 2)</option><option value="40">ZTE-F600 (ETH: 4)</option><option value="28">ZTE-F601 (ETH: 1)</option><option value="45">ZTE-F601V6.0 (ETH: 1)</option><option value="32">ZTE-F620 (ETH: 4, VoIP: 2)</option><option value="29">ZTE-F623 (ETH: 4, WiFi: 4, VoIP: 1)</option><option value="27">ZTE-F625 (ETH: 4, VoIP: 2, CATV)</option><option value="34">ZTE-F625G (ETH: 4, VoIP: 2, CATV)</option><option value="33">ZTE-F627 (ETH: 4, WiFi: 4, VoIP: 2)</option><option value="37">ZTE-F643 (ETH: 4, WiFi: 4, VoIP: 2)</option><option value="44">ZTE-F643V6.0 (ETH: 1)</option><option value="30">ZTE-F660 (ETH: 4, WiFi: 4, VoIP: 2)</option><option value="41">ZTE-F660V5.0 (ETH: 4, WiFi: 4, VoIP: 2)</option><option value="42">ZTE-F660V5.2 (ETH: 4, WiFi: 4, VoIP: 2)</option><option value="43">ZTE-F660V6.0 (ETH: 4, WiFi: 4, VoIP: 2)</option><option value="31">ZTE-F668 (ETH: 4, WiFi: 4, VoIP: 2, CATV)</option><option value="67">ZXHN-F670L (ETH: 4, WiFi: 2)</option></select><div class="btn-group full-width"><div class="multiselect dropdown-toggle form-control form-control-sm input-sm" data-toggle="dropdown" style="padding-right: 18px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="Auto-detect from ONU"><span class="multiselect-selected-text">Auto-detect from ONU</span> <span class="caret" style="position: absolute; right: 6px; top: 50%; margin-top: -2px;" aria-hidden="true"></span></div><ul class="multiselect-container dropdown-menu" style="max-height: 500px; overflow: hidden auto;"><li class="multiselect-item multiselect-filter" value="0"><div class="input-group"><span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span><input class="form-control multiselect-search" type="text" placeholder="Search"><span class="input-group-btn"><button class="btn btn-default multiselect-clear-filter" type="button"><i class="glyphicon glyphicon-remove-circle"></i></button></span></div></li><li class="active"><a href="#" tabindex="0"><label class="radio"><input type="radio" value=""> Auto-detect from ONU</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="81"> EG8021V5 (ETH: 4, WiFi: 8)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="79"> EG8041V5 (ETH: 4, WiFi: 1)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="55"> EG8141A5 (ETH: 4, WiFi: 1)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="72"> EG8145V5 (ETH: 4)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="71"> ET8145V5CUS (ETH: 4, WiFi: 10)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="76"> F670LV1.1.01 (ETH: 4)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="75"> F670LV9.0 (ETH: 4, WiFi: 3)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="47"> F673AV9 (ETH: 4, VoIP: 1)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="80"> F679LV9.1 (ETH: 4, WiFi: 4)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="61"> FD504GW (ETH: 4, WiFi: 1)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="82"> GPON_ONUV7.1 (ETH: 4, WiFi: 8)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="48"> HG8010H (ETH: 1)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="49"> HG8120C (ETH: 2, VoIP: 1)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="56"> HG8145V5 (ETH: 4, WiFi: 2, VoIP: 1, CATV)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="70"> HG8145X6---10 (ETH: 4, WiFi: 4)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="69"> HG8145X6--10 (ETH: 4, WiFi: 4)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="68"> HG8145X6-10 (ETH: 4, WiFi: 1)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="62"> HG8240H (ETH: 4, WiFi: 4, VoIP: 2)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="50"> HG8242H (ETH: 4, WiFi: 4, VoIP: 2, CATV)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="51"> HG8245H (ETH: 4, WiFi: 4, VoIP: 2)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="63"> HG8340M (ETH: 4)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="64"> HG8347R (ETH: 4, WiFi: 4, VoIP: 1)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="52"> HG8545M (ETH: 4, WiFi: 4, VoIP: 1)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="53"> HG8546M (ETH: 4, WiFi: 4, VoIP: 1)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="54"> HS8145V (ETH: 4, WiFi: 4, VoIP: 1)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="78"> HS8545M5 (ETH: 4, WiFi: 1)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="65"> HS8546V (ETH: 4, WiFi: 4, VoIP: 1)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="59"> HSGQ-X100W2 (ETH: 1, WiFi: 1)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="77"> R2 (ETH: 4)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="66"> XC220-G3v (ETH: 4, VoIP: 1)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="57"> XN020-G3 (ETH: 1)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="58"> XN020-G3v (ETH: 2, VoIP: 1)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="60"> XN020G3 (ETH: 1, WiFi: 2)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="40"> ZTE-F600 (ETH: 4)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="28"> ZTE-F601 (ETH: 1)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="45"> ZTE-F601V6.0 (ETH: 1)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="32"> ZTE-F620 (ETH: 4, VoIP: 2)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="29"> ZTE-F623 (ETH: 4, WiFi: 4, VoIP: 1)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="27"> ZTE-F625 (ETH: 4, VoIP: 2, CATV)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="34"> ZTE-F625G (ETH: 4, VoIP: 2, CATV)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="33"> ZTE-F627 (ETH: 4, WiFi: 4, VoIP: 2)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="37"> ZTE-F643 (ETH: 4, WiFi: 4, VoIP: 2)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="44"> ZTE-F643V6.0 (ETH: 1)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="30"> ZTE-F660 (ETH: 4, WiFi: 4, VoIP: 2)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="41"> ZTE-F660V5.0 (ETH: 4, WiFi: 4, VoIP: 2)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="42"> ZTE-F660V5.2 (ETH: 4, WiFi: 4, VoIP: 2)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="43"> ZTE-F660V6.0 (ETH: 4, WiFi: 4, VoIP: 2)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="31"> ZTE-F668 (ETH: 4, WiFi: 4, VoIP: 2, CATV)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="67"> ZXHN-F670L (ETH: 4, WiFi: 2)</label></a></li></ul></div></span>
+						</div>
+					</div>
+
+					<div class="form-group" id="wizard_fallback_onu_type_wrapper" style="">
+						<label class="control-label col-sm-3" for="fallback_onu_type_id">Fallback ONU Type <span class="text-danger">*</span></label>
+						<div class="col-sm-7">
+							<span class="multiselect-native-select"><select id="fallback_onu_type_id" name="fallback_onu_type_id" class="form-control form-control-sm input-sm"><option value="">Select</option><option value="81">EG8021V5 (ETH: 4, WiFi: 8)</option><option value="79">EG8041V5 (ETH: 4, WiFi: 1)</option><option value="55">EG8141A5 (ETH: 4, WiFi: 1)</option><option value="72">EG8145V5 (ETH: 4)</option><option value="71">ET8145V5CUS (ETH: 4, WiFi: 10)</option><option value="76">F670LV1.1.01 (ETH: 4)</option><option value="75">F670LV9.0 (ETH: 4, WiFi: 3)</option><option value="47">F673AV9 (ETH: 4, VoIP: 1)</option><option value="80">F679LV9.1 (ETH: 4, WiFi: 4)</option><option value="61">FD504GW (ETH: 4, WiFi: 1)</option><option value="82">GPON_ONUV7.1 (ETH: 4, WiFi: 8)</option><option value="48">HG8010H (ETH: 1)</option><option value="49">HG8120C (ETH: 2, VoIP: 1)</option><option value="56">HG8145V5 (ETH: 4, WiFi: 2, VoIP: 1, CATV)</option><option value="70">HG8145X6---10 (ETH: 4, WiFi: 4)</option><option value="69">HG8145X6--10 (ETH: 4, WiFi: 4)</option><option value="68">HG8145X6-10 (ETH: 4, WiFi: 1)</option><option value="62">HG8240H (ETH: 4, WiFi: 4, VoIP: 2)</option><option value="50">HG8242H (ETH: 4, WiFi: 4, VoIP: 2, CATV)</option><option value="51">HG8245H (ETH: 4, WiFi: 4, VoIP: 2)</option><option value="63">HG8340M (ETH: 4)</option><option value="64">HG8347R (ETH: 4, WiFi: 4, VoIP: 1)</option><option value="52">HG8545M (ETH: 4, WiFi: 4, VoIP: 1)</option><option value="53">HG8546M (ETH: 4, WiFi: 4, VoIP: 1)</option><option value="54">HS8145V (ETH: 4, WiFi: 4, VoIP: 1)</option><option value="78">HS8545M5 (ETH: 4, WiFi: 1)</option><option value="65">HS8546V (ETH: 4, WiFi: 4, VoIP: 1)</option><option value="59">HSGQ-X100W2 (ETH: 1, WiFi: 1)</option><option value="77">R2 (ETH: 4)</option><option value="66">XC220-G3v (ETH: 4, VoIP: 1)</option><option value="57">XN020-G3 (ETH: 1)</option><option value="58">XN020-G3v (ETH: 2, VoIP: 1)</option><option value="60">XN020G3 (ETH: 1, WiFi: 2)</option><option value="40">ZTE-F600 (ETH: 4)</option><option value="28">ZTE-F601 (ETH: 1)</option><option value="45">ZTE-F601V6.0 (ETH: 1)</option><option value="32">ZTE-F620 (ETH: 4, VoIP: 2)</option><option value="29">ZTE-F623 (ETH: 4, WiFi: 4, VoIP: 1)</option><option value="27">ZTE-F625 (ETH: 4, VoIP: 2, CATV)</option><option value="34">ZTE-F625G (ETH: 4, VoIP: 2, CATV)</option><option value="33">ZTE-F627 (ETH: 4, WiFi: 4, VoIP: 2)</option><option value="37">ZTE-F643 (ETH: 4, WiFi: 4, VoIP: 2)</option><option value="44">ZTE-F643V6.0 (ETH: 1)</option><option value="30">ZTE-F660 (ETH: 4, WiFi: 4, VoIP: 2)</option><option value="41">ZTE-F660V5.0 (ETH: 4, WiFi: 4, VoIP: 2)</option><option value="42">ZTE-F660V5.2 (ETH: 4, WiFi: 4, VoIP: 2)</option><option value="43">ZTE-F660V6.0 (ETH: 4, WiFi: 4, VoIP: 2)</option><option value="31">ZTE-F668 (ETH: 4, WiFi: 4, VoIP: 2, CATV)</option><option value="67">ZXHN-F670L (ETH: 4, WiFi: 2)</option></select><div class="btn-group full-width"><div class="multiselect dropdown-toggle form-control form-control-sm input-sm" data-toggle="dropdown" style="padding-right: 18px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="Select"><span class="multiselect-selected-text">Select</span> <span class="caret" style="position: absolute; right: 6px; top: 50%; margin-top: -2px;" aria-hidden="true"></span></div><ul class="multiselect-container dropdown-menu" style="max-height: 500px; overflow: hidden auto;"><li class="multiselect-item multiselect-filter" value="0"><div class="input-group"><span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span><input class="form-control multiselect-search" type="text" placeholder="Search"><span class="input-group-btn"><button class="btn btn-default multiselect-clear-filter" type="button"><i class="glyphicon glyphicon-remove-circle"></i></button></span></div></li><li class="active"><a href="#" tabindex="0"><label class="radio"><input type="radio" value=""> Select</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="81"> EG8021V5 (ETH: 4, WiFi: 8)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="79"> EG8041V5 (ETH: 4, WiFi: 1)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="55"> EG8141A5 (ETH: 4, WiFi: 1)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="72"> EG8145V5 (ETH: 4)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="71"> ET8145V5CUS (ETH: 4, WiFi: 10)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="76"> F670LV1.1.01 (ETH: 4)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="75"> F670LV9.0 (ETH: 4, WiFi: 3)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="47"> F673AV9 (ETH: 4, VoIP: 1)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="80"> F679LV9.1 (ETH: 4, WiFi: 4)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="61"> FD504GW (ETH: 4, WiFi: 1)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="82"> GPON_ONUV7.1 (ETH: 4, WiFi: 8)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="48"> HG8010H (ETH: 1)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="49"> HG8120C (ETH: 2, VoIP: 1)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="56"> HG8145V5 (ETH: 4, WiFi: 2, VoIP: 1, CATV)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="70"> HG8145X6---10 (ETH: 4, WiFi: 4)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="69"> HG8145X6--10 (ETH: 4, WiFi: 4)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="68"> HG8145X6-10 (ETH: 4, WiFi: 1)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="62"> HG8240H (ETH: 4, WiFi: 4, VoIP: 2)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="50"> HG8242H (ETH: 4, WiFi: 4, VoIP: 2, CATV)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="51"> HG8245H (ETH: 4, WiFi: 4, VoIP: 2)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="63"> HG8340M (ETH: 4)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="64"> HG8347R (ETH: 4, WiFi: 4, VoIP: 1)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="52"> HG8545M (ETH: 4, WiFi: 4, VoIP: 1)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="53"> HG8546M (ETH: 4, WiFi: 4, VoIP: 1)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="54"> HS8145V (ETH: 4, WiFi: 4, VoIP: 1)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="78"> HS8545M5 (ETH: 4, WiFi: 1)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="65"> HS8546V (ETH: 4, WiFi: 4, VoIP: 1)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="59"> HSGQ-X100W2 (ETH: 1, WiFi: 1)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="77"> R2 (ETH: 4)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="66"> XC220-G3v (ETH: 4, VoIP: 1)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="57"> XN020-G3 (ETH: 1)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="58"> XN020-G3v (ETH: 2, VoIP: 1)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="60"> XN020G3 (ETH: 1, WiFi: 2)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="40"> ZTE-F600 (ETH: 4)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="28"> ZTE-F601 (ETH: 1)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="45"> ZTE-F601V6.0 (ETH: 1)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="32"> ZTE-F620 (ETH: 4, VoIP: 2)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="29"> ZTE-F623 (ETH: 4, WiFi: 4, VoIP: 1)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="27"> ZTE-F625 (ETH: 4, VoIP: 2, CATV)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="34"> ZTE-F625G (ETH: 4, VoIP: 2, CATV)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="33"> ZTE-F627 (ETH: 4, WiFi: 4, VoIP: 2)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="37"> ZTE-F643 (ETH: 4, WiFi: 4, VoIP: 2)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="44"> ZTE-F643V6.0 (ETH: 1)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="30"> ZTE-F660 (ETH: 4, WiFi: 4, VoIP: 2)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="41"> ZTE-F660V5.0 (ETH: 4, WiFi: 4, VoIP: 2)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="42"> ZTE-F660V5.2 (ETH: 4, WiFi: 4, VoIP: 2)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="43"> ZTE-F660V6.0 (ETH: 4, WiFi: 4, VoIP: 2)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="31"> ZTE-F668 (ETH: 4, WiFi: 4, VoIP: 2, CATV)</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="67"> ZXHN-F670L (ETH: 4, WiFi: 2)</label></a></li></ul></div></span>
+							<small class="help-block text-muted">
+								<i class="fa fa-info-circle"></i> Used when the detected ONU type is not in SmartOLT database.							</small>
+						</div>
+					</div>
+
+					<!-- Default Preset Section (only shown when no specific conditions are set) -->
+					<div id="wizard_is_default_section" class="wizard-default-section" style="">
+						<h5 class="wizard-default-section__title"><i class="fa fa-star text-warning"></i> OLT Default Preset</h5>
+						<p class="text-muted wizard-default-section__intro">
+							<i class="fa fa-info-circle"></i> Since no specific conditions are set, this preset can be set as the default for the selected OLT.						</p>
+						<div class="checkbox wizard-default-section__checkbox">
+							<label>
+								<input type="checkbox" name="is_default" id="wizard_is_default" value="1">
+								Set as default preset for OLT <span id="wizard_default_olt_name" class="wizard-default-section__olt-name">1 - JOEL WIFI</span>
+							</label>
+						</div>
+						<small class="help-block text-muted wizard-default-section__help">
+							Only one default preset per OLT is allowed. If another default already exists, it will be replaced.						</small>
+						<div id="wizard_existing_default_warning" class="alert alert-warning" style="display: none; margin-top: 10px; margin-bottom: 0; padding: 10px;">
+							<i class="fa fa-exclamation-triangle"></i>
+							<span id="wizard_existing_default_text"></span>
+						</div>
+					</div>
+				</div>
+
+				<!-- Step 3: Settings -->
+				<div class="wizard-step" data-step="3" style="display: none;">
+					<div class="wizard-step-header">
+						<h4><i class="fa fa-cog text-success"></i> ONU settings</h4>
+						<p class="text-muted">Configure how matching ONUs will be authorized.</p>
+					</div>
+
+					<!-- ONU Configuration -->
+					<h5 class="wizard-subsection-title"><i class="fa fa-cube"></i> ONU Configuration</h5>
+
+					<div class="form-group">
+						<label class="control-label col-sm-3 radio-inline">ONU mode</label>
+						<div class="col-sm-7">
+							<label class="radio-inline"><input type="radio" name="mode" value="Routing" checked="">Routing</label>
+							<label class="radio-inline"><input type="radio" name="mode" value="Bridging">Bridging</label>
+						</div>
+					</div>
+
+					<div class="form-group gpon_channel_wrapper">
+						<label class="control-label col-sm-3 radio-inline">Channel</label>
+						<div class="col-sm-7">
+							<label class="radio-inline"><input type="radio" name="channel_type" value="gpon" class="gpon-channel" checked="">GPON</label>
+							<label class="radio-inline"><input type="radio" name="channel_type" value="xgpon" class="gpon-channel">XG-PON</label>
+							<label class="radio-inline"><input type="radio" name="channel_type" value="xgspon" class="gpon-channel">XGS-PON</label>
+						</div>
+					</div>
+
+					<div class="form-group epon_channel_wrapper" style="display: none;">
+						<label class="control-label col-sm-3 radio-inline">Channel</label>
+						<div class="col-sm-7">
+							<label class="radio-inline"><input type="radio" name="channel_type" value="epon" class="epon-channel">EPON</label>
+							<label class="radio-inline"><input type="radio" name="channel_type" value="10gepon" class="epon-channel">10G-EPON</label>
+						</div>
+					</div>
+
+					<div class="form-group">
+						<div class="col-sm-3"></div>
+						<div class="col-sm-7">
+							<div class="checkbox">
+								<label><input type="checkbox" id="custom_profile" name="custom_profile" value="true"> Use custom profile</label>
+							</div>
+						</div>
+					</div>
+
+					<div class="form-group" id="custom_template_wrapper" style="display: none;">
+						<label class="control-label col-sm-3" for="custom_template_id">Custom template</label>
+						<div class="col-sm-7">
+							<select name="custom_template_id" id="custom_template_id" class="form-control form-control-sm input-sm"><option value="1">Generic_1</option><option value="2">Generic_2</option><option value="3">Generic_3</option><option value="4">Generic_4</option><option value="5">Generic_5</option></select>
+						</div>
+					</div>
+
+					<!-- VLAN -->
+					<h5 class="wizard-subsection-title"><i class="fa fa-tag"></i> VLAN</h5>
+
+<!-- SVLAN Section -->
+					<div id="svlan_wrapper" style="display: none;">
+						<div class="form-group">
+							<div class="col-sm-3"></div>
+							<div class="col-sm-7">
+								<div class="checkbox">
+									<label><input type="checkbox" id="use_svlan" name="use_svlan" value="true"> Use SVLAN-ID</label>
+								</div>
+							</div>
+						</div>
+
+						<div id="svlan_controls_wrapper" style="display: none;">
+							<div class="form-group">
+								<label class="control-label col-sm-3" for="svlan_id">SVLAN-ID</label>
+								<div class="col-sm-7">
+									<span class="multiselect-native-select"><select id="svlan_id" name="svlan_id" class="form-control form-control-sm input-sm"><option value="27">28 - Adriel Wifi 28</option><option value="30">60 - Soltech</option><option value="34">65</option><option value="50">100</option><option value="22">103 - EduardoNet</option><option value="15">110 - Alex Computer</option><option value="21">134 - Will Copy Center</option><option value="17">150</option><option value="48">180 - Lizandro Almonte</option><option value="1">200 - Joel Wifi</option><option value="51">254</option><option value="25">300 - Zona Joel Wifi</option><option value="28">400 - Ignacio</option><option value="44">501 - FELIXFRIA</option><option value="49">800 - Powernet</option><option value="47">1028 - ALEXCOMPUTER</option><option value="45">1721 - AlfaServi</option><option value="38">2624 - Alex la yaguita</option></select><div class="btn-group full-width"><div class="multiselect dropdown-toggle form-control form-control-sm input-sm" data-toggle="dropdown" style="padding-right: 18px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="28 - Adriel Wifi 28"><span class="multiselect-selected-text">28 - Adriel Wifi 28</span> <span class="caret" style="position: absolute; right: 6px; top: 50%; margin-top: -2px;" aria-hidden="true"></span></div><ul class="multiselect-container dropdown-menu" style="max-height: 500px; overflow: hidden auto;"><li class="multiselect-item multiselect-filter" value="0"><div class="input-group"><span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span><input class="form-control multiselect-search" type="text" placeholder="Search"><span class="input-group-btn"><button class="btn btn-default multiselect-clear-filter" type="button"><i class="glyphicon glyphicon-remove-circle"></i></button></span></div></li><li class="active"><a href="#" tabindex="0"><label class="radio"><input type="radio" value="27"> 28 - Adriel Wifi 28</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="30"> 60 - Soltech</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="34"> 65</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="50"> 100</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="22"> 103 - EduardoNet</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="15"> 110 - Alex Computer</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="21"> 134 - Will Copy Center</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="17"> 150</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="48"> 180 - Lizandro Almonte</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="1"> 200 - Joel Wifi</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="51"> 254</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="25"> 300 - Zona Joel Wifi</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="28"> 400 - Ignacio</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="44"> 501 - FELIXFRIA</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="49"> 800 - Powernet</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="47"> 1028 - ALEXCOMPUTER</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="45"> 1721 - AlfaServi</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="38"> 2624 - Alex la yaguita</label></a></li></ul></div></span>
+								</div>
+							</div>
+
+							<div class="form-group" id="use_other_all_tls_vlan_wrapper" style="display: none;">
+								<div class="col-sm-3"></div>
+								<div class="col-sm-7">
+									<div class="checkbox">
+										<label><input type="checkbox" id="use_other_all_tls_vlan" name="use_other_all_tls_vlan" value="true"> Use "other-all" TLS VLAN</label>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- CVLAN Section -->
+					<div id="cvlan_wrapper" style="display: none;">
+						<div class="form-group">
+							<div class="col-sm-3"></div>
+							<div class="col-sm-7">
+								<div class="checkbox">
+									<label><input type="checkbox" id="use_cvlan" name="use_cvlan" value="true"> Use CVLAN-ID</label>
+								</div>
+							</div>
+						</div>
+
+						<div id="cvlan_controls_wrapper" style="display: none;">
+							<div class="form-group">
+								<label class="control-label col-sm-3" for="cvlan_id">CVLAN-ID</label>
+								<div class="col-sm-7">
+									<span class="multiselect-native-select"><select id="cvlan_id" name="cvlan_id" class="form-control form-control-sm input-sm"><option value="27">28 - Adriel Wifi 28</option><option value="30">60 - Soltech</option><option value="34">65</option><option value="50">100</option><option value="22">103 - EduardoNet</option><option value="15">110 - Alex Computer</option><option value="21">134 - Will Copy Center</option><option value="17">150</option><option value="48">180 - Lizandro Almonte</option><option value="1">200 - Joel Wifi</option><option value="51">254</option><option value="25">300 - Zona Joel Wifi</option><option value="28">400 - Ignacio</option><option value="44">501 - FELIXFRIA</option><option value="49">800 - Powernet</option><option value="47">1028 - ALEXCOMPUTER</option><option value="45">1721 - AlfaServi</option><option value="38">2624 - Alex la yaguita</option></select><div class="btn-group full-width"><div class="multiselect dropdown-toggle form-control form-control-sm input-sm" data-toggle="dropdown" style="padding-right: 18px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="28 - Adriel Wifi 28"><span class="multiselect-selected-text">28 - Adriel Wifi 28</span> <span class="caret" style="position: absolute; right: 6px; top: 50%; margin-top: -2px;" aria-hidden="true"></span></div><ul class="multiselect-container dropdown-menu" style="max-height: 500px; overflow: hidden auto;"><li class="multiselect-item multiselect-filter" value="0"><div class="input-group"><span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span><input class="form-control multiselect-search" type="text" placeholder="Search"><span class="input-group-btn"><button class="btn btn-default multiselect-clear-filter" type="button"><i class="glyphicon glyphicon-remove-circle"></i></button></span></div></li><li class="active"><a href="#" tabindex="0"><label class="radio"><input type="radio" value="27"> 28 - Adriel Wifi 28</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="30"> 60 - Soltech</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="34"> 65</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="50"> 100</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="22"> 103 - EduardoNet</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="15"> 110 - Alex Computer</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="21"> 134 - Will Copy Center</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="17"> 150</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="48"> 180 - Lizandro Almonte</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="1"> 200 - Joel Wifi</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="51"> 254</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="25"> 300 - Zona Joel Wifi</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="28"> 400 - Ignacio</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="44"> 501 - FELIXFRIA</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="49"> 800 - Powernet</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="47"> 1028 - ALEXCOMPUTER</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="45"> 1721 - AlfaServi</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="38"> 2624 - Alex la yaguita</label></a></li></ul></div></span>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- User VLAN -->
+					<div class="form-group" id="user_vlan_wrapper">
+						<label class="control-label col-sm-3" for="vlan_id">User VLAN <span class="text-danger">*</span></label>
+						<div class="col-sm-7">
+							<span class="multiselect-native-select"><select id="vlan_id" name="vlan_id" class="form-control form-control-sm input-sm"><option value="27">28 - Adriel Wifi 28</option><option value="30">60 - Soltech</option><option value="34">65</option><option value="50">100</option><option value="22">103 - EduardoNet</option><option value="15">110 - Alex Computer</option><option value="21">134 - Will Copy Center</option><option value="17">150</option><option value="48">180 - Lizandro Almonte</option><option value="1">200 - Joel Wifi</option><option value="51">254</option><option value="25">300 - Zona Joel Wifi</option><option value="28">400 - Ignacio</option><option value="44">501 - FELIXFRIA</option><option value="49">800 - Powernet</option><option value="47">1028 - ALEXCOMPUTER</option><option value="45">1721 - AlfaServi</option><option value="38">2624 - Alex la yaguita</option></select><div class="btn-group full-width"><div class="multiselect dropdown-toggle form-control form-control-sm input-sm" data-toggle="dropdown" style="padding-right: 18px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="28 - Adriel Wifi 28"><span class="multiselect-selected-text">28 - Adriel Wifi 28</span> <span class="caret" style="position: absolute; right: 6px; top: 50%; margin-top: -2px;" aria-hidden="true"></span></div><ul class="multiselect-container dropdown-menu" style="max-height: 500px; overflow: hidden auto;"><li class="multiselect-item multiselect-filter" value="0"><div class="input-group"><span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span><input class="form-control multiselect-search" type="text" placeholder="Search"><span class="input-group-btn"><button class="btn btn-default multiselect-clear-filter" type="button"><i class="glyphicon glyphicon-remove-circle"></i></button></span></div></li><li class="active"><a href="#" tabindex="0"><label class="radio"><input type="radio" value="27"> 28 - Adriel Wifi 28</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="30"> 60 - Soltech</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="34"> 65</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="50"> 100</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="22"> 103 - EduardoNet</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="15"> 110 - Alex Computer</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="21"> 134 - Will Copy Center</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="17"> 150</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="48"> 180 - Lizandro Almonte</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="1"> 200 - Joel Wifi</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="51"> 254</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="25"> 300 - Zona Joel Wifi</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="28"> 400 - Ignacio</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="44"> 501 - FELIXFRIA</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="49"> 800 - Powernet</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="47"> 1028 - ALEXCOMPUTER</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="45"> 1721 - AlfaServi</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="38"> 2624 - Alex la yaguita</label></a></li></ul></div></span>
+						</div>
+					</div>
+
+					<div class="form-group" id="tag_transform_wrapper" style="display: none;">
+						<label class="control-label col-sm-3" for="tag_transform_mode">Tag-transform</label>
+						<div class="col-sm-7">
+							<select name="tag_transform_mode" id="tag_transform_mode" class="form-control form-control-sm input-sm">
+<option value="translate">translate</option>
+<option value="default">default</option>
+<option value="translate-and-add">translate-and-add</option>
+<option value="transparent">transparent</option>
+</select>
+						</div>
+					</div>
+
+					<!-- Speed Profiles -->
+					<h5 class="wizard-subsection-title"><i class="fa fa-tachometer"></i> Speed Profiles</h5>
+
+					<div class="form-group">
+						<label class="control-label col-sm-3" for="download_speed_id"><i class="fa fa-arrow-down text-success"></i> Download</label>
+						<div class="col-sm-7">
+							<span class="multiselect-native-select"><select id="download_speed_id" name="download_speed_id" class="form-control form-control-sm input-sm">
+																	<option value="1">100M</option>
+																	<option value="3">10M</option>
+																	<option value="4">1G</option>
+																	<option value="5">200M</option>
+																	<option value="8">30M</option>
+																	<option value="10">40M</option>
+																	<option value="12">60M</option>
+																	<option value="13">70M</option>
+																	<option value="14">80M</option>
+																	<option value="50">50M</option>
+																	<option value="62">15M</option>
+																	<option value="64">5MB</option>
+																	<option value="68">20MB</option>
+																	<option value="88">30M</option>
+																	<option value="89">10M</option>
+																	<option value="90">20M</option>
+																	<option value="91">52M</option>
+															</select><div class="btn-group full-width"><div class="multiselect dropdown-toggle form-control form-control-sm input-sm" data-toggle="dropdown" style="padding-right: 18px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="100M"><span class="multiselect-selected-text">100M</span> <span class="caret" style="position: absolute; right: 6px; top: 50%; margin-top: -2px;" aria-hidden="true"></span></div><ul class="multiselect-container dropdown-menu" style="max-height: 500px; overflow: hidden auto;"><li class="multiselect-item multiselect-filter" value="0"><div class="input-group"><span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span><input class="form-control multiselect-search" type="text" placeholder="Search"><span class="input-group-btn"><button class="btn btn-default multiselect-clear-filter" type="button"><i class="glyphicon glyphicon-remove-circle"></i></button></span></div></li><li class="active"><a href="#" tabindex="0"><label class="radio"><input type="radio" value="1"> 100M</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="3"> 10M</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="4"> 1G</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="5"> 200M</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="8"> 30M</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="10"> 40M</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="12"> 60M</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="13"> 70M</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="14"> 80M</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="50"> 50M</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="62"> 15M</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="64"> 5MB</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="68"> 20MB</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="88"> 30M</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="89"> 10M</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="90"> 20M</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="91"> 52M</label></a></li></ul></div></span>
+						</div>
+					</div>
+
+					<div class="form-group">
+						<label class="control-label col-sm-3" for="upload_speed_id"><i class="fa fa-arrow-up text-primary"></i> Upload</label>
+						<div class="col-sm-7">
+							<span class="multiselect-native-select"><select id="upload_speed_id" name="upload_speed_id" class="form-control form-control-sm input-sm">
+																	<option value="23">1G</option>
+																	<option value="27">100M</option>
+																	<option value="36">10M</option>
+																	<option value="37">10M</option>
+																	<option value="38">20M</option>
+																	<option value="39">30M</option>
+																	<option value="40">40M</option>
+																	<option value="41">50M</option>
+																	<option value="42">60M</option>
+																	<option value="43">70M</option>
+																	<option value="44">80M</option>
+																	<option value="45">90M</option>
+																	<option value="46">200M</option>
+																	<option value="47">300M</option>
+																	<option value="48">400M</option>
+																	<option value="49">500M</option>
+																	<option value="54">ADMINOLT-1Giga-UP</option>
+																	<option value="55">ADMINOLT-1Giga</option>
+																	<option value="63">15M</option>
+																	<option value="66">5M</option>
+																	<option value="67">7M</option>
+																	<option value="69">20MB</option>
+																	<option value="71">ADMINOLT-25-MEGAS-UP</option>
+																	<option value="72">ADMINOLT-100-MEGAS-UP</option>
+																	<option value="73">ADMINOLT-3MB-800-UP</option>
+																	<option value="74">ADMINOLT-1GBS-UP</option>
+																	<option value="75">ADMINOLT-50-mega-plan-UP</option>
+																	<option value="76">ADMINOLT-10-Mega-plan-UP</option>
+															</select><div class="btn-group full-width"><div class="multiselect dropdown-toggle form-control form-control-sm input-sm" data-toggle="dropdown" style="padding-right: 18px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="1G"><span class="multiselect-selected-text">1G</span> <span class="caret" style="position: absolute; right: 6px; top: 50%; margin-top: -2px;" aria-hidden="true"></span></div><ul class="multiselect-container dropdown-menu" style="max-height: 500px; overflow: hidden auto;"><li class="multiselect-item multiselect-filter" value="0"><div class="input-group"><span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span><input class="form-control multiselect-search" type="text" placeholder="Search"><span class="input-group-btn"><button class="btn btn-default multiselect-clear-filter" type="button"><i class="glyphicon glyphicon-remove-circle"></i></button></span></div></li><li class="active"><a href="#" tabindex="0"><label class="radio"><input type="radio" value="23"> 1G</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="27"> 100M</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="36"> 10M</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="37"> 10M</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="38"> 20M</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="39"> 30M</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="40"> 40M</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="41"> 50M</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="42"> 60M</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="43"> 70M</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="44"> 80M</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="45"> 90M</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="46"> 200M</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="47"> 300M</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="48"> 400M</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="49"> 500M</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="54"> ADMINOLT-1Giga-UP</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="55"> ADMINOLT-1Giga</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="63"> 15M</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="66"> 5M</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="67"> 7M</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="69"> 20MB</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="71"> ADMINOLT-25-MEGAS-UP</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="72"> ADMINOLT-100-MEGAS-UP</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="73"> ADMINOLT-3MB-800-UP</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="74"> ADMINOLT-1GBS-UP</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="75"> ADMINOLT-50-mega-plan-UP</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="76"> ADMINOLT-10-Mega-plan-UP</label></a></li></ul></div></span>
+						</div>
+					</div>
+
+					<!-- Location -->
+					<h5 class="wizard-subsection-title"><i class="fa fa-map-marker"></i> Location</h5>
+
+					<div class="form-group">
+						<label class="control-label col-sm-3" for="location_id">Zone</label>
+						<div class="col-sm-7">
+							<span class="multiselect-native-select"><select id="location_id" name="location_id" class="form-control form-control-sm input-sm">
+																	<option value="36">Bella Vista</option>
+																	<option value="33">default</option>
+																	<option value="34">Los Girasoles</option>
+																	<option value="35">Reparto Peralta</option>
+																	<option value="1">Zone 1</option>
+																	<option value="10">Zone 10</option>
+																	<option value="11">Zone 11</option>
+																	<option value="12">Zone 12</option>
+																	<option value="13">Zone 13</option>
+																	<option value="14">Zone 14</option>
+																	<option value="15">Zone 15</option>
+																	<option value="16">Zone 16</option>
+																	<option value="17">Zone 17</option>
+																	<option value="18">Zone 18</option>
+																	<option value="19">Zone 19</option>
+																	<option value="2">Zone 2</option>
+																	<option value="20">Zone 20</option>
+																	<option value="21">Zone 21</option>
+																	<option value="22">Zone 22</option>
+																	<option value="23">Zone 23</option>
+																	<option value="24">Zone 24</option>
+																	<option value="25">Zone 25</option>
+																	<option value="26">Zone 26</option>
+																	<option value="27">Zone 27</option>
+																	<option value="28">Zone 28</option>
+																	<option value="29">Zone 29</option>
+																	<option value="3">Zone 3</option>
+																	<option value="30">Zone 30</option>
+																	<option value="31">Zone 31</option>
+																	<option value="32">Zone 32</option>
+																	<option value="4">Zone 4</option>
+																	<option value="5">Zone 5</option>
+																	<option value="6">Zone 6</option>
+																	<option value="7">Zone 7</option>
+																	<option value="8">Zone 8</option>
+																	<option value="9">Zone 9</option>
+															</select><div class="btn-group full-width"><div class="multiselect dropdown-toggle form-control form-control-sm input-sm" data-toggle="dropdown" style="padding-right: 18px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="Bella Vista"><span class="multiselect-selected-text">Bella Vista</span> <span class="caret" style="position: absolute; right: 6px; top: 50%; margin-top: -2px;" aria-hidden="true"></span></div><ul class="multiselect-container dropdown-menu" style="max-height: 500px; overflow: hidden auto;"><li class="multiselect-item multiselect-filter" value="0"><div class="input-group"><span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span><input class="form-control multiselect-search" type="text" placeholder="Search"><span class="input-group-btn"><button class="btn btn-default multiselect-clear-filter" type="button"><i class="glyphicon glyphicon-remove-circle"></i></button></span></div></li><li class="active"><a href="#" tabindex="0"><label class="radio"><input type="radio" value="36"> Bella Vista</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="33"> default</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="34"> Los Girasoles</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="35"> Reparto Peralta</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="1"> Zone 1</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="10"> Zone 10</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="11"> Zone 11</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="12"> Zone 12</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="13"> Zone 13</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="14"> Zone 14</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="15"> Zone 15</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="16"> Zone 16</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="17"> Zone 17</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="18"> Zone 18</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="19"> Zone 19</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="2"> Zone 2</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="20"> Zone 20</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="21"> Zone 21</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="22"> Zone 22</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="23"> Zone 23</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="24"> Zone 24</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="25"> Zone 25</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="26"> Zone 26</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="27"> Zone 27</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="28"> Zone 28</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="29"> Zone 29</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="3"> Zone 3</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="30"> Zone 30</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="31"> Zone 31</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="32"> Zone 32</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="4"> Zone 4</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="5"> Zone 5</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="6"> Zone 6</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="7"> Zone 7</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="8"> Zone 8</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="9"> Zone 9</label></a></li></ul></div></span>
+						</div>
+					</div>
+
+					<div class="form-group">
+						<label class="control-label col-sm-3" for="odb_id">ODB (Splitter)</label>
+						<div class="col-sm-7">
+							<span class="multiselect-native-select"><select id="odb_id" name="odb_id" class="form-control form-control-sm input-sm"><option value="0">None</option></select><div class="btn-group full-width"><div class="multiselect dropdown-toggle form-control form-control-sm input-sm" data-toggle="dropdown" style="padding-right: 18px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="None"><span class="multiselect-selected-text">None</span> <span class="caret" style="position: absolute; right: 6px; top: 50%; margin-top: -2px;" aria-hidden="true"></span></div><ul class="multiselect-container dropdown-menu" style="max-height: 500px; overflow: hidden auto;"><li class="multiselect-item multiselect-filter" value="0"><div class="input-group"><span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span><input class="form-control multiselect-search" type="text" placeholder="Search"><span class="input-group-btn"><button class="btn btn-default multiselect-clear-filter" type="button"><i class="glyphicon glyphicon-remove-circle"></i></button></span></div></li><li class="active"><a href="#" tabindex="0"><label class="radio"><input type="radio" value="0"> None</label></a></li></ul></div></span>
+						</div>
+					</div>
+
+					<div class="form-group">
+						<label class="control-label col-sm-3" for="odb_port">ODB port</label>
+						<div class="col-sm-7">
+							<span class="multiselect-native-select"><select id="odb_port" name="odb_port" class="form-control form-control-sm input-sm">
+								<option value="">None</option>
+							</select><div class="btn-group full-width"><div class="multiselect dropdown-toggle form-control form-control-sm input-sm" data-toggle="dropdown" style="padding-right: 18px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="None"><span class="multiselect-selected-text">None</span> <span class="caret" style="position: absolute; right: 6px; top: 50%; margin-top: -2px;" aria-hidden="true"></span></div><ul class="multiselect-container dropdown-menu" style="max-height: 500px; overflow: hidden auto;"><li class="multiselect-item multiselect-filter" value="0"><div class="input-group"><span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span><input class="form-control multiselect-search" type="text" placeholder="Search"><span class="input-group-btn"><button class="btn btn-default multiselect-clear-filter" type="button"><i class="glyphicon glyphicon-remove-circle"></i></button></span></div></li><li class="active"><a href="#" tabindex="0"><label class="radio"><input type="radio" value=""> None</label></a></li></ul></div></span>
+						</div>
+					</div>
+
+					<!-- Naming Patterns -->
+					<h5 class="wizard-subsection-title"><i class="fa fa-pencil"></i> Naming Patterns</h5>
+					<p class="text-muted" style="margin-top: -5px; margin-bottom: 10px; font-size: 15px;">
+						<i class="fa fa-info-circle"></i> Optional. You can use plain text or include dynamic variables.
+					</p>
+
+					<div class="form-group">
+						<label class="control-label col-sm-3" for="location_name">Name</label>
+						<div class="col-sm-7">
+							<input type="text" id="location_name" name="location_name" class="form-control form-control-sm input-sm" placeholder="Leave empty or enter a customer name">
+							<small class="help-block text-muted">
+								Optional variables (click to insert):
+								<span class="pattern-variable-links" data-target="location_name">
+									<code class="pattern-var-link" data-var="{olt}">{olt}</code>,
+									<code class="pattern-var-link" data-var="{board}">{board}</code>,
+									<code class="pattern-var-link" data-var="{port}">{port}</code>,
+									<code class="pattern-var-link" data-var="{zone}">{zone}</code>,
+									<code class="pattern-var-link" data-var="{odb}">{odb}</code>,
+									<code class="pattern-var-link" data-var="{onu_type}">{onu_type}</code>,
+									<code class="pattern-var-link" data-var="{sn}">{sn}</code>
+								</span>
+							</small>
+						</div>
+					</div>
+
+					<div class="form-group">
+						<label class="control-label col-sm-3" for="description_pattern">Address or comment</label>
+						<div class="col-sm-7">
+							<input type="text" id="description_pattern" name="description_pattern" class="form-control form-control-sm input-sm" placeholder="Leave empty or enter a description">
+							<small class="help-block text-muted">
+								Optional variables (click to insert):
+								<span class="pattern-variable-links" data-target="description_pattern">
+									<code class="pattern-var-link" data-var="{olt}">{olt}</code>,
+									<code class="pattern-var-link" data-var="{board}">{board}</code>,
+									<code class="pattern-var-link" data-var="{port}">{port}</code>,
+									<code class="pattern-var-link" data-var="{zone}">{zone}</code>,
+									<code class="pattern-var-link" data-var="{odb}">{odb}</code>,
+									<code class="pattern-var-link" data-var="{onu_type}">{onu_type}</code>,
+									<code class="pattern-var-link" data-var="{sn}">{sn}</code>
+								</span>
+							</small>
+						</div>
+					</div>
+				</div>
+
+				<!-- Step 4: TR069 & Management IP -->
+				<div class="wizard-step" data-step="4" style="display: none;">
+					<div class="wizard-step-header">
+						<h4><i class="fa fa-network-wired text-success"></i> TR-069 &amp; Mgmt IP</h4>
+						<p class="text-muted">Configure TR-069 and Mgmt IP settings (optional).</p>
+					</div>
+
+					<!-- TR069 -->
+					<h5 class="wizard-subsection-title"><i class="fa fa-sitemap"></i> TR-069 Configuration</h5>
+
+					<div class="form-group">
+						<label class="control-label col-sm-3" for="tr069_profile_id">TR069 Profile</label>
+						<div class="col-sm-7">
+							<span class="multiselect-native-select"><select id="tr069_profile_id" name="tr069_profile_id" class="form-control form-control-sm input-sm"><option value="">Disabled</option><option value="1">SmartOLT</option></select><div class="btn-group full-width"><div class="multiselect dropdown-toggle form-control form-control-sm input-sm" data-toggle="dropdown" style="padding-right: 18px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="Disabled"><span class="multiselect-selected-text">Disabled</span> <span class="caret" style="position: absolute; right: 6px; top: 50%; margin-top: -2px;" aria-hidden="true"></span></div><ul class="multiselect-container dropdown-menu" style="max-height: 500px; overflow: hidden auto;"><li class="multiselect-item multiselect-filter" value="0"><div class="input-group"><span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span><input class="form-control multiselect-search" type="text" placeholder="Search"><span class="input-group-btn"><button class="btn btn-default multiselect-clear-filter" type="button"><i class="glyphicon glyphicon-remove-circle"></i></button></span></div></li><li class="active"><a href="#" tabindex="0"><label class="radio"><input type="radio" value=""> Disabled</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="1"> SmartOLT</label></a></li></ul></div></span>
+							<small class="help-block text-muted">
+								<i class="fa fa-info-circle"></i> Optional: Select a TR-069 profile for remote management							</small>
+						</div>
+					</div>
+
+					<!-- Management IP -->
+					<h5 class="wizard-subsection-title"><i class="fa fa-wifi"></i> Mgmt IP</h5>
+
+					<div class="form-group">
+						<label class="control-label col-sm-3 radio-inline">Mgmt IP mode</label>
+						<div class="col-sm-7">
+							<label class="radio-inline"><input type="radio" name="mgmt_ip_mode" value="Inactive" checked="">Inactive</label>
+							<label class="radio-inline"><input type="radio" name="mgmt_ip_mode" value="Static">Static IP</label>
+							<label class="radio-inline"><input type="radio" name="mgmt_ip_mode" value="DHCP">DHCP</label>
+						</div>
+					</div>
+
+					<div id="mgmt_ip_settings_container" style="display: none;">
+						<div class="form-group" id="mgmt_ip_remote_access_wrapper">
+							<label class="control-label col-sm-3"></label>
+							<div class="col-sm-7">
+								<div class="checkbox">
+									<label class="checkbox">
+										<input type="checkbox" name="mgmt_ip_allow_remote_access" value="1">
+										Allow remote access to Mgmt IP									</label>
+								</div>
+								<small class="help-block text-muted">Note: Remote access availability depends on OLT type and PON type. Not supported on EPON and some Huawei OLTs.</small>
+							</div>
+						</div>
+
+						<div class="form-group">
+							<label class="control-label col-sm-3" for="mgmt_ip_vlan_id">Mgmt VLAN-ID</label>
+							<div class="col-sm-7">
+								<span class="multiselect-native-select"><select id="mgmt_ip_vlan_id" name="mgmt_ip_vlan_id" class="form-control form-control-sm input-sm"><option value="2">69 - TR-069</option><option value="32">75 - ANILLO-TR069ST</option><option value="43">600 - ADMIN-ONU-ALEX</option></select><div class="btn-group full-width"><div class="multiselect dropdown-toggle form-control form-control-sm input-sm" data-toggle="dropdown" style="padding-right: 18px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="69 - TR-069"><span class="multiselect-selected-text">69 - TR-069</span> <span class="caret" style="position: absolute; right: 6px; top: 50%; margin-top: -2px;" aria-hidden="true"></span></div><ul class="multiselect-container dropdown-menu" style="max-height: 500px; overflow: hidden auto;"><li class="multiselect-item multiselect-filter" value="0"><div class="input-group"><span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span><input class="form-control multiselect-search" type="text" placeholder="Search"><span class="input-group-btn"><button class="btn btn-default multiselect-clear-filter" type="button"><i class="glyphicon glyphicon-remove-circle"></i></button></span></div></li><li class="active"><a href="#" tabindex="0"><label class="radio"><input type="radio" value="2"> 69 - TR-069</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="32"> 75 - ANILLO-TR069ST</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="43"> 600 - ADMIN-ONU-ALEX</label></a></li></ul></div></span>
+							</div>
+						</div>
+
+						<div id="mgmt_ip_tag_transform_wrapper" style="display: none;">
+							<div class="form-group">
+								<label class="control-label col-sm-3" for="mgmt_ip_tag_transform_mode">Tag-transform</label>
+								<div class="col-sm-7">
+									<select name="mgmt_ip_tag_transform_mode" id="mgmt_ip_tag_transform_mode" class="form-control form-control-sm input-sm">
+<option value="translate">translate</option>
+<option value="default">default</option>
+<option value="translate-and-add">translate-and-add</option>
+<option value="transparent">transparent</option>
+</select>
+								</div>
+							</div>
+						</div>
+
+						<div id="mgmt_ip_svlan_wrapper" style="display: none;">
+							<div class="form-group">
+								<label class="control-label col-sm-3"></label>
+								<div class="col-sm-7">
+									<div class="checkbox">
+										<label class="checkbox">
+											<input type="checkbox" name="use_mgmt_ip_svlan" id="use_mgmt_ip_svlan" value="1">
+											Use SVLAN for Mgmt IP										</label>
+									</div>
+								</div>
+							</div>
+							<div id="mgmt_ip_svlan_container" style="display: none;">
+								<div class="form-group">
+									<label class="control-label col-sm-3" for="mgmt_ip_svlan_id">Mgmt SVLAN-ID</label>
+									<div class="col-sm-7">
+										<span class="multiselect-native-select"><select id="mgmt_ip_svlan_id" name="mgmt_ip_svlan_id" class="form-control form-control-sm input-sm"><option value="27">28 - Adriel Wifi 28</option><option value="30">60 - Soltech</option><option value="34">65</option><option value="2">69 - TR-069</option><option value="32">75 - ANILLO-TR069ST</option><option value="50">100</option><option value="22">103 - EduardoNet</option><option value="15">110 - Alex Computer</option><option value="21">134 - Will Copy Center</option><option value="17">150</option><option value="48">180 - Lizandro Almonte</option><option value="1">200 - Joel Wifi</option><option value="51">254</option><option value="25">300 - Zona Joel Wifi</option><option value="28">400 - Ignacio</option><option value="44">501 - FELIXFRIA</option><option value="43">600 - ADMIN-ONU-ALEX</option><option value="49">800 - Powernet</option><option value="47">1028 - ALEXCOMPUTER</option><option value="45">1721 - AlfaServi</option><option value="38">2624 - Alex la yaguita</option></select><div class="btn-group full-width"><div class="multiselect dropdown-toggle form-control form-control-sm input-sm" data-toggle="dropdown" style="padding-right: 18px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="28 - Adriel Wifi 28"><span class="multiselect-selected-text">28 - Adriel Wifi 28</span> <span class="caret" style="position: absolute; right: 6px; top: 50%; margin-top: -2px;" aria-hidden="true"></span></div><ul class="multiselect-container dropdown-menu" style="max-height: 500px; overflow: hidden auto;"><li class="multiselect-item multiselect-filter" value="0"><div class="input-group"><span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span><input class="form-control multiselect-search" type="text" placeholder="Search"><span class="input-group-btn"><button class="btn btn-default multiselect-clear-filter" type="button"><i class="glyphicon glyphicon-remove-circle"></i></button></span></div></li><li class="active"><a href="#" tabindex="0"><label class="radio"><input type="radio" value="27"> 28 - Adriel Wifi 28</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="30"> 60 - Soltech</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="34"> 65</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="2"> 69 - TR-069</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="32"> 75 - ANILLO-TR069ST</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="50"> 100</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="22"> 103 - EduardoNet</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="15"> 110 - Alex Computer</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="21"> 134 - Will Copy Center</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="17"> 150</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="48"> 180 - Lizandro Almonte</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="1"> 200 - Joel Wifi</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="51"> 254</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="25"> 300 - Zona Joel Wifi</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="28"> 400 - Ignacio</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="44"> 501 - FELIXFRIA</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="43"> 600 - ADMIN-ONU-ALEX</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="49"> 800 - Powernet</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="47"> 1028 - ALEXCOMPUTER</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="45"> 1721 - AlfaServi</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="38"> 2624 - Alex la yaguita</label></a></li></ul></div></span>
+									</div>
+								</div>
+							</div>
+						</div>
+
+						<div id="mgmt_ip_cvlan_wrapper" style="display: none;">
+							<div class="form-group">
+								<label class="control-label col-sm-3"></label>
+								<div class="col-sm-7">
+									<div class="checkbox">
+										<label class="checkbox">
+											<input type="checkbox" name="use_mgmt_ip_cvlan" id="use_mgmt_ip_cvlan" value="1">
+											Use CVLAN for Mgmt IP										</label>
+									</div>
+								</div>
+							</div>
+							<div id="mgmt_ip_cvlan_container" style="display: none;">
+								<div class="form-group">
+									<label class="control-label col-sm-3" for="mgmt_ip_cvlan_id">Mgmt CVLAN-ID</label>
+									<div class="col-sm-7">
+										<span class="multiselect-native-select"><select id="mgmt_ip_cvlan_id" name="mgmt_ip_cvlan_id" class="form-control form-control-sm input-sm"><option value="27">28 - Adriel Wifi 28</option><option value="30">60 - Soltech</option><option value="34">65</option><option value="2">69 - TR-069</option><option value="32">75 - ANILLO-TR069ST</option><option value="50">100</option><option value="22">103 - EduardoNet</option><option value="15">110 - Alex Computer</option><option value="21">134 - Will Copy Center</option><option value="17">150</option><option value="48">180 - Lizandro Almonte</option><option value="1">200 - Joel Wifi</option><option value="51">254</option><option value="25">300 - Zona Joel Wifi</option><option value="28">400 - Ignacio</option><option value="44">501 - FELIXFRIA</option><option value="43">600 - ADMIN-ONU-ALEX</option><option value="49">800 - Powernet</option><option value="47">1028 - ALEXCOMPUTER</option><option value="45">1721 - AlfaServi</option><option value="38">2624 - Alex la yaguita</option></select><div class="btn-group full-width"><div class="multiselect dropdown-toggle form-control form-control-sm input-sm" data-toggle="dropdown" style="padding-right: 18px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="28 - Adriel Wifi 28"><span class="multiselect-selected-text">28 - Adriel Wifi 28</span> <span class="caret" style="position: absolute; right: 6px; top: 50%; margin-top: -2px;" aria-hidden="true"></span></div><ul class="multiselect-container dropdown-menu" style="max-height: 500px; overflow: hidden auto;"><li class="multiselect-item multiselect-filter" value="0"><div class="input-group"><span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span><input class="form-control multiselect-search" type="text" placeholder="Search"><span class="input-group-btn"><button class="btn btn-default multiselect-clear-filter" type="button"><i class="glyphicon glyphicon-remove-circle"></i></button></span></div></li><li class="active"><a href="#" tabindex="0"><label class="radio"><input type="radio" value="27"> 28 - Adriel Wifi 28</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="30"> 60 - Soltech</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="34"> 65</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="2"> 69 - TR-069</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="32"> 75 - ANILLO-TR069ST</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="50"> 100</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="22"> 103 - EduardoNet</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="15"> 110 - Alex Computer</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="21"> 134 - Will Copy Center</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="17"> 150</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="48"> 180 - Lizandro Almonte</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="1"> 200 - Joel Wifi</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="51"> 254</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="25"> 300 - Zona Joel Wifi</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="28"> 400 - Ignacio</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="44"> 501 - FELIXFRIA</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="43"> 600 - ADMIN-ONU-ALEX</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="49"> 800 - Powernet</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="47"> 1028 - ALEXCOMPUTER</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="45"> 1721 - AlfaServi</label></a></li><li><a href="#" tabindex="0"><label class="radio"><input type="radio" value="38"> 2624 - Alex la yaguita</label></a></li></ul></div></span>
+									</div>
+								</div>
+							</div>
+						</div>
+
+						<div id="mgmt_ip_dhcp_option82_wrapper" style="display: none;">
+							<div class="form-group">
+								<label class="control-label col-sm-3"></label>
+								<div class="col-sm-7">
+									<div class="checkbox">
+										<label class="checkbox">
+											<input type="checkbox" name="use_dhcp_option82_for_mgmt" value="1">
+											Use DHCP Option82 for management										</label>
+									</div>
+								</div>
+							</div>
+						</div>
+
+						<div id="mgmt_ip_static_container" style="display: none;">
+							<div class="form-group">
+								<label class="control-label col-sm-3">Management IP address</label>
+								<div class="col-sm-7">
+									<p class="form-control-static text-muted">
+										<i class="fa fa-info-circle"></i> Mgmt IP address will be auto-selected from available IPs when the preset is applied to an ONU.									</p>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- Step 5: WiFi Settings -->
+				<div class="wizard-step" data-step="5" style="display: none;">
+					<div class="wizard-step-header">
+						<h4><i class="fa fa-wifi text-success"></i> WiFi Settings</h4>
+						<p class="text-muted">Configure WiFi settings for each WiFi port on the ONU (optional).</p>
+					</div>
+
+					<!-- WiFi Not Available Message -->
+					<div id="wifi_not_available_message" style="display: none;">
+						<div class="alert">
+							<i class="fa fa-info-circle"></i>
+							<strong>WiFi configuration is not available.</strong>
+							<p class="text-muted" style="margin-top: 5px; margin-bottom: 0;" id="wifi_not_available_reason">
+								The selected ONU type does not support WiFi or ONU type is set to auto-detect.
+							</p>
+						</div>
+					</div>
+
+					<!-- WiFi Settings Form -->
+					<div id="wifi_settings_container">
+						<div class="form-group">
+							<label class="control-label col-sm-3 radio-inline">WiFi</label>
+							<div class="col-sm-7">
+								<label class="radio-inline"><input type="radio" name="wifi_enabled" value="0">Disabled</label>
+								<label class="radio-inline"><input type="radio" name="wifi_enabled" value="1" checked="">Enabled</label>
+							</div>
+						</div>
+
+						<div id="wifi_config_container">
+							<!-- Loading indicator -->
+							<div id="wifi_ports_loading" class="text-center" style="display: none;">
+								<i class="fa fa-spinner fa-spin"></i> Loading WiFi ports...							</div>
+
+							<!-- WiFi ports will be dynamically populated here -->
+							<div id="wifi_ports_container"></div>
+
+							<!-- Hidden input to store WiFi configuration JSON -->
+							<input type="hidden" name="wifi_config" id="wifi_config" value="">
+						</div>
+					</div>
+
+					<!-- Web User/Password -->
+					<h5 class="wizard-subsection-title"><i class="fa fa-lock"></i> Web User / Password</h5>
+
+					<p class="text-muted" style="margin-top: -5px; margin-bottom: 15px; font-size: 15px;">
+						<i class="fa fa-info-circle"></i> Optionally set the SuperUser (telecomadmin/admin) username and password. Leave empty to skip. Requires TR069 to be enabled on the ONU.					</p>
+
+					<div class="form-group">
+						<label class="control-label col-sm-3" for="wizard_web_user">Web user</label>
+						<div class="col-sm-7">
+							<input type="text" id="wizard_web_user" name="web_user" class="form-control form-control-sm input-sm" pattern="^[A-Za-z0-9]{5,16}$" data-invalidmsg="Please input a valid value for the Web User. A minimum of 5 is required. A maximum of 16 alfanumeric characters is allowed." placeholder="Leave empty to skip">
+						</div>
+					</div>
+
+					<div class="form-group">
+						<label class="control-label col-sm-3" for="wizard_web_password">Web pass</label>
+						<div class="col-sm-7">
+							<input type="text" id="wizard_web_password" name="web_password" class="form-control form-control-sm input-sm" pattern="^\S{8,16}$" data-invalidmsg="Please input a valid value for the Web Password. A minimum of 8 is required. A maximum of 16 characters is allowed." placeholder="Leave empty to skip">
+						</div>
+					</div>
+				</div>
+
+				<!-- Step 6: Review -->
+				<div class="wizard-step" data-step="6" style="display: none;">
+					<div class="wizard-step-header">
+						<h4><i class="fa fa-check-circle text-success"></i> Review &amp; Create</h4>
+						<p class="text-muted">Review your preset before creating.</p>
+					</div>
+
+					<div id="wizardSummary">
+						<!-- Summary will be populated by JavaScript -->
+					</div>
+
+					<div class="wizard-tip">
+						<i class="fa fa-lightbulb-o"></i>
+						<strong>Next Steps:</strong> After creating this preset, go to <strong>Unconfigured → Auto Actions</strong> and enable <strong>Authorize</strong> to start auto-authorizing ONUs.					</div>
+				</div>
+
+				</form>			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" id="wizardPrevBtn" style="display: none;">
+					<i class="fa fa-arrow-left"></i> Previous				</button>
+				<button type="button" class="btn btn-primary" id="wizardNextBtn">
+					Next <i class="fa fa-arrow-right"></i>
+				</button>
+				<button type="button" class="btn btn-success" id="wizardSubmitBtn" style="display: none;">
+					<i class="fa fa-check"></i> Create Preset				</button>
+				<button type="button" class="btn btn-link" data-dismiss="modal">Cancel</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<style>
+	/* Wizard Styles */
+	.wizard-progress {
+		margin-bottom: 30px;
+	}
+	.wizard-progress .progress {
+		height: 8px;
+		margin-bottom: 15px;
+		border-radius: 4px;
+	}
+	.wizard-steps {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+		display: flex;
+		justify-content: space-between;
+	}
+	.wizard-steps li {
+		text-align: center;
+		color: #999;
+		font-size: 12px;
+		flex: 1;
+	}
+	.wizard-steps li.active {
+		color: #0064C8;
+		font-weight: bold;
+	}
+	.wizard-steps li.completed {
+		color: #449842;
+	}
+	.wizard-steps .step-num {
+		display: inline-block;
+		width: 24px;
+		height: 24px;
+		line-height: 24px;
+		border-radius: 50%;
+		background-color: #ddd;
+		color: #fff;
+		margin-bottom: 5px;
+	}
+	.wizard-steps li.active .step-num {
+		background-color: #0064C8;
+	}
+	.wizard-steps li.completed .step-num {
+		background-color: #449842;
+	}
+	.wizard-step-header {
+		margin-bottom: 25px;
+		padding-bottom: 15px;
+		border-bottom: 1px solid #eee;
+	}
+	.wizard-step-header h4 {
+		margin: 0 0 5px 0;
+	}
+	.wizard-step-header p {
+		margin: 0;
+	}
+	.wizard-tip {
+		background-color: #fcf8e3;
+		border: 1px solid #faebcc;
+		border-radius: 4px;
+		padding: 12px 15px;
+		margin-top: 20px;
+		color: #8a6d3b;
+	}
+	.wizard-tip i {
+		color: #f0ad4e;
+		margin-right: 5px;
+	}
+	#wizardSummary .summary-row {
+		display: flex;
+		padding: 8px 0;
+		border-bottom: 1px solid #f5f5f5;
+	}
+	#wizardSummary .summary-row:last-child {
+		border-bottom: none;
+	}
+	#wizardSummary .summary-label {
+		width: 150px;
+		font-weight: 600;
+		color: #2c3e50;
+	}
+	#wizardSummary .summary-value {
+		flex: 1;
+	}
+	#presetWizardModal .form-group {
+		margin-bottom: 15px;
+	}
+	.wizard-subsection-title {
+		font-size: 15px;
+		font-weight: 600;
+		color: #2c3e50;
+		margin: 20px 0 15px 0;
+		padding-bottom: 8px;
+		border-bottom: 1px solid #eee;
+	}
+	.wizard-subsection-title:first-of-type {
+		margin-top: 0;
+	}
+	.wizard-subsection-title i {
+		margin-right: 6px;
+		color: #2c3e50;
+	}
+	.wizard-default-section {
+		margin-top: 20px;
+		padding: 15px;
+		background-color: #f9f9f9;
+		border: 1px solid #ddd;
+		border-radius: 4px;
+	}
+	.wizard-default-section__title {
+		margin: 0 0 10px 0;
+	}
+	.wizard-default-section__intro {
+		margin-bottom: 10px;
+	}
+	.wizard-default-section__checkbox {
+		margin-bottom: 0;
+	}
+	.wizard-default-section__checkbox label {
+		font-weight: 600;
+	}
+	.wizard-default-section__olt-name {
+		font-weight: 700;
+	}
+	.wizard-default-section__help {
+		margin-left: 20px;
+		margin-top: 5px;
+	}
+</style>
+
+<!-- Variables required by onu_authorization_presets.js -->
+<script>
+	var olt_boards = {"1":{"2":["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16"],"3":["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16"],"4":["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16"]}};
+	var onu_types = [{"id":"81","pon_type":"gpon","xgpon_capability":"0","xgspon_capability":"0","10gepon_capability":"0","name":"EG8021V5","catv":"0","allow_custom_templates":"1","capability":"Bridging\/Routing","default_image":null,"eth_ports":"4","wifi_ports":"8","voip_ports":"0"},{"id":"79","pon_type":"gpon","xgpon_capability":"0","xgspon_capability":"0","10gepon_capability":"0","name":"EG8041V5","catv":"0","allow_custom_templates":"1","capability":"Bridging\/Routing","default_image":null,"eth_ports":"4","wifi_ports":"1","voip_ports":"0"},{"id":"55","pon_type":"gpon","xgpon_capability":"0","xgspon_capability":"0","10gepon_capability":"0","name":"EG8141A5","catv":"0","allow_custom_templates":"1","capability":"Bridging\/Routing","default_image":null,"eth_ports":"4","wifi_ports":"1","voip_ports":"0"},{"id":"72","pon_type":"gpon","xgpon_capability":"0","xgspon_capability":"0","10gepon_capability":"0","name":"EG8145V5","catv":"0","allow_custom_templates":"1","capability":"Bridging\/Routing","default_image":null,"eth_ports":"4","wifi_ports":"0","voip_ports":"0"},{"id":"71","pon_type":"gpon","xgpon_capability":"0","xgspon_capability":"0","10gepon_capability":"0","name":"ET8145V5CUS","catv":"0","allow_custom_templates":"1","capability":"Bridging\/Routing","default_image":null,"eth_ports":"4","wifi_ports":"10","voip_ports":"0"},{"id":"76","pon_type":"gpon","xgpon_capability":"0","xgspon_capability":"0","10gepon_capability":"0","name":"F670LV1.1.01","catv":"0","allow_custom_templates":"1","capability":"Bridging\/Routing","default_image":null,"eth_ports":"4","wifi_ports":"0","voip_ports":"0"},{"id":"75","pon_type":"gpon","xgpon_capability":"0","xgspon_capability":"0","10gepon_capability":"0","name":"F670LV9.0","catv":"0","allow_custom_templates":"1","capability":"Bridging\/Routing","default_image":null,"eth_ports":"4","wifi_ports":"3","voip_ports":"0"},{"id":"47","pon_type":"gpon","xgpon_capability":"0","xgspon_capability":"0","10gepon_capability":"0","name":"F673AV9","catv":"0","allow_custom_templates":"1","capability":"Bridging\/Routing","default_image":null,"eth_ports":"4","wifi_ports":"0","voip_ports":"1"},{"id":"80","pon_type":"gpon","xgpon_capability":"0","xgspon_capability":"0","10gepon_capability":"0","name":"F679LV9.1","catv":"0","allow_custom_templates":"1","capability":"Bridging\/Routing","default_image":null,"eth_ports":"4","wifi_ports":"4","voip_ports":"0"},{"id":"61","pon_type":"gpon","xgpon_capability":"0","xgspon_capability":"0","10gepon_capability":"0","name":"FD504GW","catv":"0","allow_custom_templates":"1","capability":"Bridging\/Routing","default_image":null,"eth_ports":"4","wifi_ports":"1","voip_ports":"0"},{"id":"82","pon_type":"gpon","xgpon_capability":"0","xgspon_capability":"0","10gepon_capability":"0","name":"GPON_ONUV7.1","catv":"0","allow_custom_templates":"1","capability":"Bridging\/Routing","default_image":null,"eth_ports":"4","wifi_ports":"8","voip_ports":"0"},{"id":"48","pon_type":"gpon","xgpon_capability":"0","xgspon_capability":"0","10gepon_capability":"0","name":"HG8010H","catv":"0","allow_custom_templates":"1","capability":"Bridging\/Routing","default_image":null,"eth_ports":"1","wifi_ports":"0","voip_ports":"0"},{"id":"49","pon_type":"gpon","xgpon_capability":"0","xgspon_capability":"0","10gepon_capability":"0","name":"HG8120C","catv":"0","allow_custom_templates":"1","capability":"Bridging\/Routing","default_image":null,"eth_ports":"2","wifi_ports":"0","voip_ports":"1"},{"id":"56","pon_type":"gpon","xgpon_capability":"0","xgspon_capability":"0","10gepon_capability":"0","name":"HG8145V5","catv":"1","allow_custom_templates":"1","capability":"Bridging\/Routing","default_image":null,"eth_ports":"4","wifi_ports":"2","voip_ports":"1"},{"id":"70","pon_type":"gpon","xgpon_capability":"0","xgspon_capability":"0","10gepon_capability":"0","name":"HG8145X6---10","catv":"0","allow_custom_templates":"1","capability":"Bridging\/Routing","default_image":null,"eth_ports":"4","wifi_ports":"4","voip_ports":"0"},{"id":"69","pon_type":"gpon","xgpon_capability":"0","xgspon_capability":"0","10gepon_capability":"0","name":"HG8145X6--10","catv":"0","allow_custom_templates":"1","capability":"Bridging\/Routing","default_image":null,"eth_ports":"4","wifi_ports":"4","voip_ports":"0"},{"id":"68","pon_type":"gpon","xgpon_capability":"0","xgspon_capability":"0","10gepon_capability":"0","name":"HG8145X6-10","catv":"0","allow_custom_templates":"1","capability":"Bridging\/Routing","default_image":null,"eth_ports":"4","wifi_ports":"1","voip_ports":"0"},{"id":"62","pon_type":"gpon","xgpon_capability":"0","xgspon_capability":"0","10gepon_capability":"0","name":"HG8240H","catv":"0","allow_custom_templates":"1","capability":"Bridging\/Routing","default_image":null,"eth_ports":"4","wifi_ports":"4","voip_ports":"2"},{"id":"50","pon_type":"gpon","xgpon_capability":"0","xgspon_capability":"0","10gepon_capability":"0","name":"HG8242H","catv":"1","allow_custom_templates":"1","capability":"Bridging\/Routing","default_image":null,"eth_ports":"4","wifi_ports":"4","voip_ports":"2"},{"id":"51","pon_type":"gpon","xgpon_capability":"0","xgspon_capability":"0","10gepon_capability":"0","name":"HG8245H","catv":"0","allow_custom_templates":"1","capability":"Bridging\/Routing","default_image":null,"eth_ports":"4","wifi_ports":"4","voip_ports":"2"},{"id":"63","pon_type":"gpon","xgpon_capability":"0","xgspon_capability":"0","10gepon_capability":"0","name":"HG8340M","catv":"0","allow_custom_templates":"1","capability":"Bridging\/Routing","default_image":null,"eth_ports":"4","wifi_ports":"0","voip_ports":"0"},{"id":"64","pon_type":"gpon","xgpon_capability":"0","xgspon_capability":"0","10gepon_capability":"0","name":"HG8347R","catv":"0","allow_custom_templates":"1","capability":"Bridging\/Routing","default_image":null,"eth_ports":"4","wifi_ports":"4","voip_ports":"1"},{"id":"52","pon_type":"gpon","xgpon_capability":"0","xgspon_capability":"0","10gepon_capability":"0","name":"HG8545M","catv":"0","allow_custom_templates":"1","capability":"Bridging\/Routing","default_image":null,"eth_ports":"4","wifi_ports":"4","voip_ports":"1"},{"id":"53","pon_type":"gpon","xgpon_capability":"0","xgspon_capability":"0","10gepon_capability":"0","name":"HG8546M","catv":"0","allow_custom_templates":"1","capability":"Bridging\/Routing","default_image":null,"eth_ports":"4","wifi_ports":"4","voip_ports":"1"},{"id":"54","pon_type":"gpon","xgpon_capability":"0","xgspon_capability":"0","10gepon_capability":"0","name":"HS8145V","catv":"0","allow_custom_templates":"1","capability":"Bridging\/Routing","default_image":null,"eth_ports":"4","wifi_ports":"4","voip_ports":"1"},{"id":"78","pon_type":"gpon","xgpon_capability":"0","xgspon_capability":"0","10gepon_capability":"0","name":"HS8545M5","catv":"0","allow_custom_templates":"1","capability":"Bridging\/Routing","default_image":null,"eth_ports":"4","wifi_ports":"1","voip_ports":"0"},{"id":"65","pon_type":"gpon","xgpon_capability":"0","xgspon_capability":"0","10gepon_capability":"0","name":"HS8546V","catv":"0","allow_custom_templates":"1","capability":"Bridging\/Routing","default_image":null,"eth_ports":"4","wifi_ports":"4","voip_ports":"1"},{"id":"59","pon_type":"gpon","xgpon_capability":"0","xgspon_capability":"0","10gepon_capability":"0","name":"HSGQ-X100W2","catv":"0","allow_custom_templates":"1","capability":"Bridging\/Routing","default_image":null,"eth_ports":"1","wifi_ports":"1","voip_ports":"0"},{"id":"77","pon_type":"gpon","xgpon_capability":"0","xgspon_capability":"0","10gepon_capability":"0","name":"R2","catv":"0","allow_custom_templates":"1","capability":"Bridging\/Routing","default_image":null,"eth_ports":"4","wifi_ports":"0","voip_ports":"0"},{"id":"66","pon_type":"gpon","xgpon_capability":"0","xgspon_capability":"0","10gepon_capability":"0","name":"XC220-G3v","catv":"0","allow_custom_templates":"1","capability":"Bridging\/Routing","default_image":null,"eth_ports":"4","wifi_ports":"0","voip_ports":"1"},{"id":"57","pon_type":"gpon","xgpon_capability":"0","xgspon_capability":"0","10gepon_capability":"0","name":"XN020-G3","catv":"0","allow_custom_templates":"1","capability":"Bridging\/Routing","default_image":null,"eth_ports":"1","wifi_ports":"0","voip_ports":"0"},{"id":"58","pon_type":"gpon","xgpon_capability":"0","xgspon_capability":"0","10gepon_capability":"0","name":"XN020-G3v","catv":"0","allow_custom_templates":"1","capability":"Bridging\/Routing","default_image":null,"eth_ports":"2","wifi_ports":"0","voip_ports":"1"},{"id":"60","pon_type":"gpon","xgpon_capability":"0","xgspon_capability":"0","10gepon_capability":"0","name":"XN020G3","catv":"0","allow_custom_templates":"0","capability":"Bridging\/Routing","default_image":null,"eth_ports":"1","wifi_ports":"2","voip_ports":"0"},{"id":"40","pon_type":"gpon","xgpon_capability":"0","xgspon_capability":"0","10gepon_capability":"0","name":"ZTE-F600","catv":"0","allow_custom_templates":"1","capability":"Bridging\/Routing","default_image":null,"eth_ports":"4","wifi_ports":"0","voip_ports":"0"},{"id":"28","pon_type":"gpon","xgpon_capability":"0","xgspon_capability":"0","10gepon_capability":"0","name":"ZTE-F601","catv":"0","allow_custom_templates":"1","capability":"Bridging","default_image":null,"eth_ports":"1","wifi_ports":"0","voip_ports":"0"},{"id":"45","pon_type":"gpon","xgpon_capability":"0","xgspon_capability":"0","10gepon_capability":"0","name":"ZTE-F601V6.0","catv":"0","allow_custom_templates":"1","capability":"Bridging","default_image":null,"eth_ports":"1","wifi_ports":"0","voip_ports":"0"},{"id":"32","pon_type":"gpon","xgpon_capability":"0","xgspon_capability":"0","10gepon_capability":"0","name":"ZTE-F620","catv":"0","allow_custom_templates":"1","capability":"Bridging\/Routing","default_image":null,"eth_ports":"4","wifi_ports":"0","voip_ports":"2"},{"id":"29","pon_type":"gpon","xgpon_capability":"0","xgspon_capability":"0","10gepon_capability":"0","name":"ZTE-F623","catv":"0","allow_custom_templates":"1","capability":"Bridging\/Routing","default_image":null,"eth_ports":"4","wifi_ports":"4","voip_ports":"1"},{"id":"27","pon_type":"gpon","xgpon_capability":"0","xgspon_capability":"0","10gepon_capability":"0","name":"ZTE-F625","catv":"1","allow_custom_templates":"1","capability":"Bridging\/Routing","default_image":null,"eth_ports":"4","wifi_ports":"0","voip_ports":"2"},{"id":"34","pon_type":"gpon","xgpon_capability":"0","xgspon_capability":"0","10gepon_capability":"0","name":"ZTE-F625G","catv":"1","allow_custom_templates":"1","capability":"Bridging\/Routing","default_image":null,"eth_ports":"4","wifi_ports":"0","voip_ports":"2"},{"id":"33","pon_type":"gpon","xgpon_capability":"0","xgspon_capability":"0","10gepon_capability":"0","name":"ZTE-F627","catv":"0","allow_custom_templates":"1","capability":"Bridging\/Routing","default_image":null,"eth_ports":"4","wifi_ports":"4","voip_ports":"2"},{"id":"37","pon_type":"gpon","xgpon_capability":"0","xgspon_capability":"0","10gepon_capability":"0","name":"ZTE-F643","catv":"0","allow_custom_templates":"1","capability":"Bridging","default_image":null,"eth_ports":"4","wifi_ports":"4","voip_ports":"2"},{"id":"44","pon_type":"gpon","xgpon_capability":"0","xgspon_capability":"0","10gepon_capability":"0","name":"ZTE-F643V6.0","catv":"0","allow_custom_templates":"1","capability":"Bridging","default_image":null,"eth_ports":"1","wifi_ports":"0","voip_ports":"0"},{"id":"30","pon_type":"gpon","xgpon_capability":"0","xgspon_capability":"0","10gepon_capability":"0","name":"ZTE-F660","catv":"0","allow_custom_templates":"1","capability":"Bridging\/Routing","default_image":null,"eth_ports":"4","wifi_ports":"4","voip_ports":"2"},{"id":"41","pon_type":"gpon","xgpon_capability":"0","xgspon_capability":"0","10gepon_capability":"0","name":"ZTE-F660V5.0","catv":"0","allow_custom_templates":"1","capability":"Bridging\/Routing","default_image":null,"eth_ports":"4","wifi_ports":"4","voip_ports":"2"},{"id":"42","pon_type":"gpon","xgpon_capability":"0","xgspon_capability":"0","10gepon_capability":"0","name":"ZTE-F660V5.2","catv":"0","allow_custom_templates":"1","capability":"Bridging\/Routing","default_image":null,"eth_ports":"4","wifi_ports":"4","voip_ports":"2"},{"id":"43","pon_type":"gpon","xgpon_capability":"0","xgspon_capability":"0","10gepon_capability":"0","name":"ZTE-F660V6.0","catv":"0","allow_custom_templates":"1","capability":"Bridging\/Routing","default_image":null,"eth_ports":"4","wifi_ports":"4","voip_ports":"2"},{"id":"31","pon_type":"gpon","xgpon_capability":"0","xgspon_capability":"0","10gepon_capability":"0","name":"ZTE-F668","catv":"1","allow_custom_templates":"1","capability":"Bridging\/Routing","default_image":null,"eth_ports":"4","wifi_ports":"4","voip_ports":"2"},{"id":"67","pon_type":"gpon","xgpon_capability":"0","xgspon_capability":"0","10gepon_capability":"0","name":"ZXHN-F670L","catv":"0","allow_custom_templates":"1","capability":"Bridging\/Routing","default_image":null,"eth_ports":"4","wifi_ports":"2","voip_ports":"0"}];
+	var default_onu_type_id = '';
+	var default_vlan_id = '';
+	var default_svlan_id = '';
+	var default_cvlan_id = '';
+	var default_custom_template_id = '';
+	var default_odb_port = '';
+	var default_tr069_profile_id = '';
+	var default_mgmt_ip_vlan_id = '';
+	var default_mgmt_ip_svlan_id = '';
+	var default_mgmt_ip_cvlan_id = '';
+
+	// Translation variables for JavaScript
+	var lang_none = 'None';
+	var lang_preset_name = 'Preset Name';
+	var lang_description = 'Description';
+	var lang_default_preset = 'Default Preset';
+	var lang_yes = 'Yes';
+	var lang_olt = 'OLT';
+	var lang_board_port = 'Board/Port';
+	var lang_all_boards_ports = 'All boards/ports';
+	var lang_board = 'Board';
+	var lang_port = 'Port';
+	var lang_pon_type = 'PON type';
+	var lang_onu_type = 'ONU type';
+	var lang_fallback_onu_type = 'Fallback ONU Type';
+	var lang_mode = 'Mode';
+	var lang_custom_profile = 'Custom profile';
+	var lang_sn_pattern = 'SN pattern';
+	var lang_vlan = 'VLAN';
+	var lang_svlan = 'SVLAN';
+	var lang_cvlan = 'CVLAN';
+	var lang_tls_vlan = 'TLS VLAN';
+	var lang_speed_profiles = 'Speed profiles';
+	var lang_zone = 'Zone';
+	var lang_odb = 'ODB';
+	var lang_name_pattern = 'Name';
+	var lang_address_pattern = 'Address';
+	var lang_tr069_profile = 'TR069 Profile';
+	var lang_mgmt_ip = 'Mgmt IP';
+	var lang_static_ip = 'Static IP';
+	var lang_dhcp = 'DHCP';
+	var lang_wifi = 'WiFi';
+	var lang_ports = 'Ports';
+	var lang_enabled = 'Enabled';
+	var lang_user_vlan_required = 'User VLAN is required.\n\nPlease select a User VLAN.';
+	var lang_mgmt_vlan_required_when_mode_set = 'Management VLAN is required when Management IP mode is set to {mode}.\n\nPlease select a Management VLAN or set Management IP mode to Inactive.';
+	var lang_fallback_onu_type_required = 'Fallback ONU Type is required when ONU Type is set to Auto-detect.\n\nPlease select a Fallback ONU Type.';
+	var lang_please_enter_preset_name = 'Please enter a preset name.';
+	var lang_web_user = 'Web user';
+	var lang_web_pass = 'Web pass';
+	var lang_auto_detect_from_onu = 'Auto-detect from ONU';
+	var lang_select = 'Select';
+	var lang_disabled = 'Disabled';
+	var lang_enabled = 'Enabled';
+</script>
+
+<!-- Include the shared presets JS file -->
+<script src="/public/smartolt-files/onu_authorization_presets.js"></script>
+
+<script>
+$(document).ready(function() {
+	var currentStep = 1;
+	var totalSteps = 6;
+
+	// Open wizard modal
+	$('#openWizardBtn, #openWizardBtnTop').on('click', function() {
+		resetWizard();
+		$('#presetWizardModal').modal('show');
+	});
+
+	// Template buttons
+	$('.use-template-btn').on('click', function() {
+		var template = $(this).data('template');
+		resetWizard();
+		applyTemplate(template);
+		$('#presetWizardModal').modal('show');
+	});
+
+	// Apply template data
+	function applyTemplate(template) {
+		switch(template) {
+			case 'residential_gpon':
+				$('#name').val('Residential GPON');
+				$('#description').val('Standard residential GPON setup with routing mode');
+				$('input[name="pon_type"][value="gpon"]').prop('checked', true).trigger('change');
+				$('input[name="mode"][value="Routing"]').prop('checked', true);
+				$('#location_name').val('{zone} - {sn}');
+				$('#description_pattern').val('Auto-authorized: {onu_type}');
+				break;
+
+			case 'business_fiber':
+				$('#name').val('Business Fiber');
+				$('#description').val('Business fiber setup with bridging mode');
+				$('input[name="pon_type"][value="gpon"]').prop('checked', true).trigger('change');
+				$('input[name="mode"][value="Bridging"]').prop('checked', true);
+				$('#location_name').val('{zone} - Business');
+				$('#description_pattern').val('Business client - {sn}');
+				break;
+
+			case 'sn_filtered':
+				$('#name').val('Huawei ONUs Only');
+				$('#description').val('Only authorize Huawei ONUs (HWTC serial prefix)');
+				$('input[name="pon_type"][value="gpon"]').prop('checked', true).trigger('change');
+				$('input[name="mode"][value="Routing"]').prop('checked', true);
+				$('#sn_pattern').val('HWTC');
+				$('#location_name').val('{zone} - Huawei');
+				break;
+		}
+	}
+
+	// Next button
+	$('#wizardNextBtn').on('click', function() {
+		if (validateCurrentStep()) {
+			if (currentStep < totalSteps) {
+				currentStep++;
+				updateWizardUI();
+
+				if (currentStep === totalSteps) {
+					generateSummary();
+				}
+			}
+		}
+	});
+
+	// Previous button
+	$('#wizardPrevBtn').on('click', function() {
+		if (currentStep > 1) {
+			currentStep--;
+			updateWizardUI();
+		}
+	});
+
+	// Submit button
+	$('#wizardSubmitBtn').on('click', function() {
+		$(this).prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Creating...');
+		// Enable tag_transform_mode before submit to ensure value is sent
+		$("#tag_transform_mode").attr("disabled", false);
+		$('#wizard_preset_form').submit();
+	});
+
+	// Validate current step
+	function validateCurrentStep() {
+		switch(currentStep) {
+			case 1:
+				var name = $('#name').val().trim();
+				if (!name) {
+					$.MessageBox(lang_please_enter_preset_name);
+					$('#name').focus();
+					return false;
+				}
+				return true;
+			case 2: // Conditions step
+				// Validate Fallback ONU Type is selected when ONU Type is auto-detect
+				var onuTypeId = $('#onu_type_id').val();
+				if (!onuTypeId || onuTypeId === '') {
+					var fallbackOnuTypeId = $('#fallback_onu_type_id').val();
+					if (!fallbackOnuTypeId || fallbackOnuTypeId === '') {
+						$.MessageBox(lang_fallback_onu_type_required);
+						$('#fallback_onu_type_id').closest('.form-group').addClass('has-error');
+						setTimeout(function() {
+							$('#fallback_onu_type_id').closest('.form-group').removeClass('has-error');
+						}, 3000);
+						return false;
+					}
+				}
+				return true;
+			case 3: // ONU Settings step
+				// Validate User VLAN
+				var vlanId = $('#vlan_id').val();
+				if (!vlanId || vlanId === '') {
+					$.MessageBox(lang_user_vlan_required);
+					$('#vlan_id').closest('.form-group').addClass('has-error');
+					setTimeout(function() {
+						$('#vlan_id').closest('.form-group').removeClass('has-error');
+					}, 3000);
+					return false;
+				}
+				return true;
+			case 4: // TR069 & Mgmt step
+				// Validate Management IP settings
+				var mgmtIPMode = $('input[name="mgmt_ip_mode"]:checked').val();
+				if (mgmtIPMode && mgmtIPMode !== 'Inactive') {
+					var mgmtVlanId = $('#mgmt_ip_vlan_id').val();
+					if (!mgmtVlanId || mgmtVlanId === '') {
+						$.MessageBox(lang_mgmt_vlan_required_when_mode_set.replace('{mode}', mgmtIPMode));
+						// Scroll to the management VLAN field
+						$('#mgmt_ip_vlan_id').closest('.form-group').addClass('has-error');
+						setTimeout(function() {
+							$('#mgmt_ip_vlan_id').closest('.form-group').removeClass('has-error');
+						}, 3000);
+						return false;
+					}
+				}
+				return true;
+			case 5: // WiFi step
+				// Validate WiFi settings using the shared validation function
+				if (typeof validateWifiSettings === 'function') {
+					var wifiValidation = validateWifiSettings(''); // Empty suffix for wizard
+					if (!wifiValidation.valid) {
+						$.MessageBox(wifiValidation.message);
+						return false;
+					}
+				}
+				return true;
+			default:
+				return true;
+		}
+	}
+
+	// Update wizard UI based on current step
+	function updateWizardUI() {
+		// Update progress bar
+		var progress = (currentStep / totalSteps) * 100;
+		$('#wizardProgressBar').css('width', progress + '%');
+
+		// Update step indicators
+		$('.wizard-steps li').removeClass('active completed');
+		$('.wizard-steps li').each(function() {
+			var step = $(this).data('step');
+			if (step < currentStep) {
+				$(this).addClass('completed');
+			} else if (step === currentStep) {
+				$(this).addClass('active');
+			}
+		});
+
+		// Show/hide steps
+		$('.wizard-step').hide();
+		$('.wizard-step[data-step="' + currentStep + '"]').show();
+
+		// Update WiFi availability when entering step 5
+		if (currentStep === 5) {
+			updateWifiAvailability();
+		}
+
+		// Update buttons
+		if (currentStep === 1) {
+			$('#wizardPrevBtn').hide();
+		} else {
+			$('#wizardPrevBtn').show();
+		}
+
+		if (currentStep === totalSteps) {
+			$('#wizardNextBtn').hide();
+			$('#wizardSubmitBtn').show();
+		} else {
+			$('#wizardNextBtn').show();
+			$('#wizardSubmitBtn').hide();
+		}
+	}
+
+	// Reset wizard to initial state
+	function resetWizard() {
+		currentStep = 1;
+		$('#wizard_preset_form')[0].reset();
+
+		// Re-trigger the shared JS to reinitialize the form
+		var initial_olt_id = $('#olt_id').val();
+		if (initial_olt_id && typeof oltChange === 'function') {
+			oltChange(initial_olt_id);
+			if (typeof setup_boards_and_ports_datalist === 'function') {
+				setup_boards_and_ports_datalist(initial_olt_id, true);
+			}
+		}
+
+		// Reset PON type to GPON and trigger ONU types refresh
+		$('input[name="pon_type"][value="gpon"]').prop('checked', true);
+		if (typeof fillOnuTypes === 'function') {
+			fillOnuTypes('gpon', '');
+		}
+
+		// Update TR-069 and Management IP availability for wizard
+		if (typeof updateTR069AndMgmtIPAvailability === 'function') {
+			updateTR069AndMgmtIPAvailability();
+		}
+
+		updateWizardUI();
+		$('#wizardSubmitBtn').prop('disabled', false).html('<i class="fa fa-check"></i> Create Preset');
+	}
+
+	// Generate summary for review step
+	function generateSummary() {
+		var summary = '';
+
+		// Basic info
+		summary += '<div class="summary-row"><div class="summary-label">' + lang_preset_name + '</div><div class="summary-value">' + escapeHtml($('#name').val() || '-') + '</div></div>';
+		summary += '<div class="summary-row"><div class="summary-label">' + lang_description + '</div><div class="summary-value">' + escapeHtml($('#description').val() || '-') + '</div></div>';
+
+		// Is default
+		if ($('#wizard_is_default').is(':checked')) {
+			summary += '<div class="summary-row"><div class="summary-label">' + lang_default_preset + '</div><div class="summary-value"><span class="label label-primary"><i class="fa fa-star"></i> ' + lang_yes + '</span></div></div>';
+		}
+
+		// OLT info
+		var oltText = $('#olt_id option:selected').text();
+		summary += '<div class="summary-row"><div class="summary-label">' + lang_olt + '</div><div class="summary-value">' + escapeHtml(oltText) + '</div></div>';
+
+		var board = $('#board').val();
+		var port = $('#port').val();
+		var location = board || port ? (board ? lang_board + ' ' + board : '') + (board && port ? ', ' : '') + (port ? lang_port + ' ' + port : '') : lang_all_boards_ports;
+		summary += '<div class="summary-row"><div class="summary-label">' + lang_board_port + '</div><div class="summary-value">' + location + '</div></div>';
+
+		// PON info
+		var ponType = $('input[name="pon_type"]:checked').val().toUpperCase();
+		var channelType = $('input[name="channel_type"]:checked').val().toUpperCase();
+		summary += '<div class="summary-row"><div class="summary-label">' + lang_pon_type + '</div><div class="summary-value">' + ponType + ' / ' + channelType + '</div></div>';
+
+		// ONU info
+		var onuTypeId = $('#onu_type_id').val();
+		var onuType = $('#onu_type_id option:selected').text();
+		var mode = $('input[name="mode"]:checked').val();
+		summary += '<div class="summary-row"><div class="summary-label">' + lang_onu_type + '</div><div class="summary-value">' + escapeHtml(onuType) + '</div></div>';
+
+		// Fallback ONU Type (if auto-detect and fallback is set)
+		if (!onuTypeId || onuTypeId === '' || onuTypeId === '0') {
+			var fallbackOnuTypeId = $('#fallback_onu_type_id').val();
+			var fallbackOnuType = $('#fallback_onu_type_id option:selected').text();
+			if (fallbackOnuTypeId && fallbackOnuType && fallbackOnuType.trim() !== '') {
+				summary += '<div class="summary-row"><div class="summary-label">' + lang_fallback_onu_type + '</div><div class="summary-value">' + escapeHtml(fallbackOnuType) + '</div></div>';
+			}
+		}
+
+		summary += '<div class="summary-row"><div class="summary-label">' + lang_mode + '</div><div class="summary-value"><span class="label label-' + (mode === 'Routing' ? 'info' : 'bridge') + '">' + mode + '</span></div></div>';
+
+		// Custom Profile (only show if enabled)
+		if ($('#custom_profile').is(':checked')) {
+			var customTemplateId = $('#custom_template_id').val();
+			var customTemplateName = $('#custom_template_id option:selected').text();
+			if (customTemplateId && customTemplateName) {
+				summary += '<div class="summary-row"><div class="summary-label">' + lang_custom_profile + '</div><div class="summary-value">' + escapeHtml(customTemplateName) + '</div></div>';
+			}
+		}
+
+		var snPattern = $('#sn_pattern').val();
+		if (snPattern) {
+			summary += '<div class="summary-row"><div class="summary-label">' + lang_sn_pattern + '</div><div class="summary-value"><code>' + escapeHtml(snPattern) + '</code></div></div>';
+		}
+
+		// Network info
+		var vlanText = $('#vlan_id option:selected').text();
+		summary += '<div class="summary-row"><div class="summary-label">' + lang_vlan + '</div><div class="summary-value">' + escapeHtml(vlanText) + '</div></div>';
+
+		// SVLAN info
+		if ($('#use_svlan').is(':checked')) {
+			var svlanText = $('#svlan_id option:selected').text();
+			var tagTransformMode = $('#tag_transform_mode').val();
+			var svlanDisplay = escapeHtml(svlanText);
+			// Show tag transform mode for Huawei OLTs (when tag_transform_mode has a value)
+			if (tagTransformMode) {
+				svlanDisplay += ' <small class="text-muted">(' + escapeHtml(tagTransformMode) + ')</small>';
+			}
+			summary += '<div class="summary-row"><div class="summary-label">' + lang_svlan + '</div><div class="summary-value">' + svlanDisplay + '</div></div>';
+
+			// Use other-all TLS VLAN
+			if ($('#use_other_all_tls_vlan').is(':checked')) {
+				summary += '<div class="summary-row"><div class="summary-label">' + lang_tls_vlan + '</div><div class="summary-value"><span class="label label-info">other-all</span></div></div>';
+			}
+		}
+
+		// CVLAN info
+		if ($('#use_cvlan').is(':checked')) {
+			var cvlanText = $('#cvlan_id option:selected').text();
+			summary += '<div class="summary-row"><div class="summary-label">' + lang_cvlan + '</div><div class="summary-value">' + escapeHtml(cvlanText) + '</div></div>';
+		}
+
+		var downloadSpeed = $('#download_speed_id option:selected').text() || lang_none;
+		var uploadSpeed = $('#upload_speed_id option:selected').text() || lang_none;
+		summary += '<div class="summary-row"><div class="summary-label">' + lang_speed_profiles + '</div><div class="summary-value"><i class="fa fa-arrow-down text-success"></i> ' + escapeHtml(downloadSpeed) + ' / <i class="fa fa-arrow-up text-primary"></i> ' + escapeHtml(uploadSpeed) + '</div></div>';
+
+		// Location info
+		var zone = $('#location_id option:selected').text() || lang_none;
+		var odb = $('#odb_id option:selected').text() || lang_none;
+		summary += '<div class="summary-row"><div class="summary-label">' + lang_zone + '</div><div class="summary-value">' + escapeHtml(zone) + '</div></div>';
+		summary += '<div class="summary-row"><div class="summary-label">' + lang_odb + '</div><div class="summary-value">' + escapeHtml(odb) + '</div></div>';
+
+		// Naming patterns
+		var namePattern = $('#location_name').val();
+		var addressPattern = $('#description_pattern').val();
+		if (namePattern) {
+			summary += '<div class="summary-row"><div class="summary-label">' + lang_name_pattern + '</div><div class="summary-value"><code>' + escapeHtml(namePattern) + '</code></div></div>';
+		}
+		if (addressPattern) {
+			summary += '<div class="summary-row"><div class="summary-label">' + lang_address_pattern + '</div><div class="summary-value"><code>' + escapeHtml(addressPattern) + '</code></div></div>';
+		}
+
+		// TR-069 Profile
+		var tr069ProfileId = $('#tr069_profile_id').val();
+		var tr069ProfileName = $('#tr069_profile_id option:selected').text();
+		if (tr069ProfileId && tr069ProfileName && tr069ProfileName !== lang_none) {
+			summary += '<div class="summary-row"><div class="summary-label">' + lang_tr069_profile + '</div><div class="summary-value">' + escapeHtml(tr069ProfileName) + '</div></div>';
+		}
+
+		// Management IP
+		var mgmtIpMode = $('input[name="mgmt_ip_mode"]:checked').val();
+		if (mgmtIpMode && mgmtIpMode !== 'Inactive') {
+			var mgmtLabel = mgmtIpMode === 'Static'
+				? '<span class="label label-success">' + lang_static_ip + '</span>'
+				: '<span class="label label-info">' + lang_dhcp + '</span>';
+
+			var mgmtSummary = mgmtLabel;
+
+			// Build VLAN info parts
+			var vlanParts = [];
+			var mgmtVlanId = $('#mgmt_ip_vlan_id').val();
+			var mgmtVlanNumber = $('#mgmt_ip_vlan_id option:selected').text();
+			if (mgmtVlanId && mgmtVlanNumber) {
+				vlanParts.push(lang_vlan + ' ' + escapeHtml(mgmtVlanNumber));
+			}
+
+			// Mgmt IP SVLAN (only show if use_mgmt_ip_svlan is checked)
+			if ($('#use_mgmt_ip_svlan').is(':checked')) {
+				var mgmtSvlanId = $('#mgmt_ip_svlan_id').val();
+				var mgmtSvlanNumber = $('#mgmt_ip_svlan_id option:selected').text();
+				if (mgmtSvlanId && mgmtSvlanNumber) {
+					var svlanInfo = lang_svlan + ' ' + escapeHtml(mgmtSvlanNumber);
+					var mgmtTagTransformMode = $('#mgmt_ip_tag_transform_mode').val();
+					if (mgmtTagTransformMode) {
+						svlanInfo += ' ' + escapeHtml(mgmtTagTransformMode);
+					}
+					vlanParts.push(svlanInfo);
+				}
+			}
+
+			// Mgmt IP CVLAN (only show if use_mgmt_ip_cvlan is checked)
+			if ($('#use_mgmt_ip_cvlan').is(':checked')) {
+				var mgmtCvlanId = $('#mgmt_ip_cvlan_id').val();
+				var mgmtCvlanNumber = $('#mgmt_ip_cvlan_id option:selected').text();
+				if (mgmtCvlanId && mgmtCvlanNumber) {
+					vlanParts.push(lang_cvlan + ' ' + escapeHtml(mgmtCvlanNumber));
+				}
+			}
+
+			if (vlanParts.length > 0) {
+				mgmtSummary += ' <small class="text-muted">(' + vlanParts.join(', ') + ')</small>';
+			}
+
+			summary += '<div class="summary-row"><div class="summary-label">' + lang_mgmt_ip + '</div><div class="summary-value">' + mgmtSummary + '</div></div>';
+		}
+
+		// WiFi Settings
+		var wifiEnabled = $('input[name="wifi_enabled"]:checked').val();
+		if (wifiEnabled === '1') {
+			var wifiConfigJson = $('#wifi_config').val();
+			if (wifiConfigJson) {
+				try {
+					var wifiConfig = JSON.parse(wifiConfigJson);
+					if (wifiConfig && wifiConfig.length > 0) {
+						var enabledPorts = wifiConfig.filter(function(p) { return p.is_enabled; });
+						if (enabledPorts.length > 0) {
+							var wifiSummary = '<span class="label label-info">' + lang_enabled + '</span>';
+							wifiSummary += ' <small class="text-muted">(' + enabledPorts.length + ' ' + (enabledPorts.length !== 1 ? lang_ports : lang_port) + ')</small>';
+
+							// Show details for each enabled port
+							enabledPorts.forEach(function(port) {
+								// Get port name from the rendered WiFi port panel
+								var portName = '';
+								var $portPanel = $('#wifi_ports_container .wifi-port-config[data-port-id="' + port.wifi_port_id + '"]');
+								if ($portPanel.length) {
+									// Clone the header h4, remove the status span, then get the text
+									var $title = $portPanel.find('.section-panel-header h4').clone();
+									$title.find('.wifi-port-status').remove();
+									portName = $title.text().trim();
+								}
+
+								// Build port details string
+								var portDetails = [];
+								if (port.ssid) portDetails.push('SSID: ' + escapeHtml(port.ssid));
+								if (port.auth_mode) portDetails.push(port.auth_mode.toUpperCase());
+								if (port.mode && port.mode !== 'LAN') portDetails.push(port.mode);
+								// Add VLAN info
+								if (port.vlan_id) {
+									var vlanText = $('#vlan_id option[value="' + port.vlan_id + '"]').text();
+									if (vlanText) portDetails.push('VLAN: ' + escapeHtml(vlanText));
+								}
+								// Add Allowed VLANs info for Hybrid/Trunk modes
+								if (port.extra_vlans && port.extra_vlans.length > 0) {
+									var extraVlanTexts = [];
+									port.extra_vlans.forEach(function(vlanId) {
+										var vText = $('#vlan_id option[value="' + vlanId + '"]').text();
+										if (vText) extraVlanTexts.push(vText);
+									});
+									if (extraVlanTexts.length > 0) {
+										portDetails.push('Allowed VLANs: ' + escapeHtml(extraVlanTexts.join(', ')));
+									}
+								}
+
+								// Always show the port name, even if no additional details
+								if (portName) {
+									var detailsStr = portDetails.length > 0 ? ': ' + portDetails.join(', ') : '';
+									wifiSummary += '<br><small class="text-muted" style="margin-left: 10px;">• ' + escapeHtml(portName) + detailsStr + '</small>';
+								} else if (portDetails.length > 0) {
+									wifiSummary += '<br><small class="text-muted" style="margin-left: 10px;">• ' + portDetails.join(', ') + '</small>';
+								}
+							});
+
+							summary += '<div class="summary-row"><div class="summary-label">' + lang_wifi + '</div><div class="summary-value">' + wifiSummary + '</div></div>';
+						}
+					}
+				} catch (e) {
+					// Invalid JSON, skip WiFi summary
+				}
+			}
+		}
+
+		// Web User/Password
+		var webUser = $('#wizard_web_user').val();
+		var webPassword = $('#wizard_web_password').val();
+		if (webUser) {
+			summary += '<div class="summary-row"><div class="summary-label">' + lang_web_user + '</div><div class="summary-value">' + escapeHtml(webUser) + '</div></div>';
+		}
+		if (webPassword) {
+			summary += '<div class="summary-row"><div class="summary-label">' + lang_web_pass + '</div><div class="summary-value">••••••••</div></div>';
+		}
+
+		$('#wizardSummary').html(summary);
+	}
+
+	// Escape HTML helper
+	function escapeHtml(text) {
+		if (!text) return '';
+		var div = document.createElement('div');
+		div.appendChild(document.createTextNode(text));
+		return div.innerHTML;
+	}
+
+	// ===========================================
+	// WiFi Settings handlers (using shared functions from onu_authorization_presets.js)
+	// ===========================================
+	// WiFi enable/disable toggle
+	$('input[name="wifi_enabled"]').on('change', function() {
+		if ($(this).val() === '1') {
+			$('#wifi_config_container').slideDown(200);
+			// Load WiFi ports when enabling
+			var onuTypeId = $('#onu_type_id').val();
+			if (onuTypeId && typeof loadWifiPorts === 'function') {
+				loadWifiPorts(onuTypeId, ''); // Empty suffix for wizard
+			}
+		} else {
+			$('#wifi_config_container').slideUp(200);
+		}
+	});
+
+});
+</script>
+<script>
+$(document).ready(function() {
+	// Auto-submit filter form on change
+	$('#filterOlt, #filterOnuType, #filterPon, #filterMode').on('change', function() {
+		$('#filterForm').submit();
+	});
+
+	// Submit search on Enter key
+	$('#presetSearch').on('keypress', function(e) {
+		if (e.which === 13) {
+			$('#filterForm').submit();
+		}
+	});
+
+	// Check localStorage for guide visibility preference
+	if (localStorage.getItem('hidePresetsGuide') === 'true') {
+		$('#gettingStartedPanel').hide();
+	}
+
+	// Toggle getting started panel
+	$('#gettingStartedBody').on('show.bs.collapse', function() {
+		$('#gettingStartedChevron').removeClass('fa-chevron-down').addClass('fa-chevron-up');
+	}).on('hide.bs.collapse', function() {
+		$('#gettingStartedChevron').removeClass('fa-chevron-up').addClass('fa-chevron-down');
+	});
+
+	// Hide guide permanently
+	$('#hideGuideBtn').on('click', function() {
+		localStorage.setItem('hidePresetsGuide', 'true');
+		$('#gettingStartedPanel').slideUp();
+	});
+});
+</script>
+
+
+</div>
+<br>
+<!-- /#page-wrapper -->
+    
+<div id="saveConfigModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="saveConfigModalLabel" aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+		  <div class="modal-header">
+		    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+		    <h3 id="saveConfigModalLabel">Save configuration</h3>
+		  </div>
+		  <div class="modal-body">
+		    <p>This will save the current OLT(s) configuration as startup configuration. It may take up to 5 minutes for the OLT(s) to finish saving the config. Are you sure?</p>
+		  </div>
+		  <div class="modal-footer">
+		    <button class="btn btn-link" data-dismiss="modal" aria-hidden="true">No, cancel</button>
+		    <button class="btn btn-primary save-configuration-button">Yes, save configuration</button>
+		  </div>
+		</div>
+	</div>
+</div>
+
+<div id="importModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="importModalLabel" aria-hidden="true">
+</div>
+
+<div id="rebuildModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="rebuildModalLabel" aria-hidden="true">
+</div>
+
+<div id="deleteAllApiReconciliationModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="deleteAllApiReconciliationModalLabel" aria-hidden="true">
+</div>
+
+<div id="generateSnmpIdsModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="generateSnmpIdsModalLabel" aria-hidden="true">
+</div>
+
+    <!-- Bootstrap Core JavaScript -->
+    <script src="/public/smartolt-files/bootstrap.min.js"></script>
+    <script src="/public/smartolt-files/bootstrap-multiselect.js"></script>
+
+    <!-- Metis Menu Plugin JavaScript -->
+    <script src="/public/smartolt-files/metisMenu.min.js"></script>
+
+    <!-- Custom Theme JavaScript -->
+    <script src="/public/smartolt-files/sb-admin-2.js"></script>
+        
+    <!-- Loading overlay -->
+    <script src="/public/smartolt-files/loadingoverlay.custom.js"></script>
+    
+    <!-- Message box -->
+    <script src="/public/smartolt-files/messagebox.min.js"></script>
+    
+    
+
+<script type="text/javascript">
+
+$( document ).ready(function() {
+	
+	// Hide new version dot if user has already seen this version
+	var currentVersion = '3.53.0';
+	var lastSeenVersion = localStorage.getItem('lastSeenVersion');
+	if (lastSeenVersion === currentVersion) {
+		$('.new-version-dot').hide();
+	}
+
+	
+	$('#smartolt-update-banner-changelog').on('click', function(e) {
+		e.preventDefault();
+		localStorage.setItem('lastSeenVersion', currentVersion);
+		$('.new-version-dot').hide();
+				window.location.href = '/changelog';
+			});
+
+	$('#smartolt-update-banner-dismiss').on('click', function() {
+		localStorage.setItem('lastSeenVersion', currentVersion);
+		$('.new-version-dot').hide();
+		$('#smartolt-update-banner').slideUp(300);
+	});
+
+	$('#footer-changelog-link').on('click', function() {
+		localStorage.setItem('lastSeenVersion', currentVersion);
+		$('.new-version-dot').hide();
+	});
+
+	//hide alert-success after 5 seconds
+	/*setTimeout(function(){
+		$('.alert-success').not('.nofade').fadeOut();
+	},5000);*/
+	
+	var waitingForOLT   = $("<div>", {
+	    id      : "waitingOLT",
+	    css     : {
+	        "font-size" : "50px",
+			"white-space" : "nowrap"
+	    },
+	    text    : "Waiting for OLT"
+	});
+
+	var loadingOverlaySettings = {
+		    image       : "",
+		    fontawesome : "fa fa-spinner fa-spin",
+		    custom  : waitingForOLT,
+		    resizeInterval : 0
+		};
+
+	$.LoadingOverlay("append", loadingOverlaySettings);
+
+	window.showLoadingOverlay = function(loadingText = null) {
+		if(loadingText != null) {
+			$("#waitingOLT").text(loadingText);
+		}
+		else {
+			$("#waitingOLT").text("Waiting for OLT");
+		}
+		
+		$.LoadingOverlay("show", loadingOverlaySettings);
+	}
+
+	window.hideLoadingOverlay = function() {
+		$.LoadingOverlay("hide");
+	}
+
+	window.isLoadingOverlayVisible = function() {
+		return $('.loadingoverlay').is(":visible");
+	}
+	
+	//hide loading overlay when ajax request finishes
+	/*$(document).ajaxStop(function(){
+		hideLoadingOverlay();
+	});*/
+
+	//show toast with error
+	$(document).ajaxError(function(requestObject, error, errorThrown) {
+		if(error.status != 404 && error != undefined && error.responseJSON != undefined && 
+				error.responseJSON.error != undefined && error.responseJSON.error.length > 0) {
+			toast(error.responseJSON.error);
+		}
+	});
+
+	//confirm message box
+	window.MessageBoxConfirm = function(message){
+	    return $.MessageBox({
+	        buttonDone  : "OK",
+	        buttonFail  : "Cancel",
+	        message     : message
+	    });
+	}
+
+	window.getSelectedText = function() {
+        if (window.getSelection) {
+            return window.getSelection().toString();
+        } 
+        else if (document.selection) {
+            return document.selection.createRange().text;
+        }
+        return '';
+    }
+
+	//close navbar menu when clicking outside of it
+	$(document).click(function (event) {
+		var clickover = $(event.target);
+		var $nav = $("div.navbar-collapse");
+        var _opened = $nav.hasClass("in");
+
+        if (_opened === true && !clickover.hasClass("navbar-toggle")) {
+			$nav.collapse('hide');
+        }
+    });
+
+	/*https://www.quirksmode.org/blog/archives/2014/02/mouse_event_bub.html
+	  Safari on iOS only allows the mouse events, including click, to bubble up in the following situations:
+	  1. The target element of the event is a link or a form field.
+	  2. The target element, or any of its ancestors up to but not including the <body>, has an explicit event handler set for any of the mouse events. This event handler may be an empty function.
+      3. The target element, or any of its ancestors up to and including the document has a cursor: pointer CSS declarations. */
+	$("#content-wrapper").click(function (event) {
+		//this is here only for iOS to allow mouse events to bubble up so we can close navbar menu when clicking outside of it
+    });
+
+	// check navbar menu top offset
+    function closeMenuIfOpened() {
+		var $nav = $("div.navbar-collapse");
+    	var _opened = $nav.hasClass("in");
+
+        if (_opened === true && $(".navbar").offset().top > 50) {
+			$nav.collapse('hide');
+        }
+    }
+
+    //for touch devices, detect zoom in/out events and close the navbar menu if opened
+    var tracks = [];
+    $(window).on("touchmove", function (event) {
+	
+	    //only run code if the user has two fingers touching
+	    if (event.originalEvent.touches.length === 2) {
+	
+	        //track the touches, I'm setting each touch as an array inside the tracks array
+	        //each touch array contains an X and Y coordinate
+	        tracks.push([ [event.originalEvent.touches[0].pageX, event.originalEvent.touches[0].pageY], [event.originalEvent.touches[1].pageX, event.originalEvent.touches[1].pageY] ]);
+	    }
+	}).on("touchstart", function () {
+	    //start-over
+	    tracks = [];
+	}).on("touchend", function () {
+	    if(tracks.length > 0) {
+			var $nav = $("div.navbar-collapse");
+	    	var _opened = $nav.hasClass("in");
+	        if (_opened === true) {
+				$nav.collapse('hide');
+	        }
+	    }
+	});
+
+	// COPY TO CLIPBOARD
+	// Attempts to use .execCommand('copy') on a created text field
+	// Falls back to a selectable alert if not supported
+	// Attempts to display status in Bootstrap tooltip
+	// ------------------------------------------------------------------------------
+
+	function copyToClipboard(text, el) {
+	  var copyTest = document.queryCommandSupported('copy');
+	  var elOriginalText = el.attr('data-original-title');
+
+	  if (copyTest === true) {
+	    var copyTextArea = document.createElement("textarea");
+	    copyTextArea.value = text;
+	    document.body.appendChild(copyTextArea);
+	    copyTextArea.select();
+	    try {
+	      var successful = document.execCommand('copy');
+	      var msg = successful ? "Copied!" : "Whoops, not copied!";
+	      el.attr('data-original-title', msg).tooltip('show');
+	    } 
+	    catch (err) {
+	      console.log("Oops, unable to copy");
+	    }
+	    document.body.removeChild(copyTextArea);
+	    el.attr('data-original-title', elOriginalText);
+	  } 
+	  else {
+	    // Fallback if browser doesn't support .execCommand('copy')
+	    window.prompt("Copy to clipboard", text);
+	  }
+	}
+
+	function copyToClipboard2(text, el) {
+		  if (document.queryCommandSupported('copy') === true) {
+			var elOriginalText = el.attr('data-original-title');
+	 	    var copyTextArea = document.createElement("textarea");
+		    copyTextArea.textContent = text.text();
+		    document.body.appendChild(copyTextArea);
+
+		    var selection = document.getSelection();
+		    var range = document.createRange();
+		    range.selectNode(copyTextArea);
+		    selection.removeAllRanges();
+		    selection.addRange(range);
+		    
+		    try {
+		      var successful = document.execCommand('copy');
+			  var msg;
+
+			  if (successful) {
+				  msg = "Copied!";
+			  } 
+			  else {
+				msg = "Whoops, not copied!";
+				el.removeClass('not-selectable');
+			  }
+		      el.attr('data-original-title', msg).tooltip('show');
+		    } 
+		    catch (err) {
+		      console.log("Oops, unable to copy");
+		    }
+		    selection.removeAllRanges();
+		    document.body.removeChild(copyTextArea);
+		    el.attr('data-original-title', elOriginalText);
+		  } 
+		  else {
+			$('.not-selectable').removeClass('not-selectable');
+		    // Fallback if browser doesn't support .execCommand('copy')
+		    window.prompt("Copy to clipboard", text.text());
+		  }
+		}
+
+	// Initialize
+   // ---------------------------------------------------------------------
+
+   // Tooltips
+   // Requires Bootstrap 3 for functionality
+   $('.js-tooltip').tooltip();
+
+   // Copy to clipboard
+   // Grab any text in the attribute 'data-copy' and pass it to the 
+   // copy function
+   $('.js-copy').click(function() {
+     var text = $(this).attr('data-copy');
+     var el = $(this);
+     copyToClipboard(text, el);
+   });
+
+   $(document).on('click','.comma-copy', function() {
+	   $(this).removeClass('btn-primary').addClass('btn-default');
+	     var el = $('#'+$(this).attr('data-idtag'));
+	     copyToClipboard2(el, $(this));
+	     el.removeClass('text-primary').addClass('text-muted');
+	   });
+
+   //trim white spaces when paste in any input
+   $(document).on('paste', 'input[type=text]', function(e) {
+	  // prevent copying action
+	  e.preventDefault();
+	  
+	  var pastedText = e.originalEvent.clipboardData.getData('Text');
+	  var withoutSpaces = pastedText;
+	  if(pastedText) {
+		  withoutSpaces = pastedText.trim();
+	  }
+
+	  //remove all spaces, including from inside the text
+	  if($(this).hasClass('no_spaces')) {
+		  withoutSpaces = withoutSpaces.replace(/\s/g, '');
+	  }
+	  
+	  $(this).insertAtCaret(withoutSpaces);
+	});
+
+   $.fn.insertAtCaret = function(text) {
+	    return this.each(function() {
+	        if (document.selection && this.tagName == 'TEXTAREA') {
+	            //IE textarea support
+	            this.focus();
+	            sel = document.selection.createRange();
+	            sel.text = text;
+	            this.focus();
+	        } else if (this.selectionStart || this.selectionStart == '0') {
+	            //MOZILLA/NETSCAPE support
+	            startPos = this.selectionStart;
+	            endPos = this.selectionEnd;
+	            scrollTop = this.scrollTop;
+	            this.value = this.value.substring(0, startPos) + text + this.value.substring(endPos, this.value.length);
+	            this.focus();
+	            this.selectionStart = startPos + text.length;
+	            this.selectionEnd = startPos + text.length;
+	            this.scrollTop = scrollTop;
+	        } else {
+	            // IE input[type=text] and other browsers
+	            this.value += text;
+	            this.focus();
+	            this.value = this.value;    // forces cursor to end
+	        }
+	    });
+	};
+    
+	
+  $('.save-configuration-button').click(function (){
+    var button = $('.save-configuration-anchor');
+
+    button.toggleClass('active');
+    button.attr('disabled', true);
+    button.text("Saving...");
+    $('#saveConfigModal').modal('hide');
+
+    $.ajax({
+        method: "GET",
+        beforeSend: function(request) {
+		    request.setRequestHeader("X-Token", config.X_TOKEN);
+		  },
+        url: "/api/system/write",
+      })
+      .done(function( response ) {
+        $.MessageBox((response && response.response) ? response.response : "Save initiated. It could take the OLT up to 5 minutes to write the config!");
+        button.text("Save config");
+        setTimeout(function () {
+          button.toggleClass('active');
+          button.attr('disabled', false);
+          button.text("Save config");
+        }, 1000);
+      })
+      .fail(function(jqXHR, textStatus) {
+    	  if(jqXHR.responseJSON) {
+				$.MessageBox(jqXHR.responseJSON.error);
+			}
+			else {
+				$.MessageBox(jqXHR.responseText);
+			}
+	        setTimeout(function () {
+	        	 button.toggleClass('active');
+	             button.attr('disabled', false);
+	             button.text("Save config");
+	        }, 1000);
+      });
+  });
+
+    
+});
+</script>
+
+</div>
+
+<style>
+.new-version-dot {
+	display: inline-block;
+	width: 8px;
+	height: 8px;
+	background-color: #5cb85c;
+	border-radius: 50%;
+	margin-left: 4px;
+	animation: pulse-green 2s infinite;
+}
+.footer-dot-sep {
+	opacity: 0.5;
+	margin: 0 2px;
+}
+footer {
+	height: auto;
+	padding-bottom: 8px;
+}
+#feature-tour-whatsnew .fa-bullhorn {
+	margin-right: 5px;
+	font-size: 2em;
+	vertical-align: -6px;
+}
+
+@keyframes pulse-green {
+	0% {
+		transform: scale(0.95);
+		box-shadow: 0 0 0 0 rgba(92, 184, 92, 0.7);
+	}
+	70% {
+		transform: scale(1);
+		box-shadow: 0 0 0 6px rgba(92, 184, 92, 0);
+	}
+	100% {
+		transform: scale(0.95);
+		box-shadow: 0 0 0 0 rgba(92, 184, 92, 0);
+	}
+}
+
+</style>
+
+<footer>
+	<div class="text-center row">SmartOLT <a href="#" class="btn-link" id="footer-changelog-link">v3.53.0<span class="new-version-dot" title="New updates" style="display: none;"></span></a> © 2026</div>
+</footer>
+
+
+
+
+<div class="loadingoverlay" style="background-color: rgba(255, 255, 255, 0.8); position: fixed; display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; top: 0px; left: 0px; width: 100%; height: 100%; background-size: 100px;"><div class="loadingoverlay_fontawesome fa fa-spinner fa-spin" style="font-size: 100px;"></div><div id="waitingOLT" style="font-size: 50px; white-space: nowrap;">Waiting for OLT</div></div></body></html>

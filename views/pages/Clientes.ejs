@@ -1,0 +1,1179 @@
+<div id="module-clientes">
+  <div class="page-header">
+    <h2><i class="fas fa-users"></i> Gestión de Clientes</h2>
+    <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+      <button type="button" onclick="abrirModalNuevo()" class="btn btn-primary btn-sm" style="background:linear-gradient(135deg,#6366f1,#8b5cf6); border:none; border-radius:8px; padding:7px 16px; font-size:0.85rem; font-weight:600;">
+        <i class="fas fa-user-plus"></i> Nuevo Cliente
+      </button>
+      <button type="button" onclick="exportarListaPDF()" class="btn btn-secondary btn-sm" style="border-radius:8px; padding:7px 14px; font-size:0.85rem;">
+        <i class="fas fa-print"></i> Imprimir PDF
+      </button>
+    </div>
+  </div>
+
+  <!-- Filter pills + Toolbar -->
+  <input type="hidden" id="estadoActual" value="todos">
+  <div class="card" style="margin-bottom:16px; border-radius:12px;">
+    <div class="card-body" style="padding:14px 18px;">
+      <div class="filters" style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:0;">
+        <!-- Status pills -->
+        <div class="status-pills" style="display:flex; gap:4px; background:var(--bg-body); border-radius:10px; padding:3px;">
+          <button class="tab-pill active" data-value="todos" onclick="cambiarFiltro('todos', this)" style="border:none; background:transparent; padding:6px 14px; border-radius:8px; font-size:0.8rem; font-weight:500; cursor:pointer; transition:all 0.15s; color:var(--text-muted);">Todos</button>
+          <button class="tab-pill" data-value="activo" onclick="cambiarFiltro('activo', this)" style="border:none; background:transparent; padding:6px 14px; border-radius:8px; font-size:0.8rem; font-weight:500; cursor:pointer; transition:all 0.15s; color:var(--text-muted);">Activos</button>
+          <button class="tab-pill" data-value="suspendido" onclick="cambiarFiltro('suspendido', this)" style="border:none; background:transparent; padding:6px 14px; border-radius:8px; font-size:0.8rem; font-weight:500; cursor:pointer; transition:all 0.15s; color:var(--text-muted);">Suspendidos</button>
+          <button class="tab-pill" data-value="retirado" onclick="cambiarFiltro('retirado', this)" style="border:none; background:transparent; padding:6px 14px; border-radius:8px; font-size:0.8rem; font-weight:500; cursor:pointer; transition:all 0.15s; color:var(--text-muted);">Retirados</button>
+        </div>
+        <span style="color:var(--border-color); font-size:0.75rem;">|</span>
+        <div class="select-wrapper" style="display:flex; align-items:center; gap:6px;">
+          <label style="font-size:0.75rem; color:var(--text-muted);">Mostrar:</label>
+          <select id="filtroMostrar" class="form-control form-control-sm" style="width:auto; min-width:80px; border-radius:8px; font-size:0.8rem;" onchange="resetPagina()">
+            <option value="15">15</option>
+            <option value="30">30</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+            <option value="all">Todo</option>
+          </select>
+        </div>
+        <select id="filtroZona" class="form-control form-control-sm" style="width:auto; min-width:130px; border-radius:8px; font-size:0.8rem;" onchange="cargarTabla()">
+          <option value="todas">Todas las Zonas</option>
+          <% (zonas || []).forEach(function(z) { %>
+          <option value="<%= z.id %>"><%= z.nombre %></option>
+          <% }) %>
+        </select>
+        <select id="filtroFacturas" class="form-control form-control-sm" style="width:auto; min-width:190px; border-radius:8px; font-size:0.8rem;" onchange="cargarTabla()">
+          <option value="">Filtrar por facturas pendientes</option>
+          <option value="sin">Sin facturas</option>
+          <option value="1">Con 1 factura</option>
+          <option value="2+">Con 2 o más</option>
+        </select>
+        <select id="filtroFecha" class="form-control form-control-sm" style="width:auto; min-width:140px; border-radius:8px; font-size:0.8rem;" onchange="cargarTabla()">
+          <option value="">-- Todo el tiempo --</option>
+          <% 
+          var now = new Date();
+          for(var m = 0; m < 12; m++) {
+            var d = new Date(now.getFullYear(), now.getMonth() - m, 1);
+            var val = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
+            var label = d.toLocaleString('es-ES', { month:'long', year:'numeric' });
+          %>
+          <option value="<%= val %>"><%= label.charAt(0).toUpperCase() + label.slice(1) %></option>
+          <% } %>
+        </select>
+        <!-- Search -->
+        <div class="search-wrapper" style="position:relative; flex:1; min-width:180px;">
+          <i class="fas fa-search" style="position:absolute; left:10px; top:50%; transform:translateY(-50%); color:var(--text-gray); font-size:0.8rem;"></i>
+          <input type="text" id="buscador" class="form-control form-control-sm" style="padding-left:30px; border-radius:8px; width:100%; font-size:0.8rem;" placeholder="Buscar nombre, NIC, cédula, tel, dir..." oninput="buscarDebounce()">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Total count bar -->
+  <div id="totalClientesBar" style="padding: 6px 4px; font-size: 0.82rem; color: var(--text-muted); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 6px;">
+    <span><i class="fas fa-users" style="margin-right:4px;"></i> <span id="totalClientesText">Cargando...</span></span>
+    <div id="bulkActionsWrapper" style="display: none; align-items:center; gap:8px;">
+      <span style="font-size:0.82rem; font-weight:600; color:var(--accent);"><span id="bulkCount">0</span> seleccionado(s)</span>
+      <div class="btn-group" style="display:flex; gap:4px; flex-wrap:wrap;">
+        <button class="btn btn-sm btn-success" onclick="ejecutarBulk('activar')" style="border-radius:6px; padding:4px 10px; font-size:0.75rem;"><i class="fas fa-play"></i> Activar</button>
+        <button class="btn btn-sm btn-warning" onclick="ejecutarBulk('suspender')" style="border-radius:6px; padding:4px 10px; font-size:0.75rem;"><i class="fas fa-pause"></i> Suspender</button>
+        <button class="btn btn-sm btn-danger" onclick="ejecutarBulk('retirar')" style="border-radius:6px; padding:4px 10px; font-size:0.75rem;"><i class="fas fa-minus-circle"></i> Retirar</button>
+        <button class="btn btn-sm btn-danger" onclick="ejecutarBulk('eliminar')" style="background:#991b1b; border-color:#991b1b; border-radius:6px; padding:4px 10px; font-size:0.75rem;"><i class="fas fa-trash"></i> Eliminar</button>
+        <button class="btn btn-sm" onclick="ejecutarBulk('whatsapp')" style="border-radius:6px; padding:4px 10px; font-size:0.75rem; background:#25D366; color:#fff; border:none;"><i class="fab fa-whatsapp"></i> WhatsApp</button>
+        <button class="btn btn-sm btn-info" onclick="ejecutarBulk('facturar')" style="border-radius:6px; padding:4px 10px; font-size:0.75rem;"><i class="fas fa-file-invoice"></i> Facturar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="card" style="border-radius:12px; overflow:hidden; padding:0;">
+    <div class="table-container" style="overflow-x:auto;">
+      <table class="main-table" style="width:100%; border-collapse:collapse; font-size:0.82rem;">
+        <thead>
+          <tr style="background:var(--bg-body); border-bottom:2px solid var(--border-color);">
+            <th style="width:32px; padding:10px 8px;"><input type="checkbox" id="bulkSelectAll" onchange="toggleSelectAll(this)" style="width:16px; height:16px; accent-color:var(--accent); cursor:pointer;"></th>
+            <th style="padding:10px 8px; color:var(--text-muted); font-weight:600; cursor:pointer; white-space:nowrap; width:70px;" onclick="ordenarPor('id')" title="Ordenar por ID">
+              ID <i class="fas fa-sort" id="sortIcon_id" style="font-size:0.65rem; color:var(--border-color);"></i>
+            </th>
+            <th style="padding:10px 8px; color:var(--text-muted); font-weight:600; cursor:pointer; min-width:180px;" onclick="ordenarPor('nombre')" title="Ordenar por nombre">
+              Nombre <i class="fas fa-sort" id="sortIcon_nombre" style="font-size:0.65rem; color:var(--border-color);"></i>
+            </th>
+            <th style="padding:10px 8px; color:var(--text-muted); font-weight:600; cursor:pointer; white-space:nowrap;" onclick="ordenarPor('zona')" title="Ordenar por zona">
+              Zona <i class="fas fa-sort" id="sortIcon_zona" style="font-size:0.65rem; color:var(--border-color);"></i>
+            </th>
+            <th style="padding:10px 8px; color:var(--text-muted); font-weight:600; cursor:pointer; white-space:nowrap; width:100px;" onclick="ordenarPor('registro')" title="Ordenar por registro">
+              Registro <i class="fas fa-sort" id="sortIcon_registro" style="font-size:0.65rem; color:var(--border-color);"></i>
+            </th>
+            <th style="padding:10px 8px; color:var(--text-muted); font-weight:600; white-space:nowrap; width:110px;">
+              Suspendido
+            </th>
+            <th style="padding:10px 8px; color:var(--text-muted); font-weight:600; white-space:nowrap; min-width:130px;">
+              Contacto
+            </th>
+            <th style="padding:10px 8px; color:var(--text-muted); font-weight:600; white-space:nowrap; width:100px;">
+              Estado
+            </th>
+            <th style="padding:10px 8px; color:var(--text-muted); font-weight:600; white-space:nowrap; width:150px;">
+              Acciones
+            </th>
+          </tr>
+        </thead>
+        <tbody id="tablaResultados">
+          <tr><td colspan="9" style="text-align:center; padding:40px 10px; color:var(--text-gray);"><i class="fas fa-spinner fa-spin"></i> Cargando datos...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  <div id="paginacion" style="display:flex; justify-content:center; gap:4px; margin-top:16px;"></div>
+
+  <!-- Modal Cliente -->
+  <div id="modalNuevoCliente" class="modal" style="display:none">
+    <div class="modal-content" style="max-width:450px; border-radius:14px;">
+      <div class="modal-header">
+        <h3 style="margin:0; font-size:1.1rem;"><i class="fas fa-user-plus" style="color:#8b5cf6;"></i> Nuevo Cliente</h3>
+        <span class="modal-close" onclick="cerrarModal('modalNuevoCliente')" style="font-size:1.4rem; cursor:pointer; color:var(--text-gray); line-height:1;">&times;</span>
+      </div>
+      <form onsubmit="guardarCliente(event)" id="formCliente">
+        <div class="modal-body" style="padding:20px 22px;">
+          <div class="form-group" style="margin-bottom:14px;">
+            <label style="font-weight:600; font-size:0.82rem; color:var(--text-dark); margin-bottom:4px; display:block;">Nombre <span style="color:var(--accent-danger);">*</span></label>
+            <input type="text" name="nombre" class="form-control" required style="border-radius:8px; font-size:0.85rem;">
+          </div>
+          <div class="form-group" style="margin-bottom:14px;">
+            <label style="font-weight:600; font-size:0.82rem; color:var(--text-dark); margin-bottom:4px; display:block;">Cédula</label>
+            <input type="text" name="cedula" class="form-control" placeholder="000-0000000-0" style="border-radius:8px; font-size:0.85rem;">
+          </div>
+          <div class="form-group" style="margin-bottom:14px;">
+            <label style="font-weight:600; font-size:0.82rem; color:var(--text-dark); margin-bottom:4px; display:block;">Teléfono</label>
+            <input type="text" name="telefono" class="form-control" placeholder="809-555-0101" style="border-radius:8px; font-size:0.85rem;">
+          </div>
+          <div class="form-group" style="margin-bottom:14px;">
+            <label style="font-weight:600; font-size:0.82rem; color:var(--text-dark); margin-bottom:4px; display:block;">Zona</label>
+            <select name="zona_id" class="form-control" style="border-radius:8px; font-size:0.85rem;">
+              <option value="">-- Sin zona --</option>
+              <% (zonas || []).forEach(function(z) { %>
+              <option value="<%= z.id %>"><%= z.nombre %></option>
+              <% }) %>
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom:14px;">
+            <label style="font-weight:600; font-size:0.82rem; color:var(--text-dark); margin-bottom:4px; display:block;">Apodo</label>
+            <input type="text" name="apodo" class="form-control" placeholder="Alias / Apodo" style="border-radius:8px; font-size:0.85rem;">
+          </div>
+          <div class="form-group" style="margin-bottom:14px;">
+            <label style="font-weight:600; font-size:0.82rem; color:var(--text-dark); margin-bottom:4px; display:block;">Dirección</label>
+            <input type="text" name="direccion" class="form-control" placeholder="Calle, número, sector" style="border-radius:8px; font-size:0.85rem;">
+          </div>
+        </div>
+        <div class="modal-footer" style="padding:14px 22px; border-top:1px solid var(--border-color); display:flex; justify-content:flex-end; gap:8px;">
+          <button type="button" class="btn btn-secondary" onclick="cerrarModal('modalNuevoCliente')" style="border-radius:8px; padding:8px 18px; font-size:0.82rem;">Cancelar</button>
+          <button type="submit" class="btn btn-primary" style="border-radius:8px; padding:8px 18px; font-size:0.82rem; background:linear-gradient(135deg,var(--accent),#8b5cf6); border:none;"><i class="fas fa-save"></i> Guardar Cliente</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Seleccionar Servicio -->
+  <div id="modalSelectorServicios" class="modal" style="display:none">
+    <div class="modal-content" style="max-width:500px; border-radius:14px;">
+      <div class="modal-header">
+        <h3 id="modalSelectorTitulo" style="margin:0; font-size:1rem;">Seleccionar Servicio</h3>
+        <span class="modal-close" onclick="cerrarModal('modalSelectorServicios')" style="font-size:1.4rem; cursor:pointer; color:var(--text-gray); line-height:1;">&times;</span>
+      </div>
+      <div class="modal-body" style="padding:20px 22px;">
+        <p style="color:var(--text-muted); margin-bottom:12px; font-size:0.85rem;">Selecciona el servicio al que aplicar la acción:</p>
+        <div id="modalSelectorLista"></div>
+        <div style="margin-top:16px; text-align:right;">
+          <button class="btn btn-secondary" onclick="cerrarModal('modalSelectorServicios')" style="border-radius:8px; padding:8px 18px; font-size:0.82rem;">Cancelar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Confirmación Bulk -->
+  <div id="bulkConfirmModal" class="modal" style="display:none">
+    <div class="modal-content" style="max-width:480px; border-radius:14px;">
+      <div class="modal-header" id="bulkConfirmHeader">
+        <h3 id="bulkConfirmTitle" style="margin:0; font-size:1rem;"></h3>
+        <span class="modal-close" onclick="cerrarModal('bulkConfirmModal')" style="font-size:1.4rem; cursor:pointer; color:var(--text-gray); line-height:1;">&times;</span>
+      </div>
+      <div class="modal-body" style="padding:24px 22px; text-align:center;">
+        <div id="bulkConfirmIcon" style="font-size:2rem; margin-bottom:10px;"></div>
+        <div id="bulkConfirmMsg" style="color:var(--text-dark); line-height:1.5;"></div>
+        <div class="btn-group" style="display:flex; justify-content:center; gap:8px; margin-top:18px;">
+          <button class="btn btn-secondary" onclick="cerrarModal('bulkConfirmModal')" style="border-radius:8px; padding:8px 18px; font-size:0.82rem;">Cancelar</button>
+          <button class="btn btn-primary" id="bulkConfirmBtn" onclick="confirmarBulk()" style="border-radius:8px; padding:8px 18px; font-size:0.82rem;">Sí, Confirmar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Confirmar Eliminar -->
+  <div id="modalConfirmDelete" class="modal" style="display:none">
+    <div class="modal-content" style="max-width:400px; border-radius:14px;">
+      <div class="modal-header">
+        <h3 style="margin:0; font-size:1rem; color:var(--accent-danger);"><i class="fas fa-trash"></i> Eliminar Cliente</h3>
+        <span class="modal-close" onclick="cerrarModal('modalConfirmDelete')" style="font-size:1.4rem; cursor:pointer; color:var(--text-gray); line-height:1;">&times;</span>
+      </div>
+      <div class="modal-body" style="padding:20px 22px; text-align:center;">
+        <p style="color:var(--text-muted); margin-bottom:14px; font-size:0.85rem;">Lo ideal es retirar servicios para no perder la información del cliente.</p>
+        <p style="color:#991b1b; font-weight:600; margin-bottom:14px; font-size:0.9rem;">¿Estás seguro que deseas eliminar completamente?</p>
+        <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:14px;">Esta acción es irrevocable y borrará todos los servicios del MikroTik.</p>
+        <label style="display:flex; align-items:center; gap:8px; justify-content:center; margin-bottom:16px; cursor:pointer; font-size:0.85rem; color:var(--text-dark);">
+          <input type="checkbox" id="chkEliminarOnuSmartolt" style="width:18px; height:18px; accent-color:var(--accent);">
+          <span>Eliminar también la ONU de <strong>SmartOLT</strong></span>
+        </label>
+        <div class="btn-group" style="display:flex; justify-content:center; gap:8px;">
+          <button class="btn btn-secondary" onclick="cerrarModal('modalConfirmDelete')" style="border-radius:8px; padding:8px 18px; font-size:0.82rem;">Cancelar</button>
+          <button class="btn btn-danger" onclick="confirmarEliminar()" style="border-radius:8px; padding:8px 18px; font-size:0.82rem;">Sí, Eliminar Todo</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Enviar WhatsApp -->
+  <div id="modalWhatsApp" class="modal" style="display:none">
+    <div class="modal-content" style="max-width:450px; border-radius:14px;">
+      <div class="modal-header">
+        <h3 style="margin:0; font-size:1rem;"><i class="fab fa-whatsapp" style="color:#25D366;"></i> Enviar WhatsApp</h3>
+        <span class="modal-close" onclick="cerrarModal('modalWhatsApp')" style="font-size:1.4rem; cursor:pointer; color:var(--text-gray); line-height:1;">&times;</span>
+      </div>
+      <div class="modal-body" style="padding:20px 22px;">
+        <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:14px;">Revisa el mensaje antes de enviar:</p>
+        <div style="background:var(--bg-body); border-radius:8px; padding:14px; margin-bottom:14px; max-height:200px; overflow-y:auto; font-size:0.82rem; line-height:1.5; white-space:pre-wrap;" id="whatsappPreview"></div>
+        <div class="btn-group" style="display:flex; justify-content:flex-end; gap:8px;">
+          <button class="btn btn-secondary" onclick="cerrarModal('modalWhatsApp')" style="border-radius:8px; padding:8px 18px; font-size:0.82rem;">Cancelar</button>
+          <button class="btn" onclick="confirmarEnvioWhatsApp()" style="border-radius:8px; padding:8px 18px; font-size:0.82rem; background:#25D366; color:#fff; border:none;"><i class="fab fa-whatsapp"></i> Enviar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<style>
+/* Filter pills */
+.tab-pill.active {
+  background: var(--bg-card);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+  color: var(--text-dark) !important;
+  font-weight: 600 !important;
+}
+.tab-pill:hover:not(.active) {
+  background: rgba(255,255,255,0.5);
+  color: var(--text-dark) !important;
+}
+
+/* Table rows */
+#tablaResultados tr {
+  border-bottom: 1px solid var(--border-color);
+  transition: background 0.12s;
+}
+#tablaResultados tr:hover {
+  background: var(--bg-body);
+}
+#tablaResultados td {
+  padding: 10px 8px;
+  vertical-align: middle;
+}
+
+/* Badge styles */
+.badge-activo, .badge-success {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #dcfce7;
+  color: #16a34a;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+.badge-suspendido, .badge-warning {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #fef3c7;
+  color: #d97706;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+.badge-sin-servicio {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--bg-body);
+  color: var(--text-gray);
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+.badge-danger {
+  background: #fef2f2;
+  color: #dc2626;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+/* Action buttons */
+.btn-accion {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-size: 0.75rem;
+  transition: all 0.15s;
+  text-decoration: none;
+}
+.btn-accion.ver {
+  color: var(--accent);
+  background: #eef2ff;
+}
+.btn-accion.ver:hover { background: #e0e7ff; }
+.btn-accion.reactivar {
+  color: #16a34a;
+  background: #dcfce7;
+}
+.btn-accion.reactivar:hover { background: #bbf7d0; }
+.btn-accion.suspender {
+  color: #dc2626;
+  background: #fef2f2;
+}
+.btn-accion.suspender:hover { background: #fecaca; }
+.btn-accion.retirar {
+  color: #ea580c;
+  background: #fff7ed;
+}
+.btn-accion.retirar:hover { background: #ffedd5; }
+.btn-accion.eliminar {
+  color: #991b1b;
+  background: #fef2f2;
+}
+.btn-accion.eliminar:hover { background: #fecaca; }
+.btn-accion.whatsapp {
+  color: #25D366;
+  background: #e6faf0;
+}
+.btn-accion.whatsapp:hover { background: #cdf5e1; }
+
+/* Client name link */
+.row-name-link {
+  font-weight: 600;
+  color: var(--accent);
+  text-decoration: none;
+  font-size: 0.82rem;
+}
+.row-name-link:hover {
+  text-decoration: underline;
+}
+.row-apodo {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  background: var(--bg-body);
+  padding: 1px 7px;
+  border-radius: 4px;
+  margin-top: 2px;
+}
+.row-zona {
+  font-size: 0.8rem;
+  color: var(--text-dark);
+}
+.row-contact {
+  font-size: 0.78rem;
+  color: var(--text-dark);
+}
+.row-contact i {
+  font-size: 0.7rem;
+  color: var(--accent);
+  margin-right: 4px;
+}
+.row-address {
+  font-size: 0.75rem;
+  color: var(--text-gray);
+  margin-top: 2px;
+}
+
+/* Expandable row toggle */
+.btn-expand {
+  cursor: pointer;
+  font-size: 0.65rem;
+  color: var(--text-gray);
+  transition: transform 0.15s;
+  border: none;
+  background: none;
+  padding: 2px 4px;
+  margin-right: 4px;
+  width: 20px;
+}
+.btn-expand:hover {
+  color: var(--accent);
+}
+.btn-expand.open {
+  transform: rotate(180deg);
+}
+.svc-count-badge {
+  font-size: 0.65rem;
+  color: var(--text-gray);
+  margin-left: 3px;
+}
+
+/* Expand panel */
+.expand-tr {
+  background: var(--bg-body);
+}
+.expand-td {
+  padding: 0 !important;
+}
+.svc-expand-panel {
+  padding: 8px 60px 8px 50px;
+}
+.svc-expand-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+  flex-wrap: wrap;
+}
+.svc-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+.svc-dot-active { background: #22c55e; }
+.svc-dot-suspended { background: #f59e0b; }
+.svc-dot-retired { background: #94a3b8; }
+.svc-plan {
+  font-weight: 600;
+  font-size: 0.8rem;
+  color: var(--text-dark);
+}
+.svc-tag {
+  font-size: 0.7rem;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: var(--bg-card);
+  color: var(--text-muted);
+  border: 1px solid var(--border-color);
+}
+.svc-tag-nic { background: #f0f9ff; color: #0369a1; border-color: #bae6fd; }
+.svc-tag-ip { background: #faf5ff; color: #7c3aed; border-color: #e9d5ff; text-decoration: none; }
+.svc-tag-ip:hover { background: #f3e8ff; }
+.svc-deuda {
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+.svc-deuda-verde { color: #16a34a; }
+.svc-deuda-rojo { color: #dc2626; }
+.svc-fact-cnt {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+/* Susp item in suspendido column */
+.susp-item {
+  font-size: 0.75rem;
+  color: #dc2626;
+}
+.susp-item i { margin-right: 3px; }
+.susp-plan {
+  color: var(--text-muted);
+  font-size: 0.7rem;
+}
+
+/* Sort icons */
+.sort-icon-active {
+  color: var(--accent) !important;
+}
+
+/* Print styles */
+@media print {
+  body { background: white; font-size: 11pt; }
+  .sidebar, .topbar, .modal, #bulkActionsWrapper, .page-header button, .tab-pill, .select-wrapper, #filtroZona, #filtroFacturas, #filtroFecha, #buscador, #filtroMostrar, #bulkSelectAll, .clienteCheck, .btn-accion.eliminar, .btn-accion.suspender, .btn-accion.retirar, .btn-accion.reactivar, .btn-accion.whatsapp, .btn-expand, #paginacion, #totalClientesBar, .top-header-actions, .btn { display: none !important; }
+  .card { box-shadow: none; border: 1px solid #ddd; }
+  table { font-size: 9pt; }
+  th { background: #f5f5f5 !important; color: #333 !important; }
+  a { color: #333; text-decoration: none; }
+  .page-header h2 { font-size: 16pt; }
+  .expand-tr { display: table-row !important; }
+  .expand-td { display: table-cell !important; }
+  .svc-expand-panel { padding: 4px 20px; }
+  .main-content { margin-left: 0 !important; }
+  .content { padding: 20px !important; }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .status-pills { order: -1; width: 100%; }
+  .search-wrapper { flex: 1 1 100%; margin-top: 6px; }
+  .select-wrapper select { min-width: 100%; }
+}
+</style>
+
+<script>
+var bulkSelectedIds = [];
+var _bulkServicioIds = [];
+var currentPage = 1;
+var totalPages = 1;
+var statusFilter = 'todos';
+var sortColumn = '';
+var sortDirection = 'asc';
+var _bulkPendingAction = '';
+var _bulkWhatsappData = [];
+var _deleteId = null;
+var _deleteNombre = '';
+var _buscarTimer = null;
+
+var MONTHS = ['','Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,"&#039;");
+}
+
+function trimStr(str, max) {
+  if (!str) return '';
+  return str.length > max ? str.substring(0, max) + '...' : str;
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return '';
+  try {
+    var ds = String(dateStr).replace(' ', 'T');
+    if (!ds.includes('T')) ds += 'T00:00:00';
+    var d = new Date(ds);
+    return d.getDate() + ' ' + (MONTHS[d.getMonth()] || '') + ' ' + d.getFullYear();
+  } catch(e) {
+    return String(dateStr).substring(0, 10);
+  }
+}
+
+function formatFechaCorta(dateStr) {
+  if (!dateStr) return '';
+  try {
+    var parts = String(dateStr).substring(0, 10).split('-');
+    if (parts.length === 3) {
+      return parts[2] + ' ' + (MONTHS[parseInt(parts[1])] || '') + ' ' + parts[0].substring(2);
+    }
+    return String(dateStr).substring(0, 10);
+  } catch(e) {
+    return String(dateStr).substring(0, 10);
+  }
+}
+
+// ===== FILTER PILLS =====
+function cambiarFiltro(valor, btn) {
+  statusFilter = valor;
+  document.querySelectorAll('.tab-pill').forEach(function(p) {
+    p.classList.toggle('active', p.dataset.value === valor);
+  });
+  currentPage = 1;
+  cargarTabla();
+}
+
+function resetPagina() {
+  currentPage = 1;
+  cargarTabla();
+}
+
+// ===== SEARCH DEBOUNCE =====
+function buscarDebounce() {
+  clearTimeout(_buscarTimer);
+  _buscarTimer = setTimeout(function() {
+    currentPage = 1;
+    cargarTabla();
+  }, 350);
+}
+
+// ===== SORT =====
+function ordenarPor(col) {
+  if (sortColumn === col) {
+    sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+  } else {
+    sortColumn = col;
+    sortDirection = 'asc';
+  }
+  // Update sort icons
+  document.querySelectorAll('[id^="sortIcon_"]').forEach(function(ic) {
+    ic.className = 'fas fa-sort';
+    ic.style.color = 'var(--border-color)';
+  });
+  var icon = document.getElementById('sortIcon_' + col);
+  if (icon) {
+    icon.className = 'fas fa-sort-' + (sortDirection === 'asc' ? 'up' : 'down');
+    icon.style.color = 'var(--accent)';
+  }
+  cargarTabla();
+}
+
+// ===== MAIN TABLE LOAD =====
+function cargarTabla(pagina) {
+  if (pagina) currentPage = pagina;
+  var zona = document.getElementById('filtroZona').value;
+  var facturas = document.getElementById('filtroFacturas').value;
+  var fecha = document.getElementById('filtroFecha').value;
+  var q = document.getElementById('buscador').value;
+  var mostrar = document.getElementById('filtroMostrar').value;
+
+  var params = new URLSearchParams();
+  params.set('ajax', 'list');
+  params.set('status', statusFilter);
+  params.set('search', q);
+  params.set('zona', zona);
+  params.set('facturas', facturas);
+  if (fecha) params.set('fecha', fecha);
+  params.set('page', currentPage);
+  params.set('per_page', mostrar === 'all' ? '9999' : mostrar);
+  if (sortColumn) { params.set('sort', sortColumn); params.set('dir', sortDirection); }
+  params.set('_t', Date.now());
+
+  fetch('/modulo?pagina=Clientes&' + params.toString())
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.status === 'success') {
+        document.getElementById('tablaResultados').innerHTML = data.html;
+        var total = data.total || 0;
+        var el = document.getElementById('totalClientesText');
+        el.textContent = 'Total: ' + total + ' titulares';
+        var pp = parseInt(mostrar) || 15;
+        totalPages = Math.max(1, Math.ceil(total / pp));
+        renderPaginacion();
+        updateBulkCount();
+      } else {
+        document.getElementById('tablaResultados').innerHTML = '<tr><td colspan="9" style="text-align:center; padding:30px; color:var(--accent-danger);">Error al cargar datos</td></tr>';
+      }
+    })
+    .catch(function(err) {
+      document.getElementById('tablaResultados').innerHTML = '<tr><td colspan="9" style="text-align:center; padding:30px; color:var(--accent-danger);">Error de conexión</td></tr>';
+    });
+}
+
+// ===== PAGINATION =====
+function renderPaginacion() {
+  var h = '<div style="display:flex; gap:4px; align-items:center;">';
+  if (currentPage > 1) {
+    h += '<button class="btn btn-sm btn-secondary" onclick="cargarTabla(' + (currentPage - 1) + ')" style="border-radius:6px; padding:5px 10px; font-size:0.78rem;">«</button>';
+  }
+  var start = Math.max(1, currentPage - 2);
+  var end = Math.min(totalPages, currentPage + 2);
+  for (var i = start; i <= end; i++) {
+    h += '<button class="btn btn-sm ' + (i === currentPage ? 'btn-primary' : 'btn-secondary') + '" onclick="cargarTabla(' + i + ')" style="border-radius:6px; padding:5px 10px; font-size:0.78rem;">' + i + '</button>';
+  }
+  if (currentPage < totalPages) {
+    h += '<button class="btn btn-sm btn-secondary" onclick="cargarTabla(' + (currentPage + 1) + ')" style="border-radius:6px; padding:5px 10px; font-size:0.78rem;">»</button>';
+  }
+  h += '</div>';
+  document.getElementById('paginacion').innerHTML = h;
+}
+
+// ===== EXPAND TOGGLE =====
+function toggleExpand(btn, clienteId) {
+  var isOpen = btn.classList.contains('open');
+  btn.classList.toggle('open');
+  
+  var row = document.getElementById('expand-' + clienteId);
+  if (row) {
+    row.style.display = isOpen ? 'none' : '';
+    return;
+  }
+  
+  // Fetch services and create expand row
+  fetch('/api/clientes/' + clienteId + '/servicios')
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (!d.success || !d.data || d.data.length === 0) {
+        showToast('No hay servicios', 'error');
+        btn.classList.remove('open');
+        return;
+      }
+      var svcs = d.data;
+      var tbody = document.getElementById('tablaResultados');
+      var tr = document.getElementById('row-' + clienteId);
+      if (!tr) return;
+      
+      var expandHtml = '<tr id="expand-' + clienteId + '" class="expand-tr"><td colspan="9" class="expand-td"><div class="svc-expand-panel">';
+      svcs.forEach(function(s) {
+        var estadoClass = s.estado === 'activo' ? 'svc-dot-active' : (s.estado === 'suspendido' ? 'svc-dot-suspended' : 'svc-dot-retired');
+        var deudaColor = '';
+        // No tenemos deuda aquí, lo omitimos
+        var ipHtml = s.ip ? '<a href="http://' + s.ip + '/" target="_blank" class="svc-tag svc-tag-ip" title="Abrir ' + s.ip + '"><i class="fas fa-network-wired"></i>' + s.ip + '</a>' : '';
+        var onuHtml = s.onu_sn ? '<span class="svc-tag svc-tag-nic"><i class="fas fa-microchip"></i> ' + s.onu_sn + '</span>' : '';
+        expandHtml += '<div class="svc-expand-row">';
+        expandHtml += '<span class="svc-dot ' + estadoClass + '"></span>';
+        expandHtml += '<span class="svc-plan">' + escapeHtml(s.plan_nombre || 'Sin plan') + '</span>';
+        expandHtml += '<span class="svc-tag svc-tag-nic">#' + s.id + '</span>';
+        expandHtml += ipHtml;
+        expandHtml += onuHtml;
+        expandHtml += '</div>';
+      });
+      expandHtml += '</div></td></tr>';
+      
+      // Insert after the row
+      tr.insertAdjacentHTML('afterend', expandHtml);
+    })
+    .catch(function() {
+      showToast('Error al cargar servicios', 'error');
+      btn.classList.remove('open');
+    });
+}
+
+// ===== BULK SELECTION =====
+function toggleSelectAll(el) {
+  var checked = el.checked;
+  document.querySelectorAll('.clienteCheck').forEach(function(cb) {
+    cb.checked = checked;
+  });
+  updateBulkCount();
+}
+
+function updateBulkCount() {
+  bulkSelectedIds = [];
+  document.querySelectorAll('.clienteCheck:checked').forEach(function(cb) {
+    bulkSelectedIds.push(parseInt(cb.value));
+  });
+  var count = bulkSelectedIds.length;
+  var wrapper = document.getElementById('bulkActionsWrapper');
+  document.getElementById('bulkCount').textContent = count;
+  wrapper.style.display = count > 0 ? 'flex' : 'none';
+}
+
+// ===== MODALS =====
+function abrirModal(id) { document.getElementById(id).style.display = 'flex'; }
+function cerrarModal(id) { var el = document.getElementById(id); if (el) el.style.display = 'none'; }
+
+function abrirModalNuevo() {
+  document.getElementById('formCliente').reset();
+  document.getElementById('modalNuevoCliente').style.display = 'flex';
+}
+
+// ===== SAVE CLIENTE =====
+function guardarCliente(e) {
+  e.preventDefault();
+  var fd = new FormData(document.getElementById('formCliente'));
+  fetch('/modulo?pagina=Clientes&ajax=save', {
+    method: 'POST',
+    body: fd
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(res) {
+    if (res.success) {
+      showToast('Cliente guardado correctamente');
+      cerrarModal('modalNuevoCliente');
+      cargarTabla();
+    } else {
+      showToast('Error: ' + (res.message || 'desconocido'), 'error');
+    }
+  })
+  .catch(function() { showToast('Error de conexión', 'error'); });
+}
+
+// ===== SAVE INFORMAL =====
+// ===== DELETE CLIENTE =====
+function borrarCliente(id, nombre) {
+  _deleteId = id;
+  _deleteNombre = nombre || '';
+  abrirModal('modalConfirmDelete');
+}
+
+function confirmarEliminar() {
+  if (!_deleteId) return;
+  var eliminarOnu = document.getElementById('chkEliminarOnuSmartolt').checked;
+  var fd = new FormData();
+  fd.append('id', _deleteId);
+  fd.append('eliminar_onu_smartolt', eliminarOnu ? '1' : '0');
+
+  fetch('/modulo?pagina=Clientes&ajax=delete', {
+    method: 'POST',
+    body: fd
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(res) {
+    if (res.success) {
+      showToast('Cliente eliminado');
+      _deleteId = null;
+      cerrarModal('modalConfirmDelete');
+      cargarTabla();
+    } else {
+      showToast('Error: ' + (res.message || 'desconocido'), 'error');
+    }
+  })
+  .catch(function() { showToast('Error de conexión', 'error'); });
+}
+
+// ===== INDIVIDUAL ACTION (select service modal) =====
+function accionIndividual(clienteId, accion) {
+  var nombreAccion = { 'activar':'Activar', 'suspender':'Suspender', 'retirar':'Retirar', 'eliminar':'Eliminar' }[accion] || accion;
+  
+  if (accion === 'eliminar') {
+    var nombre = '';
+    var nameEl = document.querySelector('#row-' + clienteId + ' .row-name-link');
+    if (nameEl) nombre = nameEl.textContent.trim();
+    borrarCliente(clienteId, nombre);
+    return;
+  }
+  
+  // Fetch services for this client
+  fetch('/api/clientes/' + clienteId + '/servicios')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (!data.success || !data.data || data.data.length === 0) {
+        showToast('El cliente no tiene servicios', 'error');
+        return;
+      }
+      var servicios = data.data;
+      
+      if (servicios.length === 1) {
+        ejecutarAccion(clienteId, servicios[0].id, accion);
+        return;
+      }
+      
+      // Show service selector modal
+      var modal = document.getElementById('modalSelectorServicios');
+      document.getElementById('modalSelectorTitulo').textContent = nombreAccion + ' - Seleccionar Servicio';
+      var lista = document.getElementById('modalSelectorLista');
+      lista.innerHTML = '';
+      servicios.forEach(function(s) {
+        var div = document.createElement('div');
+        div.style.cssText = 'padding:10px 14px;border:1px solid var(--border-color);border-radius:8px;margin-bottom:6px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;transition:all 0.15s;';
+        div.onmouseover = function() { this.style.borderColor = 'var(--accent)'; this.style.background = 'var(--bg-body)'; };
+        div.onmouseout = function() { this.style.borderColor = 'var(--border-color)'; this.style.background = ''; };
+        div.onclick = function() { ejecutarAccion(clienteId, s.id, accion); cerrarModal('modalSelectorServicios'); };
+        var estado = s.estado || 'activo';
+        var color = estado === 'activo' ? '#16a34a' : (estado === 'suspendido' ? '#d97706' : '#94a3b8');
+        div.innerHTML = '<div><strong>' + escapeHtml(s.plan_nombre || 'Servicio #' + s.id) + '</strong><br><small style="color:var(--text-muted);">' + escapeHtml(s.direccion || '') + ' | IP: ' + (s.ip || '—') + '</small></div><span style="color:' + color + ';font-weight:600;font-size:0.78rem;">' + estado.toUpperCase() + '</span>';
+        lista.appendChild(div);
+      });
+      abrirModal('modalSelectorServicios');
+    })
+    .catch(function() { showToast('Error al cargar servicios', 'error'); });
+}
+
+function ejecutarAccion(clienteId, servicioId, accion) {
+  var url = '/api/servicios/' + servicioId + '/' + accion;
+  if (accion === 'retirar') url = '/api/servicios/' + servicioId + '/retirar';
+  if (accion === 'eliminar') url = '/api/servicios/' + servicioId + '/eliminar';
+  
+  fetch(url, { method: 'POST' })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (d.success) {
+        showToast('Servicio ' + (accion === 'retirar' ? 'retirado' : accion + 'do'));
+        cargarTabla();
+      } else {
+        showToast('Error: ' + (d.message || 'desconocido'), 'error');
+      }
+    })
+    .catch(function() { showToast('Error de conexión', 'error'); });
+}
+
+// ===== WHATSAPP BIENVENIDA =====
+function enviarBienvenida(clienteId, telefono, nombre) {
+  if (!telefono) {
+    showToast('El cliente no tiene teléfono registrado', 'error');
+    return;
+  }
+  
+  fetch('/api/template/get?key=bienvenida_sms')
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (d.status !== 'success' || !d.content) {
+        showToast('Error al cargar plantilla de bienvenida', 'error');
+        return;
+      }
+      
+      var msg = d.content
+        .replace(/{client_name}/g, nombre)
+        .replace(/{company_name}/g, 'ISP Total')
+        .replace(/{company_phone}/g, '')
+        .replace(/{current_date}/g, new Date().toLocaleDateString('es-DO'));
+      
+      // Show preview modal for single client
+      var modal = document.getElementById('modalWhatsApp');
+      document.getElementById('whatsappPreview').textContent = msg;
+      modal.dataset.clientId = clienteId;
+      modal.dataset.telefono = telefono;
+      modal.dataset.nombre = nombre;
+      modal.dataset.msg = msg;
+      abrirModal('modalWhatsApp');
+    })
+    .catch(function() { showToast('Error al cargar plantilla', 'error'); });
+}
+
+function confirmarEnvioWhatsApp() {
+  var modal = document.getElementById('modalWhatsApp');
+  var telefono = modal.dataset.telefono;
+  var nombre = modal.dataset.nombre;
+  var msg = modal.dataset.msg;
+  
+  cerrarModal('modalWhatsApp');
+  
+  fetch('/api/openwa/test', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ phone: telefono, message: msg })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(res) {
+    if (res.success) showToast('Mensaje enviado a ' + nombre);
+    else showToast('Error: ' + (res.msg || 'desconocido'), 'error');
+  })
+  .catch(function() { showToast('Error de conexión', 'error'); });
+}
+
+// ===== EXPORT PDF =====
+function exportarListaPDF() {
+  window.print();
+}
+
+// ===== BULK ACTIONS =====
+function ejecutarBulk(action) {
+  if (bulkSelectedIds.length === 0) {
+    showToast('Selecciona al menos un cliente', 'error');
+    return;
+  }
+  _bulkPendingAction = action;
+  var count = bulkSelectedIds.length;
+  var modal = document.getElementById('bulkConfirmModal');
+  var icon = document.getElementById('bulkConfirmIcon');
+  var title = document.getElementById('bulkConfirmTitle');
+  var msg = document.getElementById('bulkConfirmMsg');
+  var btn = document.getElementById('bulkConfirmBtn');
+
+  if (action === 'suspender') {
+    icon.innerHTML = '<i class="fas fa-pause-circle" style="color:#dc2626; font-size:2rem;"></i>';
+    title.textContent = 'Suspender servicios';
+    msg.innerHTML = '<div id="bulkSuspenderContent" style="text-align:center;"><i class="fas fa-spinner fa-spin"></i> Cargando servicios...</div>';
+    btn.style.display = 'none';
+    btn.style.background = '';
+    // Fetch services info
+    fetch('/api/clientes/servicios-info', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ids: bulkSelectedIds })
+    }).then(function(r) { return r.json(); }).then(function(resp) {
+      if (!resp.success || !resp.data || resp.data.length === 0) {
+        document.getElementById('bulkSuspenderContent').innerHTML = '<div style="color:#dc2626;">No se encontraron servicios activos.</div>';
+        return;
+      }
+      var html = '<div style="max-height:350px;overflow-y:auto;text-align:left;">';
+      resp.data.forEach(function(cli) {
+        html += '<div style="font-weight:700;font-size:0.85rem;color:var(--text-dark);padding:8px 0 4px;border-top:1px solid var(--border-color);">' + escapeHtml(cli.cliente_nombre) + '</div>';
+        cli.servicios.forEach(function(svc) {
+          var bg = svc.estado === 'activo' ? (svc.deuda > 0 ? '#fef2f2' : '#f0fdf4') : '#fef3c7';
+          var label = svc.estado === 'activo' ? (svc.deuda > 0 ? 'RD$' + svc.deuda.toFixed(2) : 'Al día') : 'Suspendido';
+          var labelColor = svc.estado === 'activo' ? (svc.deuda > 0 ? '#dc2626' : '#16a34a') : '#d97706';
+          html += '<label style="display:flex;align-items:center;gap:8px;padding:6px 8px;margin:3px 0;border-radius:6px;background:' + bg + ';cursor:pointer;">';
+          html += '<input type="checkbox" class="svc-suspender-check" data-cliente="' + cli.cliente_id + '" data-svc="' + svc.id + '" value="' + svc.id + '" checked style="width:16px;height:16px;">';
+          html += '<span style="flex:1;font-size:0.82rem;"><b>#' + svc.id + '</b> ' + escapeHtml(svc.plan_nombre) + ' ' + (svc.direccion ? '- ' + escapeHtml(svc.direccion) : '') + '</span>';
+          html += '<span style="font-size:0.72rem;font-weight:600;color:' + labelColor + ';background:#fff;padding:2px 8px;border-radius:10px;border:1px solid ' + labelColor + ';">' + label + '</span>';
+          html += '</label>';
+        });
+      });
+      html += '</div><div style="margin-top:8px; display:flex; gap:6px; justify-content:center;">';
+      html += '<button class="btn btn-sm btn-secondary" onclick="document.querySelectorAll(\'.svc-suspender-check\').forEach(function(c){c.checked=true})">Seleccionar todos</button>';
+      html += '<button class="btn btn-sm btn-secondary" onclick="document.querySelectorAll(\'.svc-suspender-check\').forEach(function(c){c.checked=false})">Deseleccionar todos</button></div>';
+      document.getElementById('bulkSuspenderContent').innerHTML = html;
+      btn.style.display = 'inline-flex';
+      btn.textContent = 'Sí, Suspender seleccionados';
+    }).catch(function() {
+      document.getElementById('bulkSuspenderContent').innerHTML = '<div style="color:#dc2626;">Error al cargar servicios.</div>';
+    });
+  } else if (action === 'activar') {
+    icon.innerHTML = '<i class="fas fa-play-circle" style="color:#16a34a; font-size:2rem;"></i>';
+    title.textContent = 'Activar clientes';
+    msg.innerHTML = '<div style="text-align:center;">¿Estás seguro que deseas activar los servicios de <b>' + count + '</b> cliente(s)?</div>';
+    btn.style.display = 'inline-flex';
+    btn.style.background = '#16a34a';
+    btn.textContent = 'Sí, Activar';
+  } else if (action === 'retirar') {
+    icon.innerHTML = '<i class="fas fa-exclamation-triangle" style="color:#ea580c; font-size:2rem;"></i>';
+    title.textContent = 'Retirar titulares';
+    msg.innerHTML = '<div style="background:#fff7ed; border:1px solid #fed7aa; border-radius:8px; padding:12px;"><b>Estás retirando ' + count + ' titular(es).</b><br>Los servicios se eliminarán del MikroTik y de la OLT. ¿Seguro que deseas continuar?</div>';
+    btn.style.display = 'inline-flex';
+    btn.style.background = '#ea580c';
+    btn.textContent = 'Sí, Retirar';
+  } else if (action === 'eliminar') {
+    icon.innerHTML = '<i class="fas fa-exclamation-triangle" style="color:#991b1b; font-size:2rem;"></i>';
+    title.textContent = 'Eliminar titulares';
+    msg.innerHTML = '<div style="background:#fef2f2; border:1px solid #fecaca; border-radius:8px; padding:12px;color:#7f1d1d;"><b>Estás eliminando ' + count + ' titular(es).</b><br>Esta acción es irrevocable y borrará todos los servicios del MikroTik. ¿Seguro?</div>';
+    btn.style.display = 'inline-flex';
+    btn.style.background = '#991b1b';
+    btn.textContent = 'Sí, Eliminar';
+  } else if (action === 'whatsapp') {
+    icon.innerHTML = '<i class="fab fa-whatsapp" style="color:#25D366; font-size:2rem;"></i>';
+    title.textContent = 'Enviar WhatsApp Masivo';
+    msg.innerHTML = '<div style="text-align:center;">¿Enviar mensaje de bienvenida a <b>' + count + '</b> cliente(s)?<br><small style="color:var(--text-muted);">Se enviará con 2 segundos de diferencia entre cada mensaje.</small></div>';
+    btn.style.display = 'inline-flex';
+    btn.style.background = '#25D366';
+    btn.textContent = 'Sí, Enviar';
+  } else if (action === 'facturar') {
+    icon.innerHTML = '<i class="fas fa-file-invoice-dollar" style="color:#2563eb; font-size:2rem;"></i>';
+    title.textContent = 'Generar Facturas';
+    msg.innerHTML = '<div style="text-align:center;">¿Generar factura para <b>' + count + '</b> cliente(s)?<br><small style="color:var(--text-muted);">Se creará una factura por cada servicio activo.</small></div>';
+    btn.style.display = 'inline-flex';
+    btn.style.background = '#2563eb';
+    btn.textContent = 'Sí, Facturar';
+  }
+  abrirModal('bulkConfirmModal');
+}
+
+function confirmarBulk() {
+  if (!_bulkPendingAction || bulkSelectedIds.length === 0) return;
+  var action = _bulkPendingAction;
+
+  if (action === 'whatsapp') {
+    enviarWhatsappBulk();
+    return;
+  }
+
+  if (action === 'facturar') {
+    facturarBulk();
+    return;
+  }
+
+  if (action === 'suspender') {
+    var checks = document.querySelectorAll('.svc-suspender-check:checked');
+    var servicioIds = [];
+    checks.forEach(function(c) { servicioIds.push(parseInt(c.value)); });
+
+    if (servicioIds.length === 0) {
+      showToast('Selecciona al menos un servicio para suspender', 'error');
+      return;
+    }
+
+    fetch('/api/servicios/batch-suspender', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ servicio_ids: servicioIds })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(res) {
+      if (res.success) {
+        showToast(res.message || servicioIds.length + ' servicio(s) suspendido(s)');
+        cerrarModal('bulkConfirmModal');
+        cargarTabla();
+      } else {
+        showToast('Error: ' + (res.message || 'desconocido'), 'error');
+      }
+    })
+    .catch(function() { showToast('Error de conexión', 'error'); });
+    return;
+  }
+
+  // Acciones normales: activar, retirar, eliminar
+  fetch('/modulo?pagina=Clientes&ajax=toggle_status', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: action, ids: bulkSelectedIds })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(res) {
+    if (res.success) {
+      showToast('Operación completada en ' + bulkSelectedIds.length + ' clientes');
+      cerrarModal('bulkConfirmModal');
+      cargarTabla();
+    } else {
+      showToast('Error: ' + (res.message || 'desconocido'), 'error');
+    }
+  })
+  .catch(function() { showToast('Error de conexión', 'error'); });
+}
+
+function enviarWhatsappBulk() {
+  cerrarModal('bulkConfirmModal');
+  showToast('Enviando mensajes...');
+  var total = bulkSelectedIds.length;
+  var enviados = 0;
+  var errores = 0;
+  var idx = 0;
+
+  function enviarSiguiente() {
+    if (idx >= total) {
+      showToast('WhatsApp: ' + enviados + ' enviados, ' + errores + ' errores');
+      return;
+    }
+    var id = bulkSelectedIds[idx];
+
+    fetch('/api/clientes/' + id + '/info')
+      .then(function(r) { return r.json(); })
+      .then(function(cliente) {
+        if (cliente.success && cliente.data.telefono) {
+          enviarBienvenidaDirecta(cliente.data.telefono, cliente.data.nombre, function(ok) {
+            if (ok) enviados++; else errores++;
+            idx++;
+            setTimeout(enviarSiguiente, 2000);
+          });
+        } else {
+          errores++;
+          idx++;
+          setTimeout(enviarSiguiente, 500);
+        }
+      })
+      .catch(function() {
+        errores++;
+        idx++;
+        setTimeout(enviarSiguiente, 500);
+      });
+  }
+
+  enviarSiguiente();
+}
+
+function enviarBienvenidaDirecta(telefono, nombre, callback) {
+  if (!telefono) { if (callback) callback(false); return; }
+  fetch('/api/template/get?key=bienvenida_sms')
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      var msg = (d.content || 'Hola {client_name}, bienvenido!')
+        .replace(/{client_name}/g, nombre)
+        .replace(/{company_name}/g, 'ISP Total')
+        .replace(/{current_date}/g, new Date().toLocaleDateString('es-DO'));
+
+      fetch('/api/openwa/test', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: telefono, message: msg })
+      })
+      .then(function(r) { return r.json(); })
+      .then(function(res) {
+        if (callback) callback(res.success === true);
+        else callback(false);
+      })
+      .catch(function() { if (callback) callback(false); });
+    })
+    .catch(function() { if (callback) callback(false); });
+}
+
+function facturarBulk() {
+  cerrarModal('bulkConfirmModal');
+  showToast('Generando facturas...');
+  fetch('/api/facturar/bulk', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ clientes: bulkSelectedIds })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    if (d.success) showToast(d.message || 'Facturas generadas');
+    else showToast('Error: ' + (d.message || ''), 'error');
+  })
+  .catch(function() { showToast('Error de conexión', 'error'); });
+}
+
+// ===== INIT =====
+cargarTabla();
+</script>
+</div>

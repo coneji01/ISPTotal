@@ -1,0 +1,434 @@
+<style>
+.vo-page{max-width:900px;margin:0 auto;}
+.vo-card{background:#fff;border-radius:12px;border:1px solid #e2e8f0;overflow:hidden;margin-bottom:16px;}
+.vo-card-header{padding:12px 16px;border-bottom:1px solid #e2e8f0;font-weight:700;font-size:0.9rem;color:#1e293b;display:flex;align-items:center;gap:6px;background:#f8fafc;}
+.vo-card-body{padding:0;}
+.vo-loading{text-align:center;padding:30px;color:#94a3b8;font-size:0.88rem;}
+.vo-info-row{display:flex;padding:10px 16px;border-bottom:1px solid #f1f5f9;font-size:0.85rem;}
+.vo-info-label{font-weight:600;color:#64748b;width:140px;flex-shrink:0;}
+.vo-info-value{color:#1e293b;flex:1;}
+.vo-info-value.mono{font-family:monospace;font-size:0.82rem;}
+
+/* Signal */
+.signal-val{font-weight:700;font-size:0.95rem;}
+.signal-good{color:#16a34a;}
+.signal-warn{color:#d97706;}
+.signal-bad{color:#ef4444;}
+.signal-na{color:#94a3b8;}
+.metric-box{text-align:center;padding:16px;border-radius:8px;background:#f8fafc;}
+.metric-icon{font-size:1.8rem;margin-bottom:6px;}
+.metric-value{font-size:1rem;font-weight:700;color:#1e293b;}
+.status-online{color:#16a34a;}
+.status-offline{color:#ef4444;}
+.status-suspended{color:#d97706;}
+
+/* WiFi */
+.wifi-band{font-weight:700;font-size:0.85rem;color:#334155;padding:8px 16px 4px;display:flex;align-items:center;gap:6px;}
+.wifi-val{font-size:0.9rem;font-weight:500;color:#1e293b;padding:2px 0;}
+.wifi-edit-input{width:100%;padding:6px 10px;border:1px solid #cbd5e1;border-radius:6px;font-size:0.85rem;outline:none;}
+.wifi-edit-btn{background:none;border:none;color:#2563eb;cursor:pointer;font-size:0.85rem;padding:4px;}
+.vo-inline-btn{padding:6px 14px;border:none;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.82rem;}
+.vo-copy-btn{background:none;border:none;color:#64748b;cursor:pointer;}
+.wifi-btn{background:#2563eb;color:#fff;}
+.wifi-btn:hover{background:#1d4ed8;}
+.vo-inline-result{padding:4px 0;font-size:0.82rem;margin-top:4px;}
+.vo-inline-result.success{color:#16a34a;}
+.vo-inline-result.error{color:#ef4444;}
+.vo-switch{display:inline-block;position:relative;width:42px;height:22px;}
+.vo-switch input{opacity:0;width:0;height:0;}
+.vo-switch-slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:#ccc;transition:.3s;border-radius:22px;}
+.vo-switch-slider:before{position:absolute;content:"";height:18px;width:18px;left:2px;bottom:2px;background:white;transition:.3s;border-radius:50%;}
+.vo-switch input:checked+.vo-switch-slider{background:#2563eb;}
+.vo-switch input:checked+.vo-switch-slider:before{transform:translateX(20px);}
+
+/* Traffic */
+.vo-traffic-tabs{display:flex;gap:4px;}
+.vo-traffic-tab{padding:6px 14px;cursor:pointer;font-size:0.8rem;font-weight:600;border:none;border-radius:6px;background:#e2e8f0;color:#64748b;transition:all 0.2s;}
+.vo-traffic-tab:hover{background:#cbd5e1;}
+.vo-traffic-tab.active{background:#2563eb;color:#fff;}
+
+/* Actions */
+.vo-actions{display:flex;gap:8px;flex-wrap:wrap;padding:16px;}
+.vo-btn{padding:8px 14px;border:none;border-radius:8px;font-size:0.82rem;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all 0.2s;}
+.vo-btn-primary{background:#2563eb;color:#fff;}.vo-btn-primary:hover{background:#1d4ed8;}
+.vo-btn-success{background:#16a34a;color:#fff;}.vo-btn-success:hover{background:#15803d;}
+.vo-btn-warning{background:#d97706;color:#fff;}.vo-btn-warning:hover{background:#b45309;}
+.vo-btn-danger{background:#ef4444;color:#fff;}.vo-btn-danger:hover{background:#dc2626;}
+.vo-btn-secondary{background:#e2e8f0;color:#475569;}.vo-btn-secondary:hover{background:#cbd5e1;}
+.vo-btn-sm{padding:5px 10px;font-size:0.75rem;}
+
+/* Metrics row */
+.vo-metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;padding:16px;}
+
+/* Modal */
+.vo-modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.4);z-index:9999;justify-content:center;align-items:center;padding:16px;}
+.vo-modal{background:#fff;border-radius:14px;padding:24px 28px;width:400px;max-width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.15);}
+.vo-modal-icon{font-size:2rem;margin-bottom:10px;}
+.vo-modal-msg{font-size:0.95rem;color:#1e293b;margin-bottom:16px;}
+.vo-modal-btns{display:flex;gap:8px;justify-content:center;}
+</style>
+
+<div class="vo-page">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
+    <h2 style="margin:0;font-size:1.2rem;display:flex;align-items:center;gap:8px;">
+      <i class="fas fa-satellite-dish" style="color:#2563eb;"></i> ONU: <code><%= onuSN %></code>
+    </h2>
+    <div style="display:flex;gap:8px;">
+      <select id="voOltSelect" class="form-control" style="width:auto;" onchange="voSwitchOlt()">
+        <% (olts || []).forEach(function(o) { %>
+        <option value="<%= o.id %>" <%= o.id == onuOltId ? 'selected' : '' %>><%= o.nombre %></option>
+        <% }) %>
+      </select>
+    </div>
+  </div>
+
+  <!-- Metrics -->
+  <div class="vo-card">
+    <div class="vo-card-body">
+      <div class="vo-metrics">
+        <div class="metric-box">
+          <div class="metric-icon status-load" id="metricStatus"><i class="fas fa-spinner fa-spin"></i></div>
+          <div class="metric-value" id="statusValue" style="font-size:0.88rem;">Cargando...</div>
+          <div style="font-size:0.72rem;color:#94a3b8;margin-top:4px;">Estado</div>
+        </div>
+        <div class="metric-box">
+          <div class="metric-icon" style="color:#16a34a;"><i class="fas fa-arrow-down"></i></div>
+          <div class="signal-val signal-na" id="rxValue">—</div>
+          <div style="font-size:0.72rem;color:#94a3b8;margin-top:4px;">RX (1490nm)</div>
+        </div>
+        <div class="metric-box">
+          <div class="metric-icon" style="color:#d97706;"><i class="fas fa-arrow-up"></i></div>
+          <div class="signal-val signal-na" id="txValue">—</div>
+          <div style="font-size:0.72rem;color:#94a3b8;margin-top:4px;">TX (1310nm)</div>
+        </div>
+        <div class="metric-box">
+          <div class="metric-icon"><i class="fas fa-clock"></i></div>
+          <div class="metric-value" id="uptimeValue" style="font-size:0.88rem;">—</div>
+          <div style="font-size:0.72rem;color:#94a3b8;margin-top:4px;">Uptime</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Info Card -->
+  <div class="vo-card">
+    <div class="vo-card-header"><i class="fas fa-info-circle"></i> Información</div>
+    <div class="vo-card-body" id="infoCard"><div class="vo-loading"><i class="fas fa-spinner fa-spin"></i><br>Cargando...</div></div>
+  </div>
+
+  <!-- WiFi Card -->
+  <div class="vo-card">
+    <div class="vo-card-header"><i class="fas fa-wifi"></i> WiFi</div>
+    <div class="vo-card-body" id="wifiCard"><div class="vo-loading"><i class="fas fa-spinner fa-spin"></i><br>Cargando...</div></div>
+  </div>
+
+  <!-- Traffic Graph -->
+  <div class="vo-card">
+    <div class="vo-card-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+      <span><i class="fas fa-chart-area"></i> Tráfico</span>
+      <div class="vo-traffic-tabs">
+        <button class="vo-traffic-tab" onclick="voLoadTraffic('hourly',this)">Hora</button>
+        <button class="vo-traffic-tab active" onclick="voLoadTraffic('daily',this)">Diario</button>
+        <button class="vo-traffic-tab" onclick="voLoadTraffic('weekly',this)">Semanal</button>
+        <button class="vo-traffic-tab" onclick="voLoadTraffic('monthly',this)">Mensual</button>
+        <button class="vo-traffic-tab" onclick="voLoadTraffic('yearly',this)">Anual</button>
+      </div>
+    </div>
+    <div class="vo-card-body" id="trafficCard" style="text-align:center;padding:16px;">
+      <div class="vo-loading"><i class="fas fa-spinner fa-spin"></i><br>Cargando tráfico...</div>
+    </div>
+  </div>
+
+  <!-- Actions -->
+  <div class="vo-card">
+    <div class="vo-card-header"><i class="fas fa-tools"></i> Acciones</div>
+    <div class="vo-card-body">
+      <div class="vo-actions">
+        <button class="vo-btn vo-btn-primary" onclick="voRefresh()"><i class="fas fa-sync-alt"></i> Actualizar</button>
+        <button class="vo-btn vo-btn-warning" id="btnToggle" onclick="voToggle()" style="display:none;"><i class="fas fa-power-off"></i> <span id="toggleLabel">...</span></button>
+        <button class="vo-btn vo-btn-secondary" onclick="voAction('reboot')"><i class="fas fa-redo"></i> Reboot</button>
+        <button class="vo-btn vo-btn-secondary" onclick="voAction('resync')"><i class="fas fa-sync"></i> Resync</button>
+        <button class="vo-btn vo-btn-danger" onclick="voDelete()"><i class="fas fa-trash-alt"></i> Eliminar</button>
+      </div>
+      <div id="voActionResult" style="padding:0 16px 12px;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="vo-modal-overlay" id="voModal">
+  <div class="vo-modal">
+    <div class="vo-modal-icon" id="voModalIcon"><i class="fas fa-info-circle" style="color:#2563eb;"></i></div>
+    <div class="vo-modal-msg" id="voModalMsg"></div>
+    <div class="vo-modal-btns" id="voModalBtns"><button class="vo-btn vo-btn-secondary" onclick="voCloseModal()">Cerrar</button></div>
+  </div>
+</div>
+
+<script>
+var SN = '<%= onuSN %>';
+var OLT_ID = <%= onuOltId %>;
+var voAdminStatus = '';
+
+function voCloseModal() { document.getElementById('voModal').style.display = 'none'; }
+
+function voShowModal(icon, msg, btns) {
+  document.getElementById('voModalIcon').innerHTML = icon;
+  document.getElementById('voModalMsg').innerHTML = msg;
+  document.getElementById('voModalBtns').innerHTML = btns || '<button class="vo-btn vo-btn-secondary" onclick="voCloseModal()">Cerrar</button>';
+  document.getElementById('voModal').style.display = 'flex';
+}
+
+function voSwitchOlt() {
+  OLT_ID = parseInt(document.getElementById('voOltSelect').value);
+  voLoadData();
+}
+
+function voLoadData() {
+  document.getElementById('infoCard').innerHTML = '<div class="vo-loading"><i class="fas fa-spinner fa-spin"></i><br>Cargando...</div>';
+  document.getElementById('wifiCard').innerHTML = '<div class="vo-loading"><i class="fas fa-spinner fa-spin"></i><br>Cargando WiFi...</div>';
+  document.getElementById('btnToggle').style.display = 'none';
+  
+  fetch('/api/smartolt/onu/detalle', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ sn: SN, olt_id: OLT_ID })
+  })
+  .then(r => r.json())
+  .then(function(d) {
+    if (d.success && d.data) {
+      voRenderInfo(d.data);
+      voRenderStatus(d.data);
+      voRenderSignal(d.data);
+      voRenderWifi(d.data);
+    } else {
+      document.getElementById('infoCard').innerHTML = '<div style="text-align:center;padding:20px;color:#ef4444;">' + (d.message || 'Error al cargar') + '</div>';
+    }
+  });
+}
+
+function voRenderInfo(d) {
+  var iface = '0/' + (d.board || '—') + '/' + (d.port || '—');
+  var adminSt = (d.administrative_status || '').toLowerCase();
+  var badge = adminSt === 'disabled'
+    ? '<span style="background:#fef3c7;color:#92400e;padding:2px 8px;border-radius:10px;font-size:0.78rem;">Suspendida</span>'
+    : '<span style="background:#dcfce7;color:#166534;padding:2px 8px;border-radius:10px;font-size:0.78rem;">Habilitada</span>';
+  
+  document.getElementById('infoCard').innerHTML =
+    '<div class="vo-info-row"><span class="vo-info-label">Nombre</span><span class="vo-info-value">' + (d.name || '—') + '</span></div>' +
+    '<div class="vo-info-row"><span class="vo-info-label">SN</span><span class="vo-info-value mono">' + (d.sn || SN) + '</span></div>' +
+    '<div class="vo-info-row"><span class="vo-info-label">Puerto PON</span><span class="vo-info-value mono">' + iface + '</span></div>' +
+    '<div class="vo-info-row"><span class="vo-info-label">Modelo</span><span class="vo-info-value">' + (d.onu_type_name || '—') + '</span></div>' +
+    '<div class="vo-info-row"><span class="vo-info-label">Zona</span><span class="vo-info-value">' + (d.zone_name || '—') + '</span></div>' +
+    '<div class="vo-info-row"><span class="vo-info-label">OLT</span><span class="vo-info-value">' + (d.olt_name || '—') + '</span></div>' +
+    '<div class="vo-info-row"><span class="vo-info-label">Estado Admin</span><span class="vo-info-value">' + badge + '</span></div>';
+}
+
+function voRenderStatus(d) {
+  var st = (d.status || '').toLowerCase();
+  var adminSt = (d.administrative_status || '').toLowerCase();
+  voAdminStatus = adminSt;
+  var icon = document.querySelector('#metricStatus i');
+  var label = document.getElementById('statusValue');
+  
+  if (adminSt === 'disabled') {
+    icon.className = 'fas fa-pause-circle'; icon.style.color = '#d97706';
+    label.textContent = 'Suspendida'; label.style.color = '#d97706';
+  } else if (st === 'online') {
+    icon.className = 'fas fa-check-circle'; icon.style.color = '#16a34a';
+    label.textContent = 'Online'; label.style.color = '#16a34a';
+  } else if (st === 'offline') {
+    icon.className = 'fas fa-times-circle'; icon.style.color = '#ef4444';
+    label.textContent = 'Offline'; label.style.color = '#ef4444';
+  } else {
+    icon.className = 'fas fa-question-circle'; icon.style.color = '#94a3b8';
+    label.textContent = st || 'Desconocido'; label.style.color = '#64748b';
+  }
+  
+  // Show toggle button
+  var btn = document.getElementById('btnToggle');
+  btn.style.display = 'inline-flex';
+  document.getElementById('toggleLabel').textContent = adminSt === 'disabled' ? 'Activar' : 'Suspender';
+}
+
+function voRenderSignal(d) {
+  var rx = d.signal_1490 || null;
+  var tx = d.signal_1310 || null;
+  var rxEl = document.getElementById('rxValue');
+  var txEl = document.getElementById('txValue');
+  if (rx && rx !== '-') { rxEl.textContent = rx + ' dBm'; rxEl.className = 'signal-val ' + (parseFloat(rx) >= -26 ? 'signal-good' : parseFloat(rx) >= -28 ? 'signal-warn' : 'signal-bad'); }
+  else { rxEl.textContent = '—'; rxEl.className = 'signal-val signal-na'; }
+  if (tx && tx !== '-') { txEl.textContent = tx + ' dBm'; txEl.className = 'signal-val ' + (parseFloat(tx) >= -28 ? 'signal-good' : parseFloat(tx) >= -31 ? 'signal-warn' : 'signal-bad'); }
+  else { txEl.textContent = '—'; txEl.className = 'signal-val signal-na'; }
+  if (d.uptime) document.getElementById('uptimeValue').textContent = d.uptime;
+}
+
+function voRefresh() {
+  document.getElementById('voActionResult').innerHTML = '';
+  voLoadData();
+}
+
+function voToggle() {
+  var action = voAdminStatus === 'disabled' ? 'enable' : 'disable';
+  var label = action === 'enable' ? 'activar' : 'suspender';
+  voShowModal(
+    '<i class="fas fa-question-circle" style="color:#d97706;"></i>',
+    '¿' + label.charAt(0).toUpperCase() + label.slice(1) + ' esta ONU?',
+    '<button class="vo-btn vo-btn-secondary" onclick="voCloseModal()">Cancelar</button>' +
+    '<button class="vo-btn ' + (action === 'enable' ? 'vo-btn-success' : 'vo-btn-warning') + '" onclick="voExecAction(\'' + action + '\')">Sí, ' + label + '</button>'
+  );
+}
+
+function voAction(act) {
+  var labels = { reboot: 'Reiniciar', resync: 'Resincronizar' };
+  voShowModal(
+    '<i class="fas fa-question-circle" style="color:#d97706;"></i>',
+    '¿' + (labels[act] || act) + ' esta ONU?',
+    '<button class="vo-btn vo-btn-secondary" onclick="voCloseModal()">Cancelar</button>' +
+    '<button class="vo-btn vo-btn-primary" onclick="voExecAction(\'' + act + '\')">Sí, ' + (labels[act] || act) + '</button>'
+  );
+}
+
+function voDelete() {
+  voShowModal(
+    '<i class="fas fa-exclamation-triangle" style="color:#ef4444;"></i>',
+    '¿Eliminar esta ONU de SmartOLT? Esta acción no se puede deshacer.',
+    '<button class="vo-btn vo-btn-secondary" onclick="voCloseModal()">Cancelar</button>' +
+    '<button class="vo-btn vo-btn-danger" onclick="voExecAction(\'delete\')">Sí, eliminar</button>'
+  );
+}
+
+function voExecAction(action) {
+  voCloseModal();
+  var res = document.getElementById('voActionResult');
+  res.innerHTML = '<div style="color:#2563eb;font-weight:600;"><i class="fas fa-spinner fa-spin"></i> Ejecutando...</div>';
+  
+  fetch('/api/smartolt/onu/accion', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ sn: SN, olt_id: OLT_ID, action: action })
+  })
+  .then(r => r.json())
+  .then(function(d) {
+    if (d.success) {
+      res.innerHTML = '<div style="color:#16a34a;font-weight:600;"><i class="fas fa-check-circle"></i> ' + (d.message || 'Acción ejecutada') + '</div>';
+      setTimeout(voLoadData, 2000);
+    } else {
+      res.innerHTML = '<div style="color:#ef4444;font-weight:600;"><i class="fas fa-times-circle"></i> ' + (d.message || 'Error') + '</div>';
+    }
+  });
+}
+
+function escHtml(s) { var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+function voRenderWifi(d) {
+  var wifi = d.wifi_ports || [];
+  if (typeof wifi === 'string') { try { wifi = JSON.parse(wifi); } catch(e) { wifi = []; } }
+  if (!wifi.length) {
+    document.getElementById('wifiCard').innerHTML = '<div style="color:#94a3b8;text-align:center;padding:16px;"><i class="fas fa-wifi" style="font-size:1.2rem;opacity:0.4;"></i><br>Sin WiFi</div>';
+    return;
+  }
+  var bands = {};
+  wifi.forEach(function(w) {
+    var p = (w.port || '').toLowerCase();
+    if (p.indexOf('0/1') !== -1) bands['2.4GHz'] = w;
+    if (p.indexOf('0/5') !== -1) bands['5GHz'] = w;
+  });
+  if (!bands['2.4GHz'] && wifi[0]) bands['2.4GHz'] = wifi[0];
+  
+  var h = '<div id="wifiResult" style="padding:4px 0;font-size:0.82rem;"></div>';
+  ['2.4GHz', '5GHz'].forEach(function(band) {
+    var w = bands[band];
+    if (!w) return;
+    var portName = band === '5GHz' ? 'wifi_0/5' : 'wifi_0/1';
+    var ssid = w.ssid || '';
+    var pass = w.password || '';
+    var icon = band === '5GHz' ? 'fa-bolt' : 'fa-signal';
+    h += '<div class="wifi-band"><i class="fas ' + icon + '"></i> ' + band + '</div>';
+    h += '<div class="vo-info-row"><span class="vo-info-label">SSID</span><div style="display:flex;align-items:center;gap:8px;flex:1;">';
+    h += '<span class="wifi-val" id="wSsidShow_' + portName + '">' + escHtml(ssid || 'No configurado') + '</span>';
+    h += '<input type="text" class="wifi-edit-input" id="wSsidEdit_' + portName + '" value="' + escAttr(ssid) + '" style="display:none;">';
+    h += '<button class="wifi-edit-btn" onclick="voToggleWifiEdit(\'' + portName + '\')"><i class="fas fa-pencil-alt"></i></button>';
+    h += '</div></div>';
+    h += '<div class="vo-info-row"><span class="vo-info-label">Clave</span><div style="display:flex;align-items:center;gap:8px;flex:1;">';
+    h += '<span class="wifi-val" id="wPassShow_' + portName + '">' + escHtml(pass || '-') + '</span>';
+    h += '<input type="text" class="wifi-edit-input" id="wPassEdit_' + portName + '" value="' + escAttr(pass) + '" style="display:none;">';
+    if (pass) h += '<button class="vo-copy-btn" onclick="navigator.clipboard.writeText(\'' + pass.replace(/'/g,"\\'") + '\')"><i class="fas fa-copy"></i></button>';
+    h += '</div></div>';
+    h += '<div id="wSaveRow_' + portName + '" style="display:none;padding:6px 16px;">';
+    h += '<button class="vo-inline-btn wifi-btn" onclick="voSendWifi(\'' + portName + '\')"><i class="fas fa-check"></i> Guardar ' + band + '</button>';
+    h += '</div>';
+  });
+  document.getElementById('wifiCard').innerHTML = h;
+}
+
+function voToggleWifiEdit(port) {
+  var showId = 'wSsidShow_' + port;
+  var editId = 'wSsidEdit_' + port;
+  var showPass = 'wPassShow_' + port;
+  var editPass = 'wPassEdit_' + port;
+  var saveRow = 'wSaveRow_' + port;
+  var showEl = document.getElementById(showId);
+  var editEl = document.getElementById(editId);
+  if (showEl.style.display !== 'none') {
+    showEl.style.display = 'none';
+    editEl.style.display = '';
+    document.getElementById(showPass).style.display = 'none';
+    document.getElementById(editPass).style.display = '';
+    document.getElementById(saveRow).style.display = '';
+  } else {
+    showEl.style.display = '';
+    editEl.style.display = 'none';
+    document.getElementById(showPass).style.display = '';
+    document.getElementById(editPass).style.display = 'none';
+    document.getElementById(saveRow).style.display = 'none';
+  }
+}
+
+function voSendWifi(port) {
+  var ssid = document.getElementById('wSsidEdit_' + port).value.trim();
+  var pass = document.getElementById('wPassEdit_' + port).value.trim();
+  if (!ssid) { showToast('Ingrese el SSID', 'error'); return; }
+  if (!pass) { showToast('Ingrese la contraseña WiFi', 'error'); return; }
+  
+  var btn = document.querySelector('#wSaveRow_' + port + ' button');
+  if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...'; }
+  
+  fetch('/api/smartolt/onu/wifi', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ sn: SN, olt_id: OLT_ID, wifi_port: port, wifi_ssid: ssid, wifi_pass: pass })
+  })
+  .then(r => r.json())
+  .then(function(d) {
+    if (d.success) {
+      document.getElementById('wifiResult').innerHTML = '<div style="color:#16a34a;font-weight:600;"><i class="fas fa-check-circle"></i> ' + (d.message || 'WiFi actualizado') + '</div>';
+      setTimeout(voLoadData, 2000);
+    } else {
+      document.getElementById('wifiResult').innerHTML = '<div style="color:#ef4444;"><i class="fas fa-times-circle"></i> ' + (d.message || 'Error') + '</div>';
+      if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-check"></i> Guardar ' + (port === 'wifi_0/5' ? '5GHz' : '2.4GHz'); }
+    }
+  });
+}
+
+function escAttr(s) { return (s || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;'); }
+
+function voLoadTraffic(type, btn) {
+  if (btn) {
+    document.querySelectorAll('.vo-traffic-tab').forEach(function(b) { b.classList.remove('active'); });
+    btn.classList.add('active');
+  }
+  var card = document.getElementById('trafficCard');
+  card.innerHTML = '<div class="vo-loading"><i class="fas fa-spinner fa-spin"></i><br>Cargando tráfico...</div>';
+  
+  // Proxy the traffic graph image from SmartOLT via our API
+  var img = new Image();
+  img.onload = function() { card.innerHTML = ''; card.appendChild(img); };
+  img.onerror = function() {
+    card.innerHTML = '<div style="color:var(--vo-muted);padding:20px;"><i class="fas fa-chart-area" style="font-size:2rem;display:block;margin-bottom:8px;opacity:0.4;"></i>Gráfico no disponible</div>';
+  };
+  img.src = '/api/smartolt/onu/trafico?sn=' + encodeURIComponent(SN) + '&olt_id=' + OLT_ID + '&graph_type=' + type + '&_t=' + Date.now();
+  img.style.maxWidth = '100%'; img.style.height = 'auto'; img.style.borderRadius = '6px';
+}
+
+document.addEventListener('DOMContentLoaded', voLoadData);
+</script>

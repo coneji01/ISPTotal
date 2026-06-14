@@ -1,0 +1,593 @@
+<div class="page-header">
+    <h2 class="page-title"><i class="fas fa-cog"></i> Configuración</h2>
+</div>
+
+<div class="config-menu-grid">
+
+    <a href="/modulo?pagina=Empresa" class="config-card">
+        <div class="config-icon-box"><i class="fas fa-building"></i></div>
+        <div class="config-title">Empresa</div>
+    </a>
+
+    <a href="/modulo?pagina=Personal" class="config-card">
+        <div class="config-icon-box"><i class="fas fa-users-cog"></i></div>
+        <div class="config-title">Gestión de<br>Personal</div>
+    </a>
+
+    <a href="/modulo?pagina=Routers" class="config-card">
+        <div class="config-icon-box"><i class="fas fa-server"></i></div>
+        <div class="config-title">Routers</div>
+    </a>
+
+    <a href="/modulo?pagina=VPN" class="config-card">
+        <div class="config-icon-box"><i class="fas fa-shield-alt"></i></div>
+        <div class="config-title">VPN</div>
+    </a>
+
+    <a href="/modulo?pagina=Smartolt" class="config-card">
+        <div class="config-icon-box"><i class="fas fa-network-wired"></i></div>
+        <div class="config-title">OLT</div>
+    </a>
+
+    <a href="/modulo?pagina=TR069" class="config-card">
+        <div class="config-icon-box"><i class="fas fa-project-diagram"></i></div>
+        <div class="config-title">TR069</div>
+    </a>
+
+    <a href="/modulo?pagina=Zonas" class="config-card">
+        <div class="config-icon-box"><i class="fas fa-map-marker-alt"></i></div>
+        <div class="config-title">Zonas</div>
+    </a>
+
+    <a href="/modulo?pagina=Planes" class="config-card">
+        <div class="config-icon-box"><i class="fas fa-tachometer-alt"></i></div>
+        <div class="config-title">Planes</div>
+    </a>
+
+    <a href="/modulo?pagina=Facturacion" class="config-card">
+        <div class="config-icon-box"><i class="fas fa-file-invoice-dollar"></i></div>
+        <div class="config-title">Facturación</div>
+    </a>
+
+    <a href="javascript:void(0)" class="config-card" onclick="openConfig('facturacion')">
+        <div class="config-icon-box"><i class="fas fa-qrcode"></i></div>
+        <div class="config-title">Facturación<br>Electrónica</div>
+    </a>
+
+    <a href="javascript:void(0)" class="config-card" onclick="openConfig('pagos_online')">
+        <div class="config-icon-box"><i class="fas fa-credit-card"></i></div>
+        <div class="config-title">Pagos en<br>Línea</div>
+    </a>
+
+    <a href="/modulo?pagina=Presets" class="config-card">
+        <div class="config-icon-box"><i class="fas fa-sliders-h"></i></div>
+        <div class="config-title">Presets</div>
+    </a>
+
+    <a href="/modulo?pagina=Plantillas" class="config-card">
+        <div class="config-icon-box"><i class="fas fa-edit"></i></div>
+        <div class="config-title">Editor de<br>Plantillas</div>
+    </a>
+
+    <a href="/modulo?pagina=Mensajeria" class="config-card">
+        <div class="config-icon-box"><i class="fas fa-comments"></i></div>
+        <div class="config-title">Mensajería</div>
+    </a>
+
+    <a href="javascript:void(0)" class="config-card" onclick="openConfig('portal_cliente')">
+        <div class="config-icon-box"><i class="fas fa-id-card-alt"></i></div>
+        <div class="config-title">App del<br>Cliente</div>
+    </a>
+
+    <a href="/modulo?pagina=Cron" class="config-card">
+        <div class="config-icon-box"><i class="fas fa-calendar-check"></i></div>
+        <div class="config-title">Tareas<br>Programadas</div>
+    </a>
+
+    <a href="/modulo?pagina=Api" class="config-card">
+        <div class="config-icon-box"><i class="fas fa-plug"></i></div>
+        <div class="config-title">API</div>
+    </a>
+
+    <a href="javascript:void(0)" class="config-card" onclick="openConfig('backup')">
+        <div class="config-icon-box"><i class="fas fa-database"></i></div>
+        <div class="config-title">Backup</div>
+    </a>
+
+    <a href="/modulo?pagina=Log" class="config-card">
+        <div class="config-icon-box" style="background:rgba(139,92,246,0.1);color:#8b5cf6;"><i class="fas fa-history"></i></div>
+        <div class="config-title">Log de<br>Actividad</div>
+    </a>
+
+    <a href="/modulo?pagina=Actualizaciones" class="config-card">
+        <div class="config-icon-box" style="background:rgba(16,185,129,0.1);color:#10b981;"><i class="fas fa-cloud-download-alt"></i></div>
+        <div class="config-title">Actualizaciones</div>
+    </a>
+
+    <a href="javascript:void(0)" class="config-card" onclick="openTenantProfile()">
+        <div class="config-icon-box" style="background:rgba(99,102,241,0.1);color:#6366f1;"><i class="fas fa-user-cog"></i></div>
+        <div class="config-title">Mi Cuenta</div>
+    </a>
+
+    <% if (user && user.username === 'admin') { %>
+    <a href="javascript:void(0)" class="config-card" onclick="openServerDate()" id="cardFechaHora">
+        <div class="config-icon-box" style="background:rgba(239,68,68,0.1);color:#ef4444;"><i class="fas fa-calendar-alt"></i></div>
+        <div class="config-title">Fecha/Hora<br>Servidor</div>
+    </a>
+    <% } %>
+
+    <!-- EXCEL IMPORT/EXPORT -->
+    <a href="javascript:void(0)" class="config-card" onclick="openExcelModal()">
+        <div class="config-icon-box" style="background:rgba(22,163,74,0.1);color:#16a34a;"><i class="fas fa-file-excel"></i></div>
+        <div class="config-title">Importar/Exportar<br>Clientes (Excel)</div>
+    </a>
+
+</div>
+
+<!-- Excel Modal -->
+<div class="modal-overlay" id="excelModal" style="display:none;">
+    <div class="modal-content" style="width:550px;max-width:95vw;max-height:90vh;overflow-y:auto;padding:30px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;border-bottom:1px solid #e2e8f0;padding-bottom:12px;">
+            <h3 style="margin:0;font-size:1.1rem;color:#1e293b;"><i class="fas fa-file-excel" style="color:#16a34a;"></i> Importar / Exportar Clientes</h3>
+            <button onclick="closeExcelModal()" style="background:none;border:none;font-size:1.3rem;cursor:pointer;color:#94a3b8;">&times;</button>
+        </div>
+
+        <!-- EXPORT -->
+        <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:18px;margin-bottom:16px;">
+            <h4 style="margin:0 0 8px;color:#166534;font-size:0.95rem;"><i class="fas fa-download"></i> Exportar Clientes</h4>
+            <p style="font-size:0.82rem;color:#475569;margin:0 0 12px;">Descarga todos los clientes con sus datos: nombre, apodo, cédula, teléfono, dirección, zona, servicios y deuda.</p>
+            <button onclick="exportarExcel()" class="btn btn-primary" style="background:#16a34a;border:none;">
+                <i class="fas fa-file-excel"></i> Descargar Excel
+            </button>
+        </div>
+
+        <!-- IMPORT -->
+        <div style="background:#fefce8;border:1px solid #fde68a;border-radius:10px;padding:18px;margin-bottom:16px;">
+            <h4 style="margin:0 0 8px;color:#92400e;font-size:0.95rem;"><i class="fas fa-upload"></i> Importar Clientes</h4>
+            <p style="font-size:0.82rem;color:#475569;margin:0 0 8px;">Sube un archivo Excel con columnas: <b>Nombre</b>, Apodo, Cedula, Telefono, Direccion, Zona.</p>
+            <div style="margin-bottom:10px;">
+                <a href="/api/clientes/import/template" class="btn btn-default" style="font-size:0.8rem;padding:6px 12px;">
+                    <i class="fas fa-download"></i> Descargar plantilla
+                </a>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                <input type="file" id="excelFileInput" accept=".xlsx,.xls" style="flex:1;padding:8px;border:1px solid #d1d5db;border-radius:6px;font-size:0.82rem;">
+                <button onclick="importarExcel()" class="btn btn-primary" style="background:#d97706;border:none;white-space:nowrap;">
+                    <i class="fas fa-upload"></i> Importar
+                </button>
+            </div>
+            <div id="importResult" style="display:none;margin-top:10px;padding:10px;border-radius:6px;font-size:0.82rem;"></div>
+        </div>
+
+        <button onclick="closeExcelModal()" class="btn" style="width:100%;">Cerrar</button>
+    </div>
+</div>
+
+<script>
+function openExcelModal() {
+    document.getElementById('excelModal').style.display = 'flex';
+    document.getElementById('importResult').style.display = 'none';
+}
+function closeExcelModal() {
+    document.getElementById('excelModal').style.display = 'none';
+}
+
+function exportarExcel() {
+    var btn = event.target.tagName === 'BUTTON' ? event.target : event.target.closest('button');
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Descargando...';
+    btn.disabled = true;
+
+    var link = document.createElement('a');
+    link.href = '/api/clientes/export/excel';
+    link.download = 'clientes.xlsx';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    setTimeout(function() {
+        btn.innerHTML = '<i class="fas fa-file-excel"></i> Descargar Excel';
+        btn.disabled = false;
+    }, 2000);
+}
+
+function importarExcel() {
+    var input = document.getElementById('excelFileInput');
+    if (!input.files || !input.files[0]) {
+        alert('Seleccione un archivo Excel primero');
+        return;
+    }
+
+    var btn = event.target.tagName === 'BUTTON' ? event.target : event.target.closest('button');
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Importando...';
+    btn.disabled = true;
+
+    var fd = new FormData();
+    fd.append('file', input.files[0]);
+
+    var resultDiv = document.getElementById('importResult');
+    resultDiv.style.display = 'block';
+    resultDiv.style.background = '#f0f9ff';
+    resultDiv.style.color = '#1e40af';
+    resultDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando archivo...';
+
+    fetch('/api/clientes/import/excel', { method: 'POST', body: fd })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+        btn.innerHTML = '<i class="fas fa-upload"></i> Importar';
+        btn.disabled = false;
+
+        if (d.status === 'success') {
+            resultDiv.style.background = '#f0fdf4';
+            resultDiv.style.color = '#166534';
+            var html = '<i class="fas fa-check-circle"></i> ' + d.msg;
+            if (d.errores && d.errores.length > 0) {
+                html += '<br><small style="color:#dc2626;">' + d.errores.join('<br>') + '</small>';
+            }
+            resultDiv.innerHTML = html;
+        } else {
+            resultDiv.style.background = '#fef2f2';
+            resultDiv.style.color = '#991b1b';
+            resultDiv.innerHTML = '<i class="fas fa-times-circle"></i> ' + (d.msg || 'Error al importar');
+        }
+    })
+    .catch(function() {
+        btn.innerHTML = '<i class="fas fa-upload"></i> Importar';
+        btn.disabled = false;
+        resultDiv.style.background = '#fef2f2';
+        resultDiv.style.color = '#991b1b';
+        resultDiv.innerHTML = '<i class="fas fa-times-circle"></i> Error de conexión';
+    });
+}
+
+document.getElementById('excelModal').addEventListener('click', function(e) {
+    if (e.target === this) closeExcelModal();
+});
+</script>
+
+<style>
+.config-menu-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 15px;
+}
+.config-card {
+    background: var(--bg-card, #fff);
+    border: 1px solid var(--border-color, #e0e0e0);
+    border-radius: 10px;
+    padding: 15px 5px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    color: var(--text-main, #333);
+}
+.config-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    border-color: var(--accent-primary);
+}
+.config-icon-box {
+    width: 40px; height: 40px; border-radius: 50%;
+    background: rgba(99, 102, 241, 0.1);
+    color: #6366f1;
+    display: flex; align-items: center; justify-content: center; font-size: 1.2rem;
+}
+.config-title { font-weight: 600; font-size: 0.85rem; line-height: 1.1; }
+
+/* Modal de configuracion inline */
+.config-modal { display: none; }
+.config-modal.active {
+    display: flex;
+    position: fixed !important;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 2000;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+}
+.config-modal-content {
+    background: var(--bg-card, #fff);
+    padding: 25px;
+    border-radius: 12px;
+    width: 600px;
+    max-width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+.config-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+.config-modal-header h3 { margin: 0; font-size: 1.1rem; }
+.config-modal-close {
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--text-muted, #94a3b8);
+}
+</style>
+
+<!-- Config Modals (inline) -->
+<div id="configModal" class="config-modal">
+    <div class="config-modal-content">
+        <div class="config-modal-header">
+            <h3 id="configModalTitle">Configuración</h3>
+            <span class="config-modal-close" onclick="closeConfig()">&times;</span>
+        </div>
+        <div id="configModalBody">
+            <p>Cargando...</p>
+        </div>
+    </div>
+</div>
+
+<script>
+var configCache = {};
+
+function openConfig(seccion) {
+    var titles = {
+        empresa: 'Empresa',
+        personal: 'Gestión de Personal',
+        vpn: 'VPN',
+        facturacion: 'Facturación Electrónica',
+        pagos_online: 'Pagos en Línea',
+        presets: 'Presets',
+        mensajeria: 'Mensajería',
+        portal_cliente: 'App del Cliente',
+        api: 'API',
+        backup: 'Backup'
+    };
+    
+    document.getElementById('configModalTitle').textContent = titles[seccion] || seccion;
+    document.getElementById('configModalBody').innerHTML = '<p><i class="fas fa-spinner fa-spin"></i> Cargando...</p>';
+    document.getElementById('configModal').classList.add('active');
+    
+    // Try to load from cache or server
+    if (configCache[seccion]) {
+        document.getElementById('configModalBody').innerHTML = configCache[seccion];
+        return false;
+    }
+    
+    fetch('/modulo?pagina=Configuracion&ajax=config_section&section=' + seccion)
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+            if (d.status === 'success') {
+                configCache[seccion] = d.html;
+                document.getElementById('configModalBody').innerHTML = d.html;
+            } else {
+                document.getElementById('configModalBody').innerHTML = '<p style="color:#dc2626;">Error: ' + (d.msg || 'No disponible') + '</p>';
+            }
+        })
+        .catch(function(e) {
+            document.getElementById('configModalBody').innerHTML = '<p style="color:#dc2626;">Error de conexión</p>';
+        });
+    
+    return false;
+}
+
+function closeConfig() {
+    document.getElementById('configModal').classList.remove('active');
+}
+
+// Close modal on overlay click
+document.getElementById('configModal')?.addEventListener('click', function(e) {
+    if (e.target === this) closeConfig();
+});
+
+function openTenantProfile() {
+    document.getElementById('configModalTitle').textContent = 'Mi Cuenta';
+    var body = document.getElementById('configModalBody');
+    
+    fetch('/api/tenant/profile')
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+        if (d.status === 'success') {
+            body.innerHTML = '<div style="padding:10px 0;">'
+                + '<p style="color:#64748b;font-size:0.85rem;margin-bottom:16px;">Configura tu cuenta y revisa el estado de tu licencia.</p>'
+                + '<div id="tenantProfileMsg" style="display:none;padding:10px;border-radius:8px;margin-bottom:12px;font-size:0.82rem;"></div>'
+                + '<div class="form-group">'
+                + '<label class="form-label">Usuario</label>'
+                + '<input type="text" class="form-control" value="' + d.username + '" disabled>'
+                + '</div>'
+                + '<div class="form-group">'
+                + '<label class="form-label">Empresa</label>'
+                + '<input type="text" class="form-control" value="' + d.company_name + '" disabled>'
+                + '</div>'
+                + '<div class="form-group">'
+                + '<label class="form-label">Correo</label>'
+                + '<input type="email" id="tpEmail" class="form-control" value="' + d.email + '">'
+                + '</div>'
+                + '<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:12px;margin:16px 0;">'
+                + '<h4 style="margin:0 0 8px;font-size:0.9rem;color:#166534;"><i class="fas fa-id-card"></i> Licencia</h4>'
+                + '<div style="font-size:0.82rem;color:#334155;">'
+                + '<b>Estado:</b> <span style="color:' + (d.license_active ? '#16a34a' : '#dc2626') + ';">' + (d.license_active ? '\u2705 Activa' : '\u274c Inactiva') + '</span><br>'
+                + '<b>Clientes actuales:</b> ' + d.client_count + '<br>'
+                + '<b>L' + '\u00ed' + 'mite:</b> ' + d.max_clients + ' clientes<br>'
+                + '<b>Registrado:</b> ' + d.created_at + '<br>'
+                + '</div>'
+                + '</div>'
+                + '<hr style="border-color:#e2e8f0;margin:16px 0;">'
+                + '<h4 style="font-size:0.85rem;color:#1e293b;margin:0 0 12px;">Cambiar Contrase' + '\u00f1' + 'a</h4>'
+                + '<div class="form-group">'
+                + '<label class="form-label">Contrase' + '\u00f1' + 'a actual</label>'
+                + '<input type="password" id="tpCurrentPw" class="form-control" placeholder="Obligatorio">'
+                + '</div>'
+                + '<div class="form-group">'
+                + '<label class="form-label">Nueva contrase' + '\u00f1' + 'a</label>'
+                + '<input type="password" id="tpNewPw" class="form-control" placeholder="M' + '\u00ed' + 'n. 6 caracteres">'
+                + '</div>'
+                + '<div class="form-group">'
+                + '<label class="form-label">Confirmar contrase' + '\u00f1' + 'a</label>'
+                + '<input type="password" id="tpNewPw2" class="form-control" placeholder="Repite la contrase' + '\u00f1' + 'a">'
+                + '</div>'
+                + '<div class="form-group">'
+                + '<button class="btn btn-primary" onclick="saveTenantProfile()" style="width:100%;"><i class="fas fa-save"></i> Guardar Cambios</button>'
+                + '</div>'
+                + '</div>';
+        } else {
+            body.innerHTML = '<p style="color:#dc2626;">Error: ' + (d.msg || 'No disponible') + '</p>';
+        }
+    })
+    .catch(function() {
+        body.innerHTML = '<p style="color:#dc2626;">Error de conexi' + '\u00f3' + 'n</p>';
+    });
+    
+    document.getElementById('configModal').classList.add('active');
+}
+
+function saveTenantProfile() {
+    var email = document.getElementById('tpEmail').value.trim();
+    var currentPw = document.getElementById('tpCurrentPw').value;
+    var newPw = document.getElementById('tpNewPw').value;
+    
+    if (!currentPw) { showToast('Ingresa tu contrase' + '\u00f1' + 'a actual', 'error'); return; }
+    if (!email) { showToast('El correo es obligatorio', 'error'); return; }
+    
+    var data = { email: email, current_password: currentPw };
+    if (newPw) {
+        var newPw2 = document.getElementById('tpNewPw2').value;
+        if (newPw !== newPw2) { showToast('Las contrase' + '\u00f1' + 'as no coinciden', 'error'); return; }
+        if (newPw.length < 6) { showToast('La nueva contrase' + '\u00f1' + 'a debe tener al menos 6 caracteres', 'error'); return; }
+        data.new_password = newPw;
+    }
+    
+    fetch('/api/tenant/profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+        var msg = document.getElementById('tenantProfileMsg');
+        if (d.status === 'success') {
+            msg.style.background = '#f0fdf4'; msg.style.color = '#166534'; msg.style.border = '1px solid #bbf7d0';
+            msg.innerHTML = '<i class="fas fa-check-circle"></i> ' + d.msg;
+            msg.style.display = 'block';
+        } else {
+            msg.style.background = '#fef2f2'; msg.style.color = '#dc2626'; msg.style.border = '1px solid #fecaca';
+            msg.innerHTML = '<i class="fas fa-exclamation-circle"></i> ' + d.msg;
+            msg.style.display = 'block';
+        }
+    })
+    .catch(function() {
+        showToast('Error de conexi' + '\u00f3' + 'n', 'error');
+    });
+}
+
+function openServerDate() {
+    document.getElementById('configModalTitle').textContent = 'Fecha/Hora del Servidor';
+    var body = document.getElementById('configModalBody');
+    
+    fetch('/api/server/date')
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+        if (d.status === 'success') {
+            body.innerHTML = '<div style="padding:10px 0;">'
+                + '<p style="color:#64748b;font-size:0.85rem;margin-bottom:16px;">Configura la fecha/hora del servidor para realizar pruebas. Esto solo afecta a las tareas programadas (cron) y generaci' + '\u00f3' + 'n de facturas. <strong>Solo visible para admin.</strong></p>'
+                + '<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:14px;margin-bottom:16px;">'
+                + '<div style="font-size:0.8rem;color:#64748b;margin-bottom:4px;">Fecha/Hora real del servidor:</div>'
+                + '<div style="font-size:1rem;font-weight:600;color:var(--text-main);">' + d.real + '</div>'
+                + '</div>'
+                + '<div style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:14px;margin-bottom:16px;">'
+                + '<div style="font-size:0.8rem;color:#64748b;margin-bottom:4px;">Fecha/Hora usada por el sistema:</div>'
+                + '<div id="serverDateDisplay" style="font-size:1rem;font-weight:600;color:' + (d.overridden ? '#d97706' : '#16a34a') + ';">' + d.current + '</div>'
+                + '<div style="margin-top:4px;font-size:0.78rem;color:' + (d.overridden ? '#d97706' : '#16a34a') + ';">' + (d.overridden ? '\u26a0\ufe0f SOBREESCRITA - Modo pruebas' : '\u2705 Fecha real del servidor') + '</div>'
+                + '</div>'
+                + '<div class="form-group">'
+                + '<label class="form-label">Nueva Fecha (YYYY-MM-DD)</label>'
+                + '<input type="date" class="form-control" id="srvDateInput" value="' + (d.current_date_only || d.real_date_only) + '">'
+                + '</div>'
+                + '<div class="form-group">'
+                + '<label class="form-label">Hora (HH:MM)</label>'
+                + '<input type="time" class="form-control" id="srvTimeInput" value="' + (d.current_time || '12:00') + '">'
+                + '</div>'
+                + '<div style="display:flex;gap:8px;">'
+                + '<button class="btn btn-primary" onclick="applyServerDate()" style="flex:1;"><i class="fas fa-save"></i> Aplicar Fecha</button>'
+                + '<button class="btn btn-secondary" onclick="resetServerDate()" style="flex:1;"><i class="fas fa-undo"></i> Restaurar Real</button>'
+                + '</div>'
+                + '</div>';
+        } else {
+            body.innerHTML = '<p style="color:#dc2626;">Error al obtener fecha del servidor</p>';
+        }
+    })
+    .catch(function() {
+        body.innerHTML = '<p style="color:#dc2626;">Error de conexi' + '\u00f3' + 'n</p>';
+    });
+    
+    document.getElementById('configModal').classList.add('active');
+}
+
+function applyServerDate() {
+    var dateVal = document.getElementById('srvDateInput').value;
+    var timeVal = document.getElementById('srvTimeInput').value || '12:00';
+    if (!dateVal) { showToast('Selecciona una fecha', 'error'); return; }
+    fetch('/api/server/date', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ date: dateVal, time: timeVal })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+        if (d.status === 'success') {
+            showToast('Fecha cambiada a ' + dateVal);
+            document.getElementById('serverDateDisplay').textContent = d.current;
+            document.getElementById('serverDateDisplay').style.color = '#d97706';
+            closeConfig();
+        } else {
+            showToast('Error: ' + (d.msg || ''), 'error');
+        }
+    })
+    .catch(function() { showToast('Error de conexi' + '\u00f3' + 'n', 'error'); });
+}
+
+function resetServerDate() {
+    fetch('/api/server/date/reset', { method: 'POST' })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+        if (d.status === 'success') {
+            showToast('Fecha restaurada a la real');
+            document.getElementById('serverDateDisplay').textContent = d.current;
+            document.getElementById('serverDateDisplay').style.color = '#16a34a';
+            closeConfig();
+        }
+    })
+    .catch(function() { showToast('Error de conexi' + '\u00f3' + 'n', 'error'); });
+}
+
+function saveConfig(section) {
+    var form = document.getElementById('cfg' + section.charAt(0).toUpperCase() + section.slice(1) + 'Form');
+    if (!form) {
+        showToast('Formulario no encontrado', 'error');
+        return false;
+    }
+    
+    var formData = new FormData(form);
+    formData.append('section', section);
+    formData.append('ajax', 'save_config');
+    
+    fetch('/modulo?pagina=Configuracion&ajax=save_config', {
+        method: 'POST',
+        body: new URLSearchParams(formData)
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+        if (d.status === 'success') {
+            showToast(d.msg || 'Guardado correctamente');
+            // Clear cache for this section
+            delete configCache[section];
+        } else {
+            showToast('Error: ' + (d.msg || 'Desconocido'), 'error');
+        }
+    })
+    .catch(function(e) {
+        showToast('Error de conexión: ' + e.message, 'error');
+    });
+    
+    return false;
+}
+</script>
