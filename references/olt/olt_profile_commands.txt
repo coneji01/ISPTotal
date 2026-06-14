@@ -1,5 +1,0 @@
-profile
-  traffic  Traffic profile
-ZXAN#
-%Error 20203: Incomplete command.
-ZXAN#

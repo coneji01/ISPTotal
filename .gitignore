@@ -12,6 +12,23 @@ PROJECT-MAP.md
 *.db
 *.db-shm
 *.db-wal
+cookies.txt
+olt_commands.txt
+_error.log
+_snmp.log
+fix_*.js
+*.py
+scripts/
+references/
+puppeteer_data/
+vendor/
+content/
+public/smartolt-full/*.html
+public/content/
+public/assets/
+public/fonts/
+public/vendor/
+assets/
 
 # managed
 **.data.json
