@@ -2100,8 +2100,12 @@ $(document).ready(function()  {
 	        $('#olt-single-temp').html('<i class="fa fa-spinner fa-spin"></i>');
 	        $.getJSON('/api/olt-detail?id=' + selectedOltId, function(d) {
 	            if (d.success && d.data) {
-	                var modelo = d.data.modelo || 'ZTE-C300';
-	                $('#olt-image').attr('src', '/content/img/' + modelo + '.png');
+	                var modelo = d.data.modelo || '';
+	                var imgSrc = '/content/img/' + modelo + '.png';
+	                var img = new Image();
+	                img.onload = function() { $('#olt-image').attr('src', imgSrc); };
+	                img.onerror = function() { $('#olt-image').attr('src', '/content/img/OLT-generic.png'); };
+	                img.src = imgSrc;
 	            }
 	        });
 	        $.getJSON('/api/olt/details?id=' + selectedOltId, function(r) {
@@ -2118,6 +2122,18 @@ $(document).ready(function()  {
 	        });
 	    }
 	    return false;
+	});
+	
+	// Cargar imagen de la primera OLT por defecto al iniciar
+	$(function() {
+	    <% if (locals.olts && locals.olts.length > 0) { %>
+	    var firstModel = '<%= locals.olts[0].modelo || "OLT-generic" %>';
+	    var imgSrc = '/content/img/' + firstModel + '.png';
+	    var imgCheck = new Image();
+	    imgCheck.onload = function() { $('#olt-image').attr('src', imgSrc); };
+	    imgCheck.onerror = function() { $('#olt-image').attr('src', '/content/img/OLT-generic.png'); };
+	    imgCheck.src = imgSrc;
+	    <% } %>
 	});
 	
 	// Cargar datos de cada OLT (uptime, temperatura)

@@ -1182,9 +1182,9 @@ app.all('/modulo', requireAuth, (req, res) => {
       // Ruta express directa para GPONManager (ultra rápido, sin pasar por el switch pesado)
       data.clientes = db.prepare("SELECT id, nombre, cedula, telefono FROM clientes WHERE estado='activo' ORDER BY nombre ASC").all();
       try {
-        data.olts = db.prepare("SELECT id, nombre, COALESCE(ip,'') as olt_ip, COALESCE(CAST(puertos AS TEXT),'') as olt_port, COALESCE(modelo,'') as olt_username, '' as socks_host FROM olts ORDER BY id").all();
+        data.olts = db.prepare("SELECT id, nombre, COALESCE(modelo,'') as modelo FROM olts ORDER BY id ASC").all();
       } catch(e) {
-        data.olts = db.prepare("SELECT id, nombre, '' as olt_ip, '' as olt_port, '' as olt_username, '' as socks_host FROM olts ORDER BY id").all();
+        data.olts = db.prepare("SELECT id, nombre, '' as modelo FROM olts ORDER BY id ASC").all();
       }
       // KPIs DIRECTOS desde DB (sin cache, instantáneo)
       try {
