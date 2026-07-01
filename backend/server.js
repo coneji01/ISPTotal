@@ -10149,24 +10149,30 @@ app.get('/api/olt/details', requireAuth, async (req, res) => {
         var text = d.toString(); data += text;
         if (step === 0 && text.includes('Username:')) { sock.write((oltRow.olt_username || 'zte') + '\r\n'); step = 1; }
         else if (step === 1 && text.includes('assword:')) { sock.write((oltRow.olt_password || 'zte') + '\r\n'); step = 2; }
-        else if (step === 2 && data.includes('#')) { sock.write('show card\r\n'); step = 3; }
-        else if (step === 3 && data.slice(-300).includes('#')) { setTimeout(() => { sock.destroy(); resolve(data); }, 300); }
+        else if (step === 2 && data.includes('#')) { sock.write('show system-group\r\n'); step = 3; }
+        else if (step === 3 && data.slice(-30).includes('#')) { setTimeout(() => { sock.destroy(); resolve(data); }, 300); }
       });
       sock.on('error', function(e) { reject(e); });
       setTimeout(function() { sock.destroy(); resolve(data); }, 8000);
     });
     
-    // Determinar estado y calcular uptime desde Last login time
-    var loginMatch = output.match(/Last login time is\s+(\d{2})\.(\d{2})\.(\d{4})-(\d{2}):(\d{2}):(\d{2})/);
+    // Parsear uptime desde "Started before: X days, X hours, X minutes"
     var uptime = '--';
-    if (loginMatch) {
-      var loginDate = new Date(parseInt(loginMatch[3]), parseInt(loginMatch[2])-1, parseInt(loginMatch[1]), parseInt(loginMatch[4]), parseInt(loginMatch[5]), parseInt(loginMatch[6]));
-      var diffSec = Math.floor((Date.now() - loginDate.getTime()) / 1000);
-      if (diffSec > 0 && diffSec < 8640000) {
-        var d = Math.floor(diffSec / 86400);
-        var h = Math.floor((diffSec % 86400) / 3600);
-        var m = Math.floor((diffSec % 3600) / 60);
-        uptime = d + ' days, ' + String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0');
+    var startedMatch = output.match(/Started before:\s*(\d+)\s+days?,\s*(\d+)\s+hours?,\s*(\d+)\s+minutes?/i);
+    if (startedMatch) {
+      uptime = startedMatch[1] + ' days, ' + startedMatch[2].padStart(2,'0') + ':' + startedMatch[3].padStart(2,'0');
+    }
+    if (uptime === '--') {
+      var loginMatch = output.match(/Last login time is\s+(\d{2})\.(\d{2})\.(\d{4})-(\d{2}):(\d{2}):(\d{2})/);
+      if (loginMatch) {
+        var loginDate = new Date(parseInt(loginMatch[3]), parseInt(loginMatch[2])-1, parseInt(loginMatch[1]), parseInt(loginMatch[4]), parseInt(loginMatch[5]), parseInt(loginMatch[6]));
+        var diffSec = Math.floor((Date.now() - loginDate.getTime()) / 1000);
+        if (diffSec > 0 && diffSec < 8640000) {
+          var d = Math.floor(diffSec / 86400);
+          var h = Math.floor((diffSec % 86400) / 3600);
+          var m = Math.floor((diffSec % 3600) / 60);
+          uptime = d + ' days, ' + String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0');
+        }
       }
     }
     if (uptime === '--') uptime = (output.includes('#') || output.includes('INSERVICE')) ? 'Online' : 'Desconectado';
