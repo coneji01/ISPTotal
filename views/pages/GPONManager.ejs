@@ -891,7 +891,7 @@ $( document ).ready(function() {
                     <div class="col-lg-4">
                     	<div class="panel panel-default panel-olt">
                             <div class="panel-heading">
-                                <i class="fa fa-server fa-fw"></i> OLTs                                <div class="pull-right panel-heading-button">
+                                <i class="fa fa-server fa-fw"></i> OLT <span id="olt-header-name">ZTE-C300</span>                                <div class="pull-right panel-heading-button">
                                     <a href="/modulo?pagina=smartolt_olt" class="btn btn-default btn-xs">OLTs</a>
                                     <div class="btn-group">
                                         <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown">
@@ -908,6 +908,7 @@ $( document ).ready(function() {
                                 </div>
                             </div>
                             <div class="panel-body">
+                                <img id="olt-image" class="dashboard-img" src="/content/img/ZTE-C300.png" style="display:block;margin:0 auto 15px;max-width:180px;">
                                 <div class="list-group olt-list" id="olt-list-panel">
                                     <% if (locals.olts) { locals.olts.forEach(function(o) { %>
                                     <a href="/modulo?pagina=smartolt_olt_details&olt_id=<%= o.id %>" class="list-group-item olt-list-item" data-id="<%= o.id %>">
@@ -2069,13 +2070,26 @@ $(document).ready(function()  {
 	    return false;
 	});
 	
-	// Filtrar KPIs por OLT seleccionada
+	// Filtrar OLT seleccionada - cambia imagen y nombre, NO los KPIs
 	var selectedOltId = 0;
 	$(document).on('click', '.olt-filter-btn', function() {
 	    selectedOltId = parseInt($(this).data('id'));
 	    var name = selectedOltId === 0 ? 'All' : $(this).text().trim();
+	    var parts = name.split(' - ');
+	    var oltName = parts.length > 1 ? parts[1] : name;
 	    $('#selected-olt-name').text(name);
-	    actualizarDashboard();
+	    if (selectedOltId === 0) {
+	        $('#olt-header-name').text('OLTs');
+	        $('#olt-image').attr('src', '/content/img/ZTE-C300.png');
+	    } else {
+	        $('#olt-header-name').text(oltName);
+	        $.getJSON('/api/olt-detail?id=' + selectedOltId, function(d) {
+	            if (d.success && d.data) {
+	                var modelo = d.data.modelo || 'ZTE-C300';
+	                $('#olt-image').attr('src', '/content/img/' + modelo + '.png');
+	            }
+	        });
+	    }
 	    return false;
 	});
 	
@@ -2638,9 +2652,8 @@ footer {
 <script>
 // Polling en tiempo real cada 5s (datos desde DB, instantaneo)
 function actualizarDashboard() {
-  var oltFilter = (typeof selectedOltId !== 'undefined' && selectedOltId > 0) ? '?olt_id=' + selectedOltId : '';
   $.ajax({
-    url: '/api/gpon/kpis' + oltFilter,
+    url: '/api/gpon/kpis',
     method: 'GET',
     dataType: 'json',
     timeout: 3000,
