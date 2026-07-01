@@ -4263,7 +4263,7 @@ var mesesEsp = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto
   }
 
   // SmartOLT modules se renderizan sin layout (standalone)
-  var smartoltModules = ['GPONManager', 'SmartoltConfigured', 'SmartoltUnconfigured', 'SmartoltLocations', 'SmartoltOnuTypes', 'SmartoltSpeedProfiles', 'SmartoltSettings', 'SmartoltDashboard', 'SmartoltAuthorizeOnu', 'smartolt_olt', 'smartolt_olt_cards', 'smartolt_olt_pon_ports', 'smartolt_olt_uplink_ports', 'smartolt_olt_vlans', 'smartolt_olt_ip_pools'];
+  var smartoltModules = ['GPONManager', 'SmartoltConfigured', 'SmartoltUnconfigured', 'SmartoltLocations', 'SmartoltOnuTypes', 'SmartoltSpeedProfiles', 'SmartoltSettings', 'SmartoltDashboard', 'SmartoltAuthorizeOnu', 'smartolt_olt', 'smartolt_olt_cards', 'smartolt_olt_pon_ports', 'smartolt_olt_uplink_ports', 'smartolt_olt_vlans', 'smartolt_olt_ip_pools', 'smartolt_olt_add'];
   
   // Clon pages que necesitan funciones del CDN de SmartOLT
   var clonePages = ['smartolt_configured_full', 'smartolt_unconfigured_full'];
@@ -10039,7 +10039,7 @@ app.get('/api/gpon/kpis', requireAuth, (req, res) => {
 // GET /api/olt-list - Listar OLTs (para smartolt_olt)
 app.get('/api/olt-list', requireAuth, (req, res) => {
   try {
-    var olts = db.prepare("SELECT id, nombre, COALESCE(ip,'') as olt_ip, COALESCE(modelo,'') as modelo, 1 as activo FROM olts ORDER BY id").all();
+    var olts = db.prepare("SELECT id, nombre, COALESCE(ip,'') as olt_ip, COALESCE(modelo,'') as modelo, 1 as activo FROM olts ORDER BY id DESC").all();
     res.json({ success: true, data: olts });
   } catch(e) { res.json({ success: false, message: e.message }); }
 });
@@ -10049,6 +10049,177 @@ app.get('/api/olt-detail', requireAuth, (req, res) => {
   try {
     var olt = db.prepare("SELECT id, nombre, COALESCE(ip,'') as olt_ip, COALESCE(CAST(puertos AS TEXT),'') as olt_port, COALESCE(olt_username,'') as olt_username, COALESCE(modelo,'') as modelo, COALESCE(vlan_default,'') as vlan_default FROM olts WHERE id=?").get(req.query.id || 1);
     res.json({ success: true, data: olt || null });
+  } catch(e) { res.json({ success: false, message: e.message }); }
+});
+
+// GET /api/olt/cards - Obtener tarjetas de una OLT via Telnet
+app.get('/api/olt/cards', requireAuth, async (req, res) => {
+  try {
+    var oltId = parseInt(req.query.olt_id) || 1;
+    var oltRow = db.prepare('SELECT ip, puertos, olt_username, olt_password, modelo FROM olts WHERE id=?').get(oltId);
+    if (!oltRow) return res.json({ success: false, message: 'OLT not found' });
+    
+    const SocksClient = require('socks').SocksClient;
+    const conn = await SocksClient.createConnection({
+      proxy: { host: '10.50.255.245', port: 1080, type: 4, userId: 'admin', password: 'F1tfdrsx132022' },
+      destination: { host: oltRow.ip, port: oltRow.puertos || 23 }, command: 'connect'
+    });
+    const sock = conn.socket;
+    
+    // Login y ejecutar show card
+    var output = await new Promise((resolve, reject) => {
+      var data = '';
+      sock.on('data', d => { data += d.toString(); });
+      sock.on('error', reject);
+      setTimeout(() => sock.write('zte\r\n'), 300);
+      setTimeout(() => sock.write('zte\r\n'), 600);
+      setTimeout(() => sock.write('show card\r\n'), 1000);
+      setTimeout(() => { sock.destroy(); resolve(data); }, 3000);
+    });
+    
+    // Parsear output
+    var cards = [];
+    var lines = output.split('\n');
+    var inTable = false;
+    lines.forEach(function(line) {
+      if (line.includes('Slot') && line.includes('Type') && line.includes('Status')) inTable = true;
+      if (inTable && line.trim() && line.match(/^\s*\d+/)) {
+        var parts = line.trim().split(/\s+/);
+        if (parts.length >= 3) {
+          cards.push({ slot: parts[0], type: parts[1] || '--', hardware: parts[2] || '--', ports: parts[3] || '-', software: parts[4] || '-', status: parts[5] || 'Unknown' });
+        }
+      }
+    });
+    
+    res.json({ success: true, data: cards, raw: output });
+  } catch(e) { res.json({ success: false, message: e.message }); }
+});
+app.get('/api/core/ping', requireAuth, async (req, res) => {
+  try {
+    const http = require('http');
+    var ip = req.query.ip;
+    var oltId = parseInt(req.query.olt_id) || 0;
+    if (!ip && oltId) {
+      var oltRow = db.prepare('SELECT ip FROM olts WHERE id=?').get(oltId);
+      ip = oltRow ? oltRow.ip : null;
+    }
+    if (!ip) return res.json({ success: false, message: 'IP or olt_id required' });
+    // Ping directo via API REST del core
+    const result = await new Promise((resolve, reject) => {
+      var postData = JSON.stringify({ address: ip, count: 2 });
+      var opts = { hostname: '10.50.255.245', port: 80, path: '/rest/ping', method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(postData) },
+        auth: 'admin:F1tfdrsx132022' };
+      var req = http.request(opts, function(res) {
+        var data = ''; res.on('data', function(c) { data += c; });
+        res.on('end', function() {
+          try { var j = JSON.parse(data); resolve(j); } catch(e) { resolve(null); }
+        });
+      });
+      req.on('error', reject);
+      req.write(postData);
+      req.end();
+    });
+    if (result && Array.isArray(result) && result.length > 0) {
+      var loss = result[0]['packet-loss'] || '100';
+      res.json({ success: loss === '0', loss: loss, rtt: result[0]['avg-rtt'] || '--' });
+    } else {
+      res.json({ success: false, loss: '100', rtt: '--' });
+    }
+  } catch(e) { res.json({ success: false, error: e.message }); }
+});
+
+// GET /api/core/connections - Ver conexiones activas
+app.get('/api/core/connections', requireAuth, async (req, res) => {
+  try {
+    const coreConn = require('./core-connection');
+    const filter = req.query.filter || '';
+    const conns = await coreConn.getActiveConnections(filter);
+    res.json({ success: true, count: conns.length, data: conns.slice(0, 20) });
+  } catch(e) { res.json({ success: false, error: e.message }); }
+});
+
+// GET /api/core/interfaces - Estado de interfaces
+app.get('/api/core/interfaces', requireAuth, async (req, res) => {
+  try {
+    const coreConn = require('./core-connection');
+    const ifaces = await coreConn.getInterfaceStats();
+    res.json({ success: true, data: ifaces });
+  } catch(e) { res.json({ success: false, error: e.message }); }
+});
+
+// POST /api/olt/test-connection - Probar conexión Telnet REAL a OLT
+app.post('/api/olt/test-connection', requireAuth, async (req, res) => {
+  try {
+    const { ip, port, username, password, socks_host, socks_port } = req.body;
+    const SocksClient = require('socks').SocksClient;
+    
+    const conn = await SocksClient.createConnection({
+      proxy: { host: socks_host || '10.50.255.245', port: socks_port || 1080, type: 4, userId: 'admin', password: 'F1tfdrsx132022' },
+      destination: { host: ip, port: parseInt(port) || 23 }, command: 'connect'
+    });
+    const sock = conn.socket;
+    sock.setTimeout(10000);
+    
+    // Login Telnet real
+    var result = await new Promise((resolve, reject) => {
+      var buf = '';
+      var step = 0;
+      sock.on('data', function(d) {
+        buf += d.toString();
+        if (buf.includes('Username:') || buf.includes('Login:') || buf.includes('login:')) {
+          if (step === 0) { sock.write((username || 'zte') + '\r\n'); step++; }
+          else if (step === 1) { sock.write((password || 'zte') + '\r\n'); step++; }
+        }
+        if (buf.includes('#') || buf.includes('>')) {
+          sock.write('show card\r\n');
+          setTimeout(function() {
+            sock.destroy();
+            var hasPrompt = buf.includes('#') || buf.includes('>');
+            var hasCardData = buf.includes('Slot') || buf.includes('INSERVICE');
+            resolve({ success: hasPrompt, message: hasPrompt ? 'Telnet connected and authenticated successfully' : 'Connected but login may have failed', output: buf.slice(0, 500) });
+          }, 1500);
+        }
+        if (buf.includes('Password:') && step === 2) {
+          resolve({ success: false, message: 'Authentication failed - wrong username or password' });
+          sock.destroy();
+        }
+      });
+      sock.on('timeout', function() { resolve({ success: false, message: 'Connection timeout' }); sock.destroy(); });
+      sock.on('error', function(e) { resolve({ success: false, message: e.message }); });
+      // Timeout total
+      setTimeout(function() { resolve({ success: false, message: 'Connection timeout after 10s' }); sock.destroy(); }, 10000);
+    });
+    
+    res.json(result);
+  } catch(e) { res.json({ success: false, message: e.message }); }
+});
+
+// POST /api/olt/save - Guardar nueva OLT
+app.post('/api/olt/save', requireAuth, (req, res) => {
+  try {
+    const { nombre, olt_ip, olt_port, olt_username, olt_password, modelo } = req.body;
+    if (!nombre || !olt_ip) return res.json({ success: false, message: 'Name and IP required' });
+    db.prepare("INSERT INTO olts (nombre, ip, puertos, olt_username, olt_password, modelo) VALUES (?,?,?,?,?,?)")
+      .run(nombre, olt_ip, parseInt(olt_port) || 23, olt_username || 'zte', olt_password || 'zte', modelo || '');
+    res.json({ success: true });
+  } catch(e) { res.json({ success: false, message: e.message }); }
+});
+
+// POST /api/olt/delete - Eliminar OLT
+app.post('/api/olt/delete', requireAuth, (req, res) => {
+  try {
+    var id = parseInt(req.body.id);
+    if (!id) return res.json({ success: false, message: 'ID required' });
+    // Desactivar FKs temporalmente
+    db.pragma('foreign_keys = OFF');
+    db.exec('DELETE FROM vlan_uplink WHERE vlan_id IN (SELECT id FROM vlan WHERE olt_id=' + id + ')');
+    db.exec('DELETE FROM vlan WHERE olt_id=' + id);
+    db.exec('DELETE FROM onu WHERE olt_id=' + id);
+    db.exec('DELETE FROM olt_stats WHERE olt_id=' + id);
+    db.exec('DELETE FROM olts WHERE id=' + id);
+    db.pragma('foreign_keys = ON');
+    res.json({ success: true });
   } catch(e) { res.json({ success: false, message: e.message }); }
 });
 

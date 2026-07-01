@@ -1,0 +1,154 @@
+<!DOCTYPE html><html lang="en" class="smartolt-night"><head>
+        <script>window.SMARTOLT_DB_THEME='night';</script>
+    <script>try{var k='smartolt-night',lk='smartolt-theme-local',dbTheme=window.SMARTOLT_DB_THEME,local=null,pref,n;try{local=localStorage.getItem(lk);}catch(e){}if(local==='night'||local==='light'||local==='system'){pref=local;}else if(dbTheme==='night'||dbTheme==='light'||dbTheme==='system'){pref=dbTheme;}else{pref='system';}if(pref==='system'){n=!!(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);}else if(pref==='night'){n=true;}else{n=false;}try{localStorage.setItem(k,n?'1':'0');}catch(e){}if(n){document.documentElement.classList.add('smartolt-night');}else{document.documentElement.classList.remove('smartolt-night');}document.cookie=k+'='+(n?'1':'0')+'; path=/; max-age=31536000; SameSite=Lax'+(location.protocol==='https:'?'; Secure':'');}catch(e){}</script>
+    <meta http-equiv="content-type" content="text/html; utf-8">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" href="/favicon.ico">
+  <title>Add OLT - ISPTotal</title>
+  <link href="/public/smartolt-files/bootstrap-custom.css?v=3.53.0.24" rel="stylesheet">
+  <link href="/public/smartolt-files/styles.css?v=3.53.0.35" rel="stylesheet">
+  <link href="/public/smartolt-files/toast.css?v=3.53.0.20" rel="stylesheet">
+  <link href="/public/smartolt-files/font-awesome.min.css" rel="stylesheet">
+  <link href="/public/smartolt-files/inter-fonts.css?v=3.53.0.1" rel="stylesheet">
+  <link href="/public/smartolt-files/dashboard-smartolt-night.css?v=3.53.0.314" rel="stylesheet">
+  <script src="/public/smartolt-files/jquery.min.js"></script>
+  <script src="/public/smartolt-files/toast.js"></script>
+  <style>
+    .form-group { margin-bottom: 15px; }
+    label { display: block; margin-bottom: 4px; color: #64748b; font-size: 13px; font-weight: 500; }
+    input, select { width: 100%; padding: 8px 12px; border: 1px solid rgba(255,255,255,0.12); border-radius: 6px; background: rgba(255,255,255,0.06); color: #e2e8f0; font-size: 14px; }
+    input:focus, select:focus { border-color: #8cc8ff; outline: none; }
+    .btn { padding: 8px 16px; border-radius: 6px; border: none; cursor: pointer; font-size: 14px; }
+    .btn-primary { background: rgba(29,139,255,0.18); color: #8cc8ff; }
+    .btn-success { background: rgba(52,211,153,0.15); color: #86efac; }
+    .btn-default { background: rgba(255,255,255,0.08); color: #e2e8f0; }
+    .btn-default:hover { background: rgba(255,255,255,0.12); }
+    .help-text { font-size: 12px; color: #64748b; margin-top: 2px; }
+  </style>
+</head>
+<body class="smartolt-site">
+<script>$(document).ready(function() {
+  $('#test-connection').click(function() {
+    var ip = $('#olt-ip').val();
+    var port = $('#olt-port').val() || 23;
+    var user = $('#olt-user').val() || 'zte';
+    var pass = $('#olt-pass').val() || 'zte';
+    var btn = $(this);
+    btn.text('Testing...').prop('disabled', true);
+    $('#test-result').removeClass('text-success text-danger').addClass('text-muted').html('<i class="fa fa-spinner fa-spin"></i> Connecting via Telnet...');
+    $.post('/api/olt/test-connection', { ip: ip, port: port, username: user, password: pass })
+      .done(function(r) {
+        if (r.success) {
+          $('#test-result').removeClass('text-muted text-danger').addClass('text-success').html('<i class="fa fa-check-circle"></i> ' + (r.message || 'Connected!'));
+          if (r.output) $('#test-result').append('<br><small class="text-muted" style="font-size:11px;">' + r.output.replace(/</g,'&lt;').substring(0,200) + '</small>');
+        } else {
+          $('#test-result').removeClass('text-muted text-success').addClass('text-danger').html('<i class="fa fa-times-circle"></i> ' + (r.message || 'Connection failed'));
+        }
+      })
+      .fail(function() { $('#test-result').removeClass('text-muted text-success').addClass('text-danger').html('<i class="fa fa-times-circle"></i> Connection error'); })
+      .always(function() { btn.html('<i class="fa fa-plug"></i> Test connection').prop('disabled', false); });
+  });
+  $('#save-olt').click(function() {
+    var data = {
+      nombre: $('#olt-name').val(), olt_ip: $('#olt-ip').val(), olt_port: parseInt($('#olt-port').val()) || 23,
+      olt_username: $('#olt-user').val() || 'zte', olt_password: $('#olt-pass').val() || 'zte',
+      modelo: $('#olt-model').val(), snmp_community: 'public', snmp_port: parseInt($('#snmp-port').val()) || 161,
+      socks_host: '10.50.255.245', socks_port: 1080
+    };
+    if (!data.nombre || !data.olt_ip) { toast('❌ Name and IP required'); return; }
+    $.post('/api/olt/save', data).done(function(r) {
+      if (r.success) { toast('✅ OLT saved!'); setTimeout(function() { window.location.href = '/modulo?pagina=smartolt_olt'; }, 1000); }
+      else toast('❌ ' + (r.message || 'Error'));
+    }).fail(function() { toast('❌ Save failed'); });
+  });
+});</script>
+
+<div class="smartolt-landing-hero-bg" aria-hidden="true"></div>
+<div id="content-wrapper">
+  <div class="navbar navbar-default navbar-fixed-top default-menu">
+    <div class="container">
+      <div class="navbar-header">
+        <button class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-main">
+          <span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="/modulo?pagina=GPONManager">Dashboard</a>
+      </div>
+      <div class="collapse navbar-collapse" id="navbar-main">
+        <ul class="nav navbar-nav">
+          <li><a href="/modulo?pagina=smartolt_olt">OLTs</a></li>
+          <li class="active"><a href="#">Add OLT</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <h2>Add OLT</h2>
+    <a href="/modulo?pagina=smartolt_olt" class="btn btn-success margin-bottom">Back to OLTs list</a>
+    
+    <div class="row">
+      <div class="col-md-6">
+        <div class="form-group">
+          <label>Name</label>
+          <input id="olt-name" placeholder="e.g. C300 Produccion">
+        </div>
+        <div class="form-group">
+          <label>OLT IP or FQDN</label>
+          <input id="olt-ip" placeholder="192.168.20.80">
+        </div>
+        <div class="form-group">
+          <label>Telnet TCP port</label>
+          <input id="olt-port" value="23">
+        </div>
+        <div class="form-group">
+          <label>OLT telnet username</label>
+          <input id="olt-user" value="zte">
+        </div>
+        <div class="form-group">
+          <label>OLT telnet password</label>
+          <input id="olt-pass" type="password" value="zte">
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="form-group">
+          <label>OLT hardware version</label>
+          <select id="olt-model">
+            <option value="ZTE-C300">ZTE-C300</option>
+            <option value="ZTE-C320">ZTE-C320</option>
+            <option value="ZTE-C600">ZTE-C600</option>
+            <option value="Huawei-MA5600T">Huawei-MA5600T</option>
+            <option value="Huawei-MA5800-X2">Huawei-MA5800-X2</option>
+            <option value="Huawei-EA5800-X15">Huawei-EA5800-X15</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>SNMP UDP port</label>
+          <input id="snmp-port" value="161">
+        </div>
+        <div class="form-group">
+          <label>SNMP community</label>
+          <input id="snmp-community" value="public">
+          <span class="help-text">Will be automatically created on the OLT</span>
+        </div>
+        <div class="form-group">
+          <label>Supported PON types</label>
+          <select>
+            <option>GPON (GPON, XGPON, XGSPON)</option>
+            <option>EPON (EPON, 10G-EPON)</option>
+            <option>GPON+EPON</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin-top: 25px;">
+          <button id="save-olt" class="btn btn-primary"><i class="fa fa-save"></i> Save</button>
+          <a href="/modulo?pagina=smartolt_olt" class="btn btn-default">Cancel</a>
+          <button id="test-connection" class="btn btn-default"><i class="fa fa-plug"></i> Test connection</button>
+          <div id="test-result" style="margin-top:10px; font-size:13px;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<footer><div class="text-center">ISPTotal GPON v1.0</div></footer>
+<script src="/public/smartolt-files/bootstrap.min.js"></script>
+</body></html>
