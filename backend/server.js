@@ -10039,7 +10039,7 @@ app.get('/api/gpon/kpis', requireAuth, (req, res) => {
 // GET /api/olt-list - Listar OLTs (para smartolt_olt)
 app.get('/api/olt-list', requireAuth, (req, res) => {
   try {
-    var olts = db.prepare("SELECT id, nombre, COALESCE(ip,'') as olt_ip, COALESCE(modelo,'') as modelo, 1 as activo FROM olts ORDER BY id DESC").all();
+    var olts = db.prepare("SELECT id, nombre, COALESCE(ip,'') as olt_ip, COALESCE(modelo,'') as modelo, 1 as activo FROM olts ORDER BY id ASC").all();
     res.json({ success: true, data: olts });
   } catch(e) { res.json({ success: false, message: e.message }); }
 });
@@ -10252,14 +10252,20 @@ app.post('/api/olt/test-connection', requireAuth, async (req, res) => {
   } catch(e) { res.json({ success: false, message: e.message }); }
 });
 
-// POST /api/olt/save - Guardar nueva OLT
+// POST /api/olt/save - Guardar nueva OLT (con ID más bajo disponible)
 app.post('/api/olt/save', requireAuth, (req, res) => {
   try {
     const { nombre, olt_ip, olt_port, olt_username, olt_password, modelo } = req.body;
     if (!nombre || !olt_ip) return res.json({ success: false, message: 'Name and IP required' });
-    db.prepare("INSERT INTO olts (nombre, ip, puertos, olt_username, olt_password, modelo) VALUES (?,?,?,?,?,?)")
-      .run(nombre, olt_ip, parseInt(olt_port) || 23, olt_username || 'zte', olt_password || 'zte', modelo || '');
-    res.json({ success: true });
+    
+    // Encontrar el ID más bajo disponible
+    var usedIds = db.prepare('SELECT id FROM olts ORDER BY id').all().map(r => r.id);
+    var newId = 1;
+    while (usedIds.includes(newId)) newId++;
+    
+    db.prepare("INSERT INTO olts (id, nombre, ip, puertos, olt_username, olt_password, modelo) VALUES (?,?,?,?,?,?,?)")
+      .run(newId, nombre, olt_ip, parseInt(olt_port) || 23, olt_username || 'zte', olt_password || 'zte', modelo || '');
+    res.json({ success: true, id: newId });
   } catch(e) { res.json({ success: false, message: e.message }); }
 });
 
