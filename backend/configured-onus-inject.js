@@ -2,6 +2,12 @@
 // Carga datos desde /api/onu/configured-list y renderiza la tabla
 module.exports = function() {
   return '<script>\n' +
+  // Interceptar funciones SmartOLT que sobreescriben la tabla
+  'window.refreshConfigured = function(){};\n' +
+  'window.renderConfigured = function(){};\n' +
+  'window.getConfigured = function(){};\n' +
+  'window.getConfiguredSelectedOltIds = window.getConfiguredSelectedOltIds || function(){return [];};\n' +
+  // Nuestra propia funcion de carga
   'function cargarConfigured(pag) {\n' +
   '  pag = pag || 1;\n' +
   '  $.ajax({ url: "/api/onu/configured-list?page=" + pag + "&per_page=100&_=" + Date.now(), method: "GET", dataType: "json",\n' +
@@ -41,7 +47,9 @@ module.exports = function() {
   '    }\n' +
   '  });\n' +
   '}\n' +
-  // Usar setTimeout largo para ejecutarse DESPUES de todos los scripts del clon
-  'setTimeout(function() { if ($("#onu_configured_list").length) cargarConfigured(1); }, 1500);\n' +
+  // Ejecutar al inicio con timeout para pasar los scripts del clon
+  'setTimeout(function() { if ($("#onu_configured_list").length) cargarConfigured(1); }, 2000);\n' +
+  // Y tambien ejecutar despues de que el DOM este listo
+  '$("#onu_configured_list").length && $(function() { setTimeout(function() { cargarConfigured(1); }, 500); });\n' +
   '</script>';
 };
