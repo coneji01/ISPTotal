@@ -11833,9 +11833,74 @@ app.listen(PORT, () => {
   
   // ---- ENDPOINTS FALTANTES PARA GPONManager (evitar 404) ----
   
-  // Graficos de estado de ONUs (series diarias)
+  // Graficos de estado de ONUs (series diarias) - datos REALES desde olt_status_history
   app.get('/graphs_olt/get_onus_statuses_series/:period/:oltId', requireAuth, function(req, res) {
-    res.json({ success: true, data: [] });
+    try {
+      var period = req.params.period || 'daily';
+      var oltId = parseInt(req.params.oltId) || 1;
+      var result = { series: [] };
+
+      // Determinar rango de tiempo segun periodo
+      var limitMinutes = 1440; // default: daily (24h)
+      var formatTime = function(ts) {
+        // SmartOLT usa HH:MM
+        var d = new Date(ts.replace(' ', 'T'));
+        return ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2);
+      };
+
+      if (period === 'hourly') limitMinutes = 120;
+      else if (period === 'daily') limitMinutes = 1440;
+      else if (period === 'weekly') limitMinutes = 10080;
+      else if (period === 'monthly') limitMinutes = 43200;
+      else if (period === 'yearly') limitMinutes = 525600;
+
+      var since = new Date(Date.now() - limitMinutes * 60 * 1000).toISOString().replace('T', ' ').split('.')[0];
+
+      var rows;
+      if (oltId === 0) {
+        // ALL: combinar todas las OLTs
+        rows = db.prepare("SELECT timestamp, SUM(working) as working, SUM(power_fail) as power_fail, SUM(los) as los, SUM(offline) as offline FROM olt_status_history WHERE timestamp >= ? GROUP BY timestamp ORDER BY timestamp ASC").all(since);
+      } else {
+        rows = db.prepare("SELECT timestamp, working, power_fail, los, offline FROM olt_status_history WHERE olt_id=? AND timestamp >= ? ORDER BY timestamp ASC").all(oltId, since);
+      }
+
+      // Si no hay datos, devolver array vacio
+      if (!rows || rows.length === 0) {
+        // Devolver estructura vacia con labels de ultimas 24h para que el grafico no se rompa
+        var emptyLabels = [];
+        var now = new Date();
+        for (var i = 0; i < 24; i++) {
+          var t = new Date(now.getTime() - (23 - i) * 60 * 60 * 1000);
+          emptyLabels.push(('0' + t.getHours()).slice(-2) + ':' + ('0' + t.getMinutes()).slice(-2));
+        }
+        result.series = [
+          { key: 'working', label: 'Online', points: emptyLabels.map(function(l) { return [l, null]; }) },
+          { key: 'powerFail', label: 'Power Fail', points: emptyLabels.map(function(l) { return [l, null]; }) },
+          { key: 'los', label: 'LOS', points: emptyLabels.map(function(l) { return [l, null]; }) },
+          { key: 'offline', label: 'N/A', points: emptyLabels.map(function(l) { return [l, null]; }) }
+        ];
+        res.json({ success: true, data: result });
+        return;
+      }
+
+      var labels = rows.map(function(r) { return formatTime(r.timestamp); });
+      var workingPoints = rows.map(function(r) { return [formatTime(r.timestamp), r.working]; });
+      var powerFailPoints = rows.map(function(r) { return [formatTime(r.timestamp), r.power_fail]; });
+      var losPoints = rows.map(function(r) { return [formatTime(r.timestamp), r.los]; });
+      var offlinePoints = rows.map(function(r) { return [formatTime(r.timestamp), r.offline]; });
+
+      result.series = [
+        { key: 'working', label: 'Online', points: workingPoints },
+        { key: 'powerFail', label: 'Power Fail', points: powerFailPoints },
+        { key: 'los', label: 'LOS', points: losPoints },
+        { key: 'offline', label: 'N/A', points: offlinePoints }
+      ];
+
+      res.json({ success: true, data: result });
+    } catch(e) {
+      console.error('Error en get_onus_statuses_series:', e);
+      res.json({ success: false, data: { series: [] } });
+    }
   });
   
   // ONUs en espera de autorizacion

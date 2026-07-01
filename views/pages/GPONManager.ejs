@@ -351,7 +351,7 @@ $( document ).ready(function() {
                         </div>
                     </div>
                     <div class="col-lg-3 col-md-6" id="graphs">
-                        <div class="panel panel-info smartolt-kpi-card">
+                        <div class="panel panel-warning smartolt-kpi-card">
 								<a href="/modulo?pagina=smartolt_diagnostics_full&signal=critical,warning&amp;olt_id=1">
 									<div class="panel-heading">
 										<div class="row">
@@ -1004,7 +1004,7 @@ var lang_total_authorized_colon = 'Total authorized:';
 var lang_warning_colon = 'Warning:';
 var lang_critical_colon = 'Critical:';
 var lang_statuses_not_yet_generated = 'No network status data yet';
-var networkStatusOltId = '1';
+var networkStatusOltId = '0';
 var networkStatusChart = null;
 var networkStatusPeriod = 'daily';
 var networkStatusChartLastData = null;
@@ -2080,50 +2080,53 @@ $(document).ready(function()  {
 	});
 	
 	// Filtrar OLT seleccionada - toggle entre vista All (lista) y Single (imagen + datos)
-	var selectedOltId = 0;
-	$(document).on('click', '.olt-filter-btn', function() {
-	    selectedOltId = parseInt($(this).data('id'));
-	    var name = selectedOltId === 0 ? 'All' : $(this).text().trim();
-	    var parts = name.split(' - ');
-	    var oltName = parts.length > 1 ? parts[1] : name;
-	    $('#selected-olt-name').text(name);
-	    // Cerrar dropdown
-	    $(this).closest('.dropdown-menu').parent().removeClass('open');
-	    if (selectedOltId === 0) {
-	        $('#olt-header-name').text('OLTs');
-	        $('#olt-all-view').show();
-	        $('#olt-single-view').hide();
-	    } else {
-	        $('#olt-header-name').text(oltName);
-	        $('#olt-all-view').hide();
-	        $('#olt-single-view').show();
-	        $('#olt-single-uptime').html('<i class="fa fa-spinner fa-spin"></i>');
-	        $('#olt-single-temp').html('<i class="fa fa-spinner fa-spin"></i>');
-	        $.getJSON('/api/olt-detail?id=' + selectedOltId, function(d) {
-	            if (d.success && d.data) {
-	                var modelo = d.data.modelo || '';
-	                var imgSrc = '/content/img/' + modelo + '.png';
-	                var img = new Image();
-	                img.onload = function() { $('#olt-image').attr('src', imgSrc); };
-	                img.onerror = function() { $('#olt-image').attr('src', '/content/img/OLT-generic.png'); };
-	                img.src = imgSrc;
-	            }
-	        });
-	        $.getJSON('/api/olt/details?id=' + selectedOltId, function(r) {
-	            if (r.success) {
-	                $('#olt-single-uptime').text(r.uptime || 'N/A');
-	                $('#olt-single-temp').text(r.temperature || 'N/A');
-	            } else {
-	                $('#olt-single-uptime').text('No disponible');
-	                $('#olt-single-temp').text('--');
-	            }
-	        }).fail(function() {
-	            $('#olt-single-uptime').text('Error');
-	            $('#olt-single-temp').text('--');
-	        });
-	    }
-	    return false;
-	});
+		var selectedOltId = 0;
+		$(document).on('click', '.olt-filter-btn', function() {
+		    selectedOltId = parseInt($(this).data('id'));
+		    var name = selectedOltId === 0 ? 'All' : $(this).text().trim();
+		    var parts = name.split(' - ');
+		    var oltName = parts.length > 1 ? parts[1] : name;
+		    $('#selected-olt-name').text(name);
+		    // Cerrar dropdown
+		    $(this).closest('.dropdown-menu').parent().removeClass('open');
+		    if (selectedOltId === 0) {
+		        $('#olt-header-name').text('OLTs');
+		        $('#olt-all-view').show();
+		        $('#olt-single-view').hide();
+		    } else {
+		        $('#olt-header-name').text(oltName);
+		        $('#olt-all-view').hide();
+		        $('#olt-single-view').show();
+		        $('#olt-single-uptime').html('<i class="fa fa-spinner fa-spin"></i>');
+		        $('#olt-single-temp').html('<i class="fa fa-spinner fa-spin"></i>');
+		        $.getJSON('/api/olt-detail?id=' + selectedOltId, function(d) {
+		            if (d.success && d.data) {
+		                var modelo = d.data.modelo || '';
+		                var imgSrc = '/content/img/' + modelo + '.png';
+		                var img = new Image();
+		                img.onload = function() { $('#olt-image').attr('src', imgSrc); };
+		                img.onerror = function() { $('#olt-image').attr('src', '/content/img/OLT-generic.png'); };
+		                img.src = imgSrc;
+		            }
+		        });
+		        $.getJSON('/api/olt/details?id=' + selectedOltId, function(r) {
+		            if (r.success) {
+		                $('#olt-single-uptime').text(r.uptime || 'N/A');
+		                $('#olt-single-temp').text(r.temperature || 'N/A');
+		            } else {
+		                $('#olt-single-uptime').text('No disponible');
+		                $('#olt-single-temp').text('--');
+		            }
+		        }).fail(function() {
+		            $('#olt-single-uptime').text('Error');
+		            $('#olt-single-temp').text('--');
+		        });
+		    }
+		    // Recargar grafico Network status con la OLT seleccionada
+		    networkStatusOltId = String(selectedOltId);
+		    loadNetworkStatusChart(networkStatusPeriod);
+		    return false;
+		});
 	
 	// Cargar imagen de la primera OLT por defecto al iniciar
 	$(function() {
@@ -2660,12 +2663,14 @@ $( document ).ready(function() {
 }
 
 /* Forzar colores KPI cards como SmartOLT */
-.panel-green.smartolt-kpi-card { border-color: #5cb85c !important; }
-.panel-green.smartolt-kpi-card > .panel-heading { background-color: #5cb85c !important; border-color: #5cb85c !important; color: #fff !important; }
-.panel-red.smartolt-kpi-card { border-color: #d9534f !important; }
-.panel-red.smartolt-kpi-card > .panel-heading { background-color: #d9534f !important; border-color: #d9534f !important; color: #fff !important; }
-.panel-info.smartolt-kpi-card { border-color: #3498db !important; }
-.panel-info.smartolt-kpi-card > .panel-heading { background-color: #3498db !important; border-color: #3498db !important; color: #fff !important; }
+.panel-green.smartolt-kpi-card { border-color: #009900 !important; }
+.panel-green.smartolt-kpi-card .panel-heading { background-color: #009900 !important; border-color: #009900 !important; color: #fff !important; }
+.panel-red.smartolt-kpi-card { border-color: #cc0000 !important; }
+.panel-red.smartolt-kpi-card .panel-heading { background-color: #cc0000 !important; border-color: #cc0000 !important; color: #fff !important; }
+.panel-warning.smartolt-kpi-card { border-color: #e06600 !important; }
+.panel-warning.smartolt-kpi-card .panel-heading { background-color: #e06600 !important; border-color: #e06600 !important; color: #fff !important; }
+.panel-primary.smartolt-kpi-card { border-color: #0055cc !important; }
+.panel-primary.smartolt-kpi-card .panel-heading { background-color: #0055cc !important; border-color: #0055cc !important; color: #fff !important; }
 .footer-dot-sep {
 	opacity: 0.5;
 	margin: 0 2px;
@@ -2722,6 +2727,137 @@ function actualizarDashboard() {
 }
 setInterval(actualizarDashboard, 5000);
 actualizarDashboard();
+
+// Cargar grafico Network status con datos reales
+function cargarNetworkStatus(oltId) {
+  var period = 'daily';
+  var url = '/graphs_olt/get_onus_statuses_series/' + period + '/' + (oltId || 0);
+  $('#onus-statuses-loading').show();
+  $('#onus-statuses-empty').hide();
+  $('#onus-statuses-chart').show();
+  $.ajax({
+    url: url, method: 'GET', dataType: 'json', timeout: 30000,
+    success: function(resp) {
+      $('#onus-statuses-loading').hide();
+      if (!resp || !resp.success || !resp.data || !resp.data.series) {
+        $('#onus-statuses-chart').hide();
+        $('#onus-statuses-empty').show();
+        return;
+      }
+      var data = resp.data;
+      var hasData = data.series.some(function(s) {
+        return s.points && s.points.some(function(p) { return p[1] !== null && p[1] !== undefined; });
+      });
+      if (!hasData) {
+        $('#onus-statuses-chart').hide();
+        $('#onus-statuses-empty').show();
+        return;
+      }
+      var canvas = document.getElementById('onus-statuses-chart');
+      if (!canvas || typeof Chart === 'undefined') return;
+      
+      // Destruir chart anterior
+      if (window.netStatusChart) { window.netStatusChart.destroy(); }
+      
+      var labels = data.series[0].points.map(function(p) { return p[0]; });
+      var seriesConfig = {
+        working: { label: 'Online', color: '#4db14b', fill: true },
+        powerFail: { label: 'Power Fail', color: '#0064C8', fill: false },
+        los: { label: 'LOS', color: '#bb7403', fill: false },
+        offline: { label: 'N/A', color: '#4c4b4b', fill: false }
+      };
+      var seriesOrder = ['offline', 'los', 'powerFail', 'working'];
+      var datasets = [];
+      seriesOrder.forEach(function(key) {
+        var cfg = seriesConfig[key];
+        var s = data.series.find(function(x) { return x.key === key; });
+        if (!s) return;
+        var vals = s.points.map(function(p) { return p[1]; });
+        var color = cfg.color;
+        datasets.push({
+          label: cfg.label,
+          data: vals,
+          backgroundColor: cfg.fill ? 'rgba(77, 177, 75, 0.15)' : 'transparent',
+          borderColor: color,
+          borderWidth: key === 'working' ? 2.5 : 2,
+          pointRadius: 0,
+          pointHitRadius: 12,
+          pointHoverRadius: 4,
+          pointHoverBorderWidth: 2,
+          pointHoverBackgroundColor: '#1C1C1E',
+          pointHoverBorderColor: color,
+          fill: cfg.fill ? 'origin' : false,
+          lineTension: 0.42,
+          spanGaps: false
+        });
+      });
+      
+      // Crear gradiente para Online
+      var ctx = canvas.getContext('2d');
+      setTimeout(function() {
+        // Aplicar gradiente despues del layout
+      }, 100);
+      
+      window.netStatusChart = new Chart(canvas, {
+        type: 'line',
+        data: { labels: labels, datasets: datasets },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              mode: 'index',
+              intersect: false,
+              backgroundColor: 'rgba(28,28,30,0.95)',
+              titleFont: { family: 'Inter, system-ui, sans-serif', size: 13 },
+              bodyFont: { family: 'Inter, system-ui, sans-serif', size: 13 },
+              padding: 12,
+              cornerRadius: 8,
+              displayColors: true
+            }
+          },
+          scales: {
+            x: {
+              grid: { display: false },
+              ticks: {
+                maxTicksLimit: 30,
+                color: '#98989D',
+                font: { family: 'Inter, system-ui, sans-serif', size: 11 }
+              }
+            },
+            y: {
+              beginAtZero: true,
+              grid: { color: 'rgba(255,255,255,0.06)' },
+              ticks: {
+                color: '#98989D',
+                font: { family: 'Inter, system-ui, sans-serif', size: 11 },
+                callback: function(v) { return v >= 1000 ? (v/1000).toFixed(1)+'k' : v; }
+              }
+            }
+          }
+        }
+      });
+    },
+    error: function() {
+      $('#onus-statuses-loading').hide();
+      $('#onus-statuses-chart').hide();
+      $('#onus-statuses-empty').show();
+    }
+  });
+}
+
+// Cargar grafico al inicio y al cambiar OLT
+$(function() {
+  setTimeout(function() { cargarNetworkStatus(0); }, 500);
+  
+  // Hook al cambio de OLT
+  $(document).on('click', '.olt-filter-btn', function() {
+    var id = parseInt($(this).data('id'));
+    setTimeout(function() { cargarNetworkStatus(id); }, 100);
+  });
+});
 </script>
 
 
