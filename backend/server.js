@@ -1180,19 +1180,19 @@ app.all('/modulo', requireAuth, (req, res) => {
     }
     case 'GPONManager': {
       // Ruta express directa para GPONManager (ultra rápido, sin pasar por el switch pesado)
-      data.clientes = db.prepare("SELECT id, nombre, cedula, telefono FROM clientes WHERE estado='activo' ORDER BY nombre ASC").all();
       try {
         data.olts = db.prepare("SELECT id, nombre, COALESCE(modelo,'') as modelo FROM olts ORDER BY id ASC").all();
       } catch(e) {
-        data.olts = db.prepare("SELECT id, nombre, '' as modelo FROM olts ORDER BY id ASC").all();
+        data.olts = [];
       }
       // KPIs DIRECTOS desde DB (sin cache, instantáneo)
       try {
-        var oltId = parseInt(req.query.olt_id) || 1;
-        var totalOnu = db.prepare("SELECT COUNT(*) as c FROM onu WHERE olt_id=?").get(oltId);
-        var onlineOnu = db.prepare("SELECT COUNT(*) as c FROM onu WHERE olt_id=? AND estado='working'").get(oltId);
-        var pwrfailOnu = db.prepare("SELECT COUNT(*) as c FROM onu WHERE olt_id=? AND estado='pwrfail'").get(oltId);
-        var losOnu = db.prepare("SELECT COUNT(*) as c FROM onu WHERE olt_id=? AND estado='los'").get(oltId);
+        var oltId = parseInt(req.query.olt_id) || 0;
+        var oltWhere = oltId > 0 ? 'olt_id=' + oltId : '1=1';
+        var totalOnu = db.prepare("SELECT COUNT(*) as c FROM onu WHERE " + oltWhere).get();
+        var onlineOnu = db.prepare("SELECT COUNT(*) as c FROM onu WHERE " + oltWhere + " AND estado='working'").get();
+        var pwrfailOnu = db.prepare("SELECT COUNT(*) as c FROM onu WHERE " + oltWhere + " AND estado='pwrfail'").get();
+        var losOnu = db.prepare("SELECT COUNT(*) as c FROM onu WHERE " + oltWhere + " AND estado='los'").get();
         var waitingOnu = db.prepare('SELECT waiting_auth FROM olt_stats WHERE olt_id=? ORDER BY updated_at DESC LIMIT 1').get(oltId);
         var total = totalOnu ? totalOnu.c : 0;
         data.onu_online = (onlineOnu && onlineOnu.c) || 0;
@@ -4283,6 +4283,8 @@ var mesesEsp = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto
         'window.getOnuStatus = window.getOnuStatus || function(){ return {done:function(fn){fn({});return this;},fail:function(){}}; };\n' +
         'window.refreshConfiguredData = window.refreshConfiguredData || function(){};\n' +
         'window.renderConfiguredData = window.renderConfiguredData || function(){};\n' +
+        'window.refreshConfigured = window.refreshConfigured || function(){};\n' +
+        'window.renderConfigured = window.renderConfigured || function(){};\n' +
         'window.initFilterActionsNoSubmit = window.initFilterActionsNoSubmit || function(){};\n' +
         'window.getConfigured = window.getConfigured || function(){};\n' +
         'window.getConfiguredSelectedOltIds = window.getConfiguredSelectedOltIds || function(){ return []; };\n' +
