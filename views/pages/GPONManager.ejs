@@ -891,39 +891,36 @@ $( document ).ready(function() {
                     <div class="col-lg-4">
                     	<div class="panel panel-default panel-olt">
                             <div class="panel-heading">
-                                OLT ZTE-C300                                <div class="pull-right panel-heading-button">
+                                OLT <span id="olt-name-display">{{nombre}}</span>                                <div class="pull-right panel-heading-button">
                                     <div class="btn-group">
                                         <button type="button" class="btn btn-default btn-xs dropdown-toggle panel-heading-dropdown-toggle" data-toggle="dropdown">
-                                            <span id="selected_olt">1 - JOEL WIFI</span>
+                                            <span id="selected_olt"><%= (locals.olts && locals.olts[0]) ? (locals.olts[0].id + ' - ' + locals.olts[0].nombre) : 'Seleccionar OLT' %></span>
                                             <span class="caret"></span>
                                         </button>
                                         <ul class="dropdown-menu pull-right" role="menu" id="dropdownOlts">
-											
-                                        	<li>
-												<a href="/modulo?pagina=GPONManager" class="olt_option min-width-250">All</a>
-											</li>
-                                        		                                            <li>
-													<a href="/?olt_id=1" class="olt_option">
-														<span>1 - JOEL WIFI</span>
-														<span class="badge badge-light pull-right">639</span>
-													</a>
-	                                            </li>
-                                                                                    </ul>
+                                            <% if (locals.olts) { locals.olts.forEach(function(o) { %>
+                                            <li><a href="#" class="olt_option min-width-250" data-id="<%= o.id %>" data-ip="<%= o.olt_ip %>"><%= o.id %> - <%= o.nombre %></a></li>
+                                            <% }); } %>
+                                        </ul>
                                     </div>
                                 </div>
                             </div>
-                            <!-- /.panel-heading -->
-                            <div class="panel-body text-center ">
-                                                            <img class="dashboard-img" src="/content/img/ZTE-C300.png" data-smartolt-ph-bound="1">
+                            <div class="panel-body text-center">
+                                <img class="dashboard-img" src="/content/img/ZTE-C300.png" data-smartolt-ph-bound="1">
                                 <div class="list-group text-left margin-top-xlg">
-                                	<span class="list-group-item">
-											<i class="fa fa-cogs fa-fw"></i> Uptime                                			<span class="pull-right">
-																																		<em id="olt-up-time-1" class="small"><%= locals.uptime_real || 'Cargando...' %>, </em>
-																																		<em id="olt-env-temp-1" class="small"><%= locals.temp_real || '--' %></em>
-											</span>
-	                                </span>
+                                    <span class="list-group-item">
+                                        <i class="fa fa-cogs fa-fw"></i> Uptime <span class="pull-right"><em id="olt-up-time" class="small"><%= locals.uptime_real || 'Cargando...' %></em></span>
+                                    </span>
+                                    <span class="list-group-item">
+                                        <i class="fa fa-thermometer-half fa-fw"></i> Temperature <span class="pull-right"><em id="olt-env-temp" class="small"><%= locals.temp_real || '--' %></em></span>
+                                    </span>
+                                    <span class="list-group-item">
+                                        <i class="fa fa-tag fa-fw"></i> Modelo <span class="pull-right"><em id="olt-model-display" class="small">--</em></span>
+                                    </span>
+                                    <span class="list-group-item">
+                                        <i class="fa fa-globe fa-fw"></i> IP <span class="pull-right"><em id="olt-ip-display" class="small">--</em></span>
+                                    </span>
                                 </div>
-                                <!-- /.list-group -->
                                                         </div>
                             <!-- /.panel-body -->
                         </div>
@@ -2045,6 +2042,39 @@ $(document).ready(function()  {
 	function getWaitingForAuth() {
 	    // Datos ya cargados desde servidor, polling via /api/gpon/kpis
 	}
+
+	// ========= SELECCIONAR OLT desde dropdown =========
+	$(document).on('click', '.olt_option', function() {
+	    var id = $(this).data('id');
+	    var name = $(this).text().trim();
+	    $('#selected_olt').text(name);
+	    $('#olt-name-display').text(name.split(' - ')[1] || name);
+	    
+	    // Cargar datos reales de la OLT via Telnet
+	    $.getJSON('/api/olt-detail?id=' + id, function(oltData) {
+	        if (!oltData.success || !oltData.data) return;
+	        var o = oltData.data;
+	        $('#olt-model-display').text(o.modelo || '--');
+	        $('#olt-ip-display').text(o.olt_ip || '--');
+	    });
+	    
+	    // Obtener uptime y temperatura desde la OLT
+	    $('#olt-up-time').html('<i class="fa fa-spinner fa-spin"></i>');
+	    $('#olt-env-temp').html('<i class="fa fa-spinner fa-spin"></i>');
+	    $.getJSON('/api/olt/details?id=' + id, function(r) {
+	        if (r.success) {
+	            $('#olt-up-time').text(r.uptime || 'N/A');
+	            $('#olt-env-temp').text(r.temperature || 'N/A');
+	        } else {
+	            $('#olt-up-time').text('No disponible');
+	            $('#olt-env-temp').text('--');
+	        }
+	    }).fail(function() {
+	        $('#olt-up-time').text('Error');
+	        $('#olt-env-temp').text('--');
+	    });
+	    return false;
+	});
 
 	    getWaitingForAuth();
 	

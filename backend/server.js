@@ -10129,6 +10129,50 @@ app.get('/api/core/ping', requireAuth, async (req, res) => {
   } catch(e) { res.json({ success: false, error: e.message }); }
 });
 
+// GET /api/olt/details - Obtener uptime y temperatura real de OLT via Telnet
+app.get('/api/olt/details', requireAuth, async (req, res) => {
+  try {
+    var id = parseInt(req.query.id) || 0;
+    var oltRow = db.prepare('SELECT ip, puertos, olt_username, olt_password FROM olts WHERE id=?').get(id);
+    if (!oltRow) return res.json({ success: false, message: 'OLT not found' });
+    
+    const SocksClient = require('socks').SocksClient;
+    const conn = await SocksClient.createConnection({
+      proxy: { host: '10.50.255.245', port: 1080, type: 4, userId: 'admin', password: 'F1tfdrsx132022' },
+      destination: { host: oltRow.ip, port: oltRow.puertos || 23 }, command: 'connect'
+    });
+    const sock = conn.socket;
+    
+    var output = await new Promise((resolve, reject) => {
+      var data = '', step = 0;
+      sock.on('data', function(d) {
+        var text = d.toString(); data += text;
+        if (step === 0 && text.includes('Username:')) { sock.write((oltRow.olt_username || 'zte') + '\r\n'); step = 1; }
+        else if (step === 1 && text.includes('assword:')) { sock.write((oltRow.olt_password || 'zte') + '\r\n'); step = 2; }
+        else if (data.includes('#')) {
+          sock.write('show card\r\n');
+          setTimeout(function() {
+            sock.write('show version\r\n');
+            setTimeout(function() { sock.destroy(); resolve(data); }, 2000);
+          }, 1500);
+        }
+      });
+      sock.on('error', reject);
+      setTimeout(function() { sock.destroy(); resolve(data); }, 8000);
+    });
+    
+    var uptime = 'N/A';
+    var upMatch = output.match(/Uptime:\s*(.+)/i) || output.match(/up\s+(\d+\s+day)/i) || output.match(/System\s+uptime[:\s]+(.+)/i);
+    if (upMatch) uptime = upMatch[1].trim();
+    
+    var temp = 'N/A';
+    var tempMatch = output.match(/Temperature[:\s]+(\d+)/i) || output.match(/temp[:\s]*?(\d+)/i);
+    if (tempMatch) temp = tempMatch[1] + '°C';
+    
+    res.json({ success: true, uptime: uptime, temperature: temp, raw: output.slice(-500) });
+  } catch(e) { res.json({ success: false, message: e.message }); }
+});
+
 // GET /api/core/connections - Ver conexiones activas
 app.get('/api/core/connections', requireAuth, async (req, res) => {
   try {
