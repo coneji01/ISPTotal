@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>VLANs - ISPTotal</title>
+  <style>
+    .vlan-container { padding: 20px; max-width: 1200px; margin: 0 auto; }
+    .vlan-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .vlan-header h2 { margin: 0; color: #e2e8f0; font-size: 22px; font-weight: 600; }
+    .btn-primary { background: rgba(29,139,255,0.18); color: #8cc8ff; border: 1px solid rgba(29,139,255,0.3); padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; }
+    .btn-primary:hover { background: rgba(29,139,255,0.3); }
+    .btn-danger { background: rgba(220,38,38,0.15); color: #fca5a5; border: 1px solid rgba(220,38,38,0.3); padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+    .btn-danger:hover { background: rgba(220,38,38,0.3); }
+    .btn-sm { padding: 4px 8px; font-size: 12px; }
+    table { width: 100%; border-collapse: collapse; background: #0b1528; border-radius: 8px; overflow: hidden; }
+    th { background: rgba(255,255,255,0.05); color: #64748b; padding: 10px 12px; text-align: left; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+    td { padding: 10px 12px; border-top: 1px solid rgba(255,255,255,0.06); color: #e2e8f0; font-size: 13px; }
+    tr:hover td { background: rgba(255,255,255,0.03); }
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(6,22,47,0.85); z-index: 1000; }
+    .modal-content { background: #0b1528; margin: 10% auto; padding: 25px; border-radius: 12px; max-width: 500px; border: 1px solid rgba(255,255,255,0.08); }
+    .modal-content h3 { margin-top: 0; color: #e2e8f0; font-size: 18px; }
+    .modal-content label { display: block; color: #64748b; margin-top: 14px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+    .modal-content input, .modal-content select { width: 100%; padding: 8px 10px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: #e2e8f0; border-radius: 6px; margin-top: 4px; box-sizing: border-box; font-size: 14px; }
+    .modal-content input:focus, .modal-content select:focus { border-color: rgba(29,139,255,0.5); outline: none; }
+    .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 24px; }
+    .btn-cancel { background: rgba(255,255,255,0.06); color: #64748b; border: 1px solid rgba(255,255,255,0.1); padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; }
+    .btn-cancel:hover { background: rgba(255,255,255,0.1); }
+    .badge { background: rgba(29,139,255,0.18); color: #8cc8ff; padding: 2px 6px; border-radius: 4px; font-size: 11px; margin-right: 4px; display: inline-block; }
+    .uplink-cell { font-size: 12px; }
+    .tab-bar { display: flex; gap: 0; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+    .tab { padding: 10px 20px; cursor: pointer; color: #64748b; border-bottom: 2px solid transparent; font-size: 13px; font-weight: 500; }
+    .tab.active { color: #8cc8ff; border-bottom-color: #8cc8ff; }
+    .tab:hover { color: #a9d6ff; }
+    .section { display: none; }
+    .section.active { display: block; }
+  </style>
+</head>
+<body>
+<div class="vlan-container">
+  <div class="tab-bar">
+    <div class="tab active" onclick="showTab('vlan')">VLANs</div>
+    <div class="tab" onclick="showTab('uplink')">Puertos Uplink</div>
+  </div>
+
+  <!-- VLAN Section -->
+  <div id="section-vlan" class="section active">
+    <div class="vlan-header">
+      <h2>Gestión de VLANs</h2>
+      <button class="btn-primary" onclick="openVlanModal()">+ Nueva VLAN</button>
+    </div>
+    <table>
+      <thead><tr>
+        <th>ID VLAN</th><th>Nombre</th><th>Descripción</th><th>Puertos Uplink</th><th>Acciones</th>
+      </tr></thead>
+      <tbody id="vlanTable"></tbody>
+    </table>
+  </div>
+
+  <!-- Uplink Section -->
+  <div id="section-uplink" class="section">
+    <div class="vlan-header">
+      <h2>Puertos Uplink</h2>
+      <button class="btn-primary" onclick="openUplinkModal()">+ Agregar Puerto</button>
+    </div>
+    <table>
+      <thead><tr>
+        <th>Interface</th><th>Nombre</th><th>Velocidad</th><th>Estado</th><th>VLANs asignadas</th><th>Acciones</th>
+      </tr></thead>
+      <tbody id="uplinkTable"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal VLAN -->
+<div id="vlanModal" class="modal">
+  <div class="modal-content">
+    <h3 id="vlanModalTitle">Nueva VLAN</h3>
+    <label>Nombre</label>
+    <input id="vlanNombre" placeholder="Ej: Internet Clientes">
+    <label>VLAN ID</label>
+    <input id="vlanId" type="number" placeholder="Ej: 200">
+    <label>Descripción</label>
+    <input id="vlanDesc" placeholder="Opcional">
+    <label>Puertos Uplink</label>
+    <div id="uplinkCheckboxList"></div>
+    <input type="hidden" id="vlanEditId">
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('vlanModal')">Cancelar</button>
+      <button class="btn-primary" onclick="saveVlan()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Uplink -->
+<div id="uplinkModal" class="modal">
+  <div class="modal-content">
+    <h3>Agregar/Editar Puerto Uplink</h3>
+    <label>Interface</label>
+    <input id="uplinkInterface" placeholder="Ej: xgei_1/20/1">
+    <label>Nombre</label>
+    <input id="uplinkNombre" placeholder="Ej: Uplink Principal">
+    <label>Velocidad</label>
+    <select id="uplinkVelocidad">
+      <option value="10G">10G</option><option value="1G">1G</option><option value="100M">100M</option>
+    </select>
+    <input type="hidden" id="uplinkEditId">
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('uplinkModal')">Cancelar</button>
+      <button class="btn-primary" onclick="saveUplink()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function showTab(tab) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelector('.tab[onclick*="'+tab+'"]').classList.add('active');
+  document.getElementById('section-'+tab).classList.add('active');
+}
+
+function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+document.querySelectorAll('.modal').forEach(m => m.addEventListener('click', function(e) { if (e.target === this) this.style.display = 'none'; }));
+
+function openVlanModal(data) {
+  document.getElementById('vlanModalTitle').textContent = data ? 'Editar VLAN' : 'Nueva VLAN';
+  document.getElementById('vlanEditId').value = data ? data.id : '';
+  document.getElementById('vlanNombre').value = data ? data.nombre : '';
+  document.getElementById('vlanId').value = data ? data.vlan_id : '';
+  document.getElementById('vlanDesc').value = data ? (data.descripcion || '') : '';
+  loadUplinkCheckboxes(data);
+  document.getElementById('vlanModal').style.display = 'block';
+}
+
+function loadVlans() {
+  fetch('/api/vlan/list', { credentials: 'same-origin' })
+    .then(r => r.json()).then(d => {
+      if (!d.success) return;
+      const tbody = document.getElementById('vlanTable');
+      tbody.innerHTML = d.data.map(v => '<tr><td>'+v.vlan_id+'</td><td>'+v.nombre+'</td><td>'+(v.descripcion||'')+'</td><td class="uplink-cell">'+(v.uplinks?v.uplinks.split(',').map(u=>'<span class="badge">'+u+'</span>').join(''):'<span style="color:#666">—</span>')+'</td><td><button class="btn-danger btn-sm" onclick="deleteVlan('+v.id+')">Eliminar</button></td></tr>').join('');
+    });
+}
+
+function saveVlan() {
+  const id = document.getElementById('vlanEditId').value || null;
+  const data = {
+    id: id, nombre: document.getElementById('vlanNombre').value,
+    vlan_id: parseInt(document.getElementById('vlanId').value),
+    descripcion: document.getElementById('vlanDesc').value
+  };
+  fetch('/api/vlan/save', { method:'POST', credentials:'same-origin', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data) })
+    .then(r => r.json()).then(d => {
+      if (d.success) { closeModal('vlanModal'); loadVlans(); }
+      else alert(d.message);
+    });
+}
+
+function deleteVlan(id) {
+  if (!confirm('¿Eliminar esta VLAN?')) return;
+  fetch('/api/vlan/delete', { method:'POST', credentials:'same-origin', headers:{'Content-Type':'application/json'}, body:JSON.stringify({id}) })
+    .then(r => r.json()).then(d => { if (d.success) loadVlans(); });
+}
+
+function loadUplinkCheckboxes(vlanData) {
+  fetch('/api/vlan/uplink-ports', { credentials:'same-origin' })
+    .then(r => r.json()).then(d => {
+      const div = document.getElementById('uplinkCheckboxList');
+      if (!d.success || !d.data.length) { div.innerHTML = '<span style="color:#666;font-size:13px">No hay puertos uplink configurados</span>'; return; }
+      div.innerHTML = d.data.map(p => '<label style="font-weight:normal;display:flex;align-items:center;gap:8px;margin:4px 0"><input type="checkbox" value="'+p.id+'" '+(vlanData && vlanData.uplinks && vlanData.uplinks.includes(p.interface)?'checked':'')+'> '+p.interface+'</label>').join('');
+    });
+}
+
+// Uplink functions
+function openUplinkModal() {
+  document.getElementById('uplinkEditId').value = '';
+  document.getElementById('uplinkInterface').value = '';
+  document.getElementById('uplinkNombre').value = '';
+  document.getElementById('uplinkVelocidad').value = '10G';
+  document.getElementById('uplinkModal').style.display = 'block';
+}
+
+function loadUplinks() {
+  fetch('/api/vlan/uplink-ports', { credentials:'same-origin' })
+    .then(r => r.json()).then(d => {
+      if (!d.success) return;
+      const tbody = document.getElementById('uplinkTable');
+      // Cargar VLANs para mostrar asignaciones
+      fetch('/api/vlan/list', { credentials:'same-origin' }).then(r=>r.json()).then(vlans => {
+        tbody.innerHTML = d.data.map(p => {
+          const assignedVlans = vlans.data ? vlans.data.filter(v => v.uplinks && v.uplinks.includes(p.interface)).map(v => '<span class="badge">VLAN '+v.vlan_id+'</span>').join('') : '';
+          return '<tr><td>'+p.interface+'</td><td>'+(p.nombre||'')+'</td><td>'+p.velocidad+'</td><td>'+p.estado+'</td><td>'+(assignedVlans||'<span style="color:#666">—</span>')+'</td><td><button class="btn-danger btn-sm" onclick="deleteUplink('+p.id+')">Eliminar</button></td></tr>';
+        }).join('');
+      });
+    });
+}
+
+function saveUplink() {
+  fetch('/api/vlan/uplink-save', { method:'POST', credentials:'same-origin', headers:{'Content-Type':'application/json'}, body:JSON.stringify({
+    interface: document.getElementById('uplinkInterface').value,
+    nombre: document.getElementById('uplinkNombre').value,
+    velocidad: document.getElementById('uplinkVelocidad').value
+  })}).then(r=>r.json()).then(d => { if(d.success){ closeModal('uplinkModal'); loadUplinks(); loadVlans(); }});
+}
+
+function deleteUplink(id) {
+  if (!confirm('¿Eliminar este puerto uplink?')) return;
+  fetch('/api/vlan/uplink-save', { method:'POST', credentials:'same-origin', headers:{'Content-Type':'application/json'}, body:JSON.stringify({id, interface:'_delete_'+id}) }).then(r=>r.json());
+  loadUplinks();
+}
+
+// Init
+loadVlans();
+loadUplinks();
+</script>
+</body>
+</html>

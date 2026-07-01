@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Autorizar ONU - ISPTotal</title>
+  <style>
+    .auth-container { padding: 20px; max-width: 800px; margin: 0 auto; }
+    .auth-container h2 { color: #e2e8f0; font-size: 22px; font-weight: 600; margin-bottom: 20px; }
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; color: #64748b; margin-bottom: 4px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+    .form-group input, .form-group select { width: 100%; padding: 8px 10px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: #e2e8f0; border-radius: 6px; box-sizing: border-box; font-size: 14px; }
+    .form-group input:focus, .form-group select:focus { border-color: rgba(29,139,255,0.5); outline: none; }
+    .form-row { display: flex; gap: 15px; }
+    .form-row .form-group { flex: 1; }
+    .btn-primary { background: rgba(29,139,255,0.18); color: #8cc8ff; border: 1px solid rgba(29,139,255,0.3); padding: 10px 24px; border-radius: 6px; cursor: pointer; font-size: 14px; }
+    .btn-primary:hover { background: rgba(29,139,255,0.3); }
+    .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+    .result-box { margin-top: 15px; padding: 12px 16px; border-radius: 8px; display: none; font-size: 14px; }
+    .result-box.success { display: block; background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.3); color: #86efac; }
+    .result-box.error { display: block; background: rgba(220,38,38,0.1); border: 1px solid rgba(220,38,38,0.3); color: #fca5a5; }
+    .result-box.loading { display: block; background: rgba(29,139,255,0.1); border: 1px solid rgba(29,139,255,0.3); color: #8cc8ff; }
+    .sn-preview { background: rgba(255,255,255,0.04); padding: 6px 10px; border-radius: 6px; font-family: monospace; color: #64748b; margin-top: 4px; font-size: 13px; }
+    .badge { display: inline-block; background: rgba(29,139,255,0.18); color: #8cc8ff; padding: 2px 8px; border-radius: 4px; font-size: 11px; margin-left: 6px; }
+    p { color: #64748b; }
+  </style>
+</head>
+<body>
+<div class="auth-container">
+  <h2>Autorizar Nueva ONU</h2>
+  <p style="color:#888;margin-bottom:20px">Usa los comandos exactos de SmartOLT para autorizar una ONU en la OLT</p>
+
+  <div class="form-row">
+    <div class="form-group">
+      <label>Serial Number (SN)</label>
+      <input id="sn" placeholder="Ej: HWTC0555D49E" maxlength="12" style="text-transform:uppercase" oninput="detectarTipoOnu()">
+      <div class="sn-preview" id="snPreview">ESPERE... Tipo detectado automáticamente</div>
+    </div>
+    <div class="form-group">
+      <label>Slot / Puerto</label>
+      <select id="puerto"></select>
+    </div>
+  </div>
+
+  <div class="form-row">
+    <div class="form-group">
+      <label>Tipo de ONU <span id="tipoAuto" class="badge">Auto</span></label>
+      <select id="onuType"></select>
+    </div>
+    <div class="form-group">
+      <label>VLAN</label>
+      <select id="vlan"></select>
+    </div>
+  </div>
+
+  <div class="form-row">
+    <div class="form-group">
+      <label>Perfil de Subida (UP)</label>
+      <select id="speedUp"></select>
+    </div>
+    <div class="form-group">
+      <label>Perfil de Bajada (DOWN)</label>
+      <select id="speedDown"></select>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label>Nombre del Cliente</label>
+    <input id="nombre" placeholder="Ej: Juan Pérez">
+  </div>
+
+  <div class="form-group">
+    <label>Zona / Ubicación</label>
+    <input id="zona" placeholder="Ej: Bella Vista">
+  </div>
+
+  <div class="result-box" id="resultBox"></div>
+
+  <button class="btn-primary" id="authBtn" onclick="autorizar()">Autorizar ONU</button>
+</div>
+
+<script>
+function $(id) { return document.getElementById(id); }
+
+function showResult(msg, type) {
+  var box = $('resultBox');
+  box.className = 'result-box ' + type;
+  box.textContent = msg;
+  box.style.display = 'block';
+}
+
+function loadSelect(url, selectId, labelKey, valueKey, emptyOption) {
+  fetch(url, { credentials: 'same-origin' })
+    .then(r => r.json()).then(d => {
+      var sel = $(selectId);
+      sel.innerHTML = '<option value="">' + (emptyOption || 'Seleccionar...') + '</option>';
+      if (d.success && d.data) {
+        d.data.forEach(function(item) {
+          var opt = document.createElement('option');
+          opt.value = valueKey ? item[valueKey] : item.id;
+          opt.textContent = labelKey ? item[labelKey] : (item.nombre || item.name || item.interface || item.vlan_id + ' - ' + item.nombre);
+          sel.appendChild(opt);
+        });
+      }
+    });
+}
+
+function detectarTipoOnu() {
+  var sn = $('sn').value.toUpperCase();
+  $('sn').value = sn;
+  if (sn.length >= 4) {
+    var prefix = sn.substring(0, 4);
+    var sel = $('onuType');
+    for (var i = 0; i < sel.options.length; i++) {
+      // Buscar por prefijo en el texto
+      var opt = sel.options[i];
+      if (opt.textContent && opt.value) {
+        // Intentar hacer match
+      }
+    }
+  }
+}
+
+function cargarPuertos() {
+  var sel = $('puerto');
+  var puertos = [];
+  for (var s = 2; s <= 4; s++) {
+    for (var p = 1; p <= 16; p++) {
+      puertos.push({ slot: s, port: p });
+    }
+  }
+  sel.innerHTML = '<option value="">Automático</option>';
+  puertos.forEach(function(pp) {
+    var opt = document.createElement('option');
+    opt.value = '1/' + pp.slot + '/' + pp.port;
+    opt.textContent = 'Slot ' + pp.slot + ' - Puerto ' + pp.port + ' (1/' + pp.slot + '/' + pp.port + ')';
+    sel.appendChild(opt);
+  });
+}
+
+function autorizar() {
+  var btn = $('authBtn');
+  btn.disabled = true;
+  showResult('Autorizando ONU en la OLT...', 'loading');
+
+  var data = {
+    sn: $('sn').value,
+    port: $('puerto').value,
+    onu_type: $('onuType').value,
+    vlan_id: parseInt($('vlan').value) || 0,
+    speed_profile_up: $('speedUp').value,
+    speed_profile_down: $('speedDown').value,
+    nombre: $('nombre').value,
+    zona: $('zona').value
+  };
+
+  fetch('/api/gpon/authorize', {
+    method: 'POST',
+    credentials: 'same-origin',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  })
+  .then(r => r.json())
+  .then(d => {
+    if (d.success) {
+      showResult('✅ ' + d.msg, 'success');
+    } else {
+      showResult('❌ ' + (d.msg || 'Error desconocido'), 'error');
+    }
+  })
+  .catch(e => {
+    showResult('❌ Error de conexión: ' + e.message, 'error');
+  })
+  .finally(function() {
+    btn.disabled = false;
+  });
+}
+
+// Cargar datos al iniciar
+cargarPuertos();
+loadSelect('/api/onu-types/list', 'onuType', 'nombre', 'nombre', 'Detectar automático');
+loadSelect('/api/vlan/list', 'vlan', null, null);
+loadSelect('/api/speed-profiles/list', 'speedUp', null, null);
+loadSelect('/api/speed-profiles/list', 'speedDown', null, null);
+</script>
+</body>
+</html>

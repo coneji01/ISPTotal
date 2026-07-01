@@ -17,21 +17,21 @@
   <title>Authorize ONU - JOEL WIFI</title>
 
   <!-- Bootstrap Core CSS -->
-  <link href="/public/smartolt-files/css/bootstrap-custom.css?v=3.53.0.24" rel="stylesheet">
-  <link href="/public/smartolt-files/css/bootstrap-multiselect.css?v=3.53.0.20" rel="stylesheet">
-  <link href="/public/smartolt-files/css/styles.css?v=3.53.0.33" rel="stylesheet">
-  <link href="/public/smartolt-files/css/toast.css?v=3.53.0.20" rel="stylesheet">
+  <link href="/public/smartolt-files/bootstrap-custom.css?v=3.53.0.24" rel="stylesheet">
+  <link href="/public/smartolt-files/bootstrap-multiselect.css?v=3.53.0.20" rel="stylesheet">
+  <link href="/public/smartolt-files/styles.css?v=3.53.0.33" rel="stylesheet">
+  <link href="/public/smartolt-files/toast.css?v=3.53.0.20" rel="stylesheet">
 
   
   <!-- Custom Fonts -->
-  <link href="/public/smartolt-files/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+  <link href="/public/smartolt-files/font-awesome.min.css" rel="stylesheet" type="text/css">
 
   <!-- Message box CSS -->
-  <link href="/public/smartolt-files/src/messagebox.css" rel="stylesheet" type="text/css">
+  <link href="/public/smartolt-files/messagebox.css" rel="stylesheet" type="text/css">
 
-  <link href="/public/smartolt-files/css/inter-fonts.css?v=3.53.0.1" rel="stylesheet">
-  <link href="/public/smartolt-files/css/dashboard-smartolt-night.css?v=3.53.0.292" rel="stylesheet">
-  <script src="/public/smartolt-files/scripts/dashboard-smartolt-night.js?v=3.53.0.63" defer=""></script>
+  <link href="/public/smartolt-files/inter-fonts.css?v=3.53.0.1" rel="stylesheet">
+  <link href="/public/smartolt-files/dashboard-smartolt-night.css?v=3.53.0.292" rel="stylesheet">
+  <script src="/public/smartolt-files/dashboard-smartolt-night.js?v=3.53.0.63" defer=""></script>
     
   <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
   <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -46,16 +46,16 @@
   
   
   <!-- Toast alerts -->
-  <script src="/public/smartolt-files/js/toast.js"></script>
+  <script src="/public/smartolt-files/toast.js"></script>
 
   <!-- Pauses recurring AJAX polling while the tab is hidden OR the user has been idle, resumes on focus / activity. -->
-  <script src="/public/smartolt-files/scripts/polling.js?v=3.53.0.3"></script>
+  <script src="/public/smartolt-files/polling.js?v=3.53.0.3"></script>
 
   <!-- Click-to-copy on inline <code> tokens (same scheme as the Configured ONUs name/SN cells). -->
-  <script src="/public/smartolt-files/scripts/code_copy.js?v=3.53.0.3" defer="" data-copied-label="Copied!"></script>
+  <script src="/public/smartolt-files/code_copy.js?v=3.53.0.3" defer="" data-copied-label="Copied!"></script>
 
   <!-- Geolocation permission-error → localized message helper (shared by location pickers). -->
-  <script src="/public/smartolt-files/scripts/geolocation_helper.js?v=3.53.0.1"></script>
+  <script src="/public/smartolt-files/geolocation_helper.js?v=3.53.0.1"></script>
 
   
   
@@ -103,10 +103,12 @@ $( document ).ready(function() {
     });
   </script>
 
-  <div class="smartolt-landing-hero-bg" aria-hidden="true"></div>
+  </head>
+  <body class="smartolt-site">
 
+  <div class="smartolt-landing-hero-bg" aria-hidden="true"></div>
   <div id="content-wrapper">
-    <div class="smartolt-topbar-network" aria-hidden="true">
+      <div class="smartolt-topbar-network" aria-hidden="true">
       <div class="smartolt-topbar-network-inner">
         <svg class="smartolt-topbar-network-lines" viewBox="0 0 100 100" preserveAspectRatio="none">
           <line x1="8" y1="68" x2="23" y2="78"></line>
@@ -606,10 +608,10 @@ $( document ).ready(function() {
 	var lang_none = 'None';
 	var lang_default = 'Default';
 </script>
-<script src="/public/smartolt-files/scripts/common.js?v=3.53.0.22"></script>
-<script src="/public/smartolt-files/scripts/onu_authorization.js?v=3.53.0.27"></script>
-<script src="/public/smartolt-files/scripts/onu_validations.js?v=3.53.0.20"></script>
-<script src="/public/smartolt-files/scripts/onu_authorization_presets_utils.js?v=3.53.0.6"></script>
+<script src="/public/smartolt-files/common.js?v=3.53.0.22"></script>
+<script src="/public/smartolt-files/onu_authorization.js?v=3.53.0.27"></script>
+<script src="/public/smartolt-files/onu_validations.js?v=3.53.0.20"></script>
+<script src="/public/smartolt-files/onu_authorization_presets_utils.js?v=3.53.0.6"></script>
 
 <script type="text/javascript">
 
@@ -1199,20 +1201,20 @@ $(document).ready(function()  {
 </div>
 
     <!-- Bootstrap Core JavaScript -->
-    <script src="/public/smartolt-files/js/bootstrap.min.js"></script>
-    <script src="/public/smartolt-files/js/bootstrap-multiselect.js?v=3.53.0"></script>
+    <script src="/public/smartolt-files/bootstrap.min.js"></script>
+    <script src="/public/smartolt-files/bootstrap-multiselect.js?v=3.53.0"></script>
 
     <!-- Metis Menu Plugin JavaScript -->
     <script src="/public/smartolt-files/metisMenu.min.js"></script>
 
     <!-- Custom Theme JavaScript -->
-    <script src="/public/smartolt-files/js/sb-admin-2.js"></script>
+    <script src="/public/smartolt-files/sb-admin-2.js"></script>
         
     <!-- Loading overlay -->
-    <script src="/public/smartolt-files/src/loadingoverlay.custom.js?v=2"></script>
+    <script src="/public/smartolt-files/loadingoverlay.custom.js?v=2"></script>
     
     <!-- Message box -->
-    <script src="/public/smartolt-files/src/messagebox.min.js"></script>
+    <script src="/public/smartolt-files/messagebox.min.js"></script>
     
     
 

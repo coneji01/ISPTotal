@@ -8,7 +8,7 @@ var _persistentBusy = false;
 var _pendingResolve = null;
 var _pendingTimer = null;
 
-const SOCKS_HOST = '172.30.105.2';
+const SOCKS_HOST = '10.50.255.245';
 const SOCKS_PORT = 1080;
 const OLT_HOST = '192.168.20.80';
 const OLT_PORT = 23;

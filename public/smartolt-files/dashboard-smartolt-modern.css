@@ -114,6 +114,34 @@ body.smartolt-dashboard .panel-default > .panel-heading .pon-outage-panel-info:f
   opacity: 1;
   outline: none;
 }
+
+body.smartolt-dashboard .panel-default > .panel-heading .pon-outage-heading-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* PON outage heading actions: white on the #4c4b4b heading bar (same in both
+   themes), sized up from the 15px info icon for tap-ability. */
+body.smartolt-dashboard .panel-default > .panel-heading .pon-outage-heading-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  opacity: 0.85;
+  font-size: 18px;
+  line-height: 1;
+  min-width: 20px;
+  vertical-align: middle;
+}
+
+body.smartolt-dashboard .panel-default > .panel-heading .pon-outage-heading-action:hover,
+body.smartolt-dashboard .panel-default > .panel-heading .pon-outage-heading-action:focus {
+  color: #fff;
+  opacity: 1;
+  outline: none;
+  text-decoration: none;
+}
 body.smartolt-dashboard .panel-default > .panel-heading > .panel-heading-button {
   /* Span the full heading height and flex-center the button rather than using
      transform: translateY(-50%) — transform would create a stacking context
@@ -333,6 +361,133 @@ body.smartolt-dashboard .content-wrap > .row + .row > .col-lg-4 > .panel-olt > .
   overflow-x: hidden;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+}
+
+body.smartolt-dashboard .panel-body-olts .list-group-item {
+  display: block;
+}
+
+body.smartolt-dashboard .panel-body-olts .list-group-item > .pull-right {
+  font-size: 90%;
+  line-height: 1.25;
+  margin-left: 8px;
+}
+
+body.smartolt-dashboard .panel-body-olts .list-group-item > .pull-right em {
+  font-size: 90%;
+  line-height: 1.25;
+}
+
+body.smartolt-dashboard .panel-olt .panel-body .list-group-item > .pull-right em[id^="olt-up-time-"],
+body.smartolt-dashboard .panel-olt .panel-body .list-group-item > .pull-right em[id^="olt-env-temp-"] {
+  font-size: 90%;
+  line-height: 1.25;
+}
+
+body.smartolt-dashboard #dropdownOlts .olt_option {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+}
+
+body.smartolt-dashboard #dropdownOlts .olt_option .badge {
+  margin-left: auto;
+}
+
+@media (max-width: 767px) {
+  body.smartolt-dashboard #dropdownOlts {
+    max-width: calc(100vw - 48px);
+    width: calc(100vw - 48px);
+    width: min(320px, calc(100vw - 48px));
+    max-height: 320px;
+    max-height: min(320px, calc(100vh - 180px));
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
+  body.smartolt-dashboard #dropdownOlts > li > a.olt_option {
+    min-width: 0;
+    width: 100%;
+  }
+
+  body.smartolt-dashboard #dropdownOlts .dashboard-olt-option-label {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  body.smartolt-dashboard #dropdownOlts .dashboard-olt-option-label > span:last-child {
+    display: block;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  body.smartolt-dashboard #dropdownOlts .olt_option .badge {
+    flex: 0 0 auto;
+  }
+}
+
+body.smartolt-dashboard .dashboard-olt-option-label {
+  align-items: center;
+  display: inline-flex;
+  gap: 8px;
+  min-width: 0;
+}
+
+body.smartolt-dashboard .olt-status-dot {
+  border-radius: 50%;
+  box-shadow: 0 2px 5px 0 rgba(0, 0, 0, .26);
+  display: inline-block;
+  height: 12px;
+  position: relative;
+  top: -1px;
+  vertical-align: middle;
+  width: 12px;
+}
+
+body.smartolt-dashboard .olt-status-online {
+  background-color: #5cb85c;
+}
+
+body.smartolt-dashboard .olt-status-offline {
+  background-color: #95a5a6;
+}
+
+body.smartolt-dashboard .dashboard-olt-status-dot {
+  flex: 0 0 12px;
+}
+
+body.smartolt-dashboard .dashboard-olt-status-dot--empty {
+  display: inline-block;
+  height: 12px;
+  width: 12px;
+}
+
+body.smartolt-dashboard .dashboard-auth-per-day-panel {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+body.smartolt-dashboard .dashboard-auth-per-day-panel > .panel-body {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+  padding: 10px 12px 12px;
+}
+
+body.smartolt-dashboard .dashboard-auth-per-day-panel > .panel-body > .row,
+body.smartolt-dashboard .dashboard-auth-per-day-panel > .panel-body > .row > .col-lg-12 {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+body.smartolt-dashboard .dashboard-auth-per-day-panel #bar-chart-canvas {
+  flex: 1 1 auto;
+  min-height: 0;
 }
 
 body.smartolt-dashboard .network-status-chart-wrap {
@@ -565,7 +720,21 @@ html:not(.smartolt-night) body.smartolt-site .smartolt-config-comparison-table >
 
 /* --- PON outage dashboard sections (day + night) --- */
 .pon-outage-wrap {
+  display: flex;
+  flex-direction: column;
   padding: 10px 14px 14px;
+}
+
+.pon-outage-section--offline {
+  order: 30;
+}
+
+.pon-signal-degradation-section {
+  order: -10; /* first in the card, before the default-order outage sections */
+}
+
+.pon-outage-section--stale {
+  order: 40;
 }
 
 .pon-outage-section {
@@ -578,20 +747,34 @@ html:not(.smartolt-night) body.smartolt-site .smartolt-config-comparison-table >
 }
 
 .pon-outage-section + .pon-outage-section .pon-outage-section__head {
-  margin-top: 4px;
-  padding-top: 6px;
-  border-top: 1px solid rgba(15, 23, 42, 0.12);
+  margin-top: 2px;
+}
+
+.pon-outage-section + .pon-outage-section .pon-outage-section__head::before {
+  display: block;
 }
 
 .pon-outage-section__head {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: 14px 28px max-content max-content max-content max-content minmax(0, 1fr);
   align-items: center;
-  justify-content: space-between;
-  gap: 8px 14px;
-  padding: 6px 12px 5px;
-  border-bottom: 1px solid rgba(15, 23, 42, 0.1);
+  justify-content: start;
+  position: relative;
+  gap: 6px 8px;
+  min-height: 42px;
+  padding: 5px 16px;
+  border-bottom: 0;
   background: transparent;
+}
+
+.pon-outage-section__head::before {
+  content: "";
+  position: absolute;
+  display: none;
+  top: -1px;
+  left: 16px;
+  right: 16px;
+  border-top: 1px solid rgba(15, 23, 42, 0.12);
 }
 
 .pon-outage-section__head--toggle:hover {
@@ -599,38 +782,42 @@ html:not(.smartolt-night) body.smartolt-site .smartolt-config-comparison-table >
 }
 
 .pon-outage-section__title {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px 10px;
-  min-width: 0;
-  flex: 1 1 220px;
+  display: contents;
 }
 
 .pon-outage-section__icon {
   color: var(--pon-section-accent, #64748b);
-  font-size: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 30px;
+  font-size: 18px;
   line-height: 1;
 }
 
 .pon-outage-section__label {
   font-weight: 600;
-  font-size: 15px;
+  font-size: 16px;
   color: #1e293b;
-  line-height: 1.4;
+  line-height: 1.3;
+  white-space: nowrap;
 }
 
 .pon-outage-section__stats {
   display: inline-flex;
   align-items: center;
-  font-size: 14px;
+  justify-content: center;
+  justify-self: start;
+  font-size: 13px;
   font-weight: 600;
-  line-height: 1.35;
+  line-height: 1.25;
   background: #fff;
   border: 1px solid rgba(15, 23, 42, 0.12);
-  padding: 6px 12px;
+  padding: 4px 10px;
   border-radius: 6px;
   white-space: nowrap;
+  min-height: 28px;
 }
 
 .pon-outage-section__hint {
@@ -665,30 +852,123 @@ html:not(.smartolt-night) body.smartolt-site .smartolt-config-comparison-table >
 }
 
 .pon-outage-section__title-row {
-  display: inline-flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px;
-  min-width: 0;
+  display: contents;
 }
 
 .pon-outage-section__caret {
-  color: #94a3b8;
-  flex-shrink: 0;
+  color: #555;
   display: inline-flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-end;
   width: 14px;
-  height: 1.35em;
+  height: 30px;
   font-size: 13px;
   line-height: 1;
   vertical-align: middle;
 }
 
+.pon-outage-severity-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  justify-self: start;
+  min-height: 0;
+  padding: 2px 7px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.25;
+  white-space: nowrap;
+}
+
+.pon-outage-severity-pill--1 {
+  color: #D98A00;
+  background: transparent;
+  border-color: #D98A00;
+}
+
+.pon-outage-severity-pill--2 {
+  color: #4C3F83;
+  background: transparent;
+  border-color: #4C3F83;
+}
+
+.pon-outage-severity-pill--3 {
+  color: #B91C1C;
+  background: transparent;
+  border-color: #B91C1C;
+}
+
+.pon-signal-degradation-table .pon-outage-severity-pill {
+  vertical-align: middle;
+}
+
+.pon-outage-section__body .pon-signal-degradation-table,
+.pon-outage-section__body .pon-group-table {
+  border-collapse: separate;
+  border-spacing: 0 8px;
+  padding: 0 12px 10px;
+  background: #f7f9fb;
+  border-radius: 6px;
+}
+
+.pon-outage-section__body .pon-signal-degradation-table > thead > tr > th,
+.pon-outage-section__body .pon-group-table > thead > tr > th {
+  padding: 10px 14px 8px;
+  border: 0;
+  color: #475569;
+  font-size: 13px;
+  font-weight: 600;
+  background: transparent;
+}
+
+.pon-outage-section__body .pon-signal-degradation-table > tbody > tr.psd-row > td,
+.pon-outage-section__body .pon-group-table > tbody > tr.pon-group-row > td {
+  padding: 12px 14px;
+  border-top: 1px solid rgba(15, 23, 42, 0.08);
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+  background: #fff;
+  vertical-align: middle;
+}
+
+.pon-outage-section__body .pon-signal-degradation-table > tbody > tr.psd-row > td:first-child,
+.pon-outage-section__body .pon-group-table > tbody > tr.pon-group-row > td:first-child {
+  border-left: 1px solid rgba(15, 23, 42, 0.08);
+  border-top-left-radius: 6px;
+  border-bottom-left-radius: 6px;
+  background: #f7f9fb;
+}
+
+.pon-outage-section__body .pon-signal-degradation-table > tbody > tr.psd-row > td:last-child,
+.pon-outage-section__body .pon-group-table > tbody > tr.pon-group-row > td:last-child {
+  border-right: 1px solid rgba(15, 23, 42, 0.08);
+  border-top-right-radius: 6px;
+  border-bottom-right-radius: 6px;
+}
+
+.pon-signal-degradation-table .psd-row .fa-caret-right,
+.pon-signal-degradation-table .psd-row .fa-caret-down,
+.pon-group-table .pon-group-row .fa-caret-right,
+.pon-group-table .pon-group-row .fa-caret-down {
+  color: #555;
+  margin-right: 8px;
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__caret,
+html.smartolt-night body.smartolt-dashboard .pon-signal-degradation-table .psd-row .fa-caret-right,
+html.smartolt-night body.smartolt-dashboard .pon-signal-degradation-table .psd-row .fa-caret-down,
+html.smartolt-night body.smartolt-dashboard .pon-group-table .pon-group-row .fa-caret-right,
+html.smartolt-night body.smartolt-dashboard .pon-group-table .pon-group-row .fa-caret-down {
+  color: #e2e8f0;
+}
+
 .pon-outage-groupby {
   display: flex;
   align-items: center;
-  gap: 8px;
+  grid-column: 5 / -1;
+  justify-self: end;
+  gap: 6px;
   flex-shrink: 0;
   font-family: inherit;
   -webkit-font-smoothing: antialiased;
@@ -729,11 +1009,11 @@ html:not(.smartolt-night) body.smartolt-site .smartolt-config-comparison-table >
 
 .pon-outage-groupby .pon-groupby {
   display: inline-block;
-  padding: 5px 12px;
+  padding: 3px 10px;
   font-family: inherit;
   font-size: 13px;
   font-weight: 500;
-  line-height: 1.35;
+  line-height: 1.3;
   text-decoration: none;
   color: #475569;
   border: none;
@@ -855,7 +1135,7 @@ html:not(.smartolt-night) body.smartolt-site .smartolt-config-comparison-table >
   white-space: nowrap;
 }
 
-/* Signal-variation table: 7 fixed columns. table-layout:fixed caps the table at
+/* Signal-variation table: 8 fixed columns. table-layout:fixed caps the table at
    100% of the panel (so the "Last scan" column can't be pushed off and clipped by
    the card) and keeps numeric column widths stable when a row expands — without it
    the wide colspan detail cell steals slack and the headers fold. The OLT-name
@@ -869,39 +1149,44 @@ html:not(.smartolt-night) body.smartolt-site .smartolt-config-comparison-table >
 }
 .pon-outage-section__body .pon-signal-degradation-table > thead > tr > th:nth-child(1),
 .pon-outage-section__body .pon-signal-degradation-table > tbody > tr:not(.pon-detail-row) > td:nth-child(1) {
-  width: 12%;
-  min-width: 92px;
+  width: 6%;
+  min-width: 38px;
 }
 .pon-outage-section__body .pon-signal-degradation-table > thead > tr > th:nth-child(2),
 .pon-outage-section__body .pon-signal-degradation-table > tbody > tr:not(.pon-detail-row) > td:nth-child(2) {
-  width: 22%;
+  width: 34%;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 .pon-outage-section__body .pon-signal-degradation-table > thead > tr > th:nth-child(3),
 .pon-outage-section__body .pon-signal-degradation-table > tbody > tr:not(.pon-detail-row) > td:nth-child(3) {
-  width: 10%;
-  min-width: 70px;
+  width: 9%;
+  min-width: 68px;
 }
 .pon-outage-section__body .pon-signal-degradation-table > thead > tr > th:nth-child(4),
 .pon-outage-section__body .pon-signal-degradation-table > tbody > tr:not(.pon-detail-row) > td:nth-child(4) {
-  width: 12%;
-  min-width: 88px;
+  width: 5%;
+  min-width: 40px;
 }
 .pon-outage-section__body .pon-signal-degradation-table > thead > tr > th:nth-child(5),
 .pon-outage-section__body .pon-signal-degradation-table > tbody > tr:not(.pon-detail-row) > td:nth-child(5) {
-  width: 12%;
-  min-width: 88px;
+  width: 9%;
+  min-width: 62px;
 }
 .pon-outage-section__body .pon-signal-degradation-table > thead > tr > th:nth-child(6),
 .pon-outage-section__body .pon-signal-degradation-table > tbody > tr:not(.pon-detail-row) > td:nth-child(6) {
-  width: 14%;
-  min-width: 104px;
+  width: 11%;
+  min-width: 78px;
 }
 .pon-outage-section__body .pon-signal-degradation-table > thead > tr > th:nth-child(7),
 .pon-outage-section__body .pon-signal-degradation-table > tbody > tr:not(.pon-detail-row) > td:nth-child(7) {
+  width: 8%;
+  min-width: 52px;
+}
+.pon-outage-section__body .pon-signal-degradation-table > thead > tr > th:nth-child(8),
+.pon-outage-section__body .pon-signal-degradation-table > tbody > tr:not(.pon-detail-row) > td:nth-child(8) {
   width: 18%;
-  min-width: 116px;
+  min-width: 96px;
 }
 
 /* Drill-down subhead: same typography as main PON table header (OLT / PONs / ONUs / Since) */
@@ -923,6 +1208,45 @@ html:not(.smartolt-night) body.smartolt-site .smartolt-config-comparison-table >
 .pon-outage-section__body .pon-detail-row > td > .table > tbody > tr > td:nth-child(5) {
   width: auto;
   min-width: 72px;
+  white-space: nowrap;
+}
+
+.pon-outage-section__body .pon-detail-row[data-psd-idx] > td > .table > thead > tr > th,
+.pon-outage-section__body .pon-detail-row[data-psd-idx] > td > .table > tbody > tr > td {
+  padding-left: 10px !important;
+  padding-right: 10px !important;
+}
+
+.pon-outage-section__body .pon-detail-row[data-psd-idx] > td > .table > thead > tr > th:nth-child(1),
+.pon-outage-section__body .pon-detail-row[data-psd-idx] > td > .table > tbody > tr > td:nth-child(1) {
+  width: 49%;
+  min-width: 0;
+}
+
+.pon-outage-section__body .pon-detail-row[data-psd-idx] > td > .table > thead > tr > th:nth-child(2),
+.pon-outage-section__body .pon-detail-row[data-psd-idx] > td > .table > tbody > tr > td:nth-child(2) {
+  width: 40px;
+  min-width: 40px;
+}
+
+.pon-outage-section__body .pon-detail-row[data-psd-idx] > td > .table > thead > tr > th:nth-child(3),
+.pon-outage-section__body .pon-detail-row[data-psd-idx] > td > .table > tbody > tr > td:nth-child(3),
+.pon-outage-section__body .pon-detail-row[data-psd-idx] > td > .table > thead > tr > th:nth-child(4),
+.pon-outage-section__body .pon-detail-row[data-psd-idx] > td > .table > tbody > tr > td:nth-child(4) {
+  width: 52px;
+  min-width: 52px;
+}
+
+.pon-outage-section__body .pon-detail-row[data-psd-idx] > td > .table > thead > tr > th:nth-child(5),
+.pon-outage-section__body .pon-detail-row[data-psd-idx] > td > .table > tbody > tr > td:nth-child(5) {
+  width: 44px;
+  min-width: 44px;
+}
+
+.pon-outage-section__body .pon-detail-row[data-psd-idx] > td > .table > thead > tr > th:nth-child(6),
+.pon-outage-section__body .pon-detail-row[data-psd-idx] > td > .table > tbody > tr > td:nth-child(6) {
+  width: 82px;
+  min-width: 82px;
   white-space: nowrap;
 }
 
@@ -951,6 +1275,89 @@ body.smartolt-dashboard .pon-outage-section__body .pon-gps-icon--disabled {
   margin-left: 12px;
   opacity: 0.3;
 }
+
+body.smartolt-dashboard .pon-outage-section__body .pon-group-table--summary {
+  border-spacing: 0;
+  background: #f6f8fa;
+  box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.08);
+  padding: 7px 12px;
+}
+
+body.smartolt-dashboard .pon-outage-section__body .pon-group-table--summary > tbody > tr.pon-group-row > td {
+  padding: 12px 14px;
+  color: #334155;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.35;
+  background: transparent;
+  border: 0;
+  vertical-align: middle;
+}
+
+body.smartolt-dashboard .pon-outage-section__body .pon-group-table--summary.table-striped > tbody > tr.pon-group-row:nth-of-type(odd) > td {
+  background: transparent;
+}
+
+body.smartolt-dashboard .pon-outage-section__body .pon-group-table--summary > tbody > tr.pon-group-row > td:first-child,
+body.smartolt-dashboard .pon-outage-section__body .pon-group-table--summary.table-striped > tbody > tr.pon-group-row:nth-of-type(odd) > td:first-child {
+  color: #334155;
+  background: transparent;
+  border-left: 0;
+  border-radius: 0;
+}
+
+body.smartolt-dashboard .pon-outage-section__body .pon-group-table--summary > tbody > tr.pon-group-row > td:last-child {
+  border-right: 0;
+  border-radius: 0;
+}
+
+body.smartolt-dashboard .pon-outage-section__body .pon-group-table--summary > tbody > tr.pon-group-row + tr.pon-group-row > td,
+body.smartolt-dashboard .pon-outage-section__body .pon-group-table--summary > tbody > tr.pon-detail-row + tr.pon-group-row > td {
+  border-top: 1px dashed rgba(100, 116, 139, 0.28);
+}
+
+body.smartolt-dashboard .pon-outage-section__body .pon-group-table--summary .pon-detail-row > td,
+body.smartolt-dashboard .pon-outage-section__body .pon-group-table--summary .pon-detail-row > td > .pon-detail-table--summary {
+  background: transparent;
+}
+
+body.smartolt-dashboard .pon-outage-section__body .pon-detail-table--summary > tbody > tr > td {
+  padding: 6px 14px 7px;
+  color: #334155;
+  font-size: 14px;
+  line-height: 1.35;
+  background: transparent;
+  border: 0;
+  vertical-align: middle;
+}
+
+body.smartolt-dashboard .pon-outage-section__body .pon-detail-table--summary > tbody > tr > td:first-child {
+  padding-left: 36px;
+}
+
+body.smartolt-dashboard .pon-outage-section__body .pon-detail-branch {
+  display: inline-block;
+  width: 16px;
+  height: 14px;
+  margin-right: 8px;
+  border-left: 1px solid rgba(100, 116, 139, 0.5);
+  border-bottom: 1px solid rgba(100, 116, 139, 0.5);
+  vertical-align: text-top;
+}
+
+body.smartolt-dashboard .pon-outage-section__body .pon-detail-board-label {
+  color: #64748b;
+  font-weight: 600;
+}
+
+body.smartolt-dashboard .pon-outage-section__body .pon-detail-olt-label {
+  display: inline-block;
+  margin-left: 10px;
+  color: #94a3b8;
+  font-size: 12px;
+  font-weight: 500;
+}
+
 @media (min-width: 1200px) {
   .pon-outage-section__body .pon-group-table > thead > tr > th:nth-child(1),
   .pon-outage-section__body .pon-group-table > tbody > tr.pon-group-row > td:nth-child(1),
@@ -981,24 +1388,139 @@ body.smartolt-dashboard .pon-outage-section__body .pon-gps-icon--disabled {
   }
 }
 
-/* PON outage: neutral row + control hovers (no blue/green tint) */
-body.smartolt-dashboard .pon-outage-section__body .table-hover > tbody > tr:hover > td,
-body.smartolt-dashboard .pon-outage-section__body .table-hover > tbody > tr:hover > th,
-body.smartolt-dashboard .pon-outage-section__body .table-striped > tbody > tr:hover > td,
-body.smartolt-dashboard .pon-outage-section__body .table-striped > tbody > tr:hover > th {
-  background-color: #ececec !important;
-}
-
 body.smartolt-dashboard .pon-outage-section__body .table-striped > tbody > tr:nth-of-type(odd) > td {
   background-color: #fafafa;
 }
 
-html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .table-hover > tbody > tr:hover > td,
-html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .table-hover > tbody > tr:hover > th,
-html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .table-striped > tbody > tr:hover > td,
-html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .table-striped > tbody > tr:hover > th {
-  background-color: rgba(255, 255, 255, 0.07) !important;
-  color: inherit;
+body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table > thead > tr > th,
+body.smartolt-dashboard .pon-outage-section__body .pon-group-table > thead > tr > th {
+  padding: 10px 14px 8px;
+  border: 0 !important;
+  color: #475569;
+  font-size: 13px;
+  font-weight: 600;
+  background: transparent !important;
+}
+
+body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table > tbody > tr.psd-row > td,
+body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table.table-striped > tbody > tr.psd-row:nth-of-type(odd) > td,
+body.smartolt-dashboard .pon-outage-section__body .pon-group-table > tbody > tr.pon-group-row > td,
+body.smartolt-dashboard .pon-outage-section__body .pon-group-table.table-striped > tbody > tr.pon-group-row:nth-of-type(odd) > td {
+  padding: 12px 14px;
+  border-top: 1px solid rgba(15, 23, 42, 0.08);
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+  background: #fff !important;
+  vertical-align: middle;
+}
+
+body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table > tbody > tr.psd-row > td:first-child,
+body.smartolt-dashboard .pon-outage-section__body .pon-group-table > tbody > tr.pon-group-row > td:first-child,
+body.smartolt-dashboard .pon-outage-section__body .pon-group-table.table-striped > tbody > tr.pon-group-row:nth-of-type(odd) > td:first-child {
+  border-left: 1px solid rgba(15, 23, 42, 0.08);
+  border-top-left-radius: 6px;
+  border-bottom-left-radius: 6px;
+  background: #f7f9fb !important;
+}
+
+body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table > tbody > tr.psd-row > td:last-child,
+body.smartolt-dashboard .pon-outage-section__body .pon-group-table > tbody > tr.pon-group-row > td:last-child {
+  border-right: 1px solid rgba(15, 23, 42, 0.08);
+  border-top-right-radius: 6px;
+  border-bottom-right-radius: 6px;
+}
+
+body.smartolt-dashboard .pon-outage-section__body .pon-detail-row > td {
+  background: #f7f9fb !important;
+}
+
+body.smartolt-dashboard .pon-outage-section__body .pon-detail-row > td > .table {
+  border-collapse: separate;
+  border-spacing: 0 6px;
+  background: #f7f9fb !important;
+  border-radius: 6px;
+  padding: 0 12px 8px;
+}
+
+body.smartolt-dashboard .pon-outage-section__body .pon-detail-row > td > .table > tbody > tr > td,
+body.smartolt-dashboard .pon-outage-section__body .pon-detail-row > td > .table.table-striped > tbody > tr:nth-of-type(odd) > td {
+  padding: 10px 14px;
+  border-top: 1px solid rgba(15, 23, 42, 0.08);
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+  background: #fff !important;
+  vertical-align: middle;
+}
+
+body.smartolt-dashboard .pon-outage-section__body .pon-detail-row > td > .table > tbody > tr > td:first-child {
+  border-left: 1px solid rgba(15, 23, 42, 0.08);
+  border-top-left-radius: 6px;
+  border-bottom-left-radius: 6px;
+  background: #f7f9fb !important;
+}
+
+body.smartolt-dashboard .pon-outage-section__body .pon-detail-row > td > .table > tbody > tr > td:last-child {
+  border-right: 1px solid rgba(15, 23, 42, 0.08);
+  border-top-right-radius: 6px;
+  border-bottom-right-radius: 6px;
+}
+
+body.smartolt-dashboard .pon-outage-section__body .pon-group-table > tbody > tr.pon-group-row > td:first-child,
+body.smartolt-dashboard .pon-outage-section__body .pon-group-table.table-striped > tbody > tr.pon-group-row:nth-of-type(odd) > td:first-child,
+body.smartolt-dashboard .pon-outage-section__body .pon-detail-row > td > .table > tbody > tr > td:first-child {
+  background: #fff !important;
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table > thead > tr > th,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-group-table > thead > tr > th {
+  border: 0 !important;
+  color: #cbd5e1;
+  background: transparent !important;
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table > tbody > tr.psd-row > td,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table.table-striped > tbody > tr.psd-row:nth-of-type(odd) > td,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-group-table > tbody > tr.pon-group-row > td,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-group-table.table-striped > tbody > tr.pon-group-row:nth-of-type(odd) > td {
+  border-top-color: rgba(148, 163, 184, 0.16);
+  border-bottom-color: rgba(148, 163, 184, 0.16);
+  background: rgba(15, 23, 42, 0.62) !important;
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-group-table {
+  background: rgba(15, 23, 42, 0.34);
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table > tbody > tr.psd-row > td:first-child,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-group-table > tbody > tr.pon-group-row > td:first-child,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-group-table.table-striped > tbody > tr.pon-group-row:nth-of-type(odd) > td:first-child {
+  border-left-color: rgba(148, 163, 184, 0.16);
+  background: rgba(15, 23, 42, 0.34) !important;
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table > tbody > tr.psd-row > td:last-child,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-group-table > tbody > tr.pon-group-row > td:last-child {
+  border-right-color: rgba(148, 163, 184, 0.16);
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-detail-row > td,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-detail-row > td > .table {
+  background: rgba(15, 23, 42, 0.34) !important;
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-detail-row > td > .table > tbody > tr > td,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-detail-row > td > .table.table-striped > tbody > tr:nth-of-type(odd) > td {
+  border-top-color: rgba(148, 163, 184, 0.16);
+  border-bottom-color: rgba(148, 163, 184, 0.16);
+  background: rgba(15, 23, 42, 0.62) !important;
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-detail-row > td > .table > tbody > tr > td:first-child {
+  border-left-color: rgba(148, 163, 184, 0.16);
+  background: rgba(15, 23, 42, 0.34) !important;
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-detail-row > td > .table > tbody > tr > td:last-child {
+  border-right-color: rgba(148, 163, 184, 0.16);
 }
 
 
@@ -1010,12 +1532,11 @@ html.smartolt-night body.smartolt-dashboard .pon-outage-section {
   box-shadow: none;
 }
 
-html.smartolt-night body.smartolt-dashboard .pon-outage-section + .pon-outage-section .pon-outage-section__head {
+html.smartolt-night body.smartolt-dashboard .pon-outage-section + .pon-outage-section .pon-outage-section__head::before {
   border-top-color: rgba(148, 163, 184, 0.22);
 }
 
 html.smartolt-night body.smartolt-dashboard .pon-outage-section__head {
-  border-bottom-color: rgba(148, 163, 184, 0.2);
   background: transparent;
 }
 
@@ -1117,19 +1638,204 @@ html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-group
   color: #94a3b8;
 }
 
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-group-table,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-detail-row > td,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-detail-row > td > .table {
+  background: rgba(15, 23, 42, 0.34) !important;
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table > tbody > tr.psd-row > td,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-group-table > tbody > tr.pon-group-row > td,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-detail-row > td > .table > tbody > tr > td {
+  border-top-color: rgba(148, 163, 184, 0.16) !important;
+  border-bottom-color: rgba(148, 163, 184, 0.16) !important;
+  background: rgba(15, 23, 42, 0.62) !important;
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table > tbody > tr.psd-row > td:first-child,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-group-table > tbody > tr.pon-group-row > td:first-child,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-detail-row > td > .table > tbody > tr > td:first-child {
+  border-left-color: rgba(148, 163, 184, 0.16) !important;
+  background: rgba(15, 23, 42, 0.34) !important;
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table > tbody > tr.psd-row > td:last-child,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-group-table > tbody > tr.pon-group-row > td:last-child,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-detail-row > td > .table > tbody > tr > td:last-child {
+  border-right-color: rgba(148, 163, 184, 0.16) !important;
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-group-table > tbody > tr.pon-group-row > td:first-child,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-group-table.table-striped > tbody > tr.pon-group-row:nth-of-type(odd) > td:first-child,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-detail-row > td > .table > tbody > tr > td:first-child,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-detail-row > td > .table.table-striped > tbody > tr:nth-of-type(odd) > td:first-child {
+  background: rgba(15, 23, 42, 0.62) !important;
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-detail-row[data-psd-idx] > td > .table {
+  table-layout: fixed !important;
+  width: 100% !important;
+  min-width: 100% !important;
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-detail-row[data-psd-idx] > td > .table > thead > tr > th:nth-child(1),
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-detail-row[data-psd-idx] > td > .table > tbody > tr > td:nth-child(1) {
+  width: 49% !important;
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-detail-row[data-psd-idx] > td > .table > thead > tr > th:nth-child(2),
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-detail-row[data-psd-idx] > td > .table > tbody > tr > td:nth-child(2) {
+  width: 40px !important;
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-detail-row[data-psd-idx] > td > .table > thead > tr > th:nth-child(3),
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-detail-row[data-psd-idx] > td > .table > tbody > tr > td:nth-child(3),
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-detail-row[data-psd-idx] > td > .table > thead > tr > th:nth-child(4),
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-detail-row[data-psd-idx] > td > .table > tbody > tr > td:nth-child(4) {
+  width: 52px !important;
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-detail-row[data-psd-idx] > td > .table > thead > tr > th:nth-child(5),
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-detail-row[data-psd-idx] > td > .table > tbody > tr > td:nth-child(5) {
+  width: 44px !important;
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-detail-row[data-psd-idx] > td > .table > thead > tr > th:nth-child(6),
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-detail-row[data-psd-idx] > td > .table > tbody > tr > td:nth-child(6) {
+  width: 82px !important;
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-group-table {
+  background: rgba(255, 255, 255, 0.035) !important;
+  border-radius: 6px;
+  padding: 0 12px 8px;
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-group-table > thead > tr > th {
+  background: transparent !important;
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-detail-row > td,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-detail-row > td > .table {
+  background: transparent !important;
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-detail-row {
+  background: transparent !important;
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-detail-row > td > .table > thead.detail-subhead > tr > th {
+  background: transparent !important;
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-group-table > tbody > tr.pon-group-row > td:first-child,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-group-table.table-striped > tbody > tr.pon-group-row:nth-of-type(odd) > td:first-child,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-detail-row > td > .table > tbody > tr > td:first-child,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-detail-row > td > .table.table-striped > tbody > tr:nth-of-type(odd) > td:first-child {
+  background: rgba(15, 23, 42, 0.62) !important;
+}
+
 /* PON outage: panel-body scroll parity with legacy table-responsive */
 html:not(.smartolt-night) body.smartolt-dashboard .panel-default > .panel-body--pon-outage:last-child,
 html:not(.smartolt-night) body.smartolt-dashboard .panel-default > .panel-body--pon-outage {
   border-bottom-left-radius: var(--dash-radius);
   border-bottom-right-radius: var(--dash-radius);
+  min-height: 96px;
   overflow: hidden;
+  position: relative;
 }
 
 html.smartolt-night body.smartolt-dashboard .panel-default > .panel-body--pon-outage:last-child,
 html.smartolt-night body.smartolt-dashboard .panel-default > .panel-body--pon-outage {
   border-bottom-left-radius: var(--dash-radius);
   border-bottom-right-radius: var(--dash-radius);
+  min-height: 96px;
   overflow: hidden;
+  position: relative;
+}
+
+body.smartolt-dashboard .pon-outage-loader,
+body.smartolt-dashboard .pon-outage-empty {
+  align-items: center;
+  color: #64748b;
+  display: flex;
+  font-size: 13px;
+  gap: 8px;
+  justify-content: center;
+  line-height: 1.4;
+  min-height: 96px;
+  padding: 16px;
+  text-align: center;
+}
+
+body.smartolt-dashboard .pon-outage-loader {
+  gap: 0;
+  overflow: hidden;
+}
+
+.pon-outage-loader {
+  color: #64748b;
+}
+
+body.smartolt-dashboard .pon-outage-loader::before,
+body.smartolt-dashboard .pon-outage-loader::after {
+  animation: pon-outage-loader-line 1.8s ease-in-out infinite;
+  background: linear-gradient(90deg, rgba(100, 116, 139, 0), rgba(100, 116, 139, 0.42), rgba(100, 116, 139, 0));
+  content: "";
+  display: none;
+  flex: 1 1 90px;
+  height: 1px;
+  max-width: 150px;
+  min-width: 42px;
+}
+
+body.smartolt-dashboard .pon-outage-loader::before {
+  animation-direction: reverse;
+}
+
+.pon-outage-loader .fa,
+.pon-outage-loader .fa-spinner,
+body.smartolt-dashboard .pon-outage-loader .fa,
+body.smartolt-dashboard .pon-outage-loader .fa-spinner {
+  color: #64748b !important;
+  font-size: 16px;
+}
+
+body.smartolt-dashboard .pon-outage-loader span {
+  font-weight: 600;
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+
+@keyframes pon-outage-loader-line {
+  0%, 100% {
+    opacity: 0.35;
+    transform: scaleX(0.68);
+  }
+  50% {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-loader,
+html.smartolt-night body.smartolt-dashboard .pon-outage-empty {
+  color: #cbd5e1;
+}
+
+html.smartolt-night .pon-outage-loader,
+html.smartolt-night .pon-outage-loader .fa,
+html.smartolt-night .pon-outage-loader .fa-spinner,
+html.smartolt-night body.smartolt-dashboard .pon-outage-loader .fa,
+html.smartolt-night body.smartolt-dashboard .pon-outage-loader .fa-spinner {
+  color: #cbd5e1 !important;
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-loader::before,
+html.smartolt-night body.smartolt-dashboard .pon-outage-loader::after {
+  background: linear-gradient(90deg, rgba(203, 213, 225, 0), rgba(203, 213, 225, 0.34), rgba(203, 213, 225, 0));
 }
 
 @media (max-width: 767px) {
@@ -1155,41 +1861,47 @@ html.smartolt-night body.smartolt-dashboard .panel-default > .panel-body--pon-ou
 
   .pon-outage-section + .pon-outage-section .pon-outage-section__head {
     margin-top: 3px;
-    padding-top: 5px;
   }
 
   .pon-outage-section__head {
-    flex-direction: column;
-    align-items: stretch;
+    grid-template-columns: 14px 28px minmax(0, 1fr);
+    align-items: center;
     gap: 8px;
     padding: 10px;
   }
 
-  .pon-outage-section__title {
-    flex: 1 1 auto;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 6px;
-    width: 100%;
+  .pon-outage-section__head::before {
+    left: 10px;
+    right: 10px;
   }
 
-  .pon-outage-section__title > .pon-outage-section__icon {
-    display: none;
+  .pon-outage-section__title {
+    display: contents;
+  }
+
+  .pon-outage-section__icon {
+    width: 28px;
+    height: 32px;
+    font-size: 17px;
   }
 
   .pon-outage-section__label {
     font-size: 14px;
     line-height: 1.45;
     width: auto;
-    white-space: nowrap;
+    white-space: normal;
     word-break: normal;
   }
 
-  .pon-outage-section__stats {
-    font-size: 14px;
-    padding: 6px 10px;
+  .pon-outage-section__stats,
+  .pon-outage-severity-pill {
+    grid-column: 3;
+    justify-self: start;
+    font-size: 11px;
+    padding: 2px 7px;
     max-width: 100%;
     white-space: normal;
+    min-height: 0;
   }
 
   .pon-outage-section__hint {
@@ -1199,6 +1911,8 @@ html.smartolt-night body.smartolt-dashboard .panel-default > .panel-body--pon-ou
   }
 
   .pon-outage-groupby {
+    grid-column: 1 / -1;
+    justify-self: stretch;
     width: 100%;
     justify-content: flex-start;
     flex-wrap: wrap;
@@ -1350,8 +2064,8 @@ html.smartolt-night body.smartolt-dashboard .panel-default > .panel-body--pon-ou
   }
 
   .pon-outage-section__body .pon-group-row > td:first-child {
-    white-space: normal;
-    word-break: break-word;
+    white-space: nowrap;
+    word-break: normal;
   }
 }
 
@@ -1369,20 +2083,12 @@ html.smartolt-night body.smartolt-dashboard .panel-default > .panel-body--pon-ou
 }
 
 .pon-outage-section:not(.is-open) .pon-outage-section__head {
-  border-bottom: 1px solid rgba(15, 23, 42, 0.1);
-}
-
-html.smartolt-night body.smartolt-dashboard .pon-outage-section:not(.is-open) .pon-outage-section__head {
-  border-bottom-color: rgba(148, 163, 184, 0.2);
+  border-bottom: 0;
 }
 
 /* Stale + desktop: tighter layout, group-by in header when open */
 .pon-outage-section--stale:not(.is-open) .pon-outage-section__head {
-  border-bottom: 1px solid rgba(15, 23, 42, 0.1);
-}
-
-html.smartolt-night body.smartolt-dashboard .pon-outage-section--stale:not(.is-open) .pon-outage-section__head {
-  border-bottom-color: rgba(148, 163, 184, 0.2);
+  border-bottom: 0;
 }
 
 .pon-outage-section--stale .pon-outage-groupby--stale {
@@ -1397,40 +2103,9 @@ html.smartolt-night body.smartolt-dashboard .pon-outage-section--stale:not(.is-o
   padding: 0;
 }
 
-/* Section titles + stats tag: accent text color per section */
-.pon-outage-section--los .pon-outage-section__label,
-.pon-outage-section--los .pon-outage-section__stats {
-  color: #ea580c;
-}
-
-.pon-outage-section--power .pon-outage-section__label,
-.pon-outage-section--power .pon-outage-section__stats {
-  color: #0064c8;
-}
-
-.pon-outage-section--offline .pon-outage-section__label,
-.pon-outage-section--offline .pon-outage-section__stats {
-  color: #4c4b4b;
-}
-
 .pon-outage-section--stale .pon-outage-section__label,
 .pon-outage-section--stale .pon-outage-section__stats {
   color: #64748b;
-}
-
-html.smartolt-night body.smartolt-dashboard .pon-outage-section--los .pon-outage-section__label,
-html.smartolt-night body.smartolt-dashboard .pon-outage-section--los .pon-outage-section__stats {
-  color: #fb923c;
-}
-
-html.smartolt-night body.smartolt-dashboard .pon-outage-section--power .pon-outage-section__label,
-html.smartolt-night body.smartolt-dashboard .pon-outage-section--power .pon-outage-section__stats {
-  color: #5eb3ff;
-}
-
-html.smartolt-night body.smartolt-dashboard .pon-outage-section--offline .pon-outage-section__label,
-html.smartolt-night body.smartolt-dashboard .pon-outage-section--offline .pon-outage-section__stats {
-  color: #cbd5e1;
 }
 
 html.smartolt-night body.smartolt-dashboard .pon-outage-section--stale .pon-outage-section__label,
@@ -1456,16 +2131,1039 @@ html.smartolt-night body.smartolt-dashboard .pon-outage-section--stale .pon-outa
   }
 
   .pon-outage-section__head {
-    padding: 6px 8px;
-    gap: 4px 10px;
+    padding: 5px 16px;
+    gap: 6px 8px;
   }
 
   .pon-outage-section--stale .pon-outage-section__head {
-    padding: 5px 8px;
+    padding: 5px 16px;
   }
 
   .pon-outage-section--stale .pon-outage-groupby--stale {
     padding: 0;
     margin: 0;
   }
+}
+
+/* OLT details — Troubleshoot tab */
+#troubleshoot .olt-troubleshoot-well {
+  background: #fafafa;
+  border-color: #e5e5e5;
+  margin-bottom: 12px;
+}
+#troubleshoot .olt-troubleshoot-well.margin-bottom-0 {
+  margin-bottom: 0;
+}
+#troubleshoot .olt-troubleshoot-code {
+  background: #f7f8fa;
+  color: #555;
+  border: 1px solid #e3e6ea;
+}
+#troubleshoot .olt-troubleshoot-divider {
+  margin: 15px 0;
+  border-color: #e5e5e5;
+}
+#troubleshoot .consistency-metrics {
+  margin: 8px 0 12px;
+}
+#troubleshoot .consistency-metric {
+  display: inline-block;
+  margin: 0 6px 6px 0;
+  font-size: 12px;
+  padding: 5px 8px;
+  border-radius: 3px;
+}
+#troubleshoot .consistency-metric--neutral {
+  background: #f7f8fa;
+  border: 1px solid #e3e6ea;
+  color: #555;
+}
+#troubleshoot .consistency-metric--ok {
+  background: #f4fbf5;
+  border: 1px solid #dbeee0;
+  color: #2f6841;
+}
+#troubleshoot .consistency-metric--warn {
+  background: #fff8e6;
+  border: 1px solid #ead8a5;
+  color: #7a5b12;
+}
+#troubleshoot .consistency-section {
+  border: 1px solid #e5e5e5;
+  border-left: 4px solid #c7d0db;
+  border-radius: 3px;
+  margin: 14px 0;
+  padding: 12px 14px;
+  background: #fff;
+}
+#troubleshoot .consistency-section__title {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+#troubleshoot .consistency-section__title .fa {
+  width: 18px;
+}
+#troubleshoot .consistency-ok-line {
+  margin: 6px 0 8px;
+  color: #4f7659;
+}
+#troubleshoot .consistency-table-block {
+  margin: 12px 0;
+}
+#troubleshoot .consistency-table-block__title {
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+#troubleshoot .consistency-count-badge {
+  display: inline-block;
+  min-width: 20px;
+  padding: 2px 7px;
+  border-radius: 10px;
+  background: #eef1f4;
+  color: #555;
+  text-align: center;
+  font-size: 12px;
+}
+#troubleshoot .consistency-table {
+  margin-bottom: 0;
+  background: #fff;
+}
+#troubleshoot .consistency-banner {
+  border: 1px solid #e3e6ea;
+  background: #f7f9fb;
+  border-radius: 3px;
+  padding: 9px 11px;
+  margin-bottom: 12px;
+  color: #555;
+}
+#troubleshoot .consistency-banner--ok .fa-check-circle {
+  color: #4f7659;
+}
+#troubleshoot .consistency-banner--running {
+  margin-bottom: 0;
+}
+#troubleshoot .consistency-progress-bar {
+  margin-top: 8px;
+  background: #e9ecef;
+  border-radius: 3px;
+  height: 14px;
+  overflow: hidden;
+}
+#troubleshoot .consistency-progress-bar__fill {
+  height: 14px;
+  background: #3c8dbc;
+}
+#troubleshoot .mig-wan-note {
+  margin-top: 10px;
+}
+#troubleshoot .mig-wan-hint {
+  margin-top: 4px;
+}
+#troubleshoot .mig-wan-hint--warn { color: #d97706; }
+#troubleshoot .mig-wan-hint--ok { color: #22C55E; }
+#troubleshoot .mig-wan-hint--info { color: #3c8dbc; }
+#troubleshoot .mig-wan-progress-line {
+  margin-top: 6px;
+}
+
+/* PON outage compact section bodies: final override because the shared table
+   skin below/above this block also styles .pon-group-table rows. */
+body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary {
+  border-spacing: 0 !important;
+  background: #f8f9fa !important;
+  box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.08);
+  padding: 5px 12px 5px !important;
+}
+
+body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary > tbody > tr.pon-group-row {
+  background: transparent !important;
+}
+
+body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary > tbody > tr.pon-group-row > td,
+body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary.table-striped > tbody > tr.pon-group-row:nth-of-type(odd) > td,
+body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary > tbody > tr.pon-group-row > td:first-child,
+body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary.table-striped > tbody > tr.pon-group-row:nth-of-type(odd) > td:first-child,
+body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary > tbody > tr.pon-group-row > td:last-child {
+  padding: 8px 14px !important;
+  color: #334155 !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+}
+
+body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary > tbody > tr.pon-group-row + tr.pon-group-row > td,
+body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary > tbody > tr.pon-detail-row + tr.pon-group-row > td {
+  border-top: 1px dashed rgba(100, 116, 139, 0.32) !important;
+  background-image: repeating-linear-gradient(90deg, rgba(100, 116, 139, 0.34) 0, rgba(100, 116, 139, 0.34) 5px, transparent 5px, transparent 9px) !important;
+  background-position: left top !important;
+  background-repeat: repeat-x !important;
+  background-size: 9px 1px !important;
+}
+
+body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary > tbody > tr.pon-group-row.pon-group-row--separated > td,
+body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary > tbody > tr.pon-group-row.pon-group-row--separated > td:first-child,
+body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary > tbody > tr.pon-group-row.pon-group-row--separated > td:last-child {
+  border-top: 1px dashed rgba(100, 116, 139, 0.36) !important;
+  background: repeating-linear-gradient(90deg, rgba(100, 116, 139, 0.42) 0, rgba(100, 116, 139, 0.42) 6px, transparent 6px, transparent 11px) left top / 11px 2px repeat-x transparent !important;
+}
+
+body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary > tbody > tr.pon-detail-row,
+body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary .pon-detail-row > td,
+body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary .pon-detail-row > td > .pon-detail-table--summary,
+body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary .pon-detail-row > td > .pon-detail-table--summary > tbody > tr > td,
+body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary .pon-detail-row > td > .pon-detail-table--summary > tbody > tr > td:first-child,
+body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary .pon-detail-row > td > .pon-detail-table--summary > tbody > tr > td:last-child {
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary .pon-detail-row > td > .pon-detail-table--summary {
+  border-collapse: collapse !important;
+  border-spacing: 0 !important;
+  padding: 0 12px 4px !important;
+}
+
+body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary .pon-detail-row > td > .pon-detail-table--summary > tbody > tr > td {
+  padding: 4px 14px 5px !important;
+}
+
+body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary .pon-detail-row > td > .pon-detail-table--summary > tbody > tr > td:first-child {
+  padding-left: 36px !important;
+}
+
+body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table {
+  border-spacing: 0 !important;
+  background: #f8f9fa !important;
+  box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.08);
+  padding: 5px 12px 5px !important;
+}
+
+body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table > thead > tr > th {
+  padding: 7px 10px 6px !important;
+  font-size: 12px !important;
+  line-height: 1.25 !important;
+}
+
+body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table > tbody > tr.psd-row {
+  background: transparent !important;
+}
+
+body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table > tbody > tr.psd-row > td,
+body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table.table-striped > tbody > tr.psd-row:nth-of-type(odd) > td,
+body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table > tbody > tr.psd-row > td:first-child,
+body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table.table-striped > tbody > tr.psd-row:nth-of-type(odd) > td:first-child,
+body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table > tbody > tr.psd-row > td:last-child {
+  padding: 8px 10px !important;
+  color: #334155 !important;
+  font-weight: 400 !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+}
+
+body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table .pon-outage-severity-pill {
+  font-weight: 400 !important;
+}
+
+body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table > tbody > tr.pon-detail-row,
+body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table .pon-detail-row > td,
+body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table .pon-detail-row > td > .table {
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table .pon-detail-row > td > .table {
+  border-collapse: collapse !important;
+  border-spacing: 0 !important;
+  padding: 0 12px 4px !important;
+}
+
+body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table .pon-detail-row > td > .table > thead.detail-subhead > tr > th {
+  padding: 6px 10px 5px !important;
+  font-size: 12px !important;
+  line-height: 1.25 !important;
+  font-weight: 500 !important;
+}
+
+body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table .pon-detail-row > td > .table > tbody > tr > td,
+body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table .pon-detail-row > td > .table.table-striped > tbody > tr:nth-of-type(odd) > td,
+body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table .pon-detail-row > td > .table > tbody > tr > td:first-child {
+  padding: 5px 10px !important;
+  font-weight: 400 !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+}
+
+body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary > tbody > tr.pon-group-separator > td {
+  height: 1px;
+  padding: 0 14px !important;
+  line-height: 0;
+  background: transparent !important;
+  border: 0 !important;
+}
+
+body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary .pon-group-separator__line {
+  display: block;
+  width: 100%;
+  border-top: 1px dashed rgba(100, 116, 139, 0.36);
+}
+
+body.smartolt-dashboard .pon-outage-section--stale .pon-group-table.pon-group-table--summary > tbody > tr.pon-group-row > td {
+  color: #64748b !important;
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary {
+  background: rgba(255, 255, 255, 0.03) !important;
+  box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.16);
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary > tbody > tr.pon-group-row {
+  background: transparent !important;
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary > tbody > tr.pon-group-row > td,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary.table-striped > tbody > tr.pon-group-row:nth-of-type(odd) > td,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary > tbody > tr.pon-group-row > td:first-child,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary.table-striped > tbody > tr.pon-group-row:nth-of-type(odd) > td:first-child,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary > tbody > tr.pon-group-row > td:last-child {
+  color: #e2e8f0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary > tbody > tr.pon-group-row + tr.pon-group-row > td,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary > tbody > tr.pon-detail-row + tr.pon-group-row > td {
+  border-top: 1px dashed rgba(148, 163, 184, 0.3) !important;
+  background-image: repeating-linear-gradient(90deg, rgba(148, 163, 184, 0.34) 0, rgba(148, 163, 184, 0.34) 5px, transparent 5px, transparent 9px) !important;
+  background-position: left top !important;
+  background-repeat: repeat-x !important;
+  background-size: 9px 1px !important;
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary > tbody > tr.pon-group-row.pon-group-row--separated > td,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary > tbody > tr.pon-group-row.pon-group-row--separated > td:first-child,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary > tbody > tr.pon-group-row.pon-group-row--separated > td:last-child {
+  border-top: 1px dashed rgba(148, 163, 184, 0.34) !important;
+  background: repeating-linear-gradient(90deg, rgba(148, 163, 184, 0.38) 0, rgba(148, 163, 184, 0.38) 6px, transparent 6px, transparent 11px) left top / 11px 2px repeat-x transparent !important;
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary > tbody > tr.pon-detail-row,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary .pon-detail-row > td,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary .pon-detail-row > td > .pon-detail-table--summary,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary .pon-detail-row > td > .pon-detail-table--summary > tbody > tr > td,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary .pon-detail-row > td > .pon-detail-table--summary > tbody > tr > td:first-child,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary .pon-detail-row > td > .pon-detail-table--summary > tbody > tr > td:last-child {
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary .pon-group-separator__line {
+  border-top-color: rgba(148, 163, 184, 0.34);
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-section--stale .pon-group-table.pon-group-table--summary > tbody > tr.pon-group-row > td {
+  color: #94a3b8 !important;
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table {
+  background: rgba(255, 255, 255, 0.03) !important;
+  box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.16);
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table > tbody > tr.psd-row,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table > tbody > tr.pon-detail-row {
+  background: transparent !important;
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table > thead > tr > th,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table .pon-detail-row > td > .table > thead.detail-subhead > tr > th {
+  color: #cbd5e1 !important;
+  background: transparent !important;
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table > tbody > tr.psd-row > td,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table.table-striped > tbody > tr.psd-row:nth-of-type(odd) > td,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table > tbody > tr.psd-row > td:first-child,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table.table-striped > tbody > tr.psd-row:nth-of-type(odd) > td:first-child,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table > tbody > tr.psd-row > td:last-child,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table .pon-detail-row > td,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table .pon-detail-row > td > .table,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table .pon-detail-row > td > .table > tbody > tr > td,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table .pon-detail-row > td > .table.table-striped > tbody > tr:nth-of-type(odd) > td,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table .pon-detail-row > td > .table > tbody > tr > td:first-child {
+  color: #e2e8f0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  font-weight: 400 !important;
+}
+
+/* PON outage unified inner tables: lighter base, solid separators, normal expanded text. */
+body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary,
+body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table {
+  background: #fbfcfd !important;
+}
+
+body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary > tbody > tr.pon-group-row + tr.pon-group-row > td,
+body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary > tbody > tr.pon-detail-row + tr.pon-group-row > td,
+body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary > tbody > tr.pon-group-row.pon-group-row--separated > td,
+body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table > tbody > tr.psd-row + tr.psd-row > td,
+body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table > tbody > tr.pon-detail-row + tr.psd-row > td {
+  border-top: 1px solid rgba(100, 116, 139, 0.26) !important;
+  background-image: none !important;
+  background-size: auto !important;
+}
+
+body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary .pon-group-separator__line {
+  border-top: 1px solid rgba(100, 116, 139, 0.26) !important;
+}
+
+body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table .pon-detail-row > td > .table > thead.detail-subhead > tr > th {
+  border-bottom: 1px solid rgba(100, 116, 139, 0.18) !important;
+}
+
+body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table .pon-detail-row > td > .table > tbody > tr + tr > td,
+body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary .pon-detail-row > td > .pon-detail-table--summary > tbody > tr + tr > td {
+  border-top: 1px solid rgba(100, 116, 139, 0.16) !important;
+}
+
+body.smartolt-dashboard .pon-outage-section__body .pon-detail-row,
+body.smartolt-dashboard .pon-outage-section__body .pon-detail-row th,
+body.smartolt-dashboard .pon-outage-section__body .pon-detail-row td,
+body.smartolt-dashboard .pon-outage-section__body .pon-detail-row a,
+body.smartolt-dashboard .pon-outage-section__body .pon-detail-row span,
+body.smartolt-dashboard .pon-outage-section__body .pon-detail-board-label,
+body.smartolt-dashboard .pon-outage-section__body .pon-detail-olt-label {
+  font-weight: 400 !important;
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table {
+  background: rgba(255, 255, 255, 0.045) !important;
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary > tbody > tr.pon-group-row + tr.pon-group-row > td,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary > tbody > tr.pon-detail-row + tr.pon-group-row > td,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary > tbody > tr.pon-group-row.pon-group-row--separated > td,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table > tbody > tr.psd-row + tr.psd-row > td,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table > tbody > tr.pon-detail-row + tr.psd-row > td {
+  border-top: 1px solid rgba(148, 163, 184, 0.24) !important;
+  background-image: none !important;
+  background-size: auto !important;
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary .pon-group-separator__line {
+  border-top: 1px solid rgba(148, 163, 184, 0.24) !important;
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table .pon-detail-row > td > .table > thead.detail-subhead > tr > th {
+  border-bottom: 1px solid rgba(148, 163, 184, 0.18) !important;
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table .pon-detail-row > td > .table > tbody > tr + tr > td,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary .pon-detail-row > td > .pon-detail-table--summary > tbody > tr + tr > td {
+  border-top: 1px solid rgba(148, 163, 184, 0.16) !important;
+}
+
+body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table .pon-detail-row > td > .table.table > tbody > tr + tr > td,
+body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table .pon-detail-row > td > .table.table > tbody > tr + tr > td:first-child,
+body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table .pon-detail-row > td > .table.table > tbody > tr + tr > td:last-child {
+  border-top: 1px solid rgba(100, 116, 139, 0.16) !important;
+  background-image: none !important;
+  background-size: auto !important;
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table .pon-detail-row > td > .table.table > tbody > tr + tr > td,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table .pon-detail-row > td > .table.table > tbody > tr + tr > td:first-child,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table .pon-detail-row > td > .table.table > tbody > tr + tr > td:last-child {
+  border-top: 1px solid rgba(148, 163, 184, 0.16) !important;
+  background-image: none !important;
+  background-size: auto !important;
+}
+
+/* Specificity closure for older cell-edge and detail-heading rules. */
+body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary > tbody > tr.pon-group-row + tr.pon-group-row > td:first-child,
+body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary > tbody > tr.pon-group-row + tr.pon-group-row > td:last-child,
+body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary > tbody > tr.pon-detail-row + tr.pon-group-row > td:first-child,
+body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary > tbody > tr.pon-detail-row + tr.pon-group-row > td:last-child,
+body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary > tbody > tr.pon-group-row.pon-group-row--separated > td:first-child,
+body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary > tbody > tr.pon-group-row.pon-group-row--separated > td:last-child,
+body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table > tbody > tr.psd-row + tr.psd-row > td:first-child,
+body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table > tbody > tr.psd-row + tr.psd-row > td:last-child,
+body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table > tbody > tr.pon-detail-row + tr.psd-row > td:first-child,
+body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table > tbody > tr.pon-detail-row + tr.psd-row > td:last-child {
+  border-top: 1px solid rgba(100, 116, 139, 0.26) !important;
+  background-image: none !important;
+  background-size: auto !important;
+}
+
+body.smartolt-dashboard .pon-outage-section__body .pon-detail-row > td > .table > thead > tr > th,
+body.smartolt-dashboard .pon-outage-section__body .pon-detail-row > td > .table > thead.detail-subhead > tr > th,
+body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table .pon-detail-row > td > .table > thead.detail-subhead > tr > th,
+body.smartolt-dashboard .pon-outage-section__body .pon-detail-row > td > .pon-detail-table--summary > thead > tr > th,
+body.smartolt-dashboard .pon-outage-section__body .pon-detail-row strong,
+body.smartolt-dashboard .pon-outage-section__body .pon-detail-row b {
+  font-weight: 400 !important;
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary > tbody > tr.pon-group-row + tr.pon-group-row > td:first-child,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary > tbody > tr.pon-group-row + tr.pon-group-row > td:last-child,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary > tbody > tr.pon-detail-row + tr.pon-group-row > td:first-child,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary > tbody > tr.pon-detail-row + tr.pon-group-row > td:last-child,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary > tbody > tr.pon-group-row.pon-group-row--separated > td:first-child,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary > tbody > tr.pon-group-row.pon-group-row--separated > td:last-child,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table > tbody > tr.psd-row + tr.psd-row > td:first-child,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table > tbody > tr.psd-row + tr.psd-row > td:last-child,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table > tbody > tr.pon-detail-row + tr.psd-row > td:first-child,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table > tbody > tr.pon-detail-row + tr.psd-row > td:last-child {
+  border-top: 1px solid rgba(148, 163, 184, 0.24) !important;
+  background-image: none !important;
+  background-size: auto !important;
+}
+
+body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary.pon-group-table--summary > tbody > tr.pon-group-row + tr.pon-group-row > td:first-child,
+body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary.pon-group-table--summary > tbody > tr.pon-group-row + tr.pon-group-row > td:last-child,
+body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary.pon-group-table--summary > tbody > tr.pon-detail-row + tr.pon-group-row > td:first-child,
+body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary.pon-group-table--summary > tbody > tr.pon-detail-row + tr.pon-group-row > td:last-child,
+body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table.pon-signal-degradation-table > tbody > tr.psd-row + tr.psd-row > td:first-child,
+body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table.pon-signal-degradation-table > tbody > tr.psd-row + tr.psd-row > td:last-child,
+body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table.pon-signal-degradation-table > tbody > tr.pon-detail-row + tr.psd-row > td:first-child,
+body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table.pon-signal-degradation-table > tbody > tr.pon-detail-row + tr.psd-row > td:last-child {
+  border-top: 1px solid rgba(100, 116, 139, 0.26) !important;
+  background-image: none !important;
+  background-size: auto !important;
+}
+
+body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table.pon-signal-degradation-table > tbody > tr.psd-row + tr.psd-row > td,
+body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table.pon-signal-degradation-table > tbody > tr.pon-detail-row + tr.psd-row > td {
+  border-top: 1px solid rgba(100, 116, 139, 0.26) !important;
+  background-image: none !important;
+  background-size: auto !important;
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary.pon-group-table--summary > tbody > tr.pon-group-row + tr.pon-group-row > td:first-child,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary.pon-group-table--summary > tbody > tr.pon-group-row + tr.pon-group-row > td:last-child,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary.pon-group-table--summary > tbody > tr.pon-detail-row + tr.pon-group-row > td:first-child,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary.pon-group-table--summary > tbody > tr.pon-detail-row + tr.pon-group-row > td:last-child,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table.pon-signal-degradation-table > tbody > tr.psd-row + tr.psd-row > td:first-child,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table.pon-signal-degradation-table > tbody > tr.psd-row + tr.psd-row > td:last-child,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table.pon-signal-degradation-table > tbody > tr.pon-detail-row + tr.psd-row > td:first-child,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table.pon-signal-degradation-table > tbody > tr.pon-detail-row + tr.psd-row > td:last-child {
+  border-top: 1px solid rgba(148, 163, 184, 0.24) !important;
+  background-image: none !important;
+  background-size: auto !important;
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table.pon-signal-degradation-table > tbody > tr.psd-row + tr.psd-row > td,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table.pon-signal-degradation-table > tbody > tr.pon-detail-row + tr.psd-row > td {
+  border-top: 1px solid rgba(148, 163, 184, 0.24) !important;
+  background-image: none !important;
+  background-size: auto !important;
+}
+
+/* PON outage table copy should stay regular-weight in every expanded section. */
+body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary > thead > tr > th,
+body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary > tbody > tr.pon-group-row > td,
+body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary > tbody > tr.pon-group-row > td:first-child,
+body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary > tbody > tr.pon-group-row > td:last-child,
+body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary > tbody > tr.pon-group-row a,
+body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary > tbody > tr.pon-group-row span,
+body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary .pon-detail-row > td > .pon-detail-table--summary > thead > tr > th,
+body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary .pon-detail-row > td > .pon-detail-table--summary > tbody > tr > td,
+body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary .pon-detail-row > td > .pon-detail-table--summary a,
+body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary .pon-detail-row > td > .pon-detail-table--summary span,
+body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table > thead > tr > th,
+body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table > tbody > tr.psd-row > td,
+body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table > tbody > tr.psd-row a,
+body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table > tbody > tr.psd-row span {
+  font-weight: 400 !important;
+}
+
+body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table > tbody > tr.psd-row .pon-outage-severity-pill {
+  display: inline !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  line-height: inherit !important;
+}
+
+body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table > tbody > tr.psd-row > td.pon-signal-severity-cell {
+  padding-left: 4px !important;
+  padding-right: 4px !important;
+  text-align: center;
+  white-space: nowrap;
+}
+
+body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table > thead > tr > th.pon-signal-severity-heading {
+  padding-left: 5px !important;
+  padding-right: 5px !important;
+}
+
+body.smartolt-dashboard .pon-outage-section__body .pon-signal-severity-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin-left: 0;
+  border-radius: 50%;
+  vertical-align: -1px;
+  box-shadow: none;
+}
+
+body.smartolt-dashboard .pon-outage-section__body .pon-signal-severity-marker {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding-right: 5px;
+}
+
+body.smartolt-dashboard .pon-outage-section__body .pon-signal-severity-marker > .fa {
+  line-height: 1;
+}
+
+body.smartolt-dashboard .pon-outage-section__body .pon-signal-severity-dot--1 {
+  background: #D98A00;
+}
+
+body.smartolt-dashboard .pon-outage-section__body .pon-signal-severity-dot--2 {
+  background: #9333EA;
+}
+
+body.smartolt-dashboard .pon-outage-section__body .pon-signal-severity-dot--3 {
+  background: #DC2626;
+}
+
+body.smartolt-dashboard .pon-outage-section__body .pon-signal-detail-table > tbody > tr > td.pon-signal-onu-label {
+  padding-left: 10px !important;
+}
+
+body.smartolt-dashboard .pon-outage-section__body .pon-signal-detail-table .pon-detail-branch {
+  margin-right: 8px;
+}
+
+body.smartolt-dashboard .pon-signal-degradation-section .pon-outage-section__head [data-psd-filter] {
+  cursor: pointer;
+}
+
+body.smartolt-dashboard .pon-signal-degradation-section .pon-outage-section__head [data-psd-filter].is-active {
+  box-shadow: 0 0 0 1px currentColor inset;
+}
+
+body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table .pon-signal-detail-table {
+  table-layout: fixed;
+  width: 100%;
+}
+
+body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table .pon-signal-detail-table > thead > tr > th,
+body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table .pon-signal-detail-table > tbody > tr > td {
+  padding-left: 3px !important;
+  padding-right: 3px !important;
+  min-width: 0 !important;
+}
+
+body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table .pon-signal-detail-table > thead > tr > th {
+  font-size: 11px !important;
+  line-height: 1.25 !important;
+  white-space: nowrap;
+}
+
+body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table .pon-signal-detail-table > thead > tr > th:nth-child(2),
+body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table .pon-signal-detail-table > tbody > tr > td:nth-child(2) {
+  width: 40px;
+}
+
+body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table .pon-signal-detail-table > thead > tr > th:nth-child(3),
+body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table .pon-signal-detail-table > thead > tr > th:nth-child(4),
+body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table .pon-signal-detail-table > tbody > tr > td:nth-child(3) {
+  width: 52px;
+}
+
+body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table .pon-signal-detail-table > tbody > tr > td:nth-child(4) {
+  width: 52px;
+}
+
+body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table .pon-signal-detail-table > thead > tr > th:nth-child(5),
+body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table .pon-signal-detail-table > tbody > tr > td:nth-child(5) {
+  width: 44px;
+}
+
+body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table .pon-signal-detail-table > thead > tr > th:nth-child(6),
+body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table .pon-signal-detail-table > tbody > tr > td:nth-child(6) {
+  width: 82px;
+}
+
+/* Keep all PON outage carets and table hovers consistent with the OLT/Info lists. */
+body.smartolt-dashboard .pon-outage-section__caret,
+body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table .psd-row .fa-caret-right,
+body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table .psd-row .fa-caret-down,
+body.smartolt-dashboard .pon-outage-section__body .pon-group-table .pon-group-row .fa-caret-right,
+body.smartolt-dashboard .pon-outage-section__body .pon-group-table .pon-group-row .fa-caret-down {
+  color: #555 !important;
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__caret,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table .psd-row .fa-caret-right,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table .psd-row .fa-caret-down,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-group-table .pon-group-row .fa-caret-right,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-group-table .pon-group-row .fa-caret-down {
+  color: #e2e8f0 !important;
+}
+
+body.smartolt-dashboard .pon-outage-wrap .pon-outage-section__body .pon-signal-degradation-table > tbody > tr.psd-row:hover,
+body.smartolt-dashboard .pon-outage-wrap .pon-outage-section__body .pon-signal-degradation-table > tbody > tr.psd-row:hover > td,
+body.smartolt-dashboard .pon-outage-wrap .pon-outage-section__body .pon-signal-degradation-table > tbody > tr.psd-row:hover > td:first-child,
+body.smartolt-dashboard .pon-outage-wrap .pon-outage-section__body .pon-group-table > tbody > tr.pon-group-row:hover,
+body.smartolt-dashboard .pon-outage-wrap .pon-outage-section__body .pon-group-table > tbody > tr.pon-group-row:hover > td,
+body.smartolt-dashboard .pon-outage-wrap .pon-outage-section__body .pon-group-table > tbody > tr.pon-group-row:hover > td:first-child,
+body.smartolt-dashboard .pon-outage-wrap .pon-outage-section__body .pon-detail-table--summary > tbody > tr:hover,
+body.smartolt-dashboard .pon-outage-wrap .pon-outage-section__body .pon-detail-table--summary > tbody > tr:hover > td,
+body.smartolt-dashboard .pon-outage-wrap .pon-outage-section__body .pon-detail-table--summary > tbody > tr:hover > td:first-child,
+body.smartolt-dashboard .pon-outage-wrap .pon-outage-section__body .pon-signal-detail-table > tbody > tr:hover,
+body.smartolt-dashboard .pon-outage-wrap .pon-outage-section__body .pon-signal-detail-table > tbody > tr:hover > td,
+body.smartolt-dashboard .pon-outage-wrap .pon-outage-section__body .pon-signal-detail-table > tbody > tr:hover > td:first-child {
+  background: #ecf0f1 !important;
+  background-color: #ecf0f1 !important;
+  background-image: none !important;
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-wrap .pon-outage-section__body .pon-signal-degradation-table > tbody > tr.psd-row:hover,
+html.smartolt-night body.smartolt-dashboard .pon-outage-wrap .pon-outage-section__body .pon-signal-degradation-table > tbody > tr.psd-row:hover > td,
+html.smartolt-night body.smartolt-dashboard .pon-outage-wrap .pon-outage-section__body .pon-signal-degradation-table > tbody > tr.psd-row:hover > td:first-child,
+html.smartolt-night body.smartolt-dashboard .pon-outage-wrap .pon-outage-section__body .pon-group-table > tbody > tr.pon-group-row:hover,
+html.smartolt-night body.smartolt-dashboard .pon-outage-wrap .pon-outage-section__body .pon-group-table > tbody > tr.pon-group-row:hover > td,
+html.smartolt-night body.smartolt-dashboard .pon-outage-wrap .pon-outage-section__body .pon-group-table > tbody > tr.pon-group-row:hover > td:first-child,
+html.smartolt-night body.smartolt-dashboard .pon-outage-wrap .pon-outage-section__body .pon-detail-table--summary > tbody > tr:hover,
+html.smartolt-night body.smartolt-dashboard .pon-outage-wrap .pon-outage-section__body .pon-detail-table--summary > tbody > tr:hover > td,
+html.smartolt-night body.smartolt-dashboard .pon-outage-wrap .pon-outage-section__body .pon-detail-table--summary > tbody > tr:hover > td:first-child,
+html.smartolt-night body.smartolt-dashboard .pon-outage-wrap .pon-outage-section__body .pon-signal-detail-table > tbody > tr:hover,
+html.smartolt-night body.smartolt-dashboard .pon-outage-wrap .pon-outage-section__body .pon-signal-detail-table > tbody > tr:hover > td,
+html.smartolt-night body.smartolt-dashboard .pon-outage-wrap .pon-outage-section__body .pon-signal-detail-table > tbody > tr:hover > td:first-child {
+  background: rgba(29, 139, 255, 0.12) !important;
+  background-color: rgba(29, 139, 255, 0.12) !important;
+  background-image: none !important;
+}
+
+body.smartolt-dashboard .pon-outage-wrap .pon-gps-link,
+body.smartolt-dashboard .pon-outage-wrap .pon-gps-disabled {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  margin-left: 6px;
+  border-radius: 50%;
+  border: 1px solid #bfdbfe;
+  background: #eef4ff;
+  color: #0064c8;
+  font-size: 20px !important;
+  line-height: 1 !important;
+  vertical-align: middle;
+  text-decoration: none;
+}
+
+body.smartolt-dashboard .pon-outage-wrap .pon-gps-link:hover,
+body.smartolt-dashboard .pon-outage-wrap .pon-gps-link:focus {
+  background: #eef4ff;
+  color: #0057ad;
+  text-decoration: none;
+  outline: none;
+}
+
+body.smartolt-dashboard .pon-outage-wrap .pon-gps-disabled {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #94a3b8;
+  cursor: default;
+}
+
+body.smartolt-dashboard .pon-outage-wrap .pon-gps-icon,
+body.smartolt-dashboard .pon-outage-wrap .pon-gps-icon::before {
+  font-size: 20px !important;
+  line-height: 1 !important;
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-wrap .pon-gps-link,
+html.smartolt-night body.smartolt-dashboard .pon-outage-wrap .pon-gps-link:hover,
+html.smartolt-night body.smartolt-dashboard .pon-outage-wrap .pon-gps-link:focus {
+  background: rgba(140, 200, 255, 0.1);
+  border-color: rgba(140, 200, 255, 0.28);
+  color: #8cc8ff;
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-wrap .pon-gps-disabled {
+  background: rgba(255, 255, 255, 0.045);
+  border-color: rgba(255, 255, 255, 0.12);
+  color: #64748b;
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-signal-severity-dot {
+  box-shadow: none;
+}
+
+body.smartolt-dashboard .pon-outage-wrap .pon-detail-table--summary > tbody > tr.pon-detail-item-row > td {
+  color: #334155 !important;
+  font-size: 14px !important;
+  line-height: 1.25 !important;
+}
+
+body.smartolt-dashboard .pon-outage-wrap .pon-detail-table--summary > tbody > tr.pon-detail-item-row .pon-detail-board-label,
+body.smartolt-dashboard .pon-outage-wrap .pon-detail-table--summary > tbody > tr.pon-detail-item-row .pon-detail-item-label > a {
+  font-size: inherit !important;
+  font-weight: 400 !important;
+  text-decoration: none !important;
+}
+
+body.smartolt-dashboard .pon-outage-wrap .pon-detail-table--summary > tbody > tr.pon-detail-item-row .pon-detail-board-label {
+  color: inherit !important;
+  font-size: inherit !important;
+  font-weight: 400 !important;
+}
+
+body.smartolt-dashboard .pon-outage-wrap .pon-detail-table--summary > tbody > tr.pon-detail-item-row .pon-detail-item-label > a {
+  color: #0064c8 !important;
+}
+
+body.smartolt-dashboard .pon-outage-wrap .pon-detail-table--summary > tbody > tr.pon-detail-item-row .pon-detail-item-label > a:first-of-type {
+  display: inline-block;
+  min-width: 48px;
+  text-align: right;
+}
+
+body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary .pon-detail-row > td > .pon-detail-table--summary {
+  table-layout: fixed;
+  width: 100%;
+}
+
+body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary .pon-detail-row > td > .pon-detail-table--summary > tbody > tr > td.pon-detail-item-label {
+  width: 49% !important;
+  min-width: 0 !important;
+  overflow: visible;
+  text-overflow: clip;
+  white-space: nowrap;
+}
+
+body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary .pon-detail-row > td > .pon-detail-table--summary > tbody > tr > td.pon-detail-position-cell {
+  width: 40px !important;
+  min-width: 40px !important;
+  padding-left: 10px !important;
+  padding-right: 0 !important;
+  text-align: left !important;
+  white-space: nowrap;
+}
+
+body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary .pon-detail-row > td > .pon-detail-table--summary > tbody > tr > td.pon-detail-spacer-cell {
+  width: 8% !important;
+  min-width: 32px !important;
+}
+
+body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary .pon-detail-row > td > .pon-detail-table--summary > tbody > tr > td:nth-child(4) {
+  width: 17% !important;
+  min-width: 76px !important;
+  white-space: nowrap;
+}
+
+body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary .pon-detail-row > td > .pon-detail-table--summary > tbody > tr > td:nth-child(5) {
+  width: 18% !important;
+  min-width: 96px !important;
+  white-space: nowrap;
+}
+
+body.smartolt-dashboard .pon-outage-section__body .pon-detail-position-cell .pon-gps-link,
+body.smartolt-dashboard .pon-outage-section__body .pon-detail-position-cell .pon-gps-disabled {
+  margin-left: 0;
+}
+
+body.smartolt-dashboard .pon-outage-section__body .pon-signal-position-heading,
+body.smartolt-dashboard .pon-outage-section__body .pon-signal-position-cell {
+  padding-left: 4px !important;
+  padding-right: 4px !important;
+  text-align: center;
+}
+
+body.smartolt-dashboard .pon-outage-section__body .pon-signal-position-heading > .fa-map-marker {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  line-height: 1 !important;
+  vertical-align: middle;
+}
+
+body.smartolt-dashboard .pon-outage-section__body .pon-detail-row[data-psd-idx] > td > .pon-signal-detail-table > thead > tr > th.pon-signal-position-heading,
+body.smartolt-dashboard .pon-outage-section__body .pon-detail-row[data-psd-idx] > td > .pon-signal-detail-table > tbody > tr > td.pon-signal-position-cell {
+  width: 40px !important;
+  min-width: 40px !important;
+  padding-left: 10px !important;
+  padding-right: 0 !important;
+  text-align: left;
+}
+
+body.smartolt-dashboard .pon-outage-section__body .pon-signal-position-cell .pon-gps-link,
+body.smartolt-dashboard .pon-outage-section__body .pon-signal-position-cell .pon-gps-disabled {
+  margin-left: 0;
+}
+
+@media (max-width: 767px) {
+  body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table {
+    table-layout: fixed !important;
+    width: 760px !important;
+    min-width: 760px !important;
+  }
+
+  body.smartolt-dashboard .pon-outage-section__body .pon-detail-row[data-psd-idx] > td > .pon-signal-detail-table {
+    table-layout: fixed !important;
+    width: 100% !important;
+    min-width: 100% !important;
+  }
+
+  body.smartolt-dashboard .pon-outage-section__body .pon-detail-row[data-psd-idx] > td > .pon-signal-detail-table > thead > tr > th:nth-child(1),
+  body.smartolt-dashboard .pon-outage-section__body .pon-detail-row[data-psd-idx] > td > .pon-signal-detail-table > tbody > tr > td:nth-child(1) {
+    width: 49% !important;
+  }
+}
+
+body.smartolt-dashboard .pon-outage-wrap .pon-detail-table--summary > tbody > tr.pon-detail-item-row .pon-detail-item-label > a:hover,
+body.smartolt-dashboard .pon-outage-wrap .pon-detail-table--summary > tbody > tr.pon-detail-item-row .pon-detail-item-label > a:focus {
+  color: #0057ad !important;
+  text-decoration: none !important;
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-wrap .pon-detail-table--summary > tbody > tr.pon-detail-item-row > td {
+  color: #e2e8f0 !important;
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-wrap .pon-detail-table--summary > tbody > tr.pon-detail-item-row .pon-detail-item-label > a {
+  color: #8cc8ff !important;
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-wrap .pon-detail-table--summary > tbody > tr.pon-detail-item-row .pon-detail-item-label > a:hover,
+html.smartolt-night body.smartolt-dashboard .pon-outage-wrap .pon-detail-table--summary > tbody > tr.pon-detail-item-row .pon-detail-item-label > a:focus {
+  color: #bfdbfe !important;
+}
+
+/* PON rows inside the same expanded OLT need a visible divider after cell reset rules. */
+body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary .pon-detail-row > td > .pon-detail-table--summary > tbody > tr.pon-detail-item-row + tr.pon-detail-item-row > td,
+body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary .pon-detail-row > td > .pon-detail-table--summary > tbody > tr.pon-detail-item-row + tr.pon-detail-item-row > td:first-child,
+body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary .pon-detail-row > td > .pon-detail-table--summary > tbody > tr.pon-detail-item-row + tr.pon-detail-item-row > td:last-child {
+  border-top: 1px solid rgba(100, 116, 139, 0.16) !important;
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary .pon-detail-row > td > .pon-detail-table--summary > tbody > tr.pon-detail-item-row + tr.pon-detail-item-row > td,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary .pon-detail-row > td > .pon-detail-table--summary > tbody > tr.pon-detail-item-row + tr.pon-detail-item-row > td:first-child,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary .pon-detail-row > td > .pon-detail-table--summary > tbody > tr.pon-detail-item-row + tr.pon-detail-item-row > td:last-child {
+  border-top: 1px solid rgba(148, 163, 184, 0.16) !important;
+}
+
+body.smartolt-dashboard .pon-outage-section__label {
+  font-weight: 400 !important;
+}
+
+body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary > tbody > tr.pon-group-row > td:first-child,
+body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary.table-striped > tbody > tr.pon-group-row:nth-of-type(odd) > td:first-child {
+  padding-left: 28px !important;
+}
+
+body.smartolt-dashboard .pon-outage-section__body .pon-outage-allclear {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 20px;
+  text-align: center;
+  color: #64748b;
+}
+
+body.smartolt-dashboard .pon-outage-section__body .pon-outage-allclear .fa {
+  font-size: 40px;
+  color: #1fb325;
+  line-height: 1;
+}
+
+body.smartolt-dashboard .pon-signal-no-variation {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  justify-self: start;
+  font-size: 12px;
+  line-height: 1.35;
+  color: #64748b;
+  white-space: nowrap;
+}
+
+body.smartolt-dashboard .pon-signal-no-variation .fa {
+  flex: 0 0 auto;
+  width: 14px;
+  text-align: center;
+  color: #1fb325;
+}
+
+body.smartolt-dashboard .pon-outage-section__stats--clear {
+  background: none;
+  border: 0;
+  padding: 0;
+  min-height: 0;
+}
+
+/* Night pill is re-declared in this file at ~1551 (loaded after night.css), so the
+   --clear neutralize must be night-scoped HERE to outrank it in night theme. */
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__stats--clear {
+  background: none;
+  border: 0;
+}
+
+body.smartolt-dashboard .pon-outage-section__stats--clear .fa,
+body.smartolt-dashboard .pon-signal-no-variation .fa {
+  font-size: 14px;
+  color: #1fb325;
+}
+
+@media (max-width: 767px) {
+  body.smartolt-dashboard .pon-signal-no-variation {
+    grid-column: 3;
+  }
+}
+
+body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary > tbody > tr.pon-group-row > td:first-child > .fa-caret-right,
+body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary > tbody > tr.pon-group-row > td:first-child > .fa-caret-down {
+  display: inline-block;
+  width: 10px;
+  margin-right: 6px;
+  text-align: center;
+}
+
+/* Authorization-preset {var} chips + inline code as orange chips (light theme), across the
+   preset form, the listing table and the wizard modal. Night equivalents are in
+   dashboard-smartolt-night.css. The {var} chips are click-to-insert (not copy), so they
+   keep a pointer + hover/active feedback; code_copy.js skips .pattern-var-link. */
+#preset_form code,
+#presetsTable code,
+#presetWizardModal #wizard_preset_form code,
+.pattern-var-link {
+  color: #f59737;
+  background: #fff5ea;
+  border: 1px solid #fbe0bd;
+  border-radius: 4px;
+  padding: 1px 5px;
+}
+.pattern-var-link {
+  cursor: pointer;
+}
+.pattern-var-link:hover {
+  background: #ffe9d2;
+  border-color: #f7c98a;
+}
+.pattern-var-link:active {
+  background: #fcdcb6;
 }

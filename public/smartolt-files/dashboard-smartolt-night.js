@@ -7,6 +7,7 @@
   var STORAGE_LOCAL = 'smartolt-theme-local';
   var VALID_PREFS = ['light', 'night', 'system'];
   var COOKIE_KEY = 'smartolt-night';
+  var WIDE_TABLES_KEY = 'smartolt-wide-tables';
   // Only the content placeholders have _night variants; RRD graphs
   // (/graphs_olt//traffic//signal//uplink/) are theme-identical, so we must NOT
   // cache-bust them on toggle or we needlessly re-trigger expensive PNG renders.
@@ -289,6 +290,52 @@
 
   function syncNightCookie(on) {
     document.cookie = COOKIE_KEY + '=' + (on ? '1' : '0') + COOKIE_ATTRS;
+  }
+
+  function syncWideTablesCookie(on) {
+    document.cookie = WIDE_TABLES_KEY + '=' + (on ? '1' : '0') + COOKIE_ATTRS;
+  }
+
+  function getStoredWideTables() {
+    try {
+      var stored = localStorage.getItem(WIDE_TABLES_KEY);
+      if (stored === '1' || stored === '0') {
+        return stored === '1';
+      }
+    } catch (e) {}
+
+    try {
+      var match = document.cookie.match(new RegExp('(?:^|; )' + WIDE_TABLES_KEY + '=([^;]*)'));
+      if (match) {
+        return decodeURIComponent(match[1]) === '1';
+      }
+    } catch (e) {}
+
+    return false;
+  }
+
+  function updateWideTablesToggle() {
+    var toggle = document.getElementById('smartolt-wide-table-toggle');
+    if (!toggle) {
+      return;
+    }
+
+    var on = document.documentElement.classList.contains('smartolt-wide-tables');
+    toggle.classList.toggle('is-active', on);
+    toggle.setAttribute('aria-pressed', on ? 'true' : 'false');
+    toggle.setAttribute('title', on ? 'Use normal table width' : 'Use wide table width');
+    toggle.setAttribute('aria-label', on ? 'Use normal table width' : 'Use wide table width');
+  }
+
+  function setWideTables(on) {
+    document.documentElement.classList.toggle('smartolt-wide-tables', !!on);
+
+    try {
+      localStorage.setItem(WIDE_TABLES_KEY, on ? '1' : '0');
+    } catch (e) {}
+
+    syncWideTablesCookie(!!on);
+    updateWideTablesToggle();
   }
 
   function isNight() {
@@ -746,6 +793,24 @@
           window.clearInterval(chartBoot);
         }
       }, 500);
+    }
+
+    var wideToggle = document.getElementById('smartolt-wide-table-toggle');
+    if (wideToggle) {
+      if (!canPersist) {
+        // A stale cookie/localStorage value may have made the pre-paint script
+        // add the wide-tables class; with no usable toggle, clear it so the
+        // layout can't stick with no way to turn it off.
+        document.documentElement.classList.remove('smartolt-wide-tables');
+        var wideToggleItem = (wideToggle.closest && wideToggle.closest('li')) || wideToggle.parentElement || wideToggle;
+        wideToggleItem.style.display = 'none';
+      } else {
+        setWideTables(getStoredWideTables());
+        wideToggle.addEventListener('click', function (e) {
+          e.preventDefault();
+          setWideTables(!document.documentElement.classList.contains('smartolt-wide-tables'));
+        });
+      }
     }
 
     var toggle = document.getElementById('smartolt-night-toggle');

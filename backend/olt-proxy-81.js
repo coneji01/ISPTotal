@@ -1,20 +1,17 @@
-// Proxy Telnet persistente para capturar comandos de la OLT
-// Se reconecta automaticamente si se cae
-
+// Proxy Telnet para OLT de prueba 192.168.20.81 (C320)
 const net = require('net');
 const fs = require('fs');
-const logFile = __dirname + '/../olt_proxy.log';
-let server = null;
+const logFile = __dirname + '/../olt_proxy_81.log';
 
 function log(msg) {
   const line = '[' + new Date().toISOString() + '] ' + msg;
-  console.log('[PROXY] ' + msg);
+  console.log('[PROXY-81] ' + msg);
   try { fs.appendFileSync(logFile, line + '\n'); } catch(e) {}
 }
 
 const SOCKS_HOST = '10.50.255.245';
 const SOCKS_PORT = 1080;
-const OLT_HOST = '192.168.20.80';
+const OLT_HOST = '192.168.20.81';
 const OLT_PORT = 23;
 
 function handleClient(clientConn) {
@@ -54,7 +51,7 @@ function handleClient(clientConn) {
     if (data.length >= 8 && data[0] === 0 && data[1] === 90) {
       log('Conectado a OLT via SOCKS ✅');
       
-      // Log de comandos del cliente (ANTES del pipe para no perder datos)
+      // Log de comandos del cliente
       clientConn.on('data', function(clientData) {
         var text = clientData.toString('utf8');
         bufLog += text;
@@ -94,40 +91,16 @@ function handleClient(clientConn) {
   });
 }
 
-function startProxy(port) {
-  if (server) server.close();
-  
-  server = net.createServer(handleClient);
-  
-  server.on('error', function(e) {
-    log('Server error: ' + e.message);
-    if (e.code === 'EADDRINUSE') {
-      log('Puerto ' + port + ' ocupado, reintentando en 5s...');
-      setTimeout(function() { startProxy(port); }, 5000);
-    }
-  });
-  
-  server.listen(port, '0.0.0.0', function() {
-    log('Proxy Telnet escuchando en puerto ' + port);
-    log('Reenviando a ' + OLT_HOST + ':' + OLT_PORT + ' via SOCKS4');
-  });
-}
-
-const PORT = parseInt(process.argv[2]) || 2323;
-startProxy(PORT);
-
-// Auto-repair: verificar cada 30s que el server siga vivo
-setInterval(function() {
-  try {
-    if (server && server.listening) return;
-    log('Server no responde, reiniciando...');
-    startProxy(PORT);
-  } catch(e) {
-    log('Error en watchdog: ' + e.message);
-    startProxy(PORT);
+const PORT = parseInt(process.argv[2]) || 2324;
+const server = net.createServer(handleClient);
+server.on('error', function(e) {
+  log('Server error: ' + e.message);
+  if (e.code === 'EADDRINUSE') {
+    log('Puerto ' + PORT + ' ocupado, reintentando en 5s...');
+    setTimeout(function() { /* restart manual */ }, 5000);
   }
-}, 30000);
-
-// Capturar senales de salida
-process.on('SIGINT', function() { log('Proxy detenido'); process.exit(); });
-process.on('SIGTERM', function() { log('Proxy detenido'); process.exit(); });
+});
+server.listen(PORT, '0.0.0.0', function() {
+  log('Proxy Telnet (C320) escuchando en puerto ' + PORT);
+  log('Reenviando a ' + OLT_HOST + ':' + OLT_PORT + ' via SOCKS4');
+});

@@ -41,7 +41,6 @@ async function crearUsuarioBorde(username, password) {
       readyTimeout: 10000
     });
     
-    // Verificar si ya existe
     const check = await ssh.execCommand('/ppp secret print where name=' + username);
     if (check.stdout.trim()) {
       console.log('[VPN] Usuario ya existe en borde:', username);
@@ -49,7 +48,6 @@ async function crearUsuarioBorde(username, password) {
       return { success: true, created: false };
     }
     
-    // Crear usuario SSTP
     const cmd = '/ppp secret add name=' + username + ' password=' + password + ' service=sstp profile=sstp-profile-borde';
     const result = await ssh.execCommand(cmd);
     console.log('[VPN] Usuario creado en borde:', username);
@@ -115,7 +113,6 @@ module.exports = function(req, res) {
     const vpnPass = generarIdUnico() + '-' + generarIdUnico();
     const vpnIP = ip_fija || '10.50.' + (Math.floor(Math.random() * 255) + 1) + '.' + (Math.floor(Math.random() * 254) + 2);
     
-    // Crear usuario en borde (primero que el script se ejecute)
     crearUsuarioBorde(vpnUser, vpnPass).then(function(result) {
       const script = generarScript(name, empresaNombre, vpnUser, vpnPass, vpnIP);
       

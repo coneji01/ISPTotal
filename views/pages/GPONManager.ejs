@@ -1,5 +1,5 @@
 <!DOCTYPE html><html lang="en" class="smartolt-night"><head>
-        <script>window.SMARTOLT_DB_THEME='system';</script>
+        <script>window.SMARTOLT_DB_THEME='night';</script>
     <!-- Paint-blocking: resolve theme before first paint. Precedence: per-device override (smartolt-theme-local, set by the header button) > account/DB pref > device (system). -->
     <script>try{var k='smartolt-night',lk='smartolt-theme-local',dbTheme=window.SMARTOLT_DB_THEME,local=null,pref,n;try{local=localStorage.getItem(lk);}catch(e){}if(local==='night'||local==='light'||local==='system'){pref=local;}else if(dbTheme==='night'||dbTheme==='light'||dbTheme==='system'){pref=dbTheme;}else{pref='system';}if(pref==='system'){n=!!(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);}else if(pref==='night'){n=true;}else{n=false;}try{localStorage.setItem(k,n?'1':'0');}catch(e){}if(n){document.documentElement.classList.add('smartolt-night');}else{document.documentElement.classList.remove('smartolt-night');}document.cookie=k+'='+(n?'1':'0')+'; path=/; max-age=31536000; SameSite=Lax'+(location.protocol==='https:'?'; Secure':'');}catch(e){}</script>
     <script>try{var wk='smartolt-wide-tables',wv=null,m=document.cookie.match(new RegExp('(?:^|; )'+wk+'=([^;]*)'));try{wv=localStorage.getItem(wk);}catch(e){}if(wv!=='1'&&wv!=='0'&&m){wv=decodeURIComponent(m[1]);}if(wv==='1'){document.documentElement.classList.add('smartolt-wide-tables');}}catch(e){}</script>
@@ -31,11 +31,11 @@
   <link href="/public/smartolt-files/messagebox.css" rel="stylesheet" type="text/css">
 
   <link href="/public/smartolt-files/inter-fonts.css?v=3.53.0.1" rel="stylesheet">
-  <link href="/public/smartolt-files/dashboard-smartolt-night.css?v=3.53.0.209" rel="stylesheet">
-  <script src="/public/smartolt-files/dashboard-smartolt-night.js?v=3.53.0.63" defer=""></script>
-      <link href="/public/smartolt-files/startmin.css" rel="stylesheet">
+  <link href="/public/smartolt-files/dashboard-smartolt-night.css?v=3.53.0.314" rel="stylesheet">
+  <link href="/public/smartolt-files/startmin.css" rel="stylesheet">
   <link href="/public/smartolt-files/dashboard-smartolt-modern.css?v=3.53.0.101" rel="stylesheet">
   <link href="/public/smartolt-files/coloris.min.css?v=3.53.0.1" rel="stylesheet">
+  <script src="/public/smartolt-files/dashboard-smartolt-night.js?v=3.53.0.63" defer=""></script>
   
   <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
   <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -161,6 +161,7 @@ $( document ).ready(function() {
           </li>
         </ul>
         <ul class="nav navbar-nav navbar-right">
+          <li><a href="#" id="smartolt-night-toggle" class="is-pref-system" title="System" aria-label="System" data-title-light="Light mode" data-title-night="Night mode" data-title-system="System"><i class="fa fa-sun-o font-size-20 smartolt-theme-icon-light" aria-hidden="true"></i><i class="fa fa-moon-o font-size-20 smartolt-theme-icon-night" aria-hidden="true"></i><i class="fa fa-adjust font-size-20 smartolt-theme-icon-system" aria-hidden="true"></i></a></li>
           <li><a href="/logout">Salir</a></li>
         </ul>
       </div>
@@ -2025,45 +2026,11 @@ $(document).ready(function()  {
 	var oltNames = {1: "JOEL WIFI"};
 
 	function processOltUptimeBatchQueue() {
-		if (oltUptimeBatchActive > 0 || oltUptimeBatchQueue.length === 0) { return; }
-		var batch = oltUptimeBatchQueue.shift();
-		oltUptimeBatchActive++;
-		var batchAjaxCall = $.ajax({
-			type: 'POST',
-			url: '/olt/get_olt_uptime_batch',
-			dataType: 'json',
-			data: { olt_ids: JSON.stringify(batch) },
-			success: function(data) {
-				$.each(data, function(oltId, item) {
-					if (item['uptime']) {
-						$("#olt-up-time-" + oltId).html(item['uptime'] + ', ');
-						$("#olt-env-temp-" + oltId).html(item['env_temp']).addClass(item['color_class']);
-					} else {
-						$("#olt-up-time-" + oltId).html(lang_n_a).addClass('text-danger');
-						$('#show_danger_olts').show();
-						if (item['show_toast'] === true) {
-							var msg = item['snmp_error'] || ((oltNames[oltId] || ('OLT ' + oltId)) + ' — ' + lang_n_a);
-							toast(msg);
-						}
-					}
-									});
-			},
-			complete: function() {
-				oltUptimeBatchActive--;
-				processOltUptimeBatchQueue();
-			}
-		});
-		registerJqxhr(batchAjaxCall);
+	    // Deshabilitado
 	}
 
 	function tryFetchOltUptime() {
-		if(isFetchOnuStatsDone && isFetchOnuSignalsDone) {
-			var allIds = [1];
-			for (var i = 0; i < allIds.length; i += 6) {
-				oltUptimeBatchQueue.push(allIds.slice(i, i + 6));
-			}
-			processOltUptimeBatchQueue();
-		}
+	    // Deshabilitado - no hay polling de uptime
 	}
 
 	function fetchOltUptime () {
@@ -2076,151 +2043,38 @@ $(document).ready(function()  {
 	}
 
 	function getWaitingForAuth() {
-		var waitingForAuthAjaxCall = $.ajax({
-			type: 'GET',
-			url: '/dashboard/get_waiting_auth/1',
-			timeout: 120000,
-			dataType: "json",
-			success: function(data)
-			{
-				if (data["fetch_in_progress"]) {
-					setTimeout(getWaitingForAuth, 2000);
-					return;
-				}
-				$(".disabled-waiting-auth").html(lang_d_colon + " " + (data["disabled_waiting_auth"] != undefined ? data["disabled_waiting_auth"] : "-"));
-				$(".move-waiting-auth").html(lang_resync + ": " + (data["move_waiting_auth"] != undefined ? data["move_waiting_auth"] : "-"));
-				$(".auth-waiting-auth").html(lang_new_colon + " " + (data["auth_waiting_auth"] != undefined ? data["auth_waiting_auth"] : "-"));
-				$(".waiting-auth").html(data["waiting_auth"] != undefined ? data["waiting_auth"] : "-");
-			},
-			error: function(jqXHR, textStatus, errorThrown)
-			{
-				$(".disabled-waiting-auth").html(lang_d_colon + " -");
-				$(".move-waiting-auth").html(lang_resync + ": -");
-				$(".auth-waiting-auth").html(lang_new_colon + " -");
-				$(".waiting-auth").html("-");
-			}
-		});
-		registerJqxhr(waitingForAuthAjaxCall);
+	    // Datos ya cargados desde servidor, polling via /api/gpon/kpis
 	}
 
-		getWaitingForAuth();
+	    getWaitingForAuth();
 	
-	function getOnusStats() {
-		var getOnusStatsAjaxCall = $.ajax({
-			type: 'GET',
-			url: '/dashboard/get_onus_stats/1',
-			timeout: 30000,
-			dataType: "json",
-			success: function(data)
-			{
-				$(".online").html(data["online"] != undefined ? data["online"] : "-");
-				$(".total-auth").html(lang_total_authorized_colon + " " + (data["total_auth"] != undefined ? data["total_auth"] : "-"));
-				$(".total-offline").html(data["total_offline"] != undefined ? data["total_offline"] : "-");
-				$(".power-fail").html("PwrFail: " + (data["power_fail"] != undefined ? data["power_fail"] : "-"));
-				$(".los").html("LoS: " + (data["los"] != undefined ? data["los"] : "-"));
-				$(".offline").html("N/A: " + (data["offline"] != undefined ? data["offline"] : "-"));
-				$(".updated-date").html(data["updated_date"] != undefined ? data["updated_date"] : "-");
+		function getOnusStats() {
+			// Datos ya cargados desde servidor, polling via /api/gpon/kpis
+			isFetchOnuStatsDone = true;
+			tryFetchOltUptime();
+		}
 
-				isFetchOnuStatsDone = true;
-				tryFetchOltUptime();
-			}
-		});
-		registerJqxhr(getOnusStatsAjaxCall);
-	}
-
-		getOnusStats();
+			getOnusStats();
 	
-	function getOnusSignals() {
-		var getOnusSignalsAjaxCall = $.ajax({
-			type: 'GET',
-			url: '/dashboard/get_onus_signals/1',
-			timeout: 30000,
-			dataType: "json",
-			success: function(data)
-			{
-				$(".total-signal-low").html(data["total_signal_low"] != undefined ? data["total_signal_low"] : "-");
-				$(".signal-warning").html(lang_warning_colon + " " + (data["signal_warning"] != undefined ? data["signal_warning"] : "-"));
-				$(".signal-critical").html(lang_critical_colon + " " + (data["signal_critical"] != undefined ? data["signal_critical"] : "-"));
+		function getOnusSignals() {
+			// Datos ya cargados desde servidor
+			isFetchOnuSignalsDone = true;
+			tryFetchOltUptime();
+		}
 
-				isFetchOnuSignalsDone = true;
-				tryFetchOltUptime();
-			}
-		});
-		registerJqxhr(getOnusSignalsAjaxCall);
-	}
-
-		getOnusSignals();
+			getOnusSignals();
 	
-	function getOnusAuthPerDay() {
-		var onusAuthPerDayAjaxCall = $.ajax({
-			type: 'GET',
-			url: '/dashboard/get_onus_auth_per_day/1',
-			timeout: 30000,
-			dataType: "json",
-			success: function(data)
-			{
-				var authOnuLabels = [];
-				var authGPONData = [];
-				var authEPONData = [];
+		function getOnusAuthPerDay() {
+		    // Deshabilitado - no hay datos históricos
+		}
 
-				$.each(data, function(key, value) {
-					authOnuLabels.push(value["date"]);
-					authGPONData.push(value["gpon_total"]);
-					authEPONData.push(value["epon_total"]);
-                });
+		    getOnusAuthPerDay();
+    
+		function getPonOutage() {
+		    // Deshabilitado - no hay datos históricos
+		}
 
-				var color = Chart.helpers.color;
-			    var authOnuBarChartData = {
-			        labels: authOnuLabels,
-			        datasets: [{
-			            label: 'GPON',
-			            backgroundColor: color("#0064C8").rgbString(),
-			            borderColor: "#0064C8",
-			            borderWidth: 1,
-			            data: authGPONData
-			        }, {
-			            label: 'EPON',
-			            backgroundColor: color("#F58411").rgbString(),
-			            borderColor: "#F58411",
-			            borderWidth: 1,
-			            data: authEPONData
-			        }]
-			    };
-
-			    authOnusBarChart(authOnuBarChartData);
-			}
-		});
-		registerJqxhr(onusAuthPerDayAjaxCall);
-	}
-	
-		getOnusAuthPerDay();
-	
-	function getPonOutage() {
-
-		var $ponOutageContent = $("#outage_pons_content");
-		$ponOutageContent.html('<div class="pon-outage-loader"><i class="fa fa-spinner fa-spin" aria-hidden="true"></i><span>' + "Loading..." + '</span></div>');
-
-		var ponOutage = $.ajax({
-			type: 'GET',
-			url: '/dashboard/get_outage_pons/1',
-			timeout: 30000,
-			dataType: "json",
-			success: function(data)
-			{
-				if (data.status) {
-					$("#outage_pons_content").html(data.html);
-				} else {
-					$("#outage_pons_content").parent().remove();
-				}
-			},
-			error: function(jqXHR, textStatus, errorThrown) {
-				$("#outage_pons_content").parent().remove();
-			}
-		});
-		registerJqxhr(ponOutage);
-	}
-	
-		getPonOutage();
+		    getPonOutage();
 	
 	function authOnusBarChart(authOnuBarChartData) {
 		var ctx = document.getElementById("bar-chart-canvas").getContext("2d");
@@ -2738,13 +2592,12 @@ footer {
 // Polling en tiempo real cada 5s (datos desde DB, instantaneo)
 function actualizarDashboard() {
   $.ajax({
-    url: '/api/olt/dashboard',
+    url: '/api/gpon/kpis',
     method: 'GET',
     dataType: 'json',
     timeout: 3000,
-    success: function(resp) {
-      if (!resp || !resp.success || !resp.data) return;
-      var d = resp.data;
+    success: function(d) {
+      if (!d || !d.success) return;
       $('.waiting-auth').text(d.waiting || 0);
       $('.online').text(d.online || 0);
       $('.total-auth').text('Total authorized: ' + (d.total || 0));

@@ -248,20 +248,6 @@ html.smartolt-night body.smartolt-site .navbar-default .nav > .open > a:focus {
   color: #fff !important;
 }
 
-body.smartolt-site .navbar-default .navbar-nav > li:not(.dropdown).active > a,
-body.smartolt-site .navbar-default .navbar-nav > li:not(.dropdown).active > a:hover,
-body.smartolt-site .navbar-default .navbar-nav > li:not(.dropdown).active > a:focus {
-  background-color: transparent !important;
-}
-
-html.smartolt-night body.smartolt-site .navbar-default .nav > li:not(.dropdown):not(.open) > a:focus,
-html.smartolt-night body.smartolt-site .navbar-default .nav > li:not(.dropdown):not(.open).active > a,
-html.smartolt-night body.smartolt-site .navbar-default .nav > li:not(.dropdown):not(.open).active > a:hover,
-html.smartolt-night body.smartolt-site .navbar-default .nav > li:not(.dropdown):not(.open).active > a:focus {
-  background: transparent !important;
-  color: rgba(255, 255, 255, 0.9) !important;
-}
-
 html.smartolt-night body.smartolt-site .navbar-default .navbar-toggle .icon-bar {
   background-color: #fff;
 }
@@ -360,26 +346,10 @@ html.smartolt-night body.smartolt-site .form-control {
   background: rgba(255, 255, 255, 0.06);
   border-color: rgba(255, 255, 255, 0.15);
   color: #f1f5f9;
-  color-scheme: dark;
-}
-
-html.smartolt-night body.smartolt-site input[type="number"],
-html.smartolt-night .modal input[type="number"],
-html.smartolt-night .onu-ui-modal input[type="number"] {
-  color-scheme: dark;
-}
-
-html.smartolt-night body.smartolt-site input[type="number"]::-webkit-inner-spin-button,
-html.smartolt-night body.smartolt-site input[type="number"]::-webkit-outer-spin-button,
-html.smartolt-night .modal input[type="number"]::-webkit-inner-spin-button,
-html.smartolt-night .modal input[type="number"]::-webkit-outer-spin-button,
-html.smartolt-night .onu-ui-modal input[type="number"]::-webkit-inner-spin-button,
-html.smartolt-night .onu-ui-modal input[type="number"]::-webkit-outer-spin-button {
-  background: transparent;
 }
 
 html.smartolt-night body.smartolt-site .form-control:focus {
-  background-color: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.08);
   border-color: #3b82f6;
   box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25);
   color: #fff;
@@ -397,10 +367,6 @@ html.smartolt-night body.smartolt-site fieldset[disabled] .form-control {
   color: rgba(255, 255, 255, 0.5);
   cursor: not-allowed;
   opacity: 1;
-}
-
-html.smartolt-night .help-block {
-  color: #a8b8cc;
 }
 
 /* Checkboxes & radios — app-wide (incl. disabled) */
@@ -639,25 +605,15 @@ html.smartolt-night body.smartolt-site .alert-link {
 
 html.smartolt-night body.smartolt-site .btn-default {
   background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.12);
   color: #e2e8f0;
 }
 
 html.smartolt-night body.smartolt-site .btn-default:hover,
 html.smartolt-night body.smartolt-site .btn-default:focus {
   background: rgba(255, 255, 255, 0.14);
-  border-color: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.18);
   color: #fff;
-}
-
-html.smartolt-night body.smartolt-site .btn-default:active:not(.disabled):not([disabled]),
-html.smartolt-night body.smartolt-site .btn-default.active:not(.disabled):not([disabled]),
-html.smartolt-night body.smartolt-site .open > .dropdown-toggle.btn-default {
-  background: rgba(255, 255, 255, 0.22) !important;
-  border-color: rgba(255, 255, 255, 0.22) !important;
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.22) !important;
-  color: #fff !important;
-  outline: none !important;
 }
 
 /* Colored action buttons — crisp white labels on dark UI */
@@ -730,44 +686,11 @@ html.smartolt-night body.smartolt-site .btn-danger:focus {
   border-color: #dc2626 !important;
 }
 
-html.smartolt-night body.smartolt-site .btn-warning {
-  background-color: #f39c12 !important;
-  border-color: #f39c12 !important;
-}
-
-html.smartolt-night body.smartolt-site .btn-warning:hover,
-html.smartolt-night body.smartolt-site .btn-warning:focus {
-  background-color: #c87f0a !important;
-  border-color: #c87f0a !important;
-}
-
-html.smartolt-night body.smartolt-site .btn-info {
-  background-color: #3498db !important;
-  border-color: #3498db !important;
-}
-
-html.smartolt-night body.smartolt-site .btn-info:hover,
-html.smartolt-night body.smartolt-site .btn-info:focus {
-  background-color: #217dbb !important;
-  border-color: #217dbb !important;
-}
-
-html.smartolt-night body.smartolt-site .btn-yellow {
-  background-color: #ffcc00 !important;
-  border-color: #ffcc00 !important;
-}
-
-html.smartolt-night body.smartolt-site .btn-yellow:hover,
-html.smartolt-night body.smartolt-site .btn-yellow:focus {
-  background-color: #cca300 !important;
-  border-color: #cca300 !important;
-}
-
 html.smartolt-night body.smartolt-site .btn-success:active:not(.disabled):not([disabled]),
 html.smartolt-night body.smartolt-site .btn-success.active:not(.disabled):not([disabled]) {
   background-color: #004488 !important;
   border-color: #004488 !important;
-  box-shadow: none !important;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.22) !important;
   opacity: 1;
 }
 
@@ -781,41 +704,13 @@ html.smartolt-night body.smartolt-site .btn-success.active:not(.disabled):not([d
 html.smartolt-night body.smartolt-site .btn-primary:active:not(.disabled):not([disabled]) {
   background-color: #318732 !important;
   border-color: #318732 !important;
-  box-shadow: none !important;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.22) !important;
 }
 
 html.smartolt-night body.smartolt-site .btn-danger:active:not(.disabled):not([disabled]) {
   background-color: #b91c1c !important;
   border-color: #b91c1c !important;
-  box-shadow: none !important;
-}
-
-html.smartolt-night body.smartolt-site .btn-warning:active:not(.disabled):not([disabled]),
-html.smartolt-night body.smartolt-site .btn-warning.active:not(.disabled):not([disabled]) {
-  background-color: #a66908 !important;
-  border-color: #a66908 !important;
-  box-shadow: none !important;
-}
-
-html.smartolt-night body.smartolt-site .btn-info:active:not(.disabled):not([disabled]),
-html.smartolt-night body.smartolt-site .btn-info.active:not(.disabled):not([disabled]) {
-  background-color: #1c699d !important;
-  border-color: #1c699d !important;
-  box-shadow: none !important;
-}
-
-html.smartolt-night body.smartolt-site .btn-yellow:active:not(.disabled):not([disabled]),
-html.smartolt-night body.smartolt-site .btn-yellow.active:not(.disabled):not([disabled]) {
-  background-color: #cca300 !important;
-  border-color: #cca300 !important;
-  box-shadow: none !important;
-}
-
-html.smartolt-night body.smartolt-site .btn:active,
-html.smartolt-night body.smartolt-site .btn.active,
-html.smartolt-night body.smartolt-site .btn:active:focus,
-html.smartolt-night body.smartolt-site .btn.active:focus {
-  outline: none !important;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.22) !important;
 }
 
 html.smartolt-night body.smartolt-site .btn .fa,
@@ -865,7 +760,7 @@ html.smartolt-night body.smartolt-site .pagination > .disabled > span:focus {
 }
 
 html.smartolt-night body.smartolt-site .pon-type-filter .pagination > li > span {
-  border-radius: 6px;
+  border-radius: 4px;
 }
 
 html.smartolt-night body.smartolt-site .list-group-item {
@@ -878,44 +773,6 @@ html.smartolt-night body.smartolt-site a.list-group-item:hover,
 html.smartolt-night body.smartolt-site a.list-group-item:focus {
   background: rgba(29, 139, 255, 0.12);
   color: #fff;
-}
-
-/* Auth users — top action links on /auth */
-html.smartolt-night body.smartolt-site .content-wrap > .margin-bottom.margin-top:has(> a[href*="auth/create_user"]),
-html.smartolt-night body.smartolt-site .content-wrap > .margin-bottom.margin-top:has(> a[href*="auth/user_changes_logs"]) {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-html.smartolt-night body.smartolt-site .content-wrap > .margin-bottom.margin-top:has(> a[href*="auth/create_user"]) > a.btn-link,
-html.smartolt-night body.smartolt-site .content-wrap > .margin-bottom.margin-top:has(> a[href*="auth/user_changes_logs"]) > a.btn-link {
-  align-items: center;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(148, 163, 184, 0.22);
-  border-radius: 6px;
-  color: #dbeafe;
-  display: inline-flex;
-  gap: 6px;
-  line-height: 1.42857143;
-  padding: 8px 12px;
-  text-decoration: none;
-}
-
-html.smartolt-night body.smartolt-site .content-wrap > .margin-bottom.margin-top:has(> a[href*="auth/create_user"]) > a.btn-link:hover,
-html.smartolt-night body.smartolt-site .content-wrap > .margin-bottom.margin-top:has(> a[href*="auth/create_user"]) > a.btn-link:focus,
-html.smartolt-night body.smartolt-site .content-wrap > .margin-bottom.margin-top:has(> a[href*="auth/user_changes_logs"]) > a.btn-link:hover,
-html.smartolt-night body.smartolt-site .content-wrap > .margin-bottom.margin-top:has(> a[href*="auth/user_changes_logs"]) > a.btn-link:focus {
-  background: rgba(59, 130, 246, 0.18);
-  border-color: rgba(147, 197, 253, 0.42);
-  color: #eff6ff;
-  text-decoration: none;
-}
-
-html.smartolt-night body.smartolt-site .content-wrap > .margin-bottom.margin-top:has(> a[href*="auth/create_user"]) > a.btn-link .glyphicon,
-html.smartolt-night body.smartolt-site .content-wrap > .margin-bottom.margin-top:has(> a[href*="auth/user_changes_logs"]) > a.btn-link .glyphicon {
-  color: #93c5fd;
-  top: 0;
 }
 
 /* OLT View — main tabs + IP pool sub-pills */
@@ -1033,32 +890,6 @@ html.smartolt-night body.smartolt-site #batch-actions-container .olt-required-ms
   color: rgba(255, 255, 255, 0.52) !important;
 }
 
-/* Move-ONUs batch action: the light theme uses #fafafa/#fff/#f5f5f5 boxes for the
-   destination panel and the per-PON map grid, which render as a white island in night.
-   Mirror them onto the slate/translucent-white night palette. */
-html.smartolt-night body.smartolt-site #batch-actions-container .batch-move-destination {
-  background-color: rgba(255, 255, 255, 0.04) !important;
-  border-color: rgba(255, 255, 255, 0.1) !important;
-}
-html.smartolt-night body.smartolt-site #batch-actions-container #batch-action-move .batch-move-destination label {
-  color: #cbd5e1 !important;
-}
-html.smartolt-night body.smartolt-site #batch-actions-container .batch-move-map {
-  border-color: rgba(255, 255, 255, 0.1) !important;
-}
-html.smartolt-night body.smartolt-site #batch-actions-container .batch-move-map-head {
-  background-color: rgba(255, 255, 255, 0.06) !important;
-  color: #cbd5e1 !important;
-}
-html.smartolt-night body.smartolt-site #batch-actions-container .batch-move-map-row {
-  background-color: transparent !important;
-  border-top-color: rgba(255, 255, 255, 0.08) !important;
-  color: #e2e8f0 !important;
-}
-html.smartolt-night body.smartolt-site #batch-actions-container .batch-move-source-meta {
-  color: rgba(255, 255, 255, 0.52) !important;
-}
-
 html.smartolt-night body.smartolt-site #batch-actions-container #active-batch-tasks {
   background: rgba(255, 255, 255, 0.03);
   border-color: rgba(255, 255, 255, 0.12) !important;
@@ -1162,17 +993,12 @@ body.smartolt-site button.multiselect.input-sm {
 
 body.smartolt-site select.form-control.input-sm,
 body.smartolt-site select.form-control.form-control-sm {
-  /* 6px padding + 18px line-height left only a ~14px content box, clipping
-     option descenders (g, j, p, y) at the bottom border — fully in light mode,
-     partially in night appearance:none. 3px padding gives a 20px content box.
-     !important overrides the 6px !important on the shared rule above. */
-  padding: 3px 30px 3px 10px !important;
-  line-height: 1.2;
+  padding: 6px 30px 6px 10px;
 }
 
 html.smartolt-night body.smartolt-site select.form-control.input-sm,
 html.smartolt-night body.smartolt-site select.form-control.form-control-sm {
-  padding: 3px 30px 3px 10px !important;
+  padding: 6px 30px 6px 10px;
 }
 
 body.smartolt-site .multiselect.input-sm .multiselect-selected-text,
@@ -2028,20 +1854,16 @@ html.smartolt-night body.smartolt-site #preset_form .form-control-static.text-mu
 html.smartolt-night body.smartolt-site #preset_form code,
 html.smartolt-night body.smartolt-site #presetsTable code,
 html.smartolt-night body.smartolt-site .pattern-var-link {
-  background: rgba(245, 151, 55, 0.12) !important;
-  border: 1px solid rgba(245, 151, 55, 0.35);
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 4px;
-  color: #f59737 !important;
+  color: #b8dcff !important;
   padding: 1px 5px;
 }
 
 html.smartolt-night body.smartolt-site .pattern-var-link:hover {
-  background: rgba(245, 151, 55, 0.22) !important;
-  color: #ffb86b !important;
-}
-
-html.smartolt-night body.smartolt-site .pattern-var-link:active {
-  background: rgba(245, 151, 55, 0.3) !important;
+  background: rgba(29, 139, 255, 0.18) !important;
+  color: #dbeafe !important;
 }
 
 html.smartolt-night body.smartolt-site #preset_form .radio-inline,
@@ -2227,24 +2049,6 @@ html.smartolt-night body.smartolt-site .table > tr > td.text-danger.olt-port-sta
   font-weight: normal;
 }
 
-/* Semantic table-cell colors (e.g. billing expiry text-danger/text-warning).
-   The generic ".table > tbody > tr > td" color rule above out-specifies the bare
-   .text-danger/.text-warning class, so restore them on table cells to match the
-   light theme. Mirrors the .olt-port-status-* danger override. */
-html.smartolt-night body.smartolt-site .table > tbody > tr > td.text-danger,
-html.smartolt-night body.smartolt-site .table > tbody > tr > th.text-danger,
-html.smartolt-night body.smartolt-site .table > tr > td.text-danger,
-html.smartolt-night body.smartolt-site .table > tr > th.text-danger {
-  color: #ff6b6b !important;
-}
-
-html.smartolt-night body.smartolt-site .table > tbody > tr > td.text-warning,
-html.smartolt-night body.smartolt-site .table > tbody > tr > th.text-warning,
-html.smartolt-night body.smartolt-site .table > tr > td.text-warning,
-html.smartolt-night body.smartolt-site .table > tr > th.text-warning {
-  color: #fcd34d !important;
-}
-
 /* Neutralize table-bordered — match diagnostics transparency */
 html.smartolt-night body.smartolt-site .table-bordered {
   border: 0 !important;
@@ -2282,56 +2086,6 @@ html.smartolt-night body.smartolt-site .table-striped > tbody > tr:hover > th,
 html.smartolt-night body.smartolt-site .table-hover > tbody > tr:hover > td,
 html.smartolt-night body.smartolt-site .table-hover > tbody > tr:hover > th {
   color: #f8fafc;
-}
-
-/* VLAN default PON matrix: stay transparent like OLT VLAN listing tables;
-   only override Bootstrap .active board rows and matrix checkbox contrast. */
-html.smartolt-night body.smartolt-site #default_for_pon_ports > thead > tr > th,
-html.smartolt-night body.smartolt-site #default_for_pon_ports > tbody > tr > th,
-html.smartolt-night body.smartolt-site #default_for_pon_ports > tbody > tr > td {
-  border-bottom: 0 !important;
-  border-left: 0 !important;
-  border-right: 0 !important;
-}
-
-html.smartolt-night body.smartolt-site #default_for_pon_ports > tbody > tr.active > th,
-html.smartolt-night body.smartolt-site #default_for_pon_ports.table-striped > tbody > tr.active:nth-of-type(odd) > th,
-html.smartolt-night body.smartolt-site #default_for_pon_ports.table-striped > tbody > tr.active:nth-of-type(even) > th {
-  background: rgba(59, 130, 246, 0.1) !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.07) !important;
-  border-top: 1px solid rgba(255, 255, 255, 0.07) !important;
-  color: #cbd5e1 !important;
-}
-
-html.smartolt-night body.smartolt-site #default_for_pon_ports input[type="checkbox"] {
-  -webkit-appearance: none;
-  appearance: none;
-  background: rgba(15, 23, 42, 0.92);
-  border: 1.5px solid rgba(186, 201, 219, 0.82);
-  border-radius: 3px;
-  box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.35);
-  box-sizing: border-box;
-  cursor: pointer;
-  height: 16px;
-  margin: 0;
-  vertical-align: middle;
-  width: 16px;
-}
-
-html.smartolt-night body.smartolt-site #default_for_pon_ports input[type="checkbox"]:not(:checked):hover {
-  background: rgba(30, 41, 59, 0.96);
-  border-color: rgba(203, 213, 225, 0.92);
-}
-
-html.smartolt-night body.smartolt-site #default_for_pon_ports input[type="checkbox"]:checked {
-  background: #2563eb url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23ffffff'%3E%3Cpath d='M12.2 4.2 6.8 10.3 3.8 7.3l-1.3 1.4 4.3 4.2 6.7-7.5z'/%3E%3C/svg%3E") center/11px no-repeat;
-  border-color: #3b82f6;
-  box-shadow: none;
-}
-
-html.smartolt-night body.smartolt-site #default_for_pon_ports input[type="checkbox"]:focus-visible {
-  outline: 2px solid rgba(59, 130, 246, 0.55);
-  outline-offset: 2px;
 }
 
 html.smartolt-night body.smartolt-site .table .sort-link {
@@ -2634,7 +2388,7 @@ html.smartolt-night .modal select.form-control option[disabled] {
 html.smartolt-night .modal .form-control:focus,
 html.smartolt-night .modal select.form-control:focus,
 html.smartolt-night .modal textarea.form-control:focus {
-  background-color: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.08);
   border-color: #3b82f6;
   box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25);
   color: #fff;
@@ -3248,31 +3002,6 @@ html.smartolt-night body.smartolt-site #status_tr69 .panel-body.tr69data {
   overflow: visible !important;
 }
 
-html.smartolt-night body.smartolt-site #status_tr69 .panel-body.tr69data.collapsing {
-  overflow: hidden !important;
-}
-
-@media (max-width: 767px) {
-  html.smartolt-night body.smartolt-site #status_tr69 .panel-body.tr69data {
-    overflow-x: auto !important;
-    overflow-y: visible !important;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  html.smartolt-night body.smartolt-site #status_tr69 .tr69 .nav-tabs {
-    box-sizing: border-box;
-    max-width: 100%;
-    overflow-x: auto;
-    overflow-y: hidden;
-    white-space: nowrap;
-  }
-
-  html.smartolt-night body.smartolt-site #status_tr69 .tr69 .nav-tabs > li {
-    display: inline-block;
-    float: none;
-  }
-}
-
 html.smartolt-night body.smartolt-site #status_tr69 .panel-info > .panel-heading {
   background: rgba(59, 130, 246, 0.14) !important;
   border-color: rgba(255, 255, 255, 0.1) !important;
@@ -3286,195 +3015,13 @@ html.smartolt-night body.smartolt-site #status_tr69 code {
   font-size: 14px;
 }
 
-html.smartolt-night body.smartolt-site #status_tr69 .tr69editval:not([type="radio"]):not([type="checkbox"]),
+html.smartolt-night body.smartolt-site #status_tr69 .tr69editval,
 html.smartolt-night body.smartolt-site #status_tr69 .form-control.input-sm {
   background: rgba(255, 255, 255, 0.06);
   border-color: rgba(255, 255, 255, 0.15);
   color: #f1f5f9;
   font-size: 14px;
   height: 34px;
-}
-
-html.smartolt-night body.smartolt-site #status_tr69 input[name="tag_add"] {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  color: #f1f5f9;
-}
-
-body.smartolt-site #status_tr69 .tr69 .traceroute-result {
-  background: #f8fafc;
-  border: 1px solid #d9e2ec;
-  border-radius: 6px;
-  color: #1f2937;
-  font-family: inherit;
-  font-size: 13px;
-  line-height: 1.35;
-  margin: 0 0 8px;
-  max-width: 100%;
-  overflow: auto;
-  padding: 8px 10px;
-}
-
-body.smartolt-site #status_tr69 .tr69 .traceroute-run-header {
-  align-items: center;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px 12px;
-  margin-bottom: 4px;
-}
-
-body.smartolt-site #status_tr69 .tr69 .traceroute-run-meta,
-body.smartolt-site #status_tr69 .tr69 .traceroute-status,
-body.smartolt-site #status_tr69 .tr69 .traceroute-summary {
-  color: #475569;
-}
-
-body.smartolt-site #status_tr69 .tr69 .traceroute-text-result {
-  margin-top: 4px;
-}
-
-body.smartolt-site #status_tr69 .tr69 .traceroute-hop-table {
-  border-collapse: collapse;
-  font-size: 13px;
-  line-height: 1.3;
-  margin: 4px 0 0;
-  max-width: 100%;
-  table-layout: auto;
-  width: auto;
-}
-
-body.smartolt-site #status_tr69 .tr69 .traceroute-hop-table th,
-body.smartolt-site #status_tr69 .tr69 .traceroute-hop-table td {
-  border-top: 1px solid #e2e8f0;
-  padding: 2px 10px 2px 0;
-  vertical-align: top;
-  white-space: nowrap;
-}
-
-body.smartolt-site #status_tr69 .tr69 .traceroute-hop-table th {
-  color: #334155;
-  font-weight: 600;
-}
-
-body.smartolt-site #status_tr69 .tr69 .traceroute-hop-table th:first-child,
-body.smartolt-site #status_tr69 .tr69 .traceroute-hop-table td:first-child {
-  padding-left: 0;
-  text-align: right;
-  width: 1%;
-}
-
-body.smartolt-site #status_tr69 .tr69 .traceroute-hop-table th:nth-child(4),
-body.smartolt-site #status_tr69 .tr69 .traceroute-hop-table td:nth-child(4) {
-  max-width: 240px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-html.smartolt-night body.smartolt-site #status_tr69 .tr69 .tab-content {
-  color: #e2e8f0;
-}
-
-html.smartolt-night body.smartolt-site #status_tr69 .tr69 .tab-pane.active {
-  background: rgba(2, 6, 23, 0.18);
-  border: 1px solid rgba(148, 163, 184, 0.16);
-  border-top: 0;
-  padding: 10px;
-}
-
-html.smartolt-night body.smartolt-site #status_tr69 .tr69 .table {
-  color: #e2e8f0;
-}
-
-html.smartolt-night body.smartolt-site #status_tr69 .tr69 .table > tbody > tr > td,
-html.smartolt-night body.smartolt-site #status_tr69 .tr69 .table > tbody > tr > th,
-html.smartolt-night body.smartolt-site #status_tr69 .tr69 .table > tr > td,
-html.smartolt-night body.smartolt-site #status_tr69 .tr69 .table > tr > th {
-  border-top-color: rgba(148, 163, 184, 0.16) !important;
-  color: #e2e8f0;
-}
-
-html.smartolt-night body.smartolt-site #status_tr69 .tr69 pre {
-  background: rgba(2, 6, 23, 0.62) !important;
-  border: 1px solid rgba(148, 163, 184, 0.24) !important;
-  border-radius: 6px;
-  color: #dbeafe !important;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Courier New", monospace;
-  line-height: 1.45;
-  margin-bottom: 8px;
-  max-height: 360px;
-  overflow: auto;
-  padding: 10px 12px;
-  white-space: pre-wrap;
-  word-break: normal;
-}
-
-html.smartolt-night body.smartolt-site #status_tr69 .tr69 pre.devlog {
-  color: #cbd5e1 !important;
-  font-size: 12px;
-  max-height: 520px;
-  tab-size: 2;
-}
-
-html.smartolt-night body.smartolt-site #status_tr69 .tr69 pre .table {
-  background: transparent;
-  color: inherit;
-  margin: 8px 0 0;
-}
-
-html.smartolt-night body.smartolt-site #status_tr69 .tr69 pre .table > tbody > tr > td,
-html.smartolt-night body.smartolt-site #status_tr69 .tr69 pre .table > tr > td {
-  background: transparent !important;
-  border-color: rgba(148, 163, 184, 0.18) !important;
-  color: #dbeafe !important;
-}
-
-html.smartolt-night body.smartolt-site #status_tr69 .tr69 .traceroute-result {
-  background: rgba(2, 6, 23, 0.62);
-  border-color: rgba(148, 163, 184, 0.24);
-  color: #dbeafe;
-}
-
-html.smartolt-night body.smartolt-site #status_tr69 .tr69 .traceroute-run-meta,
-html.smartolt-night body.smartolt-site #status_tr69 .tr69 .traceroute-status,
-html.smartolt-night body.smartolt-site #status_tr69 .tr69 .traceroute-summary {
-  color: #cbd5e1;
-}
-
-html.smartolt-night body.smartolt-site #status_tr69 .tr69 .traceroute-hop-table th,
-html.smartolt-night body.smartolt-site #status_tr69 .tr69 .traceroute-hop-table td {
-  border-color: rgba(148, 163, 184, 0.18);
-  color: #dbeafe;
-}
-
-html.smartolt-night body.smartolt-site #status_tr69 .tr69 .traceroute-hop-table th {
-  color: #bfdbfe;
-}
-
-html.smartolt-night body.smartolt-site #status_tr69 .diag-lock-banner {
-  align-items: center;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-html.smartolt-night body.smartolt-site #status_tr69 .diag-lock-banner .diagCancelBtn {
-  float: none !important;
-  margin-left: auto;
-}
-
-/* "Changed value" highlight: edit_tr69_value() sets an inline background-color:lightblue on
-   the row (horizontal tables -> <tr>) or the cell (vertical tables -> <td>). Remap that
-   theme-blind lightblue to a readable translucent blue for BOTH cases, and keep it visible on
-   hover -- the generic .table-hover tr:hover wash (!important) would otherwise paint over it.
-   The #status_tr69 ID gives these selectors higher specificity than that hover rule. */
-html.smartolt-night body.smartolt-site #status_tr69 td[style*="lightblue"],
-html.smartolt-night body.smartolt-site #status_tr69 tr[style*="lightblue"],
-html.smartolt-night body.smartolt-site #status_tr69 tr[style*="lightblue"] > td,
-html.smartolt-night body.smartolt-site #status_tr69 td[style*="lightblue"]:hover,
-html.smartolt-night body.smartolt-site #status_tr69 tr[style*="lightblue"]:hover,
-html.smartolt-night body.smartolt-site #status_tr69 tr[style*="lightblue"]:hover > td {
-  background-color: rgba(59, 130, 246, 0.24) !important;
-  color: #e2e8f0 !important;
 }
 
 /* Loading: disabled + active — keep solid selected blue (not global disabled grey wash) */
@@ -3600,11 +3147,11 @@ html.smartolt-night body.smartolt-site .onu-wrapper #onu_signal_no_data .smartol
 /* Graph thumbnail placeholders — /graphs, dashboard, modals, no_img PNGs (day + night) */
 body.smartolt-site {
   --smartolt-graph-placeholder-inner: 208px;
-  --smartolt-graph-placeholder-svg: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20452%20147%22%3E%3Cdefs%3E%3CradialGradient%20id%3D%22sun%22%20cx%3D%2288%22%20cy%3D%2252%22%20r%3D%2218%22%20gradientUnits%3D%22userSpaceOnUse%22%3E%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23fffef9%22%2F%3E%3Cstop%20offset%3D%2255%25%22%20stop-color%3D%22%23f8e8c4%22%2F%3E%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23e2cfa0%22%2F%3E%3C%2FradialGradient%3E%3ClinearGradient%20id%3D%22hill-far%22%20x1%3D%22118%22%20y1%3D%2283%22%20x2%3D%22118%22%20y2%3D%22129%22%20gradientUnits%3D%22userSpaceOnUse%22%3E%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23c4ccd1%22%2F%3E%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23adb5ba%22%2F%3E%3C%2FlinearGradient%3E%3ClinearGradient%20id%3D%22hill-near%22%20x1%3D%22232%22%20y1%3D%2272%22%20x2%3D%22232%22%20y2%3D%22129%22%20gradientUnits%3D%22userSpaceOnUse%22%3E%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23bac1c4%22%2F%3E%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%239aa3a9%22%2F%3E%3C%2FlinearGradient%3E%3ClinearGradient%20id%3D%22hill-right%22%20x1%3D%22368%22%20y1%3D%2292%22%20x2%3D%22368%22%20y2%3D%22129%22%20gradientUnits%3D%22userSpaceOnUse%22%3E%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23b5bdc2%22%2F%3E%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23a0a9af%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Cg%20transform%3D%22translate%28226%2073.5%29%20scale%280.75%29%20translate%28-226%20-73.5%29%22%3E%3Crect%20x%3D%2236%22%20y%3D%2220%22%20width%3D%22380%22%20height%3D%22107%22%20rx%3D%224%22%20ry%3D%224%22%20fill%3D%22%23eceff1%22%20fill-opacity%3D%220.35%22%20stroke%3D%22%23cfd6da%22%20stroke-width%3D%221.5%22%2F%3E%3Ccircle%20cx%3D%2288%22%20cy%3D%2252%22%20r%3D%2214%22%20fill%3D%22url%28%23sun%29%22%2F%3E%3Cg%20transform%3D%22translate%28226%20129%29%20scale%280.90%200.78%29%20translate%28-226%20-129%29%22%3E%3Cpath%20fill%3D%22url%28%23hill-far%29%22%20d%3D%22M58%20129%20118%2078%20178%20129z%22%2F%3E%3Cpath%20fill%3D%22url%28%23hill-near%29%22%20d%3D%22M142%20129%20232%2062%20322%20129z%22%2F%3E%3Cpath%20fill%3D%22url%28%23hill-right%29%22%20d%3D%22M312%20129%20358%2088%20404%20129z%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+  --smartolt-graph-placeholder-svg: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20452%20147%22%3E%3Cdefs%3E%3CradialGradient%20id%3D%22sun%22%20cx%3D%2288%22%20cy%3D%2252%22%20r%3D%2218%22%20gradientUnits%3D%22userSpaceOnUse%22%3E%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23fffef9%22%2F%3E%3Cstop%20offset%3D%2255%25%22%20stop-color%3D%22%23f8e8c4%22%2F%3E%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23e2cfa0%22%2F%3E%3C%2FradialGradient%3E%3ClinearGradient%20id%3D%22hill-far%22%20x1%3D%22118%22%20y1%3D%2283%22%20x2%3D%22118%22%20y2%3D%22129%22%20gradientUnits%3D%22userSpaceOnUse%22%3E%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23c4ccd1%22%2F%3E%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23adb5ba%22%2F%3E%3C%2FlinearGradient%3E%3ClinearGradient%20id%3D%22hill-near%22%20x1%3D%22232%22%20y1%3D%2272%22%20x2%3D%22232%22%20y2%3D%22129%22%20gradientUnits%3D%22userSpaceOnUse%22%3E%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23bac1c4%22%2F%3E%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%239aa3a9%22%2F%3E%3C%2FlinearGradient%3E%3ClinearGradient%20id%3D%22hill-right%22%20x1%3D%22368%22%20y1%3D%2292%22%20x2%3D%22368%22%20y2%3D%22129%22%20gradientUnits%3D%22userSpaceOnUse%22%3E%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23b5bdc2%22%2F%3E%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23a0a9af%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Cg%20transform%3D%22translate%28226%2073.5%29%20scale%280.75%29%20translate%28-226%20-73.5%29%22%3E%3Crect%20x%3D%2236%22%20y%3D%2220%22%20width%3D%22380%22%20height%3D%22107%22%20rx%3D%220%22%20fill%3D%22%23eceff1%22%20fill-opacity%3D%220.35%22%20stroke%3D%22%23cfd6da%22%20stroke-width%3D%221.5%22%2F%3E%3Ccircle%20cx%3D%2288%22%20cy%3D%2252%22%20r%3D%2214%22%20fill%3D%22url%28%23sun%29%22%2F%3E%3Cg%20transform%3D%22translate%28226%20129%29%20scale%280.90%200.78%29%20translate%28-226%20-129%29%22%3E%3Cpath%20fill%3D%22url%28%23hill-far%29%22%20d%3D%22M58%20129%20118%2078%20178%20129z%22%2F%3E%3Cpath%20fill%3D%22url%28%23hill-near%29%22%20d%3D%22M142%20129%20232%2062%20322%20129z%22%2F%3E%3Cpath%20fill%3D%22url%28%23hill-right%29%22%20d%3D%22M312%20129%20358%2088%20404%20129z%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E");
 }
 
 html.smartolt-night body.smartolt-site {
-  --smartolt-graph-placeholder-svg: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20452%20147%22%3E%3Cdefs%3E%3CradialGradient%20id%3D%22moon%22%20cx%3D%2288%22%20cy%3D%2252%22%20r%3D%2216%22%20gradientUnits%3D%22userSpaceOnUse%22%3E%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23f8fafc%22%2F%3E%3Cstop%20offset%3D%2245%25%22%20stop-color%3D%22%23cbd5e1%22%2F%3E%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%2394a3b8%22%2F%3E%3C%2FradialGradient%3E%3ClinearGradient%20id%3D%22hill-far%22%20x1%3D%22118%22%20y1%3D%2283%22%20x2%3D%22118%22%20y2%3D%22129%22%20gradientUnits%3D%22userSpaceOnUse%22%3E%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%2364748b%22%2F%3E%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%234b5563%22%2F%3E%3C%2FlinearGradient%3E%3ClinearGradient%20id%3D%22hill-near%22%20x1%3D%22232%22%20y1%3D%2272%22%20x2%3D%22232%22%20y2%3D%22129%22%20gradientUnits%3D%22userSpaceOnUse%22%3E%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%2394a3b8%22%2F%3E%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%2364748b%22%2F%3E%3C%2FlinearGradient%3E%3ClinearGradient%20id%3D%22hill-right%22%20x1%3D%22368%22%20y1%3D%2292%22%20x2%3D%22368%22%20y2%3D%22129%22%20gradientUnits%3D%22userSpaceOnUse%22%3E%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%237c8794%22%2F%3E%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%235c6670%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Cg%20transform%3D%22translate%28226%2073.5%29%20scale%280.75%29%20translate%28-226%20-73.5%29%22%3E%3Crect%20x%3D%2236%22%20y%3D%2220%22%20width%3D%22380%22%20height%3D%22107%22%20rx%3D%224%22%20ry%3D%224%22%20fill%3D%22none%22%20stroke%3D%22rgba%28148%2C163%2C184%2C0.35%29%22%20stroke-width%3D%221.5%22%2F%3E%3Ccircle%20cx%3D%2288%22%20cy%3D%2252%22%20r%3D%2212%22%20fill%3D%22url%28%23moon%29%22%20opacity%3D%220.78%22%2F%3E%3Cg%20transform%3D%22translate%28226%20129%29%20scale%280.90%200.78%29%20translate%28-226%20-129%29%22%3E%3Cpath%20fill%3D%22url%28%23hill-far%29%22%20d%3D%22M58%20129%20118%2078%20178%20129z%22%2F%3E%3Cpath%20fill%3D%22url%28%23hill-near%29%22%20d%3D%22M142%20129%20232%2062%20322%20129z%22%2F%3E%3Cpath%20fill%3D%22url%28%23hill-right%29%22%20d%3D%22M312%20129%20358%2088%20404%20129z%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+  --smartolt-graph-placeholder-svg: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20452%20147%22%3E%3Cdefs%3E%3CradialGradient%20id%3D%22moon%22%20cx%3D%2288%22%20cy%3D%2252%22%20r%3D%2216%22%20gradientUnits%3D%22userSpaceOnUse%22%3E%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23f8fafc%22%2F%3E%3Cstop%20offset%3D%2245%25%22%20stop-color%3D%22%23cbd5e1%22%2F%3E%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%2394a3b8%22%2F%3E%3C%2FradialGradient%3E%3ClinearGradient%20id%3D%22hill-far%22%20x1%3D%22118%22%20y1%3D%2283%22%20x2%3D%22118%22%20y2%3D%22129%22%20gradientUnits%3D%22userSpaceOnUse%22%3E%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%2364748b%22%2F%3E%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%234b5563%22%2F%3E%3C%2FlinearGradient%3E%3ClinearGradient%20id%3D%22hill-near%22%20x1%3D%22232%22%20y1%3D%2272%22%20x2%3D%22232%22%20y2%3D%22129%22%20gradientUnits%3D%22userSpaceOnUse%22%3E%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%2394a3b8%22%2F%3E%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%2364748b%22%2F%3E%3C%2FlinearGradient%3E%3ClinearGradient%20id%3D%22hill-right%22%20x1%3D%22368%22%20y1%3D%2292%22%20x2%3D%22368%22%20y2%3D%22129%22%20gradientUnits%3D%22userSpaceOnUse%22%3E%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%237c8794%22%2F%3E%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%235c6670%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Cg%20transform%3D%22translate%28226%2073.5%29%20scale%280.75%29%20translate%28-226%20-73.5%29%22%3E%3Crect%20x%3D%2236%22%20y%3D%2220%22%20width%3D%22380%22%20height%3D%22107%22%20rx%3D%220%22%20fill%3D%22none%22%20stroke%3D%22rgba%28148%2C163%2C184%2C0.35%29%22%20stroke-width%3D%221.5%22%2F%3E%3Ccircle%20cx%3D%2288%22%20cy%3D%2252%22%20r%3D%2212%22%20fill%3D%22url%28%23moon%29%22%20opacity%3D%220.78%22%2F%3E%3Cg%20transform%3D%22translate%28226%20129%29%20scale%280.90%200.78%29%20translate%28-226%20-129%29%22%3E%3Cpath%20fill%3D%22url%28%23hill-far%29%22%20d%3D%22M58%20129%20118%2078%20178%20129z%22%2F%3E%3Cpath%20fill%3D%22url%28%23hill-near%29%22%20d%3D%22M142%20129%20232%2062%20322%20129z%22%2F%3E%3Cpath%20fill%3D%22url%28%23hill-right%29%22%20d%3D%22M312%20129%20358%2088%20404%20129z%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E");
 }
 
 body.smartolt-site img.smartolt-graph-placeholder-swapped {
@@ -3866,7 +3413,7 @@ body.smartolt-site .onu-wrapper .graphs-container #onu_signal_no_data.smartolt-g
 
 body.smartolt-site .onu-wrapper .graphs-container #onu_traffic_no_data.smartolt-graph-placeholder-host::before,
 body.smartolt-site .onu-wrapper .graphs-container #onu_signal_no_data.smartolt-graph-placeholder-host::before {
-  border-radius: 4px;
+  border-radius: 0;
   content: "";
   display: block;
   height: 160px;
@@ -4330,11 +3877,15 @@ html.smartolt-night body.smartolt-dashboard .panel-heading .dropdown-menu {
   border-radius: 8px;
   box-shadow: 0 8px 18px rgba(0, 0, 0, 0.28);
   margin-top: 4px;
+  max-height: 320px;
+  overflow-y: auto;
+  padding: 4px 0;
   z-index: 1060;
 }
 
 html.smartolt-night body.smartolt-dashboard .panel-heading .dropdown-menu > li > a {
   color: #e2e8f0;
+  padding: 8px 14px;
 }
 
 html.smartolt-night body.smartolt-dashboard .panel-heading .dropdown-menu > li > a:hover,
@@ -5136,33 +4687,6 @@ html.smartolt-night .modal pre.text-primary {
   padding: 12px;
 }
 
-html.smartolt-night body.smartolt-site .smartolt-routeros-script-wrap,
-html.smartolt-night .modal .smartolt-routeros-script-wrap {
-  background: rgba(15, 23, 42, 0.72) !important;
-  border: 1px solid rgba(148, 163, 184, 0.22) !important;
-  border-radius: 8px;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
-  padding: 10px;
-}
-
-html.smartolt-night body.smartolt-site .smartolt-routeros-script-wrap .smartolt-routeros-script,
-html.smartolt-night .modal .smartolt-routeros-script-wrap .smartolt-routeros-script {
-  background: rgba(2, 6, 23, 0.58) !important;
-  border-color: rgba(148, 163, 184, 0.18) !important;
-  color: #dbeafe !important;
-  margin-bottom: 0;
-}
-
-html.smartolt-night body.smartolt-site .smartolt-routeros-script-wrap::-webkit-scrollbar-track,
-html.smartolt-night .modal .smartolt-routeros-script-wrap::-webkit-scrollbar-track {
-  background: rgba(2, 6, 23, 0.45);
-}
-
-html.smartolt-night body.smartolt-site .smartolt-routeros-script-wrap::-webkit-scrollbar-thumb,
-html.smartolt-night .modal .smartolt-routeros-script-wrap::-webkit-scrollbar-thumb {
-  background: rgba(140, 200, 255, 0.42);
-}
-
 body.smartolt-site .smartolt-tunnel-log-meta {
   background: #f5f7fa;
   border: 1px solid #d8dce5;
@@ -5273,15 +4797,13 @@ html.smartolt-night body.smartolt-site .filters-panel label .fa {
 }
 
 html.smartolt-night body.smartolt-site .filters-panel .form-control {
-  /* background-color longhand on purpose: the shorthand would wipe the
-     select caret background-image set on select.form-control above */
-  background-color: rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.06);
   border-color: rgba(255, 255, 255, 0.15);
   color: #f1f5f9;
 }
 
 html.smartolt-night body.smartolt-site .filters-panel .form-control:focus {
-  background-color: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.08);
   border-color: #3b82f6;
   color: #fff;
 }
@@ -5697,10 +5219,10 @@ html.smartolt-night #presetWizardModal #wizard_existing_default_warning {
 }
 
 html.smartolt-night #presetWizardModal #wizard_preset_form code {
-  background: rgba(245, 151, 55, 0.12) !important;
-  border: 1px solid rgba(245, 151, 55, 0.35);
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 4px;
-  color: #f59737 !important;
+  color: #b8dcff !important;
   padding: 1px 5px;
 }
 
@@ -5909,34 +5431,20 @@ html.smartolt-night body.smartolt-site #general_uplink_info .table > tr > th {
 }
 
 .pon-outage-section + .pon-outage-section .pon-outage-section__head {
-  margin-top: 2px;
-}
-
-.pon-outage-section + .pon-outage-section .pon-outage-section__head::before {
-  display: block;
+  margin-top: 4px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(15, 23, 42, 0.12);
 }
 
 .pon-outage-section__head {
-  display: grid;
-  grid-template-columns: 14px 30px max-content max-content max-content max-content minmax(0, 1fr);
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  justify-content: start;
-  position: relative;
-  gap: 8px 10px;
-  min-height: 48px;
-  padding: 8px 16px;
-  border-bottom: 0;
+  justify-content: space-between;
+  gap: 8px 14px;
+  padding: 6px 12px 5px;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.1);
   background: transparent;
-}
-
-.pon-outage-section__head::before {
-  content: "";
-  position: absolute;
-  display: none;
-  top: -1px;
-  left: 16px;
-  right: 16px;
-  border-top: 1px solid rgba(15, 23, 42, 0.12);
 }
 
 .pon-outage-section__head--toggle:hover {
@@ -5944,42 +5452,38 @@ html.smartolt-night body.smartolt-site #general_uplink_info .table > tr > th {
 }
 
 .pon-outage-section__title {
-  display: contents;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 10px;
+  min-width: 0;
+  flex: 1 1 220px;
 }
 
 .pon-outage-section__icon {
   color: var(--pon-section-accent, #64748b);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 30px;
-  height: 34px;
-  font-size: 18px;
+  font-size: 16px;
   line-height: 1;
 }
 
 .pon-outage-section__label {
   font-weight: 600;
-  font-size: 16px;
+  font-size: 15px;
   color: #1e293b;
-  line-height: 1.3;
-  white-space: nowrap;
+  line-height: 1.4;
 }
 
 .pon-outage-section__stats {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  justify-self: start;
   font-size: 14px;
   font-weight: 600;
-  line-height: 1.25;
+  line-height: 1.35;
   background: #fff;
   border: 1px solid rgba(15, 23, 42, 0.12);
   padding: 6px 12px;
   border-radius: 6px;
   white-space: nowrap;
-  min-height: 32px;
 }
 
 .pon-outage-section__hint {
@@ -5991,114 +5495,29 @@ html.smartolt-night body.smartolt-site #general_uplink_info .table > tr > th {
 }
 
 .pon-outage-section__title-row {
-  display: contents;
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
 }
 
 .pon-outage-section__caret {
   color: #94a3b8;
+  flex-shrink: 0;
   display: inline-flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: center;
   width: 14px;
-  height: 34px;
+  height: 1.35em;
   font-size: 13px;
   line-height: 1;
   vertical-align: middle;
 }
 
-.pon-outage-severity-pill {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  justify-self: start;
-  min-height: 0;
-  padding: 2px 7px;
-  border-radius: 6px;
-  border: 1px solid transparent;
-  font-size: 11px;
-  font-weight: 600;
-  line-height: 1.25;
-  white-space: nowrap;
-}
-
-.pon-outage-severity-pill--1 {
-  color: #D98A00;
-  background: transparent;
-  border-color: #D98A00;
-}
-
-.pon-outage-severity-pill--2 {
-  color: #4C3F83;
-  background: transparent;
-  border-color: #4C3F83;
-}
-
-.pon-outage-severity-pill--3 {
-  color: #B91C1C;
-  background: transparent;
-  border-color: #B91C1C;
-}
-
-.pon-signal-degradation-table .pon-outage-severity-pill {
-  vertical-align: middle;
-}
-
-.pon-outage-section__body .pon-signal-degradation-table,
-.pon-outage-section__body .pon-group-table {
-  border-collapse: separate;
-  border-spacing: 0 8px;
-  padding: 0 12px 10px;
-  background: rgba(15, 23, 42, 0.34);
-  border-radius: 6px;
-}
-
-.pon-outage-section__body .pon-signal-degradation-table > thead > tr > th,
-.pon-outage-section__body .pon-group-table > thead > tr > th {
-  padding: 10px 14px 8px;
-  border: 0;
-  color: #cbd5e1;
-  font-size: 13px;
-  font-weight: 600;
-  background: transparent;
-}
-
-.pon-outage-section__body .pon-signal-degradation-table > tbody > tr.psd-row > td,
-.pon-outage-section__body .pon-group-table > tbody > tr.pon-group-row > td {
-  padding: 12px 14px;
-  border-top: 1px solid rgba(148, 163, 184, 0.16);
-  border-bottom: 1px solid rgba(148, 163, 184, 0.16);
-  background: rgba(15, 23, 42, 0.62);
-  vertical-align: middle;
-}
-
-.pon-outage-section__body .pon-signal-degradation-table > tbody > tr.psd-row > td:first-child,
-.pon-outage-section__body .pon-group-table > tbody > tr.pon-group-row > td:first-child {
-  border-left: 1px solid rgba(148, 163, 184, 0.16);
-  border-top-left-radius: 6px;
-  border-bottom-left-radius: 6px;
-  background: rgba(15, 23, 42, 0.34);
-}
-
-.pon-outage-section__body .pon-signal-degradation-table > tbody > tr.psd-row > td:last-child,
-.pon-outage-section__body .pon-group-table > tbody > tr.pon-group-row > td:last-child {
-  border-right: 1px solid rgba(148, 163, 184, 0.16);
-  border-top-right-radius: 6px;
-  border-bottom-right-radius: 6px;
-}
-
-.pon-signal-degradation-table .psd-row .fa-caret-right,
-.pon-signal-degradation-table .psd-row .fa-caret-down,
-.pon-group-table .pon-group-row .fa-caret-right,
-.pon-group-table .pon-group-row .fa-caret-down {
-  color: #cbd5e1;
-  margin-right: 8px;
-}
-
 .pon-outage-groupby {
   display: flex;
   align-items: center;
-  grid-column: 5 / -1;
-  justify-self: end;
   gap: 8px;
   flex-shrink: 0;
   font-family: inherit;
@@ -6172,23 +5591,6 @@ html.smartolt-night body.smartolt-site #general_uplink_info .table > tr > th {
 
 .pon-outage-section__body {
   background: transparent;
-}
-
-.pon-outage-section__body .pon-outage-allclear {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 20px;
-  text-align: center;
-  color: #cbd5e1;
-}
-
-.pon-outage-section__body .pon-outage-allclear .fa {
-  font-size: 40px;
-  color: #1fb325;
-  line-height: 1;
 }
 
 .pon-outage-section__body--collapsed {
@@ -6283,7 +5685,7 @@ html.smartolt-night body.smartolt-site #general_uplink_info .table > tr > th {
   white-space: nowrap;
 }
 
-/* Signal-variation table: 8 fixed columns. table-layout:fixed caps the table at
+/* Signal-variation table: 7 fixed columns. table-layout:fixed caps the table at
    100% of the panel (so the "Last scan" column can't be pushed off and clipped by
    the card) and keeps numeric column widths stable when a row expands — without it
    the wide colspan detail cell steals slack and the headers fold. The OLT-name
@@ -6297,44 +5699,39 @@ html.smartolt-night body.smartolt-site #general_uplink_info .table > tr > th {
 }
 .pon-outage-section__body .pon-signal-degradation-table > thead > tr > th:nth-child(1),
 .pon-outage-section__body .pon-signal-degradation-table > tbody > tr:not(.pon-detail-row) > td:nth-child(1) {
-  width: 6%;
-  min-width: 38px;
+  width: 12%;
+  min-width: 92px;
 }
 .pon-outage-section__body .pon-signal-degradation-table > thead > tr > th:nth-child(2),
 .pon-outage-section__body .pon-signal-degradation-table > tbody > tr:not(.pon-detail-row) > td:nth-child(2) {
-  width: 34%;
+  width: 22%;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 .pon-outage-section__body .pon-signal-degradation-table > thead > tr > th:nth-child(3),
 .pon-outage-section__body .pon-signal-degradation-table > tbody > tr:not(.pon-detail-row) > td:nth-child(3) {
-  width: 9%;
-  min-width: 68px;
+  width: 10%;
+  min-width: 70px;
 }
 .pon-outage-section__body .pon-signal-degradation-table > thead > tr > th:nth-child(4),
 .pon-outage-section__body .pon-signal-degradation-table > tbody > tr:not(.pon-detail-row) > td:nth-child(4) {
-  width: 5%;
-  min-width: 40px;
+  width: 12%;
+  min-width: 88px;
 }
 .pon-outage-section__body .pon-signal-degradation-table > thead > tr > th:nth-child(5),
 .pon-outage-section__body .pon-signal-degradation-table > tbody > tr:not(.pon-detail-row) > td:nth-child(5) {
-  width: 9%;
-  min-width: 62px;
+  width: 12%;
+  min-width: 88px;
 }
 .pon-outage-section__body .pon-signal-degradation-table > thead > tr > th:nth-child(6),
 .pon-outage-section__body .pon-signal-degradation-table > tbody > tr:not(.pon-detail-row) > td:nth-child(6) {
-  width: 11%;
-  min-width: 78px;
+  width: 14%;
+  min-width: 104px;
 }
 .pon-outage-section__body .pon-signal-degradation-table > thead > tr > th:nth-child(7),
 .pon-outage-section__body .pon-signal-degradation-table > tbody > tr:not(.pon-detail-row) > td:nth-child(7) {
-  width: 8%;
-  min-width: 52px;
-}
-.pon-outage-section__body .pon-signal-degradation-table > thead > tr > th:nth-child(8),
-.pon-outage-section__body .pon-signal-degradation-table > tbody > tr:not(.pon-detail-row) > td:nth-child(8) {
   width: 18%;
-  min-width: 96px;
+  min-width: 116px;
 }
 
 /* Drill-down subhead: same typography as main PON table header (OLT / PONs / ONUs / Since) */
@@ -6356,45 +5753,6 @@ html.smartolt-night body.smartolt-site #general_uplink_info .table > tr > th {
 .pon-outage-section__body .pon-detail-row > td > .table > tbody > tr > td:nth-child(5) {
   width: auto;
   min-width: 72px;
-  white-space: nowrap;
-}
-
-.pon-outage-section__body .pon-detail-row[data-psd-idx] > td > .table > thead > tr > th,
-.pon-outage-section__body .pon-detail-row[data-psd-idx] > td > .table > tbody > tr > td {
-  padding-left: 10px !important;
-  padding-right: 10px !important;
-}
-
-.pon-outage-section__body .pon-detail-row[data-psd-idx] > td > .table > thead > tr > th:nth-child(1),
-.pon-outage-section__body .pon-detail-row[data-psd-idx] > td > .table > tbody > tr > td:nth-child(1) {
-  width: 49%;
-  min-width: 0;
-}
-
-.pon-outage-section__body .pon-detail-row[data-psd-idx] > td > .table > thead > tr > th:nth-child(2),
-.pon-outage-section__body .pon-detail-row[data-psd-idx] > td > .table > tbody > tr > td:nth-child(2) {
-  width: 40px;
-  min-width: 40px;
-}
-
-.pon-outage-section__body .pon-detail-row[data-psd-idx] > td > .table > thead > tr > th:nth-child(3),
-.pon-outage-section__body .pon-detail-row[data-psd-idx] > td > .table > tbody > tr > td:nth-child(3),
-.pon-outage-section__body .pon-detail-row[data-psd-idx] > td > .table > thead > tr > th:nth-child(4),
-.pon-outage-section__body .pon-detail-row[data-psd-idx] > td > .table > tbody > tr > td:nth-child(4) {
-  width: 52px;
-  min-width: 52px;
-}
-
-.pon-outage-section__body .pon-detail-row[data-psd-idx] > td > .table > thead > tr > th:nth-child(5),
-.pon-outage-section__body .pon-detail-row[data-psd-idx] > td > .table > tbody > tr > td:nth-child(5) {
-  width: 44px;
-  min-width: 44px;
-}
-
-.pon-outage-section__body .pon-detail-row[data-psd-idx] > td > .table > thead > tr > th:nth-child(6),
-.pon-outage-section__body .pon-detail-row[data-psd-idx] > td > .table > tbody > tr > td:nth-child(6) {
-  width: 82px;
-  min-width: 82px;
   white-space: nowrap;
 }
 
@@ -6423,79 +5781,24 @@ body.smartolt-dashboard .pon-outage-section__body .pon-gps-icon--disabled {
   margin-left: 12px;
   opacity: 0.3;
 }
+/* PON outage: neutral row + control hovers (no blue/green tint) */
+body.smartolt-dashboard .pon-outage-section__body .table-hover > tbody > tr:hover > td,
+body.smartolt-dashboard .pon-outage-section__body .table-hover > tbody > tr:hover > th,
+body.smartolt-dashboard .pon-outage-section__body .table-striped > tbody > tr:hover > td,
+body.smartolt-dashboard .pon-outage-section__body .table-striped > tbody > tr:hover > th {
+  background-color: #ececec !important;
+}
+
 body.smartolt-dashboard .pon-outage-section__body .table-striped > tbody > tr:nth-of-type(odd) > td {
   background-color: #fafafa;
 }
 
-body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table > thead > tr > th,
-body.smartolt-dashboard .pon-outage-section__body .pon-group-table > thead > tr > th {
-  padding: 10px 14px 8px;
-  border: 0 !important;
-  color: #475569;
-  font-size: 13px;
-  font-weight: 600;
-  background: transparent !important;
-}
-
-body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table > tbody > tr.psd-row > td,
-body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table.table-striped > tbody > tr.psd-row:nth-of-type(odd) > td,
-body.smartolt-dashboard .pon-outage-section__body .pon-group-table > tbody > tr.pon-group-row > td,
-body.smartolt-dashboard .pon-outage-section__body .pon-group-table.table-striped > tbody > tr.pon-group-row:nth-of-type(odd) > td {
-  padding: 12px 14px;
-  border-top: 1px solid rgba(15, 23, 42, 0.08);
-  border-bottom: 1px solid rgba(15, 23, 42, 0.08);
-  background: #fff !important;
-  vertical-align: middle;
-}
-
-body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table > tbody > tr.psd-row > td:first-child,
-body.smartolt-dashboard .pon-outage-section__body .pon-group-table > tbody > tr.pon-group-row > td:first-child,
-body.smartolt-dashboard .pon-outage-section__body .pon-group-table.table-striped > tbody > tr.pon-group-row:nth-of-type(odd) > td:first-child {
-  border-left: 1px solid rgba(15, 23, 42, 0.08);
-  border-top-left-radius: 6px;
-  border-bottom-left-radius: 6px;
-  background: #f7f9fb !important;
-}
-
-body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table > tbody > tr.psd-row > td:last-child,
-body.smartolt-dashboard .pon-outage-section__body .pon-group-table > tbody > tr.pon-group-row > td:last-child {
-  border-right: 1px solid rgba(15, 23, 42, 0.08);
-  border-top-right-radius: 6px;
-  border-bottom-right-radius: 6px;
-}
-
-body.smartolt-dashboard .pon-outage-section__body .pon-group-table > tbody > tr.pon-group-row > td:first-child,
-body.smartolt-dashboard .pon-outage-section__body .pon-group-table.table-striped > tbody > tr.pon-group-row:nth-of-type(odd) > td:first-child,
-body.smartolt-dashboard .pon-outage-section__body .pon-detail-row > td > .table > tbody > tr > td:first-child {
-  background: #fff !important;
-}
-
-html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table > thead > tr > th,
-html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-group-table > thead > tr > th {
-  border: 0 !important;
-  color: #cbd5e1;
-  background: transparent !important;
-}
-
-html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table > tbody > tr.psd-row > td,
-html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table.table-striped > tbody > tr.psd-row:nth-of-type(odd) > td,
-html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-group-table > tbody > tr.pon-group-row > td,
-html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-group-table.table-striped > tbody > tr.pon-group-row:nth-of-type(odd) > td {
-  border-top-color: rgba(148, 163, 184, 0.16);
-  border-bottom-color: rgba(148, 163, 184, 0.16);
-  background: rgba(15, 23, 42, 0.62) !important;
-}
-
-html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table > tbody > tr.psd-row > td:first-child,
-html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-group-table > tbody > tr.pon-group-row > td:first-child,
-html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-group-table.table-striped > tbody > tr.pon-group-row:nth-of-type(odd) > td:first-child {
-  border-left-color: rgba(148, 163, 184, 0.16);
-  background: rgba(15, 23, 42, 0.34) !important;
-}
-
-html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table > tbody > tr.psd-row > td:last-child,
-html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-group-table > tbody > tr.pon-group-row > td:last-child {
-  border-right-color: rgba(148, 163, 184, 0.16);
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .table-hover > tbody > tr:hover > td,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .table-hover > tbody > tr:hover > th,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .table-striped > tbody > tr:hover > td,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .table-striped > tbody > tr:hover > th {
+  background-color: rgba(255, 255, 255, 0.07) !important;
+  color: inherit;
 }
 
 
@@ -6507,11 +5810,12 @@ html.smartolt-night body.smartolt-dashboard .pon-outage-section {
   box-shadow: none;
 }
 
-html.smartolt-night body.smartolt-dashboard .pon-outage-section + .pon-outage-section .pon-outage-section__head::before {
+html.smartolt-night body.smartolt-dashboard .pon-outage-section + .pon-outage-section .pon-outage-section__head {
   border-top-color: rgba(148, 163, 184, 0.22);
 }
 
 html.smartolt-night body.smartolt-dashboard .pon-outage-section__head {
+  border-bottom-color: rgba(148, 163, 184, 0.2);
   background: transparent;
 }
 
@@ -6526,16 +5830,6 @@ html.smartolt-night body.smartolt-dashboard .pon-outage-section__label {
 html.smartolt-night body.smartolt-dashboard .pon-outage-section__stats {
   background: rgba(15, 23, 42, 0.8);
   border: 1px solid rgba(148, 163, 184, 0.22);
-}
-
-html.smartolt-night body.smartolt-dashboard .pon-outage-section__stats--clear {
-  background: none;
-  border: 0;
-}
-
-html.smartolt-night body.smartolt-dashboard .pon-outage-section__stats--clear .fa,
-html.smartolt-night body.smartolt-dashboard .pon-signal-no-variation .fa {
-  color: #1fb325;
 }
 
 html.smartolt-night body.smartolt-dashboard .pon-outage-section__hint,
@@ -6623,335 +5917,6 @@ html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-group
   color: #94a3b8;
 }
 
-html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table,
-html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-group-table,
-html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-detail-row > td,
-html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-detail-row > td > .table {
-  background: rgba(15, 23, 42, 0.34) !important;
-}
-
-html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table > tbody > tr.psd-row > td,
-html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-group-table > tbody > tr.pon-group-row > td,
-html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-detail-row > td > .table > tbody > tr > td {
-  border-top-color: rgba(148, 163, 184, 0.16) !important;
-  border-bottom-color: rgba(148, 163, 184, 0.16) !important;
-  background: rgba(15, 23, 42, 0.62) !important;
-}
-
-html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table > tbody > tr.psd-row > td:first-child,
-html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-group-table > tbody > tr.pon-group-row > td:first-child,
-html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-detail-row > td > .table > tbody > tr > td:first-child {
-  border-left-color: rgba(148, 163, 184, 0.16) !important;
-  background: rgba(15, 23, 42, 0.34) !important;
-}
-
-html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table > tbody > tr.psd-row > td:last-child,
-html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-group-table > tbody > tr.pon-group-row > td:last-child,
-html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-detail-row > td > .table > tbody > tr > td:last-child {
-  border-right-color: rgba(148, 163, 184, 0.16) !important;
-}
-
-html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-group-table > tbody > tr.pon-group-row > td:first-child,
-html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-group-table.table-striped > tbody > tr.pon-group-row:nth-of-type(odd) > td:first-child,
-html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-detail-row > td > .table > tbody > tr > td:first-child,
-html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-detail-row > td > .table.table-striped > tbody > tr:nth-of-type(odd) > td:first-child {
-  background: rgba(15, 23, 42, 0.62) !important;
-}
-
-html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-detail-row[data-psd-idx] > td > .table {
-  table-layout: fixed !important;
-  width: 100% !important;
-  min-width: 100% !important;
-}
-
-html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-detail-row[data-psd-idx] > td > .table > thead > tr > th:nth-child(1),
-html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-detail-row[data-psd-idx] > td > .table > tbody > tr > td:nth-child(1) {
-  width: 49% !important;
-}
-
-html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-detail-row[data-psd-idx] > td > .table > thead > tr > th:nth-child(2),
-html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-detail-row[data-psd-idx] > td > .table > tbody > tr > td:nth-child(2) {
-  width: 40px !important;
-}
-
-html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-detail-row[data-psd-idx] > td > .table > thead > tr > th:nth-child(3),
-html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-detail-row[data-psd-idx] > td > .table > tbody > tr > td:nth-child(3),
-html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-detail-row[data-psd-idx] > td > .table > thead > tr > th:nth-child(4),
-html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-detail-row[data-psd-idx] > td > .table > tbody > tr > td:nth-child(4) {
-  width: 52px !important;
-}
-
-html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-detail-row[data-psd-idx] > td > .table > thead > tr > th:nth-child(5),
-html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-detail-row[data-psd-idx] > td > .table > tbody > tr > td:nth-child(5) {
-  width: 44px !important;
-}
-
-html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-detail-row[data-psd-idx] > td > .table > thead > tr > th:nth-child(6),
-html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-detail-row[data-psd-idx] > td > .table > tbody > tr > td:nth-child(6) {
-  width: 82px !important;
-}
-
-html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table,
-html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-group-table {
-  background: rgba(255, 255, 255, 0.035) !important;
-  border-radius: 6px;
-  padding: 0 12px 8px;
-}
-
-html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-group-table > thead > tr > th {
-  background: transparent !important;
-}
-
-html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-detail-row > td,
-html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-detail-row > td > .table {
-  background: transparent !important;
-}
-
-html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-detail-row {
-  background: transparent !important;
-}
-
-html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-detail-row > td > .table > thead.detail-subhead > tr > th {
-  background: transparent !important;
-}
-
-html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-group-table > tbody > tr.pon-group-row > td:first-child,
-html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-group-table.table-striped > tbody > tr.pon-group-row:nth-of-type(odd) > td:first-child,
-html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-detail-row > td > .table > tbody > tr > td:first-child,
-html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-detail-row > td > .table.table-striped > tbody > tr:nth-of-type(odd) > td:first-child {
-  background: rgba(15, 23, 42, 0.62) !important;
-}
-
-html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-group-table--summary {
-  border-spacing: 0;
-  background: rgba(255, 255, 255, 0.035) !important;
-  box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.16);
-  padding: 7px 12px;
-}
-
-html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-group-table--summary > tbody > tr.pon-group-row > td,
-html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-group-table--summary.table-striped > tbody > tr.pon-group-row:nth-of-type(odd) > td {
-  padding: 12px 14px;
-  color: #e2e8f0 !important;
-  font-size: 15px;
-  font-weight: 500;
-  line-height: 1.35;
-  background: transparent !important;
-  border: 0 !important;
-  vertical-align: middle;
-}
-
-html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-group-table--summary > tbody > tr.pon-group-row > td:first-child,
-html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-group-table--summary.table-striped > tbody > tr.pon-group-row:nth-of-type(odd) > td:first-child {
-  color: #e2e8f0 !important;
-  background: transparent !important;
-  border-left: 0 !important;
-  border-radius: 0 !important;
-}
-
-html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-group-table--summary > tbody > tr.pon-group-row > td:last-child {
-  border-right: 0 !important;
-  border-radius: 0 !important;
-}
-
-html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-group-table--summary > tbody > tr.pon-group-row + tr.pon-group-row > td,
-html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-group-table--summary > tbody > tr.pon-detail-row + tr.pon-group-row > td {
-  border-top: 1px dashed rgba(148, 163, 184, 0.26) !important;
-}
-
-html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-group-table--summary .pon-detail-row > td,
-html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-group-table--summary .pon-detail-row > td > .pon-detail-table--summary {
-  background: transparent !important;
-}
-
-html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-detail-table--summary > tbody > tr > td {
-  padding: 6px 14px 7px;
-  color: #cbd5e1 !important;
-  font-size: 14px;
-  line-height: 1.35;
-  background: transparent !important;
-  border: 0 !important;
-  vertical-align: middle;
-}
-
-html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-detail-table--summary > tbody > tr > td:first-child {
-  padding-left: 36px;
-}
-
-html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-detail-branch {
-  display: inline-block;
-  width: 16px;
-  height: 14px;
-  margin-right: 8px;
-  border-left-color: rgba(148, 163, 184, 0.45);
-  border-bottom-color: rgba(148, 163, 184, 0.45);
-  border-left-width: 1px;
-  border-left-style: solid;
-  border-bottom-width: 1px;
-  border-bottom-style: solid;
-  vertical-align: text-top;
-}
-
-html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-detail-board-label {
-  color: #94a3b8;
-  font-weight: 600;
-}
-
-html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-detail-olt-label {
-  display: inline-block;
-  margin-left: 10px;
-  color: #64748b;
-  font-size: 12px;
-  font-weight: 500;
-}
-
-body.smartolt-dashboard .pon-outage-wrap .pon-detail-table--summary > tbody > tr.pon-detail-item-row .pon-detail-item-label > a:first-of-type {
-  display: inline-block;
-  min-width: 48px;
-  text-align: right;
-}
-
-body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary .pon-detail-row > td > .pon-detail-table--summary {
-  table-layout: fixed;
-  width: 100%;
-}
-
-body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary .pon-detail-row > td > .pon-detail-table--summary > tbody > tr > td.pon-detail-item-label {
-  width: 49% !important;
-  min-width: 0 !important;
-  overflow: visible;
-  text-overflow: clip;
-  white-space: nowrap;
-}
-
-body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary .pon-detail-row > td > .pon-detail-table--summary > tbody > tr > td.pon-detail-position-cell {
-  width: 40px !important;
-  min-width: 40px !important;
-  padding-left: 10px !important;
-  padding-right: 0 !important;
-  text-align: left !important;
-  white-space: nowrap;
-}
-
-body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary .pon-detail-row > td > .pon-detail-table--summary > tbody > tr > td.pon-detail-spacer-cell {
-  width: 8% !important;
-  min-width: 32px !important;
-}
-
-body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary .pon-detail-row > td > .pon-detail-table--summary > tbody > tr > td:nth-child(4) {
-  width: 17% !important;
-  min-width: 76px !important;
-  white-space: nowrap;
-}
-
-body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary .pon-detail-row > td > .pon-detail-table--summary > tbody > tr > td:nth-child(5) {
-  width: 18% !important;
-  min-width: 96px !important;
-  white-space: nowrap;
-}
-
-body.smartolt-dashboard .pon-outage-section__body .pon-detail-position-cell .pon-gps-link,
-body.smartolt-dashboard .pon-outage-section__body .pon-detail-position-cell .pon-gps-disabled {
-  margin-left: 0;
-}
-
-body.smartolt-dashboard .pon-outage-section__body .pon-signal-position-heading,
-body.smartolt-dashboard .pon-outage-section__body .pon-signal-position-cell {
-  padding-left: 4px !important;
-  padding-right: 4px !important;
-  text-align: center;
-}
-
-body.smartolt-dashboard .pon-outage-section__body .pon-signal-position-heading > .fa-map-marker {
-  display: inline-flex !important;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  line-height: 1 !important;
-  vertical-align: middle;
-}
-
-body.smartolt-dashboard .pon-outage-section__body .pon-detail-row[data-psd-idx] > td > .pon-signal-detail-table > thead > tr > th.pon-signal-position-heading,
-body.smartolt-dashboard .pon-outage-section__body .pon-detail-row[data-psd-idx] > td > .pon-signal-detail-table > tbody > tr > td.pon-signal-position-cell {
-  width: 40px !important;
-  min-width: 40px !important;
-  padding-left: 10px !important;
-  padding-right: 0 !important;
-  text-align: left;
-}
-
-body.smartolt-dashboard .pon-outage-section__body .pon-signal-position-cell .pon-gps-link,
-body.smartolt-dashboard .pon-outage-section__body .pon-signal-position-cell .pon-gps-disabled {
-  margin-left: 0;
-}
-
-@media (max-width: 767px) {
-  body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table {
-    table-layout: fixed !important;
-    width: 760px !important;
-    min-width: 760px !important;
-  }
-
-  body.smartolt-dashboard .pon-outage-section__body .pon-detail-row[data-psd-idx] > td > .pon-signal-detail-table {
-    table-layout: fixed !important;
-    width: 100% !important;
-    min-width: 100% !important;
-  }
-
-  body.smartolt-dashboard .pon-outage-section__body .pon-detail-row[data-psd-idx] > td > .pon-signal-detail-table > thead > tr > th:nth-child(1),
-  body.smartolt-dashboard .pon-outage-section__body .pon-detail-row[data-psd-idx] > td > .pon-signal-detail-table > tbody > tr > td:nth-child(1) {
-    width: 49% !important;
-  }
-}
-
-body.smartolt-dashboard .pon-outage-section__body .pon-signal-degradation-table > tbody > tr.psd-row > td.pon-signal-severity-cell {
-  padding-left: 4px !important;
-  padding-right: 4px !important;
-  text-align: center;
-  white-space: nowrap;
-}
-
-body.smartolt-dashboard .pon-outage-section__body .pon-signal-severity-dot {
-  margin-left: 0;
-}
-
-body.smartolt-dashboard .pon-outage-section__body .pon-signal-severity-marker {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  padding-right: 5px;
-}
-
-body.smartolt-dashboard .pon-outage-section__body .pon-signal-severity-marker > .fa {
-  line-height: 1;
-}
-
-html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary .pon-detail-row > td > .pon-detail-table--summary > tbody > tr.pon-detail-item-row + tr.pon-detail-item-row > td,
-html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary .pon-detail-row > td > .pon-detail-table--summary > tbody > tr.pon-detail-item-row + tr.pon-detail-item-row > td:first-child,
-html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary .pon-detail-row > td > .pon-detail-table--summary > tbody > tr.pon-detail-item-row + tr.pon-detail-item-row > td:last-child {
-  border-top: 1px solid rgba(148, 163, 184, 0.16) !important;
-}
-
-body.smartolt-dashboard .pon-outage-section__label {
-  font-weight: 400 !important;
-}
-
-body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary > tbody > tr.pon-group-row > td:first-child,
-body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary.table-striped > tbody > tr.pon-group-row:nth-of-type(odd) > td:first-child {
-  padding-left: 28px !important;
-}
-
-body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary > tbody > tr.pon-group-row > td:first-child > .fa-caret-right,
-body.smartolt-dashboard .pon-outage-section__body .pon-group-table.pon-group-table--summary > tbody > tr.pon-group-row > td:first-child > .fa-caret-down {
-  display: inline-block;
-  width: 10px;
-  margin-right: 6px;
-  text-align: center;
-}
-
-
 /* PON outage: panel-body scroll parity with legacy table-responsive */
 html:not(.smartolt-night) body.smartolt-dashboard .panel-default > .panel-body--pon-outage:last-child,
 html:not(.smartolt-night) body.smartolt-dashboard .panel-default > .panel-body--pon-outage {
@@ -6990,47 +5955,41 @@ html.smartolt-night body.smartolt-dashboard .panel-default > .panel-body--pon-ou
 
   .pon-outage-section + .pon-outage-section .pon-outage-section__head {
     margin-top: 3px;
+    padding-top: 5px;
   }
 
   .pon-outage-section__head {
-    grid-template-columns: 14px 28px minmax(0, 1fr);
-    align-items: center;
+    flex-direction: column;
+    align-items: stretch;
     gap: 8px;
     padding: 10px;
   }
 
-  .pon-outage-section__head::before {
-    left: 10px;
-    right: 10px;
-  }
-
   .pon-outage-section__title {
-    display: contents;
+    flex: 1 1 auto;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    width: 100%;
   }
 
-  .pon-outage-section__icon {
-    width: 28px;
-    height: 32px;
-    font-size: 17px;
+  .pon-outage-section__title > .pon-outage-section__icon {
+    display: none;
   }
 
   .pon-outage-section__label {
     font-size: 14px;
     line-height: 1.45;
     width: auto;
-    white-space: normal;
+    white-space: nowrap;
     word-break: normal;
   }
 
-  .pon-outage-section__stats,
-  .pon-outage-severity-pill {
-    grid-column: 3;
-    justify-self: start;
-    font-size: 11px;
-    padding: 2px 7px;
+  .pon-outage-section__stats {
+    font-size: 14px;
+    padding: 6px 10px;
     max-width: 100%;
     white-space: normal;
-    min-height: 0;
   }
 
   .pon-outage-section__hint {
@@ -7040,8 +5999,6 @@ html.smartolt-night body.smartolt-dashboard .panel-default > .panel-body--pon-ou
   }
 
   .pon-outage-groupby {
-    grid-column: 1 / -1;
-    justify-self: stretch;
     width: 100%;
     justify-content: flex-start;
     flex-wrap: wrap;
@@ -7193,8 +6150,8 @@ html.smartolt-night body.smartolt-dashboard .panel-default > .panel-body--pon-ou
   }
 
   .pon-outage-section__body .pon-group-row > td:first-child {
-    white-space: nowrap;
-    word-break: normal;
+    white-space: normal;
+    word-break: break-word;
   }
 }
 
@@ -7212,12 +6169,20 @@ html.smartolt-night body.smartolt-dashboard .panel-default > .panel-body--pon-ou
 }
 
 .pon-outage-section:not(.is-open) .pon-outage-section__head {
-  border-bottom: 0;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.1);
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-section:not(.is-open) .pon-outage-section__head {
+  border-bottom-color: rgba(148, 163, 184, 0.2);
 }
 
 /* Stale + desktop: tighter layout, group-by in header when open */
 .pon-outage-section--stale:not(.is-open) .pon-outage-section__head {
-  border-bottom: 0;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.1);
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-section--stale:not(.is-open) .pon-outage-section__head {
+  border-bottom-color: rgba(148, 163, 184, 0.2);
 }
 
 .pon-outage-section--stale .pon-outage-groupby--stale {
@@ -7232,9 +6197,40 @@ html.smartolt-night body.smartolt-dashboard .panel-default > .panel-body--pon-ou
   padding: 0;
 }
 
+/* Section titles + stats tag: accent text color per section */
+.pon-outage-section--los .pon-outage-section__label,
+.pon-outage-section--los .pon-outage-section__stats {
+  color: #ea580c;
+}
+
+.pon-outage-section--power .pon-outage-section__label,
+.pon-outage-section--power .pon-outage-section__stats {
+  color: #0064c8;
+}
+
+.pon-outage-section--offline .pon-outage-section__label,
+.pon-outage-section--offline .pon-outage-section__stats {
+  color: #4c4b4b;
+}
+
 .pon-outage-section--stale .pon-outage-section__label,
 .pon-outage-section--stale .pon-outage-section__stats {
   color: #64748b;
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-section--los .pon-outage-section__label,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section--los .pon-outage-section__stats {
+  color: #fb923c;
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-section--power .pon-outage-section__label,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section--power .pon-outage-section__stats {
+  color: #5eb3ff;
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-section--offline .pon-outage-section__label,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section--offline .pon-outage-section__stats {
+  color: #cbd5e1;
 }
 
 html.smartolt-night body.smartolt-dashboard .pon-outage-section--stale .pon-outage-section__label,
@@ -7260,12 +6256,12 @@ html.smartolt-night body.smartolt-dashboard .pon-outage-section--stale .pon-outa
   }
 
   .pon-outage-section__head {
-    padding: 8px 16px;
-    gap: 8px 10px;
+    padding: 6px 8px;
+    gap: 4px 10px;
   }
 
   .pon-outage-section--stale .pon-outage-section__head {
-    padding: 8px 16px;
+    padding: 5px 8px;
   }
 
   .pon-outage-section--stale .pon-outage-groupby--stale {
@@ -7429,228 +6425,3 @@ html.smartolt-night body.smartolt-site .btn-normalize-dns-inline .normalize-dns-
   background: #d97706 !important;
   color: #fff !important;
 }
-
-/* OLT details - Troubleshoot tab */
-html.smartolt-night body.smartolt-site #troubleshoot {
-  color: #cbd5e1;
-}
-
-html.smartolt-night body.smartolt-site #troubleshoot h4,
-html.smartolt-night body.smartolt-site #troubleshoot .panel-heading,
-html.smartolt-night body.smartolt-site #troubleshoot .panel-heading strong,
-html.smartolt-night body.smartolt-site #troubleshoot .olt-troubleshoot-well strong,
-html.smartolt-night body.smartolt-site #troubleshoot .consistency-section__title,
-html.smartolt-night body.smartolt-site #troubleshoot .consistency-table-block__title {
-  color: #f1f5f9 !important;
-}
-
-html.smartolt-night body.smartolt-site #troubleshoot p,
-html.smartolt-night body.smartolt-site #troubleshoot li,
-html.smartolt-night body.smartolt-site #troubleshoot td {
-  color: #cbd5e1;
-}
-
-html.smartolt-night body.smartolt-site #troubleshoot .text-muted {
-  color: rgba(226, 232, 240, 0.58) !important;
-}
-
-html.smartolt-night body.smartolt-site #troubleshoot .panel.panel-default {
-  background: rgba(15, 26, 46, 0.92) !important;
-  border-color: rgba(148, 163, 184, 0.18) !important;
-}
-
-html.smartolt-night body.smartolt-site #troubleshoot .panel.panel-default > .panel-heading {
-  background: rgba(255, 255, 255, 0.08) !important;
-  border-color: rgba(148, 163, 184, 0.16) !important;
-}
-
-html.smartolt-night body.smartolt-site #troubleshoot .panel.panel-default > .panel-body {
-  background: transparent !important;
-  color: #cbd5e1;
-}
-
-html.smartolt-night body.smartolt-site #troubleshoot .olt-troubleshoot-well {
-  background: rgba(255, 255, 255, 0.045) !important;
-  border-color: rgba(148, 163, 184, 0.16) !important;
-  color: #cbd5e1;
-}
-
-html.smartolt-night body.smartolt-site #troubleshoot .olt-troubleshoot-well.margin-bottom-0 {
-  margin-bottom: 0;
-}
-
-html.smartolt-night body.smartolt-site #troubleshoot .olt-troubleshoot-code,
-html.smartolt-night body.smartolt-site #troubleshoot code {
-  background: rgba(2, 6, 23, 0.42) !important;
-  border: 1px solid rgba(148, 163, 184, 0.18) !important;
-  color: #bfdbfe !important;
-}
-
-html.smartolt-night body.smartolt-site #troubleshoot .olt-troubleshoot-divider {
-  border-color: rgba(148, 163, 184, 0.18) !important;
-}
-
-html.smartolt-night body.smartolt-site #troubleshoot .consistency-metrics {
-  margin: 8px 0 12px;
-}
-
-html.smartolt-night body.smartolt-site #troubleshoot .consistency-metric {
-  display: inline-block;
-  margin: 0 6px 6px 0;
-  font-size: 12px;
-  padding: 5px 8px;
-  border-radius: 3px;
-}
-
-html.smartolt-night body.smartolt-site #troubleshoot .consistency-metric--neutral {
-  background: rgba(255, 255, 255, 0.045) !important;
-  border: 1px solid rgba(148, 163, 184, 0.18) !important;
-  color: #cbd5e1 !important;
-}
-
-html.smartolt-night body.smartolt-site #troubleshoot .consistency-metric--ok {
-  background: rgba(34, 197, 94, 0.1) !important;
-  border: 1px solid rgba(34, 197, 94, 0.28) !important;
-  color: #86efac !important;
-}
-
-html.smartolt-night body.smartolt-site #troubleshoot .consistency-metric--warn {
-  background: rgba(217, 138, 0, 0.12) !important;
-  border: 1px solid rgba(217, 138, 0, 0.34) !important;
-  color: #fbbf24 !important;
-}
-
-html.smartolt-night body.smartolt-site #troubleshoot .consistency-section {
-  background: rgba(255, 255, 255, 0.035) !important;
-  border: 1px solid rgba(148, 163, 184, 0.16) !important;
-  border-left: 4px solid rgba(125, 211, 252, 0.38) !important;
-  color: #cbd5e1;
-}
-
-html.smartolt-night body.smartolt-site #troubleshoot .consistency-section__title .fa {
-  color: #93c5fd;
-}
-
-html.smartolt-night body.smartolt-site #troubleshoot .consistency-ok-line {
-  color: #86efac;
-}
-
-html.smartolt-night body.smartolt-site #troubleshoot .consistency-count-badge {
-  background: rgba(148, 163, 184, 0.16) !important;
-  color: #e2e8f0 !important;
-}
-
-html.smartolt-night body.smartolt-site #troubleshoot .consistency-table {
-  background: rgba(2, 6, 23, 0.18) !important;
-  color: #cbd5e1;
-}
-
-html.smartolt-night body.smartolt-site #troubleshoot .consistency-table > thead > tr > th {
-  background: rgba(255, 255, 255, 0.055) !important;
-  border-bottom-color: rgba(148, 163, 184, 0.18) !important;
-  color: #e2e8f0 !important;
-  font-weight: 600;
-}
-
-html.smartolt-night body.smartolt-site #troubleshoot .consistency-table > tbody > tr > td {
-  border-top-color: rgba(148, 163, 184, 0.12) !important;
-}
-
-html.smartolt-night body.smartolt-site #troubleshoot .consistency-table.table-hover > tbody > tr:hover > td {
-  background: rgba(255, 255, 255, 0.06) !important;
-  color: #f1f5f9;
-}
-
-html.smartolt-night body.smartolt-site #troubleshoot .consistency-banner {
-  background: rgba(255, 255, 255, 0.045) !important;
-  border-color: rgba(148, 163, 184, 0.18) !important;
-  color: #cbd5e1 !important;
-}
-
-html.smartolt-night body.smartolt-site #troubleshoot .consistency-banner strong {
-  color: #f1f5f9;
-}
-
-html.smartolt-night body.smartolt-site #troubleshoot .consistency-banner--ok .fa-check-circle {
-  color: #86efac;
-}
-
-html.smartolt-night body.smartolt-site #troubleshoot .consistency-banner--running .fa-spinner {
-  color: #93c5fd;
-}
-
-html.smartolt-night body.smartolt-site #troubleshoot .consistency-progress-bar {
-  background: rgba(15, 23, 42, 0.72) !important;
-}
-
-html.smartolt-night body.smartolt-site #troubleshoot .consistency-progress-bar__fill {
-  background: #3b82f6 !important;
-}
-
-html.smartolt-night body.smartolt-site #troubleshoot .mig-wan-note {
-  margin-top: 10px;
-}
-
-html.smartolt-night body.smartolt-site #troubleshoot .mig-wan-hint--warn {
-  color: #fbbf24 !important;
-}
-
-html.smartolt-night body.smartolt-site #troubleshoot .mig-wan-hint--ok {
-  color: #86efac !important;
-}
-
-html.smartolt-night body.smartolt-site #troubleshoot .mig-wan-hint--info {
-  color: #93c5fd !important;
-}
-
-html.smartolt-night body.smartolt-site #troubleshoot .alert-warning {
-  background: rgba(217, 138, 0, 0.12) !important;
-  border-color: rgba(217, 138, 0, 0.34) !important;
-  color: #fbbf24 !important;
-}
-
-html.smartolt-night body.smartolt-site #troubleshoot .alert-danger {
-  background: rgba(239, 68, 68, 0.12) !important;
-  border-color: rgba(239, 68, 68, 0.34) !important;
-  color: #fecaca !important;
-}
-
-/* Network Events page — override the view's inline light-theme colors so the
-   filter labels, event details, raw-trap feed and rule/MIB monospace blocks
-   stay readable on the dark background. background-color longhand only. */
-html.smartolt-night body.smartolt-site .events-filter-panel label {
-  color: rgba(255, 255, 255, 0.55) !important;
-}
-
-html.smartolt-night body.smartolt-site .network-event-details {
-  color: rgba(255, 255, 255, 0.55) !important;
-}
-
-html.smartolt-night body.smartolt-site .raw-trap-item {
-  border-bottom-color: rgba(255, 255, 255, 0.08) !important;
-}
-
-html.smartolt-night body.smartolt-site .raw-trap-meta {
-  color: rgba(255, 255, 255, 0.55) !important;
-}
-
-html.smartolt-night body.smartolt-site .raw-trap-json {
-  background-color: rgba(15, 23, 42, 0.72) !important;
-  border-color: rgba(255, 255, 255, 0.08) !important;
-  color: #e2e8f0 !important;
-}
-
-/* onu_authorize: the preset details box carries inline light-theme styles
-   (background:#fff, light border) — override them for night. */
-html.smartolt-night body.smartolt-site #preset-details {
-  background-color: rgba(255, 255, 255, 0.05) !important;
-  border-color: rgba(255, 255, 255, 0.1) !important;
-  color: #e2e8f0 !important;
-}
-html.smartolt-night body.smartolt-site #preset-details-content {
-  background-color: transparent !important;
-  color: #e2e8f0 !important;
-}
-
-/* Wide-tables layout moved to vendor/bootstrap/css/styles.css (theme-agnostic,
-   loaded on every backend page). Keep night-only overrides here if ever needed. */

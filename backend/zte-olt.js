@@ -3,7 +3,7 @@ const net = require('net');
 
 class ZteOLT {
   constructor(socksConfig, oltConfig) {
-    this.socksHost = socksConfig.host || '2803:5a10:2:2800::2';
+    this.socksHost = socksConfig.host || '10.50.255.245';
     this.socksPort = socksConfig.port || 1080;
     this.oltHost = (oltConfig && oltConfig.host) || '192.168.20.80';
     this.oltUser = (oltConfig && oltConfig.username) || 'zte';

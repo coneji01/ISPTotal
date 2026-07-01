@@ -1,379 +1,217 @@
-<link href="/public/smartolt-files/leaflet.css" rel="stylesheet">
-<script src="/public/smartolt-files/leaflet.js"></script>
+<!--=====================================================================
+  SmartoltViewOnu.ejs — SmartOLT-style ONU detail view
+  Clone of joelwifi.smartolt.com/onu/view/{id}
+======================================================================-->
+<style>
+  :root {
+    --smartolt-bg: #f0f2f5;
+    --smartolt-card: #fff;
+    --smartolt-primary: #2d8cf0;
+    --smartolt-success: #19be6b;
+    --smartolt-danger: #ed4014;
+    --smartolt-warning: #f90;
+    --smartolt-text: #17233d;
+    --smartolt-muted: #808695;
+    --smartolt-border: #e8eaec;
+  }
+  * { box-sizing: border-box; }
+  body { background: var(--smartolt-bg); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+  .onu-container { max-width: 1200px; margin: 20px auto; padding: 0 15px; }
+  .onu-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+  .onu-header h2 { margin: 0; font-size: 22px; font-weight: 600; color: var(--smartolt-text); }
+  .breadcrumb { color: var(--smartolt-muted); font-size: 13px; margin-bottom: 15px; }
+  .breadcrumb a { color: var(--smartolt-primary); text-decoration: none; }
+  .breadcrumb a:hover { text-decoration: underline; }
 
-<div class="container-fluid onu-wrapper">
-  <h2>View ONU <small id="onu_title"></small></h2>
+  .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+  .info-card { background: var(--smartolt-card); border-radius: 8px; padding: 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+  .info-card h3 { font-size: 14px; color: var(--smartolt-muted); margin: 0 0 15px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
+  .info-row { display: flex; padding: 8px 0; border-bottom: 1px solid #f5f7f9; }
+  .info-row:last-child { border-bottom: none; }
+  .info-label { width: 140px; color: var(--smartolt-muted); font-size: 13px; flex-shrink: 0; }
+  .info-value { flex: 1; color: var(--smartolt-text); font-size: 13px; font-weight: 500; }
+  .info-value a { color: var(--smartolt-primary); text-decoration: none; }
+  .info-value a:hover { text-decoration: underline; }
 
-  <div id="loading_data" class="text-center" style="padding: 50px;">
-    <i class="fa fa-spinner fa-spin fa-3x"></i>
-    <p class="text-muted" style="margin-top: 15px;">Loading ONU data...</p>
+  .status-badge { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 4px; font-size: 12px; font-weight: 600; }
+  .status-online { background: #f0fff4; color: var(--smartolt-success); border: 1px solid #b7eb8f; }
+  .status-offline { background: #fff1f0; color: var(--smartolt-danger); border: 1px solid #ffa39e; }
+  .status-warning { background: #fffbe6; color: var(--smartolt-warning); border: 1px solid #ffe58f; }
+
+  .actions-bar { display: flex; gap: 10px; flex-wrap: wrap; margin: 20px 0; }
+  .actions-bar .btn { padding: 6px 16px; border-radius: 4px; font-size: 13px; cursor: pointer; border: 1px solid var(--smartolt-border); background: var(--smartolt-card); color: var(--smartolt-text); transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; }
+  .actions-bar .btn:hover { border-color: var(--smartolt-primary); color: var(--smartolt-primary); }
+  .actions-bar .btn-danger { color: var(--smartolt-danger); border-color: var(--smartolt-danger); }
+  .actions-bar .btn-danger:hover { background: var(--smartolt-danger); color: #fff; }
+  .actions-bar .btn-primary { background: var(--smartolt-primary); color: #fff; border-color: var(--smartolt-primary); }
+  .actions-bar .btn-primary:hover { opacity: 0.9; }
+
+  .status-card { background: var(--smartolt-card); border-radius: 8px; padding: 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); margin-bottom: 20px; }
+  .status-stats { display: flex; gap: 30px; flex-wrap: wrap; }
+  .stat-item { text-align: center; }
+  .stat-label { font-size: 11px; color: var(--smartolt-muted); text-transform: uppercase; }
+  .stat-value { font-size: 24px; font-weight: 700; color: var(--smartolt-text); }
+
+  .compat-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .compat-table th { background: #f8f8f9; padding: 10px 12px; text-align: left; font-weight: 600; color: var(--smartolt-muted); border-bottom: 1px solid var(--smartolt-border); }
+  .compat-table td { padding: 10px 12px; border-bottom: 1px solid #f5f7f9; color: var(--smartolt-text); }
+
+  @media (max-width: 768px) { .info-grid { grid-template-columns: 1fr; } }
+
+  .tag-vlan { display: inline-block; background: #e8f4ff; color: var(--smartolt-primary); padding: 2px 8px; border-radius: 3px; font-size: 12px; font-weight: 500; }
+  .tag-mode { display: inline-block; background: #f0f5ff; color: #2d8cf0; padding: 2px 8px; border-radius: 3px; font-size: 12px; font-weight: 500; }
+  .tag-mode-routing { background: #f0fff4; color: var(--smartolt-success); }
+</style>
+
+<div class="onu-container">
+  <div class="breadcrumb">
+    <a href="/modulo?pagina=GPONManager">Dashboard</a> &gt;
+    <a href="/modulo?pagina=smartolt_configured_full&olt_id=1">Configured ONUs</a> &gt;
+    View ONU
   </div>
 
-  <div id="onu_content" style="display:none;">
-    <div class="col-xs-12 col-sm-6">
-      <dl class="dl-horizontal">
-        <dt>OLT</dt>
-        <dd id="dd_olt">1 - JOEL WIFI</dd>
-        <dt>Board</dt>
-        <dd id="dd_board"></dd>
-        <dt>Port</dt>
-        <dd id="dd_port"></dd>
-        <dt>ONU ID</dt>
-        <dd id="dd_onu_id"></dd>
-        <dt>SN</dt>
-        <dd id="dd_sn"></dd>
-        <dt>ONU type</dt>
-        <dd id="dd_onu_type"></dd>
-        <dt>Status</dt>
-        <dd id="dd_status"></dd>
-        <dt>Zone</dt>
-        <dd id="dd_zone"></dd>
-        <dt>Name</dt>
-        <dd id="dd_name"></dd>
-        <dt>Address</dt>
-        <dd id="dd_address"></dd>
-        <dt>VLAN</dt>
-        <dd id="dd_vlan"></dd>
-        <dt>ONU mode</dt>
-        <dd id="dd_mode"></dd>
-        <dt>Speed</dt>
-        <dd id="dd_speed"></dd>
-        <dt>Rx signal</dt>
-        <dd id="dd_signal"></dd>
-      </dl>
-    </div>
+  <div class="onu-header">
+    <h2>View ONU</h2>
+    <span><small style="color:var(--smartolt-muted)">ID: <%= onu.id %></small></span>
+  </div>
 
-    <div class="col-xs-12 col-sm-6">
-      <div class="equipment">
-        <img class="img-responsive img-rounded" src="/public/smartolt-files/4_eth_0_voip_0_catv.png" style="max-width: 200px;">
+  <div class="info-grid">
+    <!-- Left column: Basic info -->
+    <div class="info-card">
+      <h3>ONU Information</h3>
+      <div class="info-row">
+        <div class="info-label">OLT</div>
+        <div class="info-value"><a href="#">1 - JOEL WIFI</a></div>
       </div>
-
-      <dl class="dl-horizontal">
-        <dt>Actions</dt>
-        <dd>
-          <button class="btn btn-success margin-bottom" id="btn_reboot"><i class="glyphicon glyphicon-refresh"></i> Reboot ONU</button>
-          <button class="btn btn-warning margin-bottom" id="btn_resync"><i class="glyphicon glyphicon-refresh"></i> Resync config</button>
-          <button class="btn btn-danger margin-bottom" id="btn_delete"><i class="glyphicon glyphicon-trash"></i> Delete</button>
-        </dd>
-        <dt>Get status</dt>
-        <dd>
-          <button class="btn btn-success margin-bottom" id="btn_get_status"><i class="fa fa-search"></i> Get status from OLT</button>
-          <button class="btn btn-success margin-bottom" id="btn_get_signal"><i class="fa fa-signal"></i> Get signal</button>
-          <pre id="status_output" class="hidden" style="margin-top:10px;max-height:300px;overflow:auto;"></pre>
-        </dd>
-      </dl>
-    </div>
-
-    <div class="col-xs-12">
-      <hr>
-      <h4>Edit ONU</h4>
-      <form id="edit_onu_form" class="form-horizontal">
-        <input type="hidden" name="onu_id" id="edit_onu_id">
-
-        <div class="form-group">
-          <label class="control-label col-sm-2" for="edit_board">Board</label>
-          <div class="col-sm-4">
-            <select id="edit_board" class="form-control">
-              <option value="2">2</option>
-              <option value="3">3</option>
-              <option value="4">4</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label class="control-label col-sm-2" for="edit_port">Port</label>
-          <div class="col-sm-4">
-            <select id="edit_port" class="form-control"></select>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label class="control-label col-sm-2" for="edit_onu_type">ONU type</label>
-          <div class="col-sm-4">
-            <select id="edit_onu_type" class="form-control"></select>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label class="control-label col-sm-2" for="edit_vlan">VLAN-ID</label>
-          <div class="col-sm-4">
-            <select id="edit_vlan" class="form-control"></select>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label class="control-label col-sm-2" for="edit_mode">ONU mode</label>
-          <div class="col-sm-4">
-            <select id="edit_mode" class="form-control">
-              <option value="Routing">Routing</option>
-              <option value="Bridging">Bridging</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label class="control-label col-sm-2" for="edit_location">Zone</label>
-          <div class="col-sm-4">
-            <select id="edit_location" class="form-control"></select>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label class="control-label col-sm-2" for="edit_name">Name</label>
-          <div class="col-sm-4">
-            <input type="text" id="edit_name" class="form-control">
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label class="control-label col-sm-2" for="edit_description">Address</label>
-          <div class="col-sm-4">
-            <input type="text" id="edit_description" class="form-control">
-          </div>
-        </div>
-
-        <div class="form-group">
-          <div class="col-sm-offset-2 col-sm-4">
-            <button type="submit" class="btn btn-primary" id="btn_save"><i class="glyphicon glyphicon-save"></i> Save changes</button>
-          </div>
-        </div>
-      </form>
-    </div>
-  </div>
-</div>
-
-<!-- Delete confirmation modal -->
-<div id="deleteModal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header"><button type="button" class="close" data-dismiss="modal">×</button><h3>Delete ONU</h3></div>
-      <div class="modal-body"><p>Are you sure you want to delete this ONU from the OLT?</p></div>
-      <div class="modal-footer">
-        <button class="btn btn-link" data-dismiss="modal">Cancel</button>
-        <button class="btn btn-danger" id="confirm_delete"><i class="glyphicon glyphicon-trash"></i> Delete</button>
+      <div class="info-row">
+        <div class="info-label">Board</div>
+        <div class="info-value"><a href="#"><%= board %></a></div>
+      </div>
+      <div class="info-row">
+        <div class="info-label">Port</div>
+        <div class="info-value"><a href="#"><%= port %></a></div>
+      </div>
+      <div class="info-row">
+        <div class="info-label">ONU</div>
+        <div class="info-value"><a href="#"><%= onuId %></a></div>
+      </div>
+      <div class="info-row">
+        <div class="info-label">GPON channel</div>
+        <div class="info-value">GPON</div>
+      </div>
+      <div class="info-row">
+        <div class="info-label">SN</div>
+        <div class="info-value"><a href="#"><%= onu.sn %></a></div>
+      </div>
+      <div class="info-row">
+        <div class="info-label">ONU type</div>
+        <div class="info-value"><%= onuType %></div>
+      </div>
+      <div class="info-row">
+        <div class="info-label">Zone</div>
+        <div class="info-value"><%= zona %></div>
+      </div>
+      <div class="info-row">
+        <div class="info-label">ODB (Splitter)</div>
+        <div class="info-value">None</div>
+      </div>
+      <div class="info-row">
+        <div class="info-label">Name</div>
+        <div class="info-value"><a href="#"><%= onu.nombre || 'N/A' %></a></div>
+      </div>
+      <div class="info-row">
+        <div class="info-label">Address or comment</div>
+        <div class="info-value">None</div>
+      </div>
+      <div class="info-row">
+        <div class="info-label">Contact</div>
+        <div class="info-value">None</div>
+      </div>
+      <div class="info-row">
+        <div class="info-label">Authorization date</div>
+        <div class="info-value"><%= onu.created_at || 'N/A' %></div>
+      </div>
+      <div class="info-row">
+        <div class="info-label">ONU external ID</div>
+        <div class="info-value"><%= onu.sn %></div>
       </div>
     </div>
+
+    <!-- Right column: Status & details -->
+    <div>
+      <div class="info-card" style="margin-bottom:20px;">
+        <h3>Status & Network</h3>
+        <div class="info-row">
+          <div class="info-label">Status</div>
+          <div class="info-value">
+            <span class="status-badge <%= onu.estado === 'working' ? 'status-online' : (onu.estado === 'offline' ? 'status-offline' : 'status-warning') %>">
+              <i class="fa fa-globe"></i> <%= onu.estado === 'working' ? 'Online' : (onu.estado || 'Unknown') %>
+            </span>
+          </div>
+        </div>
+        <div class="info-row">
+          <div class="info-label">ONU/OLT Rx signal</div>
+          <div class="info-value"><%= onu.senial ? onu.senial + ' dBm' : 'N/A' %></div>
+        </div>
+        <div class="info-row">
+          <div class="info-label">Attached VLANs</div>
+          <div class="info-value">
+            <% if (onu.vlan) { %>
+              <% onu.vlan.split(',').forEach(function(v) { %>
+                <span class="tag-vlan"><%= v.trim() %></span>
+              <% }); %>
+            <% } else { %>-<% } %>
+          </div>
+        </div>
+        <div class="info-row">
+          <div class="info-label">ONU mode</div>
+          <div class="info-value">
+            <span class="tag-mode <%= onu.modo === 'Routing' ? 'tag-mode-routing' : '' %>">
+              <%= onu.modo || 'Bridge' %>
+            </span>
+          </div>
+        </div>
+        <div class="info-row">
+          <div class="info-label">Puerto OLT</div>
+          <div class="info-value"><%= onu.puerto_olt %></div>
+        </div>
+      </div>
+
+      <!-- Client info if linked -->
+      <% if (cliente) { %>
+      <div class="info-card">
+        <h3>Associated Client</h3>
+        <div class="info-row">
+          <div class="info-label">Name</div>
+          <div class="info-value"><a href="/modulo?pagina=VerCliente&id=<%= cliente.id %>"><%= cliente.nombre %></a></div>
+        </div>
+        <div class="info-row">
+          <div class="info-label">Phone</div>
+          <div class="info-value"><%= cliente.telefono || 'N/A' %></div>
+        </div>
+        <div class="info-row">
+          <div class="info-label">Direction</div>
+          <div class="info-value"><%= cliente.direccion || 'N/A' %></div>
+        </div>
+        <% if (servicio) { %>
+        <div class="info-row">
+          <div class="info-label">Plan</div>
+          <div class="info-value"><%= servicio.plan_nombre || 'N/A' %></div>
+        </div>
+        <div class="info-row">
+          <div class="info-label">Plan price</div>
+          <div class="info-value">$<%= parseFloat(servicio.plan_precio || 0).toFixed(2) %></div>
+        </div>
+        <% } %>
+      </div>
+      <% } %>
+    </div>
+  </div>
+
+  <!-- Actions -->
+  <div class="actions-bar">
+    <a href="/modulo?pagina=smartolt_configured_full&olt_id=1" class="btn"><i class="fa fa-arrow-left"></i> Back to list</a>
+    <a href="#" class="btn btn-primary" onclick="alert('Reboot functionality coming soon')"><i class="fa fa-refresh"></i> Reboot</a>
+    <a href="#" class="btn btn-danger" onclick="if(confirm('Disable this ONU?'))alert('Disable coming soon')"><i class="fa fa-power-off"></i> Disable ONU</a>
   </div>
 </div>
-
-<script>
-$(document).ready(function() {
-  function getParam(name) {
-    var url = new URL(window.location.href);
-    return url.searchParams.get(name);
-  }
-
-  var onuId = getParam('id') || getParam('onu_id');
-  if (!onuId) { $('#loading_data').html('<p class="text-danger">No ONU ID specified. Use ?id=ONU_ID</p>'); return; }
-
-  function loadData() {
-    $.ajax({
-      url: '/api/olt/onu-detail/' + onuId,
-      method: 'GET',
-      timeout: 10000,
-      success: function(r) {
-        if (!r.success || !r.data) { $('#loading_data').html('<p class="text-danger">' + (r.error || 'ONU not found') + '</p>'); return; }
-        renderOnu(r.data);
-      },
-      error: function() {
-        $('#loading_data').html('<p class="text-danger">Error loading ONU data</p>');
-      }
-    });
-  }
-
-  function renderOnu(data) {
-    $('#loading_data').hide();
-    $('#onu_content').show();
-
-    $('#onu_title').text(data.sn || data.name || 'ONU #' + onuId);
-    $('#dd_board').text(data.board || '-');
-    $('#dd_port').text(data.port || '-');
-    $('#dd_onu_id').text(data.onu_id || data.id || '-');
-    $('#dd_sn').text(data.sn || '-');
-    $('#dd_onu_type').text(data.onu_type_name || '-');
-    $('#dd_status').text(data.status || getParam('status') || 'Online');
-    $('#dd_zone').text(data.zone_name || '-');
-    $('#dd_name').text(data.name || '-');
-    $('#dd_address').text(data.description || '-');
-    $('#dd_vlan').text(data.vlan_id || '-');
-    $('#dd_mode').text(data.mode || 'Routing');
-    $('#dd_speed').text((data.download_speed || '') + ' / ' + (data.upload_speed || ''));
-    $('#dd_signal').text(data.signal || '-');
-
-    // Fill edit form
-    $('#edit_onu_id').val(data.id || onuId);
-    $('#edit_board').val(data.board || 2);
-    $('#edit_port').val(data.port || 1);
-    $('#edit_name').val(data.name || '');
-    $('#edit_description').val(data.description || '');
-    $('#edit_mode').val(data.mode || 'Routing');
-
-    loadPorts(data.board || 2);
-    loadOnuTypes(data.onu_type_id);
-    loadVlans(data.vlan_id);
-    loadLocations(data.location_id || data.zone_id);
-  }
-
-  function loadPorts(board) {
-    var ports = {2: [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16], 3: [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16], 4: [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]};
-    var $sel = $('#edit_port');
-    $sel.empty();
-    (ports[board] || []).forEach(function(p) { $sel.append('<option value="' + p + '">' + p + '</option>'); });
-  }
-
-  function loadOnuTypes(selected) {
-    $.get('/api/olt/onu-types', function(r) {
-      var $sel = $('#edit_onu_type');
-      $sel.empty();
-      if (r && r.data) {
-        r.data.forEach(function(t) {
-          var opt = '<option value="' + t.id + '"' + (t.id == selected ? ' selected' : '') + '>' + t.name + '</option>';
-          $sel.append(opt);
-        });
-      }
-    });
-  }
-
-  function loadVlans(selected) {
-    $.get('/api/smartolt/vlans', function(r) {
-      var $sel = $('#edit_vlan');
-      $sel.empty();
-      if (r && r.data) {
-        r.data.forEach(function(v) {
-          var opt = '<option value="' + v.id + '"' + (v.id == selected ? ' selected' : '') + '>' + v.vlan + ' - ' + (v.description || '') + '</option>';
-          $sel.append(opt);
-        });
-      }
-    });
-  }
-
-  function loadLocations(selected) {
-    $.get('/api/smartolt/zones', function(r) {
-      var $sel = $('#edit_location');
-      $sel.empty();
-      if (r && r.data) {
-        r.data.forEach(function(z) {
-          var opt = '<option value="' + z.id + '"' + (z.id == selected ? ' selected' : '') + '>' + (z.name || z.nombre) + '</option>';
-          $sel.append(opt);
-        });
-      }
-    });
-  }
-
-  $('#edit_board').change(function() { loadPorts($(this).val()); });
-
-  // Save changes
-  $('#edit_onu_form').submit(function(e) {
-    e.preventDefault();
-    var data = {
-      id: $('#edit_onu_id').val(),
-      board: parseInt($('#edit_board').val()),
-      port: parseInt($('#edit_port').val()),
-      onu_type_id: parseInt($('#edit_onu_type').val()),
-      vlan_id: parseInt($('#edit_vlan').val()),
-      mode: $('#edit_mode').val(),
-      location_id: parseInt($('#edit_location').val()),
-      name: $('#edit_name').val().trim(),
-      description: $('#edit_description').val().trim()
-    };
-
-    $.ajax({
-      url: '/api/olt/onu-update',
-      method: 'POST',
-      contentType: 'application/json',
-      data: JSON.stringify(data),
-      timeout: 10000,
-      beforeSend: function() { $('#btn_save').prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Saving...'); },
-      success: function(r) {
-        if (r.success) { toast('ONU updated!'); loadData(); } 
-        else { toast(r.error || 'Error updating'); }
-        $('#btn_save').prop('disabled', false).html('<i class="glyphicon glyphicon-save"></i> Save changes');
-      },
-      error: function() {
-        toast('Server error');
-        $('#btn_save').prop('disabled', false).html('<i class="glyphicon glyphicon-save"></i> Save changes');
-      }
-    });
-  });
-
-  // Reboot
-  $('#btn_reboot').click(function() {
-    if (!confirm('Reboot this ONU?')) return;
-    $.ajax({
-      url: '/api/olt/onu-reboot/' + onuId,
-      method: 'POST',
-      timeout: 60000,
-      beforeSend: function() { $('#btn_reboot').prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Rebooting...'); },
-      success: function(r) {
-        toast(r.success ? 'Reboot command sent!' : (r.error || 'Error'));
-        $('#btn_reboot').prop('disabled', false).html('<i class="glyphicon glyphicon-refresh"></i> Reboot ONU');
-      },
-      error: function() { toast('Error sending reboot'); $('#btn_reboot').prop('disabled', false).html('<i class="glyphicon glyphicon-refresh"></i> Reboot ONU'); }
-    });
-  });
-
-  // Get status from OLT
-  $('#btn_get_status').click(function() {
-    $.ajax({
-      url: '/api/olt/onu-status/' + onuId,
-      method: 'GET',
-      timeout: 30000,
-      beforeSend: function() { $('#btn_get_status').prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Querying OLT...'); },
-      success: function(r) {
-        $('#status_output').removeClass('hidden').text(r.data || r.response || 'No output');
-        if (r.success && r.data) { $('#dd_status').text(r.data.status || r.data); }
-        $('#btn_get_status').prop('disabled', false).html('<i class="fa fa-search"></i> Get status from OLT');
-      },
-      error: function() {
-        $('#status_output').removeClass('hidden').text('Error querying OLT');
-        $('#btn_get_status').prop('disabled', false).html('<i class="fa fa-search"></i> Get status from OLT');
-      }
-    });
-  });
-
-  // Get signal
-  $('#btn_get_signal').click(function() {
-    $.ajax({
-      url: '/api/olt/onu-signal/' + onuId,
-      method: 'GET',
-      timeout: 30000,
-      beforeSend: function() { $('#btn_get_signal').prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Getting signal...'); },
-      success: function(r) {
-        $('#status_output').removeClass('hidden').text(r.data || r.response || 'No data');
-        if (r.success && r.data) { $('#dd_signal').text(r.data); }
-        $('#btn_get_signal').prop('disabled', false).html('<i class="fa fa-signal"></i> Get signal');
-      },
-      error: function() {
-        $('#status_output').removeClass('hidden').text('Error');
-        $('#btn_get_signal').prop('disabled', false).html('<i class="fa fa-signal"></i> Get signal');
-      }
-    });
-  });
-
-  // Delete
-  var deleteId = null;
-  $('#btn_delete').click(function() {
-    deleteId = onuId;
-    $('#deleteModal').modal('show');
-  });
-  $('#confirm_delete').click(function() {
-    $.ajax({
-      url: '/api/olt/onu-delete/' + deleteId,
-      method: 'POST',
-      timeout: 30000,
-      beforeSend: function() { $('#confirm_delete').prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Deleting...'); },
-      success: function(r) {
-        $('#deleteModal').modal('hide');
-        if (r.success) {
-          toast('ONU deleted');
-          setTimeout(function() { window.location.href = '/modulo?pagina=SmartoltConfigured'; }, 1000);
-        } else { toast(r.error || 'Error'); }
-      },
-      error: function() { toast('Error'); $('#deleteModal').modal('hide'); }
-    });
-  });
-
-  loadData();
-});
-</script>

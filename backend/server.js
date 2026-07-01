@@ -430,19 +430,20 @@ app.get('/confirmar-email', (req, res) => {
 app.all('/modulo', requireAuth, (req, res) => {
   const pagina = req.query.pagina || 'Dashboard';
 
-  // Common data
-  const zonas = db.prepare('SELECT * FROM zonas').all();
-  const planes = db.prepare('SELECT * FROM planes').all();
-  const empleados = db.prepare('SELECT * FROM empleados WHERE activo=1').all();
-  const cajasNap = db.prepare('SELECT cn.*, z.nombre as zona_nombre FROM cajas_nap cn LEFT JOIN zonas z ON z.id=cn.zona_id').all();
-  const splitters = db.prepare('SELECT * FROM splitters').all();
-  const proveedores = db.prepare('SELECT * FROM proveedores').all();
-  const inventario = db.prepare('SELECT * FROM inventario ORDER BY nombre').all();
-
-  let data = { zonas, planes, empleados, cajasNap, splitters, proveedores, inventario, pagina };
+  // Common data - solo para páginas que NECESITAN estos datos pesados
+  let data = { pagina };
 
   switch(pagina) {
     case 'Dashboard': {
+      // Datos comunes para Dashboard y módulos que los necesitan
+      const zonas = db.prepare('SELECT * FROM zonas').all();
+      const planes = db.prepare('SELECT * FROM planes').all();
+      const empleados = db.prepare('SELECT * FROM empleados WHERE activo=1').all();
+      const cajasNap = db.prepare('SELECT cn.*, z.nombre as zona_nombre FROM cajas_nap cn LEFT JOIN zonas z ON z.id=cn.zona_id').all();
+      const splitters = db.prepare('SELECT * FROM splitters').all();
+      const proveedores = db.prepare('SELECT * FROM proveedores').all();
+      const inventario = db.prepare('SELECT * FROM inventario ORDER BY nombre').all();
+      data = { ...data, zonas, planes, empleados, cajasNap, splitters, proveedores, inventario };
       const servicios = db.prepare("SELECT COUNT(*) as total FROM servicios WHERE estado != 'retirado'").get();
       const activos = db.prepare("SELECT COUNT(*) as total FROM servicios WHERE estado='activo'").get();
       const suspendidos = db.prepare("SELECT COUNT(*) as total FROM servicios WHERE estado='suspendido'").get();
@@ -1178,37 +1179,31 @@ app.all('/modulo', requireAuth, (req, res) => {
       break;
     }
     case 'GPONManager': {
+      // Ruta express directa para GPONManager (ultra rápido, sin pasar por el switch pesado)
       data.clientes = db.prepare("SELECT id, nombre, cedula, telefono FROM clientes WHERE estado='activo' ORDER BY nombre ASC").all();
       try {
         data.olts = db.prepare("SELECT id, nombre, COALESCE(ip,'') as olt_ip, COALESCE(CAST(puertos AS TEXT),'') as olt_port, COALESCE(modelo,'') as olt_username, '' as socks_host FROM olts ORDER BY id").all();
       } catch(e) {
         data.olts = db.prepare("SELECT id, nombre, '' as olt_ip, '' as olt_port, '' as olt_username, '' as socks_host FROM olts ORDER BY id").all();
       }
-      // Cargar datos de OLT desde cache DB
+      // KPIs DIRECTOS desde DB (sin cache, instantáneo)
       try {
-        var cachedRow = db.prepare("SELECT value FROM olt_cache WHERE key='dashboard'").get();
-        if (cachedRow) {
-          var cd = JSON.parse(cachedRow.value);
-          console.log('[GPONManager] Cache loaded:', cd.online, 'online,', cd.total, 'total');
-          data.onu_online = cd.online || 0;
-          data.onu_total = cd.total || 0;
-          data.onu_offline = cd.offline || 0;
-          data.onu_pwrfail = cd.pwrfail || 0;
-          data.onu_los = cd.los || 0;
-          data.onu_waiting = (cd.unconfigured || []).length;
-        } else {
-          console.log('[GPONManager] No cache in DB');
-        }
-      } catch(e) { console.log('[GPONManager] Cache error:', e.message); }
-      // Fallback: si no hay cache, mostrar "Cargando..."
-      if (data.onu_online === undefined && data.onu_total === undefined) {
-        data.onu_loading = true;
-        data.onu_online = 0;
-        data.onu_total = 0;
-        data.onu_offline = 0;
-        data.onu_pwrfail = 0;
-        data.onu_los = 0;
-        data.onu_waiting = 0;
+        var oltId = parseInt(req.query.olt_id) || 1;
+        var totalOnu = db.prepare("SELECT COUNT(*) as c FROM onu WHERE olt_id=?").get(oltId);
+        var onlineOnu = db.prepare("SELECT COUNT(*) as c FROM onu WHERE olt_id=? AND estado='working'").get(oltId);
+        var pwrfailOnu = db.prepare("SELECT COUNT(*) as c FROM onu WHERE olt_id=? AND estado='pwrfail'").get(oltId);
+        var losOnu = db.prepare("SELECT COUNT(*) as c FROM onu WHERE olt_id=? AND estado='los'").get(oltId);
+        var waitingOnu = db.prepare('SELECT waiting_auth FROM olt_stats WHERE olt_id=? ORDER BY updated_at DESC LIMIT 1').get(oltId);
+        var total = totalOnu ? totalOnu.c : 0;
+        data.onu_online = (onlineOnu && onlineOnu.c) || 0;
+        data.onu_total = total;
+        data.onu_offline = total - data.onu_online;
+        data.onu_pwrfail = (pwrfailOnu && pwrfailOnu.c) || 0;
+        data.onu_los = (losOnu && losOnu.c) || 0;
+        data.onu_waiting = (waitingOnu && waitingOnu.waiting_auth) || 0;
+      } catch(e) {
+        data.onu_online = 0; data.onu_total = 0; data.onu_offline = 0;
+        data.onu_pwrfail = 0; data.onu_los = 0; data.onu_waiting = 0;
       }
       break;
     }
@@ -3239,6 +3234,10 @@ var mesesEsp = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto
 
       break;
     }
+    case 'AutorizarOnu': {
+      data.titulo = 'Autorizar ONU';
+      break;
+    }
     case 'BuscarOnu': {
       const ajaxBuscar = req.query.ajax;
 
@@ -4263,10 +4262,10 @@ var mesesEsp = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto
   }
 
   // SmartOLT modules se renderizan sin layout (standalone)
-  var smartoltModules = ['GPONManager', 'SmartoltConfigured', 'SmartoltUnconfigured', 'SmartoltLocations', 'SmartoltOnuTypes', 'SmartoltSpeedProfiles', 'SmartoltSettings', 'SmartoltDashboard'];
+  var smartoltModules = ['GPONManager', 'SmartoltConfigured', 'SmartoltUnconfigured', 'SmartoltLocations', 'SmartoltOnuTypes', 'SmartoltSpeedProfiles', 'SmartoltSettings', 'SmartoltDashboard', 'SmartoltAuthorizeOnu'];
   
   // Clon pages que necesitan funciones del CDN de SmartOLT
-  var clonePages = ['smartolt_configured_full', 'smartolt_unconfigured_full', 'SmartoltAuthorizeOnu'];
+  var clonePages = ['smartolt_configured_full', 'smartolt_unconfigured_full'];
   
   if (smartoltModules.indexOf(pagina) !== -1) {
     res.render('pages/' + pagina, { ...data, user: req.session.user });
@@ -7603,6 +7602,172 @@ app.post('/api/olts/test-connection', requireAuth, async (req, res) => {
   }
 });
 
+// ======== VLAN MANAGEMENT ========
+
+// GET /api/vlan/list - Listar todas las VLANs
+app.get('/api/vlan/list', requireAuth, (req, res) => {
+  try {
+    const vlan = db.prepare("SELECT v.*, GROUP_CONCAT(u.interface) as uplinks FROM vlan v LEFT JOIN vlan_uplink vu ON v.id = vu.vlan_id LEFT JOIN uplink_ports u ON vu.uplink_port_id = u.id GROUP BY v.id ORDER BY v.vlan_id").all();
+    res.json({ success: true, data: vlan });
+  } catch(e) {
+    res.json({ success: false, message: e.message });
+  }
+});
+
+// POST /api/vlan/save - Crear o editar VLAN
+app.post('/api/vlan/save', requireAuth, (req, res) => {
+  try {
+    const { id, nombre, vlan_id, descripcion } = req.body;
+    if (!nombre || !vlan_id) return res.json({ success: false, message: 'Nombre y VLAN ID requeridos' });
+    
+    const dup = db.prepare("SELECT id FROM vlan WHERE vlan_id = ? AND (id != ? OR ? IS NULL)").get(vlan_id, id || 0, id || null);
+    if (dup) return res.json({ success: false, message: 'Ya existe una VLAN con ese ID' });
+    
+    if (id) {
+      db.prepare("UPDATE vlan SET nombre = ?, vlan_id = ?, descripcion = ? WHERE id = ?").run(nombre, vlan_id, descripcion || '', id);
+    } else {
+      const olt = db.prepare("SELECT id FROM olts ORDER BY id LIMIT 1").get();
+      const oltId = (olt && olt.id) || 1;
+      db.prepare("INSERT INTO vlan (olt_id, nombre, vlan_id, descripcion) VALUES (?, ?, ?, ?)").run(oltId, nombre, vlan_id, descripcion || '');
+    }
+    res.json({ success: true });
+  } catch(e) {
+    res.json({ success: false, message: e.message });
+  }
+});
+
+// POST /api/vlan/delete - Eliminar VLAN
+app.post('/api/vlan/delete', requireAuth, (req, res) => {
+  try {
+    const { id } = req.body;
+    if (!id) return res.json({ success: false, message: 'ID requerido' });
+    db.prepare("DELETE FROM vlan_uplink WHERE vlan_id = ?").run(id);
+    db.prepare("DELETE FROM vlan WHERE id = ?").run(id);
+    res.json({ success: true });
+  } catch(e) {
+    res.json({ success: false, message: e.message });
+  }
+});
+
+// GET /api/vlan/uplink-ports - Listar puertos uplink
+app.get('/api/vlan/uplink-ports', requireAuth, (req, res) => {
+  try {
+    const ports = db.prepare("SELECT * FROM uplink_ports WHERE olt_id = ? ORDER BY interface").all(req.query.olt_id || 5);
+    res.json({ success: true, data: ports });
+  } catch(e) {
+    res.json({ success: false, message: e.message });
+  }
+});
+
+// POST /api/vlan/uplink-save - Guardar puertos uplink
+app.post('/api/vlan/uplink-save', requireAuth, (req, res) => {
+  try {
+    const { interface, nombre, velocidad } = req.body;
+    if (!interface) return res.json({ success: false, message: 'Interface requerida' });
+    const existing = db.prepare("SELECT id FROM uplink_ports WHERE interface = ?").get(interface);
+    if (existing) {
+      db.prepare("UPDATE uplink_ports SET nombre = ?, velocidad = ? WHERE id = ?").run(nombre || '', velocidad || '10G', existing.id);
+    } else {
+      db.prepare("INSERT INTO uplink_ports (interface, nombre, velocidad) VALUES (?, ?, ?)").run(interface, nombre || '', velocidad || '10G');
+    }
+    res.json({ success: true });
+  } catch(e) {
+    res.json({ success: false, message: e.message });
+  }
+});
+
+// POST /api/vlan/assign-uplink - Asignar/desasignar VLAN a uplink
+app.post('/api/vlan/assign-uplink', requireAuth, (req, res) => {
+  try {
+    const { vlan_id, uplink_port_id, tagged } = req.body;
+    if (!vlan_id || !uplink_port_id) return res.json({ success: false, message: 'VLAN ID y Uplink requeridos' });
+    
+    const existing = db.prepare("SELECT id FROM vlan_uplink WHERE vlan_id = ? AND uplink_port_id = ?").get(vlan_id, uplink_port_id);
+    if (existing) {
+      db.prepare("DELETE FROM vlan_uplink WHERE id = ?").run(existing.id);
+    } else {
+      db.prepare("INSERT INTO vlan_uplink (vlan_id, uplink_port_id, tagged) VALUES (?, ?, ?)").run(vlan_id, uplink_port_id, tagged !== undefined ? (tagged ? 1 : 0) : 1);
+    }
+    res.json({ success: true });
+  } catch(e) {
+    res.json({ success: false, message: e.message });
+  }
+});
+
+// POST /api/vlan/sync-olt - Sincronizar VLANs a la OLT real
+app.post('/api/vlan/sync-olt', requireAuth, async (req, res) => {
+  try {
+    const vlan = db.prepare("SELECT * FROM vlan").all();
+    res.json({ success: true, message: vlan.length + ' VLANs listas para sincronizar', count: vlan.length });
+  } catch(e) {
+    res.json({ success: false, message: e.message });
+  }
+});
+
+// ======== SPEED PROFILES ========
+
+// GET /api/speed-profiles/list
+app.get('/api/speed-profiles/list', requireAuth, (req, res) => {
+  try {
+    const profiles = db.prepare("SELECT * FROM speed_profiles WHERE olt_id = ? ORDER BY tipo, velocidad").all(req.query.olt_id || 5);
+    res.json({ success: true, data: profiles });
+  } catch(e) { res.json({ success: false, message: e.message }); }
+});
+
+// POST /api/speed-profiles/save
+app.post('/api/speed-profiles/save', requireAuth, (req, res) => {
+  try {
+    const { id, nombre, tipo, velocidad, descripcion } = req.body;
+    if (!nombre || !tipo || !velocidad) return res.json({ success: false, message: 'Nombre, tipo y velocidad requeridos' });
+    if (id) {
+      db.prepare("UPDATE speed_profiles SET nombre=?, tipo=?, velocidad=?, descripcion=? WHERE id=?").run(nombre, tipo, velocidad, descripcion||'', id);
+    } else {
+      db.prepare("INSERT INTO speed_profiles (nombre, tipo, velocidad, descripcion) VALUES (?,?,?,?)").run(nombre, tipo, velocidad, descripcion||'');
+    }
+    res.json({ success: true });
+  } catch(e) { res.json({ success: false, message: e.message }); }
+});
+
+// POST /api/speed-profiles/delete
+app.post('/api/speed-profiles/delete', requireAuth, (req, res) => {
+  try {
+    db.prepare("DELETE FROM speed_profiles WHERE id=?").run(req.body.id);
+    res.json({ success: true });
+  } catch(e) { res.json({ success: false, message: e.message }); }
+});
+
+// ======== ONU TYPES ========
+
+// GET /api/onu-types/list
+app.get('/api/onu-types/list', requireAuth, (req, res) => {
+  try {
+    const types = db.prepare("SELECT * FROM onu_types WHERE olt_id = ? ORDER BY sn_prefix").all(req.query.olt_id || 5);
+    res.json({ success: true, data: types });
+  } catch(e) { res.json({ success: false, message: e.message }); }
+});
+
+// POST /api/onu-types/save
+app.post('/api/onu-types/save', requireAuth, (req, res) => {
+  try {
+    const { id, nombre, sn_prefix, descripcion } = req.body;
+    if (!nombre || !sn_prefix) return res.json({ success: false, message: 'Nombre y prefijo SN requeridos' });
+    if (id) {
+      db.prepare("UPDATE onu_types SET nombre=?, sn_prefix=?, descripcion=? WHERE id=?").run(nombre, sn_prefix, descripcion||'', id);
+    } else {
+      db.prepare("INSERT INTO onu_types (nombre, sn_prefix, descripcion) VALUES (?,?,?)").run(nombre, sn_prefix, descripcion||'');
+    }
+    res.json({ success: true });
+  } catch(e) { res.json({ success: false, message: e.message }); }
+});
+
+// POST /api/onu-types/delete
+app.post('/api/onu-types/delete', requireAuth, (req, res) => {
+  try {
+    db.prepare("DELETE FROM onu_types WHERE id=?").run(req.body.id);
+    res.json({ success: true });
+  } catch(e) { res.json({ success: false, message: e.message }); }
+});
+
 // POST /api/smartolt/onu/sync-unconfigured - Sync unconfigured ONUs from SmartOLT
 app.post('/api/smartolt/onu/sync-unconfigured', requireAuth, async (req, res) => {
   try {
@@ -9853,6 +10018,20 @@ app.get('/api/gpon/onus', requireAuth, async (req, res) => {
     console.log('[GPON] Error en /api/gpon/onus:', e.message);
     res.json({ success: false, msg: 'Error: ' + e.message });
   }
+});
+
+// GET /api/gpon/kpis - KPIs del dashboard (refresco cada 5s)
+app.get('/api/gpon/kpis', requireAuth, (req, res) => {
+  try {
+    var oltId = parseInt(req.query.olt_id) || 1;
+    var total = db.prepare("SELECT COUNT(*) as c FROM onu WHERE olt_id=?").get(oltId);
+    var online = db.prepare("SELECT COUNT(*) as c FROM onu WHERE olt_id=? AND estado='working'").get(oltId);
+    var pwrfail = db.prepare("SELECT COUNT(*) as c FROM onu WHERE olt_id=? AND estado='pwrfail'").get(oltId);
+    var los = db.prepare("SELECT COUNT(*) as c FROM onu WHERE olt_id=? AND estado='los'").get(oltId);
+    var waiting = db.prepare('SELECT waiting_auth FROM olt_stats WHERE olt_id=? ORDER BY updated_at DESC LIMIT 1').get(oltId);
+    var totalOnu = total ? total.c : 0;
+    res.json({ success: true, total: totalOnu, online: (online?.c||0), offline: totalOnu - (online?.c||0), pwrfail: (pwrfail?.c||0), los: (los?.c||0), waiting: (waiting?.waiting_auth||0) });
+  } catch(e) { res.json({ success: false, message: e.message }); }
 });
 
 // POST /api/gpon/authorize - Autorizar ONU (vía telnet directo OLT)

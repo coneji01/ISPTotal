@@ -1,0 +1,1471 @@
+/* SmartOLT staging — dashboard rework v1.1 (covers both day and night themes; see html.smartolt-night rules) */
+
+body.smartolt-dashboard {
+  --dash-radius: 10px;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+body.smartolt-site {
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+html:not(.smartolt-night) body.smartolt-dashboard {
+  --dash-ink: #0f172a;
+  --dash-muted: #64748b;
+  --dash-line: #eef2f6;
+  --dash-surface: #ffffff;
+  --dash-page: #fafbfd;
+  --dash-shadow: 0 1px 2px rgba(15, 23, 42, 0.03), 0 4px 14px rgba(15, 23, 42, 0.04);
+  --smartolt-nav-offset: 68px;
+
+  background: var(--dash-page);
+}
+
+html:not(.smartolt-night) body.smartolt-dashboard #content-wrapper {
+  background: var(--dash-page);
+}
+
+html:not(.smartolt-night) body.smartolt-dashboard #content-wrapper > .container {
+  padding-bottom: 40px;
+  padding-top: var(--smartolt-nav-offset);
+}
+
+html:not(.smartolt-night) body.smartolt-dashboard .content-wrap {
+  margin: 0 auto;
+  padding: 0 15px 40px;
+}
+
+html:not(.smartolt-night) body.smartolt-dashboard .content-wrap > h2 {
+  display: none;
+}
+
+/* White panels only — subtle modern card (KPI colored panels stay bootstrap/startmin) */
+html:not(.smartolt-night) body.smartolt-dashboard .panel-default {
+  background: var(--dash-surface);
+  border: 1px solid var(--dash-line);
+  border-radius: var(--dash-radius);
+  box-shadow: var(--dash-shadow);
+  overflow: hidden;
+}
+
+html:not(.smartolt-night) body.smartolt-dashboard .panel-default > .panel-heading {
+  background: #4c4b4b !important;
+  border-bottom: none !important;
+  border-color: #4c4b4b !important;
+  border-top-left-radius: calc(var(--dash-radius) - 1px);
+  border-top-right-radius: calc(var(--dash-radius) - 1px);
+  color: #fff !important;
+}
+
+html:not(.smartolt-night) body.smartolt-dashboard .panel-default .panel-footer {
+  background: #fcfdfe !important;
+  border-top: 1px solid var(--dash-line) !important;
+  border-bottom-left-radius: calc(var(--dash-radius) - 1px);
+  border-bottom-right-radius: calc(var(--dash-radius) - 1px);
+  color: var(--dash-muted);
+}
+
+html:not(.smartolt-night) body.smartolt-dashboard .panel-default > .table-responsive:last-child,
+html:not(.smartolt-night) body.smartolt-dashboard .panel-default > .table-responsive {
+  border-bottom-left-radius: var(--dash-radius);
+  border-bottom-right-radius: var(--dash-radius);
+  overflow: hidden;
+}
+
+html:not(.smartolt-night) body.smartolt-dashboard .panel-olt {
+  overflow: visible;
+}
+
+/* On phones the wide dashboard tables (e.g. PON outage) must scroll horizontally.
+   The rounded-corner overflow:hidden above (needed on desktop) otherwise clips the
+   table instead of letting it scroll. Restore Bootstrap's responsive scroll here. */
+@media (max-width: 767px) {
+  html:not(.smartolt-night) body.smartolt-dashboard .panel-default > .table-responsive,
+  html:not(.smartolt-night) body.smartolt-dashboard .panel-default > .table-responsive:last-child {
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Equal panel-heading height across the white dashboard cards: take the
+   dropdown button out of flow (absolute, vertically centered) so a heading
+   with a button (Network status, OLTs) is the same height as a plain text
+   heading (Info, ONU authorizations per day). */
+body.smartolt-dashboard .panel-default > .panel-heading {
+  position: relative;
+}
+
+body.smartolt-dashboard .panel-default > .panel-heading .pon-outage-panel-info {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 8px;
+  opacity: 0.8;
+  cursor: help;
+  font-size: 15px;
+  line-height: 1;
+  vertical-align: middle;
+}
+
+body.smartolt-dashboard .panel-default > .panel-heading .pon-outage-panel-info:hover,
+body.smartolt-dashboard .panel-default > .panel-heading .pon-outage-panel-info:focus {
+  opacity: 1;
+  outline: none;
+}
+body.smartolt-dashboard .panel-default > .panel-heading > .panel-heading-button {
+  /* Span the full heading height and flex-center the button rather than using
+     transform: translateY(-50%) — transform would create a stacking context
+     that traps the dropdown's z-index and paints it behind the panel body. */
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 15px;
+  margin: 0;
+  display: flex;
+  align-items: center;
+}
+
+/* Match the caret spacing used in dark mode (Bootstrap default is 2px). */
+body.smartolt-dashboard .panel-heading-dropdown-toggle .caret {
+  margin-left: 3px;
+}
+
+/* Borderless minimal "More graphs" button in light mode, mirroring the dark-mode
+   rule in dashboard-smartolt-night.css. Without this, light fell back to the
+   default bordered .btn (2px border, weight 400), so the button was a different
+   size than in dark mode — which shifted the adjacent brush toggle on theme switch. */
+html:not(.smartolt-night) body.smartolt-dashboard .panel-heading-dropdown-toggle {
+  background: transparent !important;
+  background-image: none !important;
+  border: 0 !important;
+  border-radius: 4px !important;
+  box-shadow: none !important;
+  color: #fff !important;
+  font-weight: 500;
+  padding: 2px 4px;
+  text-shadow: none;
+}
+html:not(.smartolt-night) body.smartolt-dashboard .panel-heading-dropdown-toggle:hover,
+html:not(.smartolt-night) body.smartolt-dashboard .panel-heading .btn-group.open .panel-heading-dropdown-toggle {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: #fff !important;
+}
+
+/* KPI colored cards — same 10px rounding as night mode */
+body.smartolt-dashboard .smartolt-kpi-card {
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: var(--dash-radius);
+  overflow: hidden;
+}
+
+html:not(.smartolt-night) body.smartolt-dashboard .smartolt-kpi-card {
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 5px 14px rgba(15, 23, 42, 0.07) !important;
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+html.smartolt-night body.smartolt-dashboard .smartolt-kpi-card {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.28) !important;
+}
+
+body.smartolt-dashboard .smartolt-kpi-card .panel-heading,
+body.smartolt-dashboard .smartolt-kpi-card .panel-footer {
+  border: 0 !important;
+}
+
+html:not(.smartolt-night) body.smartolt-dashboard .smartolt-kpi-card .panel-footer {
+  background: #fff !important;
+  border-bottom-left-radius: calc(var(--dash-radius) - 1px);
+  border-bottom-right-radius: calc(var(--dash-radius) - 1px);
+}
+
+html.smartolt-night body.smartolt-dashboard .smartolt-kpi-card .panel-footer {
+  background: rgba(255, 255, 255, 0.04) !important;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+/* Offline KPI breakdown — PwrFail/LoS share the N/A (offline) color (day + night) */
+html:not(.smartolt-night) body.smartolt-dashboard .smartolt-kpi-card.panel-red .panel-footer a {
+  color: inherit;
+  text-decoration: none;
+}
+
+html:not(.smartolt-night) body.smartolt-dashboard .smartolt-kpi-card.panel-red .panel-footer .power-fail {
+  color: #4c4b4b;
+}
+
+html:not(.smartolt-night) body.smartolt-dashboard .smartolt-kpi-card.panel-red .panel-footer .los {
+  color: #4c4b4b;
+}
+
+html:not(.smartolt-night) body.smartolt-dashboard .smartolt-kpi-card.panel-red .panel-footer .offline {
+  color: #4c4b4b;
+}
+
+html.smartolt-night body.smartolt-dashboard .smartolt-kpi-card.panel-red .panel-footer a {
+  color: inherit;
+  text-decoration: none;
+}
+
+html.smartolt-night body.smartolt-dashboard .smartolt-kpi-card.panel-red .panel-footer .power-fail {
+  color: #98989D;
+}
+
+html.smartolt-night body.smartolt-dashboard .smartolt-kpi-card.panel-red .panel-footer .los {
+  color: #98989D;
+}
+
+html.smartolt-night body.smartolt-dashboard .smartolt-kpi-card.panel-red .panel-footer .offline {
+  color: #98989D;
+}
+
+html.smartolt-night body.smartolt-dashboard .smartolt-kpi-card.panel-red .panel-footer a:hover .power-fail {
+  color: #AEAEB2;
+}
+
+html.smartolt-night body.smartolt-dashboard .smartolt-kpi-card.panel-red .panel-footer a:hover .los {
+  color: #AEAEB2;
+}
+
+html.smartolt-night body.smartolt-dashboard .smartolt-kpi-card.panel-red .panel-footer a:hover .offline {
+  color: #AEAEB2;
+}
+
+/* Yellow KPI card (signal warning/critical) keeps the amber link color from
+   startmin.css (.panel-yellow a). Needed in night mode because the generic
+   night link color would otherwise override it. */
+html.smartolt-night body.smartolt-dashboard .smartolt-kpi-card.panel-yellow .panel-footer a {
+  color: #f7a127;
+}
+
+html.smartolt-night body.smartolt-dashboard .smartolt-kpi-card.panel-yellow .panel-footer a:hover {
+  color: #df8a13;
+}
+
+html:not(.smartolt-night) body.smartolt-dashboard .smartolt-kpi-card:hover {
+  box-shadow: 0 2px 4px rgba(15, 23, 42, 0.06), 0 10px 24px rgba(15, 23, 42, 0.08) !important;
+  transform: translateY(-1px);
+}
+
+/* KPI row — equal height, rounded corners aligned with night mode */
+body.smartolt-dashboard .content-wrap > .row:first-of-type {
+  display: flex;
+  flex-wrap: wrap;
+  margin-left: -15px;
+  margin-right: -15px;
+}
+
+body.smartolt-dashboard .content-wrap > .row:first-of-type::before,
+body.smartolt-dashboard .content-wrap > .row:first-of-type::after {
+  display: none;
+}
+
+body.smartolt-dashboard .content-wrap > .row:first-of-type > [class*="col-"] {
+  display: flex;
+  float: none;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+body.smartolt-dashboard .content-wrap > .row:first-of-type .panel-primary,
+body.smartolt-dashboard .content-wrap > .row:first-of-type .panel-green,
+body.smartolt-dashboard .content-wrap > .row:first-of-type .panel-red,
+body.smartolt-dashboard .content-wrap > .row:first-of-type .panel-yellow,
+body.smartolt-dashboard .smartolt-kpi-card {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 8px !important;
+  width: 100%;
+}
+
+body.smartolt-dashboard .content-wrap > .row:first-of-type .panel-primary > a,
+body.smartolt-dashboard .content-wrap > .row:first-of-type .panel-green > a {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+
+body.smartolt-dashboard .content-wrap > .row:first-of-type .panel-primary > a .panel-heading,
+body.smartolt-dashboard .content-wrap > .row:first-of-type .panel-green > a .panel-heading,
+body.smartolt-dashboard .content-wrap > .row:first-of-type .panel-red > a .panel-heading,
+body.smartolt-dashboard .content-wrap > .row:first-of-type .panel-yellow > a .panel-heading {
+  border-top-left-radius: calc(var(--dash-radius) - 1px);
+  border-top-right-radius: calc(var(--dash-radius) - 1px);
+  flex: 1;
+}
+
+/* Network Status + OLT sidebar — same card height as legacy layout (325px) */
+body.smartolt-dashboard .content-wrap > .row + .row > .col-lg-8 > .panel-default:first-child,
+body.smartolt-dashboard .content-wrap > .row + .row > .col-lg-4 > .panel-olt {
+  display: flex;
+  flex-direction: column;
+  height: 325px;
+  max-height: 325px;
+}
+
+body.smartolt-dashboard .content-wrap > .row + .row > .col-lg-8 > .panel-default:first-child {
+  overflow: hidden;
+}
+
+body.smartolt-dashboard .content-wrap > .row + .row > .col-lg-4 > .panel-olt {
+  overflow: visible;
+}
+
+body.smartolt-dashboard .content-wrap > .row + .row > .col-lg-8 > .panel-default:first-child > #onusStatusesGraph.panel-body {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+body.smartolt-dashboard .content-wrap > .row + .row > .col-lg-4 > .panel-olt > .panel-body {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+}
+
+body.smartolt-dashboard .content-wrap > .row + .row > .col-lg-4 > .panel-olt > .panel-body.panel-body-olts {
+  height: 281px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+body.smartolt-dashboard .network-status-chart-wrap {
+  background: transparent !important;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  flex: 1 1 auto;
+  height: auto;
+  min-height: 0;
+  padding: 0;
+  position: relative;
+}
+
+body.smartolt-dashboard #onusStatusesGraph.panel-body {
+  background: transparent !important;
+  padding: 10px 12px 8px;
+}
+
+body.smartolt-dashboard #onus-statuses-chart {
+  background: transparent !important;
+  /* No !important: Chart.js sets the canvas's inline px size to match its
+     HiDPI backing store. Forcing the display size here would rescale the
+     bitmap and blur the axis text. 100% is just a pre-render fallback. */
+  display: block;
+  height: 100%;
+  width: 100%;
+}
+
+body.smartolt-dashboard .network-status-chart-loading {
+  align-items: center;
+  color: #64748b;
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  position: absolute;
+}
+
+body.smartolt-dashboard .network-status-chart-empty {
+  align-items: center;
+  color: #64748b;
+  display: flex;
+  flex-direction: column;
+  font-size: 13px;
+  inset: 0;
+  justify-content: center;
+  padding: 16px;
+  position: absolute;
+  text-align: center;
+}
+
+/* PNG placeholder (installer) — nudge illustration down slightly in the panel */
+body.smartolt-dashboard #onusStatusesGraph.panel-body.smartolt-graph-placeholder-host::before {
+  margin-top: 12px;
+}
+body.smartolt-dashboard .network-status-chart-empty-icon {
+  color: #cbd5e1;
+  display: block;
+  font-size: 34px;
+  margin-bottom: 10px;
+}
+body.smartolt-dashboard .network-status-chart-empty-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+body.smartolt-dashboard .network-status-chart-empty-hint {
+  color: #94a3b8;
+  font-size: 12px;
+  margin: 0 auto;
+  max-width: 340px;
+}
+
+.network-status-chart-tooltip {
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 12px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.10);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 11px;
+  line-height: 1.35;
+  opacity: 0;
+  padding: 8px 10px;
+  pointer-events: none;
+  position: absolute;
+  transform: translate(-50%, calc(-100% - 8px));
+  transition: opacity 0.08s ease;
+  white-space: nowrap;
+  z-index: 2000;
+}
+
+html:not(.smartolt-night) .network-status-chart-tooltip {
+  -webkit-backdrop-filter: saturate(180%) blur(16px);
+  backdrop-filter: saturate(180%) blur(16px);
+}
+
+.network-status-chart-tooltip-title {
+  color: #0f172a;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.network-status-chart-tooltip-row {
+  align-items: center;
+  display: flex;
+  margin-top: 4px;
+}
+
+.network-status-chart-tooltip-row:first-of-type {
+  margin-top: 0;
+}
+
+.network-status-chart-tooltip-swatch {
+  border: 1px solid;
+  border-radius: 3px;
+  flex-shrink: 0;
+  height: 9px;
+  margin-right: 8px;
+  width: 9px;
+}
+
+.network-status-chart-tooltip-label {
+  color: #334155;
+}
+
+html.smartolt-night .network-status-chart-tooltip {
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  backdrop-filter: saturate(180%) blur(20px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.42);
+}
+
+html.smartolt-night .network-status-chart-tooltip-title {
+  color: #f1f5f9;
+}
+
+html.smartolt-night .network-status-chart-tooltip-label {
+  color: #cbd5e1;
+}
+
+body.smartolt-dashboard #smartolt-night-toggle {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+}
+
+body.smartolt-dashboard #smartolt-night-toggle i {
+  line-height: 1;
+  width: 20px;
+  text-align: center;
+}
+
+/* Secondary time labels — "hours ago", etc. */
+body.smartolt-dashboard .updated-date {
+  font-size: 90%;
+}
+
+body.smartolt-dashboard .panel-body .list-group-item .pull-right.small,
+body.smartolt-dashboard .panel-body .list-group-item .pull-right.small em {
+  font-size: 90%;
+}
+
+body.smartolt-dashboard td.date-switch {
+  font-size: 90%;
+}
+
+@media (max-width: 991px) {
+  html:not(.smartolt-night) body.smartolt-dashboard {
+    --smartolt-nav-offset: 62px;
+  }
+
+  html:not(.smartolt-night) body.smartolt-dashboard .content-wrap {
+    padding: 0 14px 28px;
+  }
+}
+
+/* Config comparison — scan + auto-sync detail tables (day mode) */
+html:not(.smartolt-night) body.smartolt-site .smartolt-config-comparison-table > thead > tr > th {
+  background: #f5f7f8;
+  border-bottom: 1px solid #e2e8f0;
+  color: #475569;
+  font-size: 12px;
+  font-weight: 600;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+/* SNMP trap diagnostics panel (dashboard sidebar) */
+#snmp-trap-diagnostics-panel .panel-heading {
+  padding: 8px 10px;
+}
+
+#snmp-trap-diagnostics-panel .snmp-trap-diagnostics-scroll {
+  max-height: 285px;
+  overflow-y: auto;
+}
+
+#snmp-trap-diagnostics-panel .snmp-trap-diagnostic-item {
+  border-top: 1px solid #f0f0f0;
+  padding: 8px 10px;
+}
+
+#snmp-trap-diagnostics-panel .snmp-trap-diagnostic-item:first-child {
+  border-top: 0;
+}
+
+#snmp-trap-diagnostics-panel .snmp-trap-diagnostic-meta {
+  color: #777;
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 11px;
+  gap: 5px;
+  line-height: 1.3;
+}
+
+#snmp-trap-diagnostics-panel .snmp-trap-diagnostic-time {
+  white-space: nowrap;
+}
+
+#snmp-trap-diagnostics-panel .snmp-trap-diagnostic-message {
+  color: #333;
+  font-size: 12px;
+  line-height: 1.35;
+  margin-top: 4px;
+  word-break: break-word;
+}
+
+#snmp-trap-diagnostics-panel .snmp-trap-diagnostic-empty {
+  padding: 10px;
+}
+
+/* --- PON outage dashboard sections (day + night) --- */
+.pon-outage-wrap {
+  padding: 10px 14px 14px;
+}
+
+.pon-outage-section {
+  margin: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  overflow: visible;
+  box-shadow: none;
+}
+
+.pon-outage-section + .pon-outage-section .pon-outage-section__head {
+  margin-top: 4px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(15, 23, 42, 0.12);
+}
+
+.pon-outage-section__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 14px;
+  padding: 6px 12px 5px;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.1);
+  background: transparent;
+}
+
+.pon-outage-section__head--toggle:hover {
+  background: transparent;
+}
+
+.pon-outage-section__title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 10px;
+  min-width: 0;
+  flex: 1 1 220px;
+}
+
+.pon-outage-section__icon {
+  color: var(--pon-section-accent, #64748b);
+  font-size: 16px;
+  line-height: 1;
+}
+
+.pon-outage-section__label {
+  font-weight: 600;
+  font-size: 15px;
+  color: #1e293b;
+  line-height: 1.4;
+}
+
+.pon-outage-section__stats {
+  display: inline-flex;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.35;
+  background: #fff;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  padding: 6px 12px;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
+.pon-outage-section__hint {
+  flex: 0 0 100%;
+  font-size: 11px;
+  font-weight: 400;
+  color: #94a3b8;
+  margin-top: -2px;
+}
+
+.pon-outage-section__actions {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  align-self: center;
+  margin-left: auto;
+}
+
+.pon-signal-thresholds-gear {
+  color: #6b7280;
+  font-size: 18px;
+  line-height: 1;
+  padding: 4px 6px;
+  border-radius: 4px;
+}
+
+.pon-signal-thresholds-gear:hover,
+.pon-signal-thresholds-gear:focus {
+  color: #4b5563;
+  text-decoration: none;
+  background: rgba(15, 23, 42, 0.06);
+}
+
+.pon-outage-section__title-row {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.pon-outage-section__caret {
+  color: #94a3b8;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 1.35em;
+  font-size: 13px;
+  line-height: 1;
+  vertical-align: middle;
+}
+
+.pon-outage-groupby {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  font-family: inherit;
+  -webkit-font-smoothing: antialiased;
+}
+
+.pon-outage-groupby--stale {
+  justify-content: flex-end;
+  padding: 0;
+  margin: 0;
+}
+
+.pon-outage-section__head--toggle {
+  cursor: pointer;
+}
+
+.pon-outage-section__body .pon-group-table--stale {
+  margin: 0;
+}
+
+.pon-outage-groupby__label {
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: normal;
+  color: #64748b;
+  white-space: nowrap;
+}
+
+.pon-outage-groupby__buttons {
+  display: inline-flex;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: 6px;
+  overflow: hidden;
+  background: #fff;
+  font-family: inherit;
+}
+
+.pon-outage-groupby .pon-groupby {
+  display: inline-block;
+  padding: 5px 12px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.35;
+  text-decoration: none;
+  color: #475569;
+  border: none;
+  border-right: 1px solid rgba(15, 23, 42, 0.08);
+  background: transparent;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.pon-outage-groupby .pon-groupby:last-child {
+  border-right: none;
+}
+
+.pon-outage-groupby .pon-groupby:hover,
+.pon-outage-groupby .pon-groupby:focus {
+  background: rgba(0, 0, 0, 0.05);
+  color: #1e293b;
+  text-decoration: none;
+}
+
+.pon-outage-groupby .pon-groupby.active {
+  background: #e4e4e4;
+  color: #1e293b;
+  font-weight: 600;
+}
+
+.pon-outage-section__body {
+  background: transparent;
+}
+
+.pon-outage-section__body--collapsed {
+  padding-bottom: 4px;
+}
+
+.pon-outage-section__body .table {
+  margin-bottom: 0;
+}
+
+/* Align PON / ONUs / Since columns across all outage section tables */
+.pon-outage-section__body .pon-group-table {
+  table-layout: fixed;
+  width: 100%;
+}
+
+.pon-outage-section__body .pon-group-table > thead > tr > th:nth-child(1),
+.pon-outage-section__body .pon-group-table > tbody > tr.pon-group-row > td:nth-child(1) {
+  width: 54%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pon-outage-section__body .pon-group-table > thead > tr > th:nth-child(2),
+.pon-outage-section__body .pon-group-table > tbody > tr > td:nth-child(2) {
+  width: 15%;
+  min-width: 88px;
+  white-space: nowrap;
+}
+
+.pon-outage-section__body .pon-group-table > thead > tr > th:nth-child(3),
+.pon-outage-section__body .pon-group-table > tbody > tr > td:nth-child(3) {
+  width: 13%;
+  min-width: 64px;
+  white-space: nowrap;
+}
+
+.pon-outage-section__body .pon-group-table > thead > tr > th:nth-child(4),
+.pon-outage-section__body .pon-group-table > tbody > tr > td:nth-child(4) {
+  width: 18%;
+  min-width: 96px;
+  white-space: nowrap;
+}
+
+/* Detail rows: same grid as parent */
+.pon-outage-section__body .pon-detail-row > td > .table {
+  table-layout: fixed;
+  width: 100%;
+}
+
+.pon-outage-section__body .pon-detail-row > td > .table > thead > tr > th:nth-child(1),
+.pon-outage-section__body .pon-detail-row > td > .table > tbody > tr > td:nth-child(1) {
+  width: 54%;
+  padding-left: 30px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pon-outage-section__body .pon-detail-row > td > .table > thead > tr > th:nth-child(2),
+.pon-outage-section__body .pon-detail-row > td > .table > tbody > tr > td:nth-child(2) {
+  width: 15%;
+  min-width: 88px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pon-outage-section__body .pon-detail-row > td > .table > thead > tr > th:nth-child(3),
+.pon-outage-section__body .pon-detail-row > td > .table > tbody > tr > td:nth-child(3) {
+  width: 13%;
+  min-width: 64px;
+  white-space: nowrap;
+}
+
+.pon-outage-section__body .pon-detail-row > td > .table > thead > tr > th:nth-child(4),
+.pon-outage-section__body .pon-detail-row > td > .table > tbody > tr > td:nth-child(4) {
+  width: 18%;
+  min-width: 96px;
+  white-space: nowrap;
+}
+
+
+
+.pon-outage-section__body .table > thead:not(.detail-subhead) > tr > th {
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: normal;
+  color: #475569;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.1);
+  background: #f4f4f4;
+  white-space: nowrap;
+}
+
+/* Signal-variation table: 7 fixed columns. table-layout:fixed caps the table at
+   100% of the panel (so the "Last scan" column can't be pushed off and clipped by
+   the card) and keeps numeric column widths stable when a row expands — without it
+   the wide colspan detail cell steals slack and the headers fold. The OLT-name
+   column absorbs the slack and ellipsis-truncates long names. */
+.pon-outage-section__body .pon-signal-degradation-table {
+  table-layout: fixed;
+  width: 100%;
+}
+.pon-outage-section__body .pon-signal-degradation-table > tbody > tr:not(.pon-detail-row) > td {
+  white-space: nowrap;
+}
+.pon-outage-section__body .pon-signal-degradation-table > thead > tr > th:nth-child(1),
+.pon-outage-section__body .pon-signal-degradation-table > tbody > tr:not(.pon-detail-row) > td:nth-child(1) {
+  width: 12%;
+  min-width: 92px;
+}
+.pon-outage-section__body .pon-signal-degradation-table > thead > tr > th:nth-child(2),
+.pon-outage-section__body .pon-signal-degradation-table > tbody > tr:not(.pon-detail-row) > td:nth-child(2) {
+  width: 22%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.pon-outage-section__body .pon-signal-degradation-table > thead > tr > th:nth-child(3),
+.pon-outage-section__body .pon-signal-degradation-table > tbody > tr:not(.pon-detail-row) > td:nth-child(3) {
+  width: 10%;
+  min-width: 70px;
+}
+.pon-outage-section__body .pon-signal-degradation-table > thead > tr > th:nth-child(4),
+.pon-outage-section__body .pon-signal-degradation-table > tbody > tr:not(.pon-detail-row) > td:nth-child(4) {
+  width: 12%;
+  min-width: 88px;
+}
+.pon-outage-section__body .pon-signal-degradation-table > thead > tr > th:nth-child(5),
+.pon-outage-section__body .pon-signal-degradation-table > tbody > tr:not(.pon-detail-row) > td:nth-child(5) {
+  width: 12%;
+  min-width: 88px;
+}
+.pon-outage-section__body .pon-signal-degradation-table > thead > tr > th:nth-child(6),
+.pon-outage-section__body .pon-signal-degradation-table > tbody > tr:not(.pon-detail-row) > td:nth-child(6) {
+  width: 14%;
+  min-width: 104px;
+}
+.pon-outage-section__body .pon-signal-degradation-table > thead > tr > th:nth-child(7),
+.pon-outage-section__body .pon-signal-degradation-table > tbody > tr:not(.pon-detail-row) > td:nth-child(7) {
+  width: 18%;
+  min-width: 116px;
+}
+
+/* Drill-down subhead: same typography as main PON table header (OLT / PONs / ONUs / Since) */
+.pon-outage-section__body .pon-detail-row > td > .table > thead.detail-subhead > tr > th {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.35;
+  padding: 8px;
+  background: transparent;
+  border-bottom: none;
+  color: #475569;
+}
+
+.pon-outage-section__body .pon-detail-row > td {
+  border-top: none;
+}
+
+.pon-outage-section__body .pon-detail-row > td > .table > thead > tr > th:nth-child(5),
+.pon-outage-section__body .pon-detail-row > td > .table > tbody > tr > td:nth-child(5) {
+  width: auto;
+  min-width: 72px;
+  white-space: nowrap;
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-detail-row > td > .table > thead.detail-subhead > tr > th {
+  background: transparent !important;
+  border-bottom: none !important;
+  color: #94a3b8 !important;
+  font-weight: 600;
+}
+
+body.smartolt-dashboard .pon-outage-section__body .pon-gps-icon {
+  font-size: 22px !important;
+  line-height: 1 !important;
+  vertical-align: middle;
+}
+
+body.smartolt-dashboard .pon-outage-section__body .pon-gps-icon::before {
+  font-size: 22px !important;
+}
+
+body.smartolt-dashboard .pon-outage-section__body a.pon-gps-link {
+  margin-left: 12px;
+}
+
+body.smartolt-dashboard .pon-outage-section__body .pon-gps-icon--disabled {
+  margin-left: 12px;
+  opacity: 0.3;
+}
+@media (min-width: 1200px) {
+  .pon-outage-section__body .pon-group-table > thead > tr > th:nth-child(1),
+  .pon-outage-section__body .pon-group-table > tbody > tr.pon-group-row > td:nth-child(1),
+  .pon-outage-section__body .pon-detail-row > td > .table > thead > tr > th:nth-child(1),
+  .pon-outage-section__body .pon-detail-row > td > .table > tbody > tr > td:nth-child(1) {
+    width: 50%;
+  }
+
+  .pon-outage-section__body .pon-group-table > thead > tr > th:nth-child(2),
+  .pon-outage-section__body .pon-group-table > tbody > tr > td:nth-child(2),
+  .pon-outage-section__body .pon-detail-row > td > .table > thead > tr > th:nth-child(2),
+  .pon-outage-section__body .pon-detail-row > td > .table > tbody > tr > td:nth-child(2) {
+    width: 16%;
+  }
+
+  .pon-outage-section__body .pon-group-table > thead > tr > th:nth-child(3),
+  .pon-outage-section__body .pon-group-table > tbody > tr > td:nth-child(3),
+  .pon-outage-section__body .pon-detail-row > td > .table > thead > tr > th:nth-child(3),
+  .pon-outage-section__body .pon-detail-row > td > .table > tbody > tr > td:nth-child(3) {
+    width: 14%;
+  }
+
+  .pon-outage-section__body .pon-group-table > thead > tr > th:nth-child(4),
+  .pon-outage-section__body .pon-group-table > tbody > tr > td:nth-child(4),
+  .pon-outage-section__body .pon-detail-row > td > .table > thead > tr > th:nth-child(4),
+  .pon-outage-section__body .pon-detail-row > td > .table > tbody > tr > td:nth-child(4) {
+    width: 20%;
+  }
+}
+
+/* PON outage: neutral row + control hovers (no blue/green tint) */
+body.smartolt-dashboard .pon-outage-section__body .table-hover > tbody > tr:hover > td,
+body.smartolt-dashboard .pon-outage-section__body .table-hover > tbody > tr:hover > th,
+body.smartolt-dashboard .pon-outage-section__body .table-striped > tbody > tr:hover > td,
+body.smartolt-dashboard .pon-outage-section__body .table-striped > tbody > tr:hover > th {
+  background-color: #ececec !important;
+}
+
+body.smartolt-dashboard .pon-outage-section__body .table-striped > tbody > tr:nth-of-type(odd) > td {
+  background-color: #fafafa;
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .table-hover > tbody > tr:hover > td,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .table-hover > tbody > tr:hover > th,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .table-striped > tbody > tr:hover > td,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .table-striped > tbody > tr:hover > th {
+  background-color: rgba(255, 255, 255, 0.07) !important;
+  color: inherit;
+}
+
+
+
+/* Night mode */
+html.smartolt-night body.smartolt-dashboard .pon-outage-section {
+  border: none;
+  background: transparent;
+  box-shadow: none;
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-section + .pon-outage-section .pon-outage-section__head {
+  border-top-color: rgba(148, 163, 184, 0.22);
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__head {
+  border-bottom-color: rgba(148, 163, 184, 0.2);
+  background: transparent;
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__head--toggle:hover {
+  background: transparent;
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__label {
+  color: #e2e8f0;
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__stats {
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__hint,
+html.smartolt-night body.smartolt-dashboard .pon-outage-groupby__label {
+  color: #94a3b8;
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-groupby__buttons {
+  border-color: rgba(148, 163, 184, 0.22);
+  background: rgba(15, 23, 42, 0.8);
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-groupby .pon-groupby {
+  font-family: inherit;
+  font-size: 13px;
+  color: #cbd5e1;
+  border-right-color: rgba(148, 163, 184, 0.15);
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-groupby .pon-groupby:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #e2e8f0;
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-groupby .pon-groupby.active {
+  background: rgba(255, 255, 255, 0.14);
+  color: #f1f5f9;
+  font-weight: 600;
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body {
+  background: transparent;
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .table > thead > tr > th {
+  color: #cbd5e1;
+  background: rgba(30, 41, 59, 0.55);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .table > tbody > tr > td {
+  color: #e2e8f0;
+  border-top-color: rgba(148, 163, 184, 0.12);
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .table-striped > tbody > tr:nth-of-type(odd) > td {
+  background-color: rgba(255, 255, 255, 0.03) !important;
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .table-striped > tbody > tr:nth-of-type(even) > td {
+  background-color: transparent !important;
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-detail-row > td {
+  background-color: rgba(255, 255, 255, 0.04) !important;
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-detail-row > td > .table,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-detail-row > td > .table > tbody > tr > td {
+  background: transparent !important;
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-detail-row .detail-subhead > tr > th,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-detail-row .text-muted,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .table .text-muted {
+  color: #94a3b8 !important;
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .table a:not(.btn) {
+  color: #93c5fd;
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .table a:not(.btn):hover,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .table a:not(.btn):focus {
+  color: #bfdbfe;
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-sort-caret,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .fa-sort {
+  color: #64748b;
+  opacity: 0.55 !important;
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-section__body .pon-group-row > td:first-child > .fa {
+  color: #94a3b8;
+}
+
+/* PON outage: panel-body scroll parity with legacy table-responsive */
+html:not(.smartolt-night) body.smartolt-dashboard .panel-default > .panel-body--pon-outage:last-child,
+html:not(.smartolt-night) body.smartolt-dashboard .panel-default > .panel-body--pon-outage {
+  border-bottom-left-radius: var(--dash-radius);
+  border-bottom-right-radius: var(--dash-radius);
+  overflow: hidden;
+}
+
+html.smartolt-night body.smartolt-dashboard .panel-default > .panel-body--pon-outage:last-child,
+html.smartolt-night body.smartolt-dashboard .panel-default > .panel-body--pon-outage {
+  border-bottom-left-radius: var(--dash-radius);
+  border-bottom-right-radius: var(--dash-radius);
+  overflow: hidden;
+}
+
+@media (max-width: 767px) {
+  html:not(.smartolt-night) body.smartolt-dashboard .panel-default > .panel-body--pon-outage:last-child,
+  html:not(.smartolt-night) body.smartolt-dashboard .panel-default > .panel-body--pon-outage,
+  html.smartolt-night body.smartolt-dashboard .panel-default > .panel-body--pon-outage:last-child,
+  html.smartolt-night body.smartolt-dashboard .panel-default > .panel-body--pon-outage {
+    overflow: visible;
+  }
+
+  body.smartolt-dashboard .panel-body--pon-outage {
+    overflow-x: visible;
+    padding: 0;
+  }
+
+  .pon-outage-wrap {
+    padding: 8px 8px 10px;
+  }
+
+  .pon-outage-section {
+    margin-top: 0;
+  }
+
+  .pon-outage-section + .pon-outage-section .pon-outage-section__head {
+    margin-top: 3px;
+    padding-top: 5px;
+  }
+
+  .pon-outage-section__head {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    padding: 10px;
+  }
+
+  .pon-outage-section__title {
+    flex: 1 1 auto;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    width: 100%;
+  }
+
+  .pon-outage-section__title > .pon-outage-section__icon {
+    display: none;
+  }
+
+  .pon-outage-section__label {
+    font-size: 14px;
+    line-height: 1.45;
+    width: auto;
+    white-space: nowrap;
+    word-break: normal;
+  }
+
+  .pon-outage-section__stats {
+    font-size: 14px;
+    padding: 6px 10px;
+    max-width: 100%;
+    white-space: normal;
+  }
+
+  .pon-outage-section__hint {
+    order: unset;
+    margin-top: 0;
+    line-height: 1.4;
+  }
+
+  .pon-outage-groupby {
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding-top: 2px;
+    border-top: 1px solid rgba(15, 23, 42, 0.06);
+  }
+
+  html.smartolt-night body.smartolt-dashboard .pon-outage-groupby {
+    border-top-color: rgba(148, 163, 184, 0.12);
+  }
+
+  .pon-outage-groupby__buttons {
+    display: flex;
+    flex: 1 1 100%;
+    width: 100%;
+  }
+
+  .pon-outage-groupby__label {
+    font-size: 14px;
+  }
+
+  .pon-outage-groupby .pon-groupby {
+    flex: 1 1 50%;
+    text-align: center;
+    padding: 8px 6px;
+    font-size: 14px;
+  }
+
+  .pon-outage-groupby--stale {
+    padding: 4px 8px 0;
+    border-top: none;
+  }
+
+  .pon-outage-section__body {
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    max-width: 100%;
+  }
+
+  .pon-outage-section__body .pon-group-table {
+    table-layout: auto;
+    width: max-content;
+    min-width: 100%;
+  }
+
+  .pon-outage-section__body .pon-detail-row > td > .table {
+    table-layout: auto;
+    width: max-content;
+    min-width: 100%;
+  }
+
+  /* Drop the fixed layout on mobile so each column sizes to its own nowrap
+     content (no header overlap) and the whole table — including the colspan
+     detail sub-table — scrolls inside the body's overflow-x instead of
+     spilling past the card edge. */
+  .pon-outage-section__body .pon-signal-degradation-table {
+    table-layout: auto;
+    width: max-content;
+    min-width: 100%;
+  }
+
+  .pon-outage-section__body .pon-signal-degradation-table > thead > tr > th,
+  .pon-outage-section__body .pon-signal-degradation-table > tbody > tr:not(.pon-detail-row) > td {
+    width: auto;
+    min-width: 0;
+    overflow: visible;
+    text-overflow: clip;
+    white-space: nowrap;
+  }
+
+  .pon-outage-section__body .pon-signal-degradation-table > thead > tr > th:nth-child(2),
+  .pon-outage-section__body .pon-signal-degradation-table > tbody > tr:not(.pon-detail-row) > td:nth-child(2) {
+    min-width: 120px;
+  }
+
+  .pon-outage-section__body .table > thead > tr > th {
+    font-size: 15px;
+    padding: 7px 4px;
+    line-height: 1.35;
+  }
+
+  .pon-outage-section__body .table > tbody > tr > td {
+    font-size: 14px;
+    padding: 7px 4px;
+    line-height: 1.35;
+  }
+
+  .pon-outage-section__body .pon-group-table > thead > tr > th:nth-child(1),
+  .pon-outage-section__body .pon-group-table > tbody > tr.pon-group-row > td:nth-child(1) {
+    width: auto;
+    min-width: 120px;
+    overflow: visible;
+    text-overflow: clip;
+  }
+
+  .pon-outage-section__body .pon-group-table > thead > tr > th:nth-child(2),
+  .pon-outage-section__body .pon-group-table > tbody > tr > td:nth-child(2) {
+    width: auto;
+    min-width: 72px;
+    white-space: nowrap;
+  }
+
+  .pon-outage-section__body .pon-group-table > thead > tr > th:nth-child(3),
+  .pon-outage-section__body .pon-group-table > tbody > tr > td:nth-child(3) {
+    width: auto;
+    min-width: 56px;
+    white-space: nowrap;
+  }
+
+  .pon-outage-section__body .pon-group-table > thead > tr > th:nth-child(4),
+  .pon-outage-section__body .pon-group-table > tbody > tr > td:nth-child(4) {
+    width: auto;
+    min-width: 88px;
+    white-space: nowrap;
+  }
+
+  .pon-outage-section__body .pon-detail-row > td > .table > thead > tr > th:nth-child(1),
+  .pon-outage-section__body .pon-detail-row > td > .table > tbody > tr > td:nth-child(1) {
+    width: auto;
+    min-width: 120px;
+    padding-left: 20px;
+    overflow: visible;
+    text-overflow: clip;
+  }
+
+  .pon-outage-section__body .pon-detail-row > td > .table > thead > tr > th:nth-child(2),
+  .pon-outage-section__body .pon-detail-row > td > .table > tbody > tr > td:nth-child(2) {
+    width: auto;
+    min-width: 72px;
+    white-space: nowrap;
+    overflow: visible;
+    text-overflow: clip;
+  }
+
+  .pon-outage-section__body .pon-detail-row > td > .table > thead > tr > th:nth-child(3),
+  .pon-outage-section__body .pon-detail-row > td > .table > tbody > tr > td:nth-child(3) {
+    width: auto;
+    min-width: 56px;
+    white-space: nowrap;
+  }
+
+  .pon-outage-section__body .pon-detail-row > td > .table > thead > tr > th:nth-child(4),
+  .pon-outage-section__body .pon-detail-row > td > .table > tbody > tr > td:nth-child(4) {
+    width: auto;
+    min-width: 88px;
+    white-space: nowrap;
+  }
+
+  .pon-outage-section__body .pon-group-row > td:first-child {
+    white-space: normal;
+    word-break: break-word;
+  }
+}
+
+/* Collapsible outage sections */
+.pon-outage-section:not(.is-open) .pon-outage-groupby {
+  display: none;
+}
+
+.pon-outage-section.is-open .pon-outage-groupby {
+  display: flex;
+}
+
+.pon-outage-section:not(.is-open) .pon-outage-section__hint {
+  display: none;
+}
+
+.pon-outage-section:not(.is-open) .pon-outage-section__head {
+  border-bottom: 1px solid rgba(15, 23, 42, 0.1);
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-section:not(.is-open) .pon-outage-section__head {
+  border-bottom-color: rgba(148, 163, 184, 0.2);
+}
+
+/* Stale + desktop: tighter layout, group-by in header when open */
+.pon-outage-section--stale:not(.is-open) .pon-outage-section__head {
+  border-bottom: 1px solid rgba(15, 23, 42, 0.1);
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-section--stale:not(.is-open) .pon-outage-section__head {
+  border-bottom-color: rgba(148, 163, 184, 0.2);
+}
+
+.pon-outage-section--stale .pon-outage-groupby--stale {
+  display: none;
+}
+
+.pon-outage-section--stale.is-open .pon-outage-groupby--stale {
+  display: flex;
+}
+
+.pon-outage-section--stale .pon-outage-section__body--stale {
+  padding: 0;
+}
+
+/* Section titles + stats tag: accent text color per section */
+.pon-outage-section--los .pon-outage-section__label,
+.pon-outage-section--los .pon-outage-section__stats {
+  color: #ea580c;
+}
+
+.pon-outage-section--power .pon-outage-section__label,
+.pon-outage-section--power .pon-outage-section__stats {
+  color: #0064c8;
+}
+
+.pon-outage-section--offline .pon-outage-section__label,
+.pon-outage-section--offline .pon-outage-section__stats {
+  color: #4c4b4b;
+}
+
+.pon-outage-section--stale .pon-outage-section__label,
+.pon-outage-section--stale .pon-outage-section__stats {
+  color: #64748b;
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-section--los .pon-outage-section__label,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section--los .pon-outage-section__stats {
+  color: #fb923c;
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-section--power .pon-outage-section__label,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section--power .pon-outage-section__stats {
+  color: #5eb3ff;
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-section--offline .pon-outage-section__label,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section--offline .pon-outage-section__stats {
+  color: #cbd5e1;
+}
+
+html.smartolt-night body.smartolt-dashboard .pon-outage-section--stale .pon-outage-section__label,
+html.smartolt-night body.smartolt-dashboard .pon-outage-section--stale .pon-outage-section__stats {
+  color: #94a3b8;
+}
+
+@media (min-width: 768px) {
+  body.smartolt-dashboard .panel-body--pon-outage {
+    padding: 0;
+  }
+
+  .pon-outage-wrap {
+    padding: 4px 8px 6px;
+  }
+
+  .pon-outage-section {
+    margin: 0;
+  }
+
+  .pon-outage-section + .pon-outage-section {
+    margin-top: 2px;
+  }
+
+  .pon-outage-section__head {
+    padding: 6px 8px;
+    gap: 4px 10px;
+  }
+
+  .pon-outage-section--stale .pon-outage-section__head {
+    padding: 5px 8px;
+  }
+
+  .pon-outage-section--stale .pon-outage-groupby--stale {
+    padding: 0;
+    margin: 0;
+  }
+}
