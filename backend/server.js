@@ -1236,6 +1236,7 @@ app.all('/modulo', requireAuth, (req, res) => {
     case 'SmartoltSettings': {
       data.olts = db.prepare('SELECT * FROM olts ORDER BY id').all();
       data.routers = db.prepare('SELECT * FROM routers ORDER BY name').all();
+      data.olt_id = parseInt(req.query.olt_id) || 0;
       break;
     }
     case 'SmartoltDashboard': {
@@ -4262,12 +4263,13 @@ var mesesEsp = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto
   }
 
   // SmartOLT modules se renderizan sin layout (standalone)
-  var smartoltModules = ['GPONManager', 'SmartoltConfigured', 'SmartoltUnconfigured', 'SmartoltLocations', 'SmartoltOnuTypes', 'SmartoltSpeedProfiles', 'SmartoltSettings', 'SmartoltDashboard', 'SmartoltAuthorizeOnu'];
+  var smartoltModules = ['GPONManager', 'SmartoltConfigured', 'SmartoltUnconfigured', 'SmartoltLocations', 'SmartoltOnuTypes', 'SmartoltSpeedProfiles', 'SmartoltSettings', 'SmartoltDashboard', 'SmartoltAuthorizeOnu', 'smartolt_olt', 'smartolt_olt_cards', 'smartolt_olt_pon_ports', 'smartolt_olt_uplink_ports', 'smartolt_olt_vlans', 'smartolt_olt_ip_pools'];
   
   // Clon pages que necesitan funciones del CDN de SmartOLT
   var clonePages = ['smartolt_configured_full', 'smartolt_unconfigured_full'];
   
   if (smartoltModules.indexOf(pagina) !== -1) {
+    data.olt_id = parseInt(req.query.olt_id) || 0;
     res.render('pages/' + pagina, { ...data, user: req.session.user });
   } else if (clonePages.indexOf(pagina) !== -1) {
     // Pasar parametros a la vista
@@ -10031,6 +10033,22 @@ app.get('/api/gpon/kpis', requireAuth, (req, res) => {
     var waiting = db.prepare('SELECT waiting_auth FROM olt_stats WHERE olt_id=? ORDER BY updated_at DESC LIMIT 1').get(oltId);
     var totalOnu = total ? total.c : 0;
     res.json({ success: true, total: totalOnu, online: (online?.c||0), offline: totalOnu - (online?.c||0), pwrfail: (pwrfail?.c||0), los: (los?.c||0), waiting: (waiting?.waiting_auth||0) });
+  } catch(e) { res.json({ success: false, message: e.message }); }
+});
+
+// GET /api/olt-list - Listar OLTs (para smartolt_olt)
+app.get('/api/olt-list', requireAuth, (req, res) => {
+  try {
+    var olts = db.prepare("SELECT id, nombre, COALESCE(ip,'') as olt_ip, COALESCE(modelo,'') as modelo, 1 as activo FROM olts ORDER BY id").all();
+    res.json({ success: true, data: olts });
+  } catch(e) { res.json({ success: false, message: e.message }); }
+});
+
+// GET /api/olt-detail - Detalle de OLT por ID
+app.get('/api/olt-detail', requireAuth, (req, res) => {
+  try {
+    var olt = db.prepare("SELECT id, nombre, COALESCE(ip,'') as olt_ip, COALESCE(CAST(puertos AS TEXT),'') as olt_port, COALESCE(olt_username,'') as olt_username, COALESCE(modelo,'') as modelo, COALESCE(vlan_default,'') as vlan_default FROM olts WHERE id=?").get(req.query.id || 1);
+    res.json({ success: true, data: olt || null });
   } catch(e) { res.json({ success: false, message: e.message }); }
 });
 

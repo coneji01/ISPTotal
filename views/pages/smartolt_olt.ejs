@@ -1,6 +1,5 @@
 <!DOCTYPE html><html lang="en" class="smartolt-night"><head>
-        <script>window.SMARTOLT_DB_THEME='system';</script>
-    <!-- Paint-blocking: resolve theme before first paint. Precedence: per-device override (smartolt-theme-local, set by the header button) > account/DB pref > device (system). -->
+        <script>window.SMARTOLT_DB_THEME='night';</script>
     <script>try{var k='smartolt-night',lk='smartolt-theme-local',dbTheme=window.SMARTOLT_DB_THEME,local=null,pref,n;try{local=localStorage.getItem(lk);}catch(e){}if(local==='night'||local==='light'||local==='system'){pref=local;}else if(dbTheme==='night'||dbTheme==='light'||dbTheme==='system'){pref=dbTheme;}else{pref='system';}if(pref==='system'){n=!!(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);}else if(pref==='night'){n=true;}else{n=false;}try{localStorage.setItem(k,n?'1':'0');}catch(e){}if(n){document.documentElement.classList.add('smartolt-night');}else{document.documentElement.classList.remove('smartolt-night');}document.cookie=k+'='+(n?'1':'0')+'; path=/; max-age=31536000; SameSite=Lax'+(location.protocol==='https:'?'; Secure':'');}catch(e){}</script>
     <script>try{var wk='smartolt-wide-tables',wv=null,m=document.cookie.match(new RegExp('(?:^|; )'+wk+'=([^;]*)'));try{wv=localStorage.getItem(wk);}catch(e){}if(wv!=='1'&&wv!=='0'&&m){wv=decodeURIComponent(m[1]);}if(wv==='1'){document.documentElement.classList.add('smartolt-wide-tables');}}catch(e){}</script>
         <meta http-equiv="content-type" content="text/html; utf-8">
@@ -14,798 +13,119 @@
     <link rel="icon" href="/favicon.ico" type="image/x-icon">
     <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
     
-  <title>OLTs - JOEL WIFI</title>
+  <title>OLTs - ISPTotal</title>
 
   <!-- Bootstrap Core CSS -->
   <link href="/public/smartolt-files/bootstrap-custom.css?v=3.53.0.24" rel="stylesheet">
   <link href="/public/smartolt-files/bootstrap-multiselect.css?v=3.53.0.20" rel="stylesheet">
-  <link href="/public/smartolt-files/styles.css?v=3.53.0.29" rel="stylesheet">
+  <link href="/public/smartolt-files/styles.css?v=3.53.0.35" rel="stylesheet">
   <link href="/public/smartolt-files/toast.css?v=3.53.0.20" rel="stylesheet">
-
   
-  <!-- Custom Fonts -->
   <link href="/public/smartolt-files/font-awesome.min.css" rel="stylesheet" type="text/css">
-
-  <!-- Message box CSS -->
   <link href="/public/smartolt-files/messagebox.css" rel="stylesheet" type="text/css">
-
   <link href="/public/smartolt-files/inter-fonts.css?v=3.53.0.1" rel="stylesheet">
-  <link href="/public/smartolt-files/dashboard-smartolt-night.css?v=3.53.0.209" rel="stylesheet">
+  <link href="/public/smartolt-files/dashboard-smartolt-night.css?v=3.53.0.314" rel="stylesheet">
   <script src="/public/smartolt-files/dashboard-smartolt-night.js?v=3.53.0.63" defer=""></script>
     
-  <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
-  <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+  <!-- HTML5 Shim and Respond.js -->
   <!--[if lt IE 9]>
-        <script src="/public/smartolt-files/libs/html5shiv/3.7.0/html5shiv.js"></script>
-        <script src="/public/smartolt-files/libs/respond.js/1.4.2/respond.min.js"></script>
-    <![endif]-->
+    <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+    <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+  <![endif]-->
 
-  <!-- jQuery -->
   <script src="/public/smartolt-files/jquery.min.js"></script>
-
-  
-  
-  <!-- Toast alerts -->
   <script src="/public/smartolt-files/toast.js"></script>
-
-  <!-- Pauses recurring AJAX polling while the tab is hidden OR the user has been idle, resumes on focus / activity. -->
-  <script src="/public/smartolt-files/polling.js?v=3.53.0.3"></script>
-
-  <!-- Geolocation permission-error → localized message helper (shared by location pickers). -->
-  <script src="/public/smartolt-files/geolocation_helper.js?v=3.53.0.1"></script>
-
-  
-  
-
+  <script src="/public/smartolt-files/polling.js?v=3.53.0.5"></script>
 </head>
 
 <body class="smartolt-site">
-<script type="text/javascript">
-$( document ).ready(function() {
-	$.ajaxSetup({
-		cache: false
-	});
-	
-	window.jqxhrs = [];
-
-      window.registerJqxhr = function(jqxhr) {
-        jqxhrs.push(jqxhr);
-      }
-
-      window.abortJqxhr = function() {
-        for (var i = jqxhrs.length - 1; i >= 0; i--) {
-          if (jqxhrs[i]) {
-            jqxhrs[i].abort();
-          }
-        }
-
-        window.jqxhrs = [];
-      }
-
-      $(window).bind("beforeunload", function(event) {
-        abortJqxhr();
-      });
-
-      function unregisterJqxhr(event, jqxhr, settings) {
-        var idx = $.inArray(jqxhr, jqxhrs);
-        if (idx != -1) {
-          jqxhrs.splice(idx, 1);
-        }
-      }
-
-      $(document).ajaxComplete(unregisterJqxhr);
-
-      config = {
-        X_TOKEN: '9C23F19BE06B4BEB93046ECFDF50FF91'
-      }
+<script>
+$(document).ready(function() {
+  $.ajaxSetup({ cache: false });
+  window.jqxhrs = [];
+  window.registerJqxhr = function(j) { jqxhrs.push(j); };
+  window.abortJqxhr = function() { for (var i = jqxhrs.length - 1; i >= 0; i--) { if (jqxhrs[i]) jqxhrs[i].abort(); } jqxhrs = []; };
+  $(window).bind("beforeunload", function() { abortJqxhr(); });
+  function unregisterJqxhr(e, j, s) { var idx = $.inArray(j, jqxhrs); if (idx != -1) jqxhrs.splice(idx, 1); }
+  $(document).ajaxComplete(unregisterJqxhr);
+  config = { X_TOKEN: 'ISPTOTAL' };
+  
+  // Cargar OLTs via AJAX
+  $.getJSON('/api/olt-list', function(data) {
+    if (!data || !data.success) return;
+    var html = '';
+    $.each(data.data, function(i, o) {
+      var statusIcon = o.activo ? '<span class="label label-success">Online</span>' : '<span class="label label-danger">Offline</span>';
+      html += '<tr>' +
+        '<td><a href="/modulo?pagina=SmartoltSettings&olt_id=' + o.id + '" class="btn btn-success btn-sm">View</a></td>' +
+        '<td>' + o.id + '</td>' +
+        '<td>' + statusIcon + '</td>' +
+        '<td>' + o.nombre + '</td>' +
+        '<td>' + (o.olt_ip || '-') + '</td>' +
+        '<td>23</td><td>161</td>' +
+        '<td>' + (o.modelo || '-') + '</td>' +
+        '<td>2.1.0</td>' +
+        '<td><a href="/modulo?pagina=SmartoltSettings&olt_id=' + o.id + '" class="btn btn-link btn-sm" title="Edit"><i class="fa fa-pencil"></i></a></td>' +
+        '</tr>';
     });
-  </script>
+    $('#olts-table tbody').html(html);
+  });
+});
+</script>
 
-  <div class="smartolt-landing-hero-bg" aria-hidden="true"></div>
+<div class="smartolt-landing-hero-bg" aria-hidden="true"></div>
 
-  <div id="content-wrapper">
-    <div class="smartolt-topbar-network" aria-hidden="true">
-      <div class="smartolt-topbar-network-inner">
-        <svg class="smartolt-topbar-network-lines" viewBox="0 0 100 100" preserveAspectRatio="none">
-          <line x1="8" y1="68" x2="23" y2="78"></line>
-          <line x1="23" y1="78" x2="37" y2="63"></line>
-          <line x1="8" y1="68" x2="37" y2="63"></line>
-          <line x1="37" y1="63" x2="65" y2="18"></line>
-          <line x1="65" y1="18" x2="89" y2="34"></line>
-          <line x1="23" y1="78" x2="65" y2="18"></line>
-          <line x1="37" y1="63" x2="89" y2="34"></line>
-        </svg>
-        <span class="smartolt-topbar-node smartolt-topbar-node-a"></span>
-        <span class="smartolt-topbar-node smartolt-topbar-node-b"></span>
-        <span class="smartolt-topbar-node smartolt-topbar-node-c"></span>
-        <span class="smartolt-topbar-node smartolt-topbar-node-d"></span>
-        <span class="smartolt-topbar-node smartolt-topbar-node-e"></span>
-      </div>
-    </div>
-        <div class="navbar navbar-default navbar-fixed-top default-menu">
+<div id="content-wrapper">
+  <div class="navbar navbar-default navbar-fixed-top default-menu">
     <div class="container">
       <div class="navbar-header">
-        <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#navbar-main" aria-expanded="false" aria-controls="navbar">
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
+        <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#navbar-main">
+          <span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span>
         </button>
-        <a class="navbar-brand text-ellipsis max-width-250" href="/modulo?pagina=GPONManager">GPON Manager</a>
+        <a class="navbar-brand text-ellipsis max-width-250" href="/modulo?pagina=GPONManager">Dashboard</a>
       </div>
       <div class="navbar-collapse collapse" id="navbar-main">
         <ul class="nav navbar-nav">
-          <li><a href="/modulo?pagina=GPONManager">Dashboard</a></li>
+          <li class="active"><a href="/modulo?pagina=smartolt_olt">OLTs</a></li>
           <li><a href="/modulo?pagina=smartolt_configured_full">Configuradas</a></li>
           <li><a href="/modulo?pagina=smartolt_unconfigured_full">No configuradas</a></li>
-          <li><a href="/modulo?pagina=smartolt_onu_types_full">Tipos ONU</a></li>
-          <li><a href="/modulo?pagina=smartolt_speed_profiles_full">Velocidad</a></li>
-          <li><a href="/modulo?pagina=smartolt_locations_full">Zonas</a></li>
-          <li class="dropdown">
-            <a class="dropdown-toggle" data-toggle="dropdown" href="#">Settings <span class="caret"></span></a>
-            <ul class="dropdown-menu">
-              <li><a href="/modulo?pagina=smartolt_olt">OLTs</a></li>
-              <li><a href="/modulo?pagina=smartolt_general">General</a></li>
-              <li><a href="/modulo?pagina=smartolt_billing">Billing</a></li>
-              <li><a href="/modulo?pagina=smartolt_system_config">VPN &amp; TR069</a></li>
-              <li><a href="/modulo?pagina=smartolt_presets_full">Presets</a></li>
-              <li><a href="/modulo?pagina=smartolt_diagnostics_full">Diagnostics</a></li>
-              <li><a href="/modulo?pagina=smartolt_graphs">Graphs</a></li>
-            </ul>
-          </li>
         </ul>
         <ul class="nav navbar-nav navbar-right">
-          <li><a href="/logout"><i class="fa fa-sign-out"></i> Salir</a></li>
+          <li><a id="smartolt-night-toggle" class="is-pref-night" title="Night mode"><i class="fa fa-moon-o font-size-20"></i></a></li>
         </ul>
       </div>
     </div>
   </div>
 
-    <!-- Page Content -->
-    <div class="container">
-
-<style>
-	.olt-status-dot {
-		display: inline-block;
-		width: 12px;
-		height: 12px;
-		border-radius: 50%;
-		vertical-align: middle;
-		position: relative;
-		top: -2px;
-		box-shadow: 0 2px 5px 0 rgba(0, 0, 0, .26);
-	}
-	.olt-status-online { background-color: #5cb85c; }
-	.olt-status-offline { background-color: #95a5a6; }
-</style>
-
-<div class="container-fluid content-wrap">
-  <h2>OLTs</h2>
-  
-  <a href="#" class="btn btn-success margin-bottom" onclick="abrirModalAddOLT();return false;"><span class="glyphicon glyphicon-plus"> </span> Add OLT</a>
-
-  <a class="btn btn-primary margin-left margin-bottom export-button">Export OLTs list</a>
-  <a href="/modulo?pagina=smartolt_diagnostics_full" class="btn btn-yellow margin-left margin-bottom"><i class="fa fa-search"></i> Find config mismatches</a>
-  
-  <div id="oltsListContainer">
-    <div class="text-center" style="padding:40px;"><i class="fa fa-spinner fa-spin"></i> Loading OLTs...</div>
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-12">
+        <h2>OLTs</h2>
+        <a href="/modulo?pagina=SmartoltSettings" class="btn btn-primary"><i class="fa fa-plus"></i> Add OLT</a>
+        <a href="#" class="btn btn-default">Export OLTs list</a>
+        <hr>
+        <table class="table table-striped table-hover" id="olts-table">
+          <thead>
+            <tr>
+              <th>View</th><th>ID</th><th>Status</th><th>Name</th><th>OLT IP</th>
+              <th>TCP</th><th>UDP</th><th>OLT hardware version</th><th>OLT SW version</th><th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td colspan="10" class="text-center">Cargando...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
   </div>
 </div>
-
-<!-- Modal ADD OLT -->
-<div id="modalAddOLT" class="modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:9999;">
-  <div class="modal-content" style="margin:5% auto;padding:24px;border-radius:12px;max-width:550px;position:relative;background:var(--panel-bg,#2C2C2E);border:1px solid var(--border-color,rgba(255,255,255,0.12));box-shadow:0 8px 32px rgba(0,0,0,0.5);">
-    <span class="modal-close" onclick="cerrarModalAddOLT()" style="position:absolute;top:12px;right:18px;font-size:24px;cursor:pointer;color:var(--text-muted,#999);">&times;</span>
-    <h3 style="margin-top:0;color:var(--text-color,#EBEBF5);"><i class="glyphicon glyphicon-plus" style="color:#10b981;"></i> Add OLT</h3>
-    <form id="formAddOLT" onsubmit="guardarOLT(event)">
-      <div class="form-group">
-        <label style="color:var(--text-color,#EBEBF5);">Name *</label>
-        <input type="text" class="form-control" id="oltName" required placeholder="e.g. JOEL WIFI" style="background:var(--input-bg,#1C1C1E);color:var(--text-color,#EBEBF5);border-color:var(--border-color,rgba(255,255,255,0.18));">
-      </div>
-      <div class="form-group">
-        <label style="color:var(--text-color,#EBEBF5);">OLT IP *</label>
-        <input type="text" class="form-control" id="oltIP" required placeholder="e.g. 192.168.20.80" style="background:var(--input-bg,#1C1C1E);color:var(--text-color,#EBEBF5);border-color:var(--border-color,rgba(255,255,255,0.18));">
-      </div>
-      <div class="row">
-        <div class="col-md-6">
-          <div class="form-group">
-            <label style="color:var(--text-color,#EBEBF5);">TCP Port</label>
-            <input type="number" class="form-control" id="oltPort" value="23" style="background:var(--input-bg,#1C1C1E);color:var(--text-color,#EBEBF5);border-color:var(--border-color,rgba(255,255,255,0.18));">
-          </div>
-        </div>
-        <div class="col-md-6">
-          <div class="form-group">
-            <label style="color:var(--text-color,#EBEBF5);">SNMP Port</label>
-            <input type="number" class="form-control" id="oltSnmpPort" value="161" style="background:var(--input-bg,#1C1C1E);color:var(--text-color,#EBEBF5);border-color:var(--border-color,rgba(255,255,255,0.18));">
-          </div>
-        </div>
-      </div>
-      <div class="form-group">
-        <label style="color:var(--text-color,#EBEBF5);">Username</label>
-        <input type="text" class="form-control" id="oltUser" value="zte" placeholder="e.g. zte" style="background:var(--input-bg,#1C1C1E);color:var(--text-color,#EBEBF5);border-color:var(--border-color,rgba(255,255,255,0.18));">
-      </div>
-      <div class="form-group">
-        <label style="color:var(--text-color,#EBEBF5);">Password</label>
-        <input type="password" class="form-control" id="oltPass" value="zte" placeholder="e.g. zte" style="background:var(--input-bg,#1C1C1E);color:var(--text-color,#EBEBF5);border-color:var(--border-color,rgba(255,255,255,0.18));">
-      </div>
-      <div class="form-group">
-        <label style="color:var(--text-color,#EBEBF5);">Model</label>
-        <input type="text" class="form-control" id="oltModel" value="ZTE-C300" placeholder="e.g. ZTE-C300" style="background:var(--input-bg,#1C1C1E);color:var(--text-color,#EBEBF5);border-color:var(--border-color,rgba(255,255,255,0.18));">
-      </div>
-      <div class="form-group">
-        <label style="color:var(--text-color,#EBEBF5);">Connection Type</label>
-        <select class="form-control" id="oltTipo" style="background:var(--input-bg,#1C1C1E);color:var(--text-color,#EBEBF5);border-color:var(--border-color,rgba(255,255,255,0.18));">
-          <option value="directa">Directa (misma red)</option>
-          <option value="socks">Via SOCKS Proxy</option>
-          <option value="vpn">Via VPN Tunnel</option>
-        </select>
-      </div>
-      <div class="form-group" id="socksFields" style="display:none;">
-        <label style="color:var(--text-color,#EBEBF5);">SOCKS Host</label>
-        <input type="text" class="form-control" id="oltSocksHost" value="10.50.255.245" style="background:var(--input-bg,#1C1C1E);color:var(--text-color,#EBEBF5);border-color:var(--border-color,rgba(255,255,255,0.18));">
-        <label style="color:var(--text-color,#EBEBF5);">SOCKS Port</label>
-        <input type="number" class="form-control" id="oltSocksPort" value="1080" style="background:var(--input-bg,#1C1C1E);color:var(--text-color,#EBEBF5);border-color:var(--border-color,rgba(255,255,255,0.18));">
-      </div>
-      <button type="submit" class="btn btn-success" id="btnSaveOLT"><i class="glyphicon glyphicon-save"></i> Save OLT</button>
-      <button type="button" class="btn btn-default" onclick="cerrarModalAddOLT()" style="background:var(--input-bg,#1C1C1E);color:var(--text-color,#EBEBF5);border-color:var(--border-color,rgba(255,255,255,0.18));">Cancel</button>
-    </form>
-  </div>
-</div>
-
-<script type="text/javascript">
-function cargarOLTs() {
-  var container = document.getElementById('oltsListContainer');
-  container.innerHTML = '<div class="text-center" style="padding:40px;"><i class="fa fa-spinner fa-spin"></i> Loading OLTs...</div>';
-  
-  fetch('/api/olts', { credentials: 'same-origin' })
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-      if (!data.success) {
-        container.innerHTML = '<div class="alert alert-danger">Error: ' + (data.error || 'Unknown') + '</div>';
-        return;
-      }
-      var olts = data.olts || [];
-      if (olts.length === 0) {
-        container.innerHTML = '<div class="alert alert-info">No OLTs configured. Click "Add OLT" to add one.</div>';
-        return;
-      }
-      var html = '<div class="table-responsive"><table class="table table-striped">' +
-        '<tr><th class="col-md-1 text-center">View</th><th class="width-25">ID</th><th class="text-center" style="width:60px;">Status</th><th>Name</th><th class="col-md-1">OLT IP</th><th class="col-md-1">TCP</th><th class="col-md-1">UDP</th><th class="col-md-2">Hardware</th><th class="col-md-1">SW</th><th class="width-120 text-center">Action</th></tr>';
-      olts.forEach(function(o) {
-        var statusClass = o.status === 'Online' ? 'olt-status-online' : 'olt-status-offline';
-        var statusTitle = o.status === 'Online' ? 'Online' : 'Offline';
-        html += '<tr>' +
-          '<td class="text-center"><a href="/modulo?pagina=smartolt_olt_details&olt_id=' + o.id + '" class="btn btn-success btn-sm">View</a></td>' +
-          '<td>' + o.id + '</td>' +
-          '<td class="text-center"><span class="olt-status-dot ' + statusClass + '" title="' + statusTitle + '"></span></td>' +
-          '<td>' + escHtml(o.nombre) + '</td>' +
-          '<td>' + escHtml(o.olt_ip || '-') + '</td>' +
-          '<td>' + (o.olt_port || 23) + '</td>' +
-          '<td>' + (o.snmp_port || 161) + '</td>' +
-          '<td>' + escHtml(o.modelo || '-') + '</td>' +
-          '<td>' + (o.olt_version || '-') + '</td>' +
-          '<td class="text-center">' +
-            '<a href="#" onclick="testOLT(' + o.id + ');return false;" class="btn btn-sm btn-info" title="Test Connection"><i class="glyphicon glyphicon-flash"></i></a> ' +
-            '<a href="#" onclick="deleteOLT(' + o.id + ',\'' + escAttr(o.nombre) + '\');return false;" class="btn btn-sm btn-danger" title="Delete"><i class="glyphicon glyphicon-trash"></i></a>' +
-          '</td></tr>';
-      });
-      html += '</table></div>';
-      container.innerHTML = html;
-    })
-    .catch(function(e) {
-      container.innerHTML = '<div class="alert alert-danger">Error loading OLTs: ' + e.message + '</div>';
-    });
-}
-
-function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-function escAttr(s) { return String(s).replace(/'/g,"\\\\'").replace(/"/g,'&quot;'); }
-
-function abrirModalAddOLT() {
-  document.getElementById('modalAddOLT').style.display = 'block';
-}
-
-function cerrarModalAddOLT() {
-  document.getElementById('modalAddOLT').style.display = 'none';
-}
-
-document.getElementById('oltTipo').addEventListener('change', function() {
-  document.getElementById('socksFields').style.display = this.value === 'socks' ? 'block' : 'none';
-});
-
-function guardarOLT(e) {
-  e.preventDefault();
-  var btn = document.getElementById('btnSaveOLT');
-  btn.disabled = true;
-  btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Saving...';
-  
-  var data = {
-    nombre: document.getElementById('oltName').value,
-    olt_ip: document.getElementById('oltIP').value,
-    olt_port: parseInt(document.getElementById('oltPort').value) || 23,
-    snmp_port: parseInt(document.getElementById('oltSnmpPort').value) || 161,
-    olt_username: document.getElementById('oltUser').value,
-    olt_password: document.getElementById('oltPass').value,
-    modelo: document.getElementById('oltModel').value,
-    tipo: document.getElementById('oltTipo').value
-  };
-  if (data.tipo === 'socks') {
-    data.socks_host = document.getElementById('oltSocksHost').value;
-    data.socks_port = parseInt(document.getElementById('oltSocksPort').value) || 1080;
-  }
-  
-  fetch('/api/olts', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'same-origin',
-    body: JSON.stringify(data)
-  })
-  .then(function(r) { return r.json(); })
-  .then(function(res) {
-    if (res.success) {
-      showToast('OLT added successfully!');
-      cerrarModalAddOLT();
-      cargarOLTs();
-    } else {
-      showToast('Error: ' + (res.error || ''), 'error');
-    }
-  })
-  .catch(function(e) {
-    showToast('Error: ' + e.message, 'error');
-  })
-  .finally(function() {
-    btn.disabled = false;
-    btn.innerHTML = '<i class="glyphicon glyphicon-save"></i> Save OLT';
-  });
-}
-
-function deleteOLT(id, name) {
-  if (!confirm('Delete OLT "' + name + '"?')) return;
-  fetch('/api/olts/' + id, { method: 'DELETE', credentials: 'same-origin' })
-    .then(function(r) { return r.json(); })
-    .then(function(res) {
-      if (res.success) { showToast('OLT deleted'); cargarOLTs(); }
-      else { showToast('Error: ' + (res.error || ''), 'error'); }
-    });
-}
-
-function testOLT(id) {
-  fetch('/api/olts/' + id + '/test', { credentials: 'same-origin' })
-    .then(function(r) { return r.json(); })
-    .then(function(res) {
-      if (res.success) { showToast('OLT reachable! Latency: ' + (res.latency || 'N/A')); }
-      else { showToast('OLT unreachable: ' + (res.error || ''), 'error'); }
-    });
-}
-
-// Override showToast if not exists
-if (typeof showToast !== 'function') {
-  window.showToast = function(msg, type) {
-    type = type || 'success';
-    var div = document.createElement('div');
-    div.style.cssText = 'position:fixed;bottom:20px;right:20px;padding:12px 24px;border-radius:8px;z-index:99999;color:#fff;font-weight:500;box-shadow:0 4px 12px rgba(0,0,0,0.2);';
-    div.style.background = type === 'error' ? '#ef4444' : '#10b981';
-    div.textContent = msg;
-    document.body.appendChild(div);
-    setTimeout(function() { div.remove(); }, 4000);
-  };
-}
-
-cargarOLTs();
-</script>
-
-</div>
-<br>
-</div>
-
-
-    <script src="/public/smartolt-files/bootstrap.min.js"></script>
-    <script src="/public/smartolt-files/bootstrap-multiselect.js?v=3.53.0"></script>
-
-    <!-- Metis Menu Plugin JavaScript -->
-    <script src="/public/smartolt-files/metisMenu.min.js"></script>
-
-    <!-- Custom Theme JavaScript -->
-    <script src="/public/smartolt-files/sb-admin-2.js"></script>
-        
-    <!-- Loading overlay -->
-    <script src="/public/smartolt-files/loadingoverlay.custom.js?v=2"></script>
-    
-    <!-- Message box -->
-    <script src="/public/smartolt-files/messagebox.min.js"></script>
-    
-    
-
-<script type="text/javascript">
-
-$( document ).ready(function() {
-	
-	// Hide new version dot if user has already seen this version
-	var currentVersion = '3.53.0';
-	var lastSeenVersion = localStorage.getItem('lastSeenVersion');
-	if (lastSeenVersion === currentVersion) {
-		$('.new-version-dot').hide();
-	}
-
-	
-	$('#smartolt-update-banner-changelog').on('click', function(e) {
-		e.preventDefault();
-		localStorage.setItem('lastSeenVersion', currentVersion);
-		$('.new-version-dot').hide();
-				window.location.href = '/changelog';
-			});
-
-	$('#smartolt-update-banner-dismiss').on('click', function() {
-		localStorage.setItem('lastSeenVersion', currentVersion);
-		$('.new-version-dot').hide();
-		$('#smartolt-update-banner').slideUp(300);
-	});
-
-	$('#footer-changelog-link').on('click', function() {
-		localStorage.setItem('lastSeenVersion', currentVersion);
-		$('.new-version-dot').hide();
-	});
-
-	//hide alert-success after 5 seconds
-	/*setTimeout(function(){
-		$('.alert-success').not('.nofade').fadeOut();
-	},5000);*/
-	
-	var waitingForOLT   = $("<div>", {
-	    id      : "waitingOLT",
-	    css     : {
-	        "font-size" : "50px",
-			"white-space" : "nowrap"
-	    },
-	    text    : "Waiting for OLT"
-	});
-
-	var loadingOverlaySettings = {
-		    image       : "",
-		    fontawesome : "fa fa-spinner fa-spin",
-		    custom  : waitingForOLT,
-		    resizeInterval : 0
-		};
-
-	$.LoadingOverlay("append", loadingOverlaySettings);
-
-	window.showLoadingOverlay = function(loadingText = null) {
-		if(loadingText != null) {
-			$("#waitingOLT").text(loadingText);
-		}
-		else {
-			$("#waitingOLT").text("Waiting for OLT");
-		}
-		
-		$.LoadingOverlay("show", loadingOverlaySettings);
-	}
-
-	window.hideLoadingOverlay = function() {
-		$.LoadingOverlay("hide");
-	}
-
-	window.isLoadingOverlayVisible = function() {
-		return $('.loadingoverlay').is(":visible");
-	}
-	
-	//hide loading overlay when ajax request finishes
-	/*$(document).ajaxStop(function(){
-		hideLoadingOverlay();
-	});*/
-
-	//show toast with error
-	$(document).ajaxError(function(requestObject, error, errorThrown) {
-		if(error.status != 404 && error != undefined && error.responseJSON != undefined && 
-				error.responseJSON.error != undefined && error.responseJSON.error.length > 0) {
-			toast(error.responseJSON.error);
-		}
-	});
-
-	//confirm message box
-	window.MessageBoxConfirm = function(message){
-	    return $.MessageBox({
-	        buttonDone  : "OK",
-	        buttonFail  : "Cancel",
-	        message     : message
-	    });
-	}
-
-	window.getSelectedText = function() {
-        if (window.getSelection) {
-            return window.getSelection().toString();
-        } 
-        else if (document.selection) {
-            return document.selection.createRange().text;
-        }
-        return '';
-    }
-
-	//close navbar menu when clicking outside of it
-	$(document).click(function (event) {
-		var clickover = $(event.target);
-		var $nav = $("div.navbar-collapse");
-        var _opened = $nav.hasClass("in");
-
-        if (_opened === true && !clickover.hasClass("navbar-toggle")) {
-			$nav.collapse('hide');
-        }
-    });
-
-	/*https://www.quirksmode.org/blog/archives/2014/02/mouse_event_bub.html
-	  Safari on iOS only allows the mouse events, including click, to bubble up in the following situations:
-	  1. The target element of the event is a link or a form field.
-	  2. The target element, or any of its ancestors up to but not including the <body>, has an explicit event handler set for any of the mouse events. This event handler may be an empty function.
-      3. The target element, or any of its ancestors up to and including the document has a cursor: pointer CSS declarations. */
-	$("#content-wrapper").click(function (event) {
-		//this is here only for iOS to allow mouse events to bubble up so we can close navbar menu when clicking outside of it
-    });
-
-	// check navbar menu top offset
-    function closeMenuIfOpened() {
-		var $nav = $("div.navbar-collapse");
-    	var _opened = $nav.hasClass("in");
-
-        if (_opened === true && $(".navbar").offset().top > 50) {
-			$nav.collapse('hide');
-        }
-    }
-
-    //for touch devices, detect zoom in/out events and close the navbar menu if opened
-    var tracks = [];
-    $(window).on("touchmove", function (event) {
-	
-	    //only run code if the user has two fingers touching
-	    if (event.originalEvent.touches.length === 2) {
-	
-	        //track the touches, I'm setting each touch as an array inside the tracks array
-	        //each touch array contains an X and Y coordinate
-	        tracks.push([ [event.originalEvent.touches[0].pageX, event.originalEvent.touches[0].pageY], [event.originalEvent.touches[1].pageX, event.originalEvent.touches[1].pageY] ]);
-	    }
-	}).on("touchstart", function () {
-	    //start-over
-	    tracks = [];
-	}).on("touchend", function () {
-	    if(tracks.length > 0) {
-			var $nav = $("div.navbar-collapse");
-	    	var _opened = $nav.hasClass("in");
-	        if (_opened === true) {
-				$nav.collapse('hide');
-	        }
-	    }
-	});
-
-	// COPY TO CLIPBOARD
-	// Attempts to use .execCommand('copy') on a created text field
-	// Falls back to a selectable alert if not supported
-	// Attempts to display status in Bootstrap tooltip
-	// ------------------------------------------------------------------------------
-
-	function copyToClipboard(text, el) {
-	  var copyTest = document.queryCommandSupported('copy');
-	  var elOriginalText = el.attr('data-original-title');
-
-	  if (copyTest === true) {
-	    var copyTextArea = document.createElement("textarea");
-	    copyTextArea.value = text;
-	    document.body.appendChild(copyTextArea);
-	    copyTextArea.select();
-	    try {
-	      var successful = document.execCommand('copy');
-	      var msg = successful ? "Copied!" : "Whoops, not copied!";
-	      el.attr('data-original-title', msg).tooltip('show');
-	    } 
-	    catch (err) {
-	      console.log("Oops, unable to copy");
-	    }
-	    document.body.removeChild(copyTextArea);
-	    el.attr('data-original-title', elOriginalText);
-	  } 
-	  else {
-	    // Fallback if browser doesn't support .execCommand('copy')
-	    window.prompt("Copy to clipboard", text);
-	  }
-	}
-
-	function copyToClipboard2(text, el) {
-		  if (document.queryCommandSupported('copy') === true) {
-			var elOriginalText = el.attr('data-original-title');
-	 	    var copyTextArea = document.createElement("textarea");
-		    copyTextArea.textContent = text.text();
-		    document.body.appendChild(copyTextArea);
-
-		    var selection = document.getSelection();
-		    var range = document.createRange();
-		    range.selectNode(copyTextArea);
-		    selection.removeAllRanges();
-		    selection.addRange(range);
-		    
-		    try {
-		      var successful = document.execCommand('copy');
-			  var msg;
-
-			  if (successful) {
-				  msg = "Copied!";
-			  } 
-			  else {
-				msg = "Whoops, not copied!";
-				el.removeClass('not-selectable');
-			  }
-		      el.attr('data-original-title', msg).tooltip('show');
-		    } 
-		    catch (err) {
-		      console.log("Oops, unable to copy");
-		    }
-		    selection.removeAllRanges();
-		    document.body.removeChild(copyTextArea);
-		    el.attr('data-original-title', elOriginalText);
-		  } 
-		  else {
-			$('.not-selectable').removeClass('not-selectable');
-		    // Fallback if browser doesn't support .execCommand('copy')
-		    window.prompt("Copy to clipboard", text.text());
-		  }
-		}
-
-	// Initialize
-   // ---------------------------------------------------------------------
-
-   // Tooltips
-   // Requires Bootstrap 3 for functionality
-   $('.js-tooltip').tooltip();
-
-   // Copy to clipboard
-   // Grab any text in the attribute 'data-copy' and pass it to the 
-   // copy function
-   $('.js-copy').click(function() {
-     var text = $(this).attr('data-copy');
-     var el = $(this);
-     copyToClipboard(text, el);
-   });
-
-   $(document).on('click','.comma-copy', function() {
-	   $(this).removeClass('btn-primary').addClass('btn-default');
-	     var el = $('#'+$(this).attr('data-idtag'));
-	     copyToClipboard2(el, $(this));
-	     el.removeClass('text-primary').addClass('text-muted');
-	   });
-
-   //trim white spaces when paste in any input
-   $(document).on('paste', 'input[type=text]', function(e) {
-	  // prevent copying action
-	  e.preventDefault();
-	  
-	  var pastedText = e.originalEvent.clipboardData.getData('Text');
-	  var withoutSpaces = pastedText;
-	  if(pastedText) {
-		  withoutSpaces = pastedText.trim();
-	  }
-
-	  //remove all spaces, including from inside the text
-	  if($(this).hasClass('no_spaces')) {
-		  withoutSpaces = withoutSpaces.replace(/\s/g, '');
-	  }
-	  
-	  $(this).insertAtCaret(withoutSpaces);
-	});
-
-   $.fn.insertAtCaret = function(text) {
-	    return this.each(function() {
-	        if (document.selection && this.tagName == 'TEXTAREA') {
-	            //IE textarea support
-	            this.focus();
-	            sel = document.selection.createRange();
-	            sel.text = text;
-	            this.focus();
-	        } else if (this.selectionStart || this.selectionStart == '0') {
-	            //MOZILLA/NETSCAPE support
-	            startPos = this.selectionStart;
-	            endPos = this.selectionEnd;
-	            scrollTop = this.scrollTop;
-	            this.value = this.value.substring(0, startPos) + text + this.value.substring(endPos, this.value.length);
-	            this.focus();
-	            this.selectionStart = startPos + text.length;
-	            this.selectionEnd = startPos + text.length;
-	            this.scrollTop = scrollTop;
-	        } else {
-	            // IE input[type=text] and other browsers
-	            this.value += text;
-	            this.focus();
-	            this.value = this.value;    // forces cursor to end
-	        }
-	    });
-	};
-    
-	
-  $('.save-configuration-button').click(function (){
-    var button = $('.save-configuration-anchor');
-
-    button.toggleClass('active');
-    button.attr('disabled', true);
-    button.text("Saving...");
-    $('#saveConfigModal').modal('hide');
-
-    $.ajax({
-        method: "GET",
-        beforeSend: function(request) {
-		    request.setRequestHeader("X-Token", config.X_TOKEN);
-		  },
-        url: "/api/system/write",
-      })
-      .done(function( response ) {
-        $.MessageBox((response && response.response) ? response.response : "Save initiated. It could take the OLT up to 5 minutes to write the config!");
-        button.text("Save config");
-        setTimeout(function () {
-          button.toggleClass('active');
-          button.attr('disabled', false);
-          button.text("Save config");
-        }, 1000);
-      })
-      .fail(function(jqXHR, textStatus) {
-    	  if(jqXHR.responseJSON) {
-				$.MessageBox(jqXHR.responseJSON.error);
-			}
-			else {
-				$.MessageBox(jqXHR.responseText);
-			}
-	        setTimeout(function () {
-	        	 button.toggleClass('active');
-	             button.attr('disabled', false);
-	             button.text("Save config");
-	        }, 1000);
-      });
-  });
-
-    
-});
-</script>
-
-</div>
-
-<style>
-.new-version-dot {
-	display: inline-block;
-	width: 8px;
-	height: 8px;
-	background-color: #5cb85c;
-	border-radius: 50%;
-	margin-left: 4px;
-	animation: pulse-green 2s infinite;
-}
-.footer-dot-sep {
-	opacity: 0.5;
-	margin: 0 2px;
-}
-footer {
-	height: auto;
-	padding-bottom: 8px;
-}
-#feature-tour-whatsnew .fa-bullhorn {
-	margin-right: 5px;
-	font-size: 2em;
-	vertical-align: -6px;
-}
-
-@keyframes pulse-green {
-	0% {
-		transform: scale(0.95);
-		box-shadow: 0 0 0 0 rgba(92, 184, 92, 0.7);
-	}
-	70% {
-		transform: scale(1);
-		box-shadow: 0 0 0 6px rgba(92, 184, 92, 0);
-	}
-	100% {
-		transform: scale(0.95);
-		box-shadow: 0 0 0 0 rgba(92, 184, 92, 0);
-	}
-}
-
-</style>
 
 <footer>
-	<div class="text-center row">SmartOLT <a href="/modulo?pagina=GPONManager" class="btn-link" id="footer-changelog-link">v3.53.0<span class="new-version-dot" title="New updates"></span></a> © 2026</div>
+  <div class="text-center row">ISPTotal GPON v1.0</div>
 </footer>
 
+<script src="/public/smartolt-files/bootstrap.min.js"></script>
+<script src="/public/smartolt-files/metisMenu.min.js"></script>
+<script src="/public/smartolt-files/sb-admin-2.js"></script>
 
-
-
-
-<div class="loadingoverlay" style="background-color: rgba(255, 255, 255, 0.8); position: fixed; display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; top: 0px; left: 0px; width: 100%; height: 100%; background-size: 100px;"><div class="loadingoverlay_fontawesome fa fa-spinner fa-spin" style="font-size: 100px;"></div><div id="waitingOLT" style="font-size: 50px; white-space: nowrap;">Waiting for OLT</div></div></body></html>
+</body></html>

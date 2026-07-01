@@ -1,214 +1,107 @@
-<!DOCTYPE html>
-<html lang="en" class="">
-<head>
-<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<script>window.SMARTOLT_DB_THEME='system';</script>
-<script>try{var k='smartolt-night',lk='smartolt-theme-local',dbTheme=window.SMARTOLT_DB_THEME,local=null,pref,n;try{local=localStorage.getItem(lk);}catch(e){}if(local==='night'||local==='light'||local==='system'){pref=local;}else if(dbTheme==='night'||dbTheme==='light'||dbTheme==='system'){pref=dbTheme;}else{pref='system';}if(pref==='system'){n=!!(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);}else if(pref==='night'){n=true;}else{n=false;}try{localStorage.setItem(k,n?'1':'0');}catch(e){}if(n){document.documentElement.classList.add('smartolt-night');}else{document.documentElement.classList.remove('smartolt-night');}document.cookie=k+'='+(n?'1':'0')+'; path=/; max-age=31536000; SameSite=Lax'+(location.protocol==='https:'?'; Secure':'');}catch(e){}</script>
-<meta http-equiv="content-type" content="text/html; utf-8">
-<meta http-equiv="X-UA-Compatible" content="IE=edge">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Configuración OLT | GPON Manager</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/css/bootstrap.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
-<style>
-/* === SmartOLT Base Styles === */
-body { font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; -webkit-font-smoothing: antialiased; background: #fafbfd; }
-html.smartolt-night body { background: #06162f; color: #e2e8f0; }
-.navbar-default { background: #fff !important; border-bottom: 1px solid #eef2f6 !important; border-radius: 0; }
-html.smartolt-night .navbar-default { background: rgba(6,22,47,0.82) !important; border-bottom: 1px solid rgba(255,255,255,0.1) !important; }
-html.smartolt-night .navbar-default .navbar-brand, html.smartolt-night .navbar-default .nav > li > a { color: rgba(255,255,255,0.9) !important; }
-html.smartolt-night .navbar-default .nav > li > a:hover { background: rgba(255,255,255,0.08) !important; color: #fff !important; }
-.navbar-brand { font-weight: 700; }
-.container { padding-top: 70px; padding-bottom: 40px; }
-.panel { background: #fff; border: 1px solid #eef2f6; border-radius: 10px; box-shadow: 0 1px 2px rgba(15,23,42,0.03), 0 4px 14px rgba(15,23,42,0.04); }
-html.smartolt-night .panel { background: rgba(15,26,46,0.92); border: 1px solid rgba(255,255,255,0.1); color: #e2e8f0; }
-.panel-heading { background: #4c4b4b !important; color: #fff !important; border-radius: 10px 10px 0 0 !important; border: none !important; font-weight: 600; }
-html.smartolt-night .panel-heading { background: rgba(255,255,255,0.08) !important; }
-.panel-body { padding: 20px; }
-html.smartolt-night .panel-body { background: transparent; }
-.form-control { border: 1px solid #d1d5db; border-radius: 6px; box-shadow: none; }
-.form-control:focus { border-color: #4c4b4b; box-shadow: 0 0 0 2px rgba(76,75,75,0.12); }
-html.smartolt-night .form-control { background: #0f172a; border-color: #475569; color: #e2e8f0; }
-html.smartolt-night .form-control:focus { border-color: #60a5fa; box-shadow: 0 0 0 2px rgba(96,165,250,0.15); }
-.btn-primary { background: #4c4b4b; border-color: #4c4b4b; }
-.btn-primary:hover { background: #2d2d2d; border-color: #2d2d2d; }
-html.smartolt-night .btn-primary { background: #3b82f6; border-color: #3b82f6; }
-html.smartolt-night .btn-primary:hover { background: #2563eb; border-color: #2563eb; }
-html.smartolt-night .btn-default { background: #334155; color: #e2e8f0; border: none; }
-html.smartolt-night .btn-default:hover { background: #475569; color: #fff; }
-html.smartolt-night .text-muted { color: #94a3b8 !important; }
-html.smartolt-night label { color: #cbd5e1; }
-.smartolt-landing-hero-bg { display: none; }
-html.smartolt-night .smartolt-landing-hero-bg {
-  display: block; position: fixed; z-index: -1; inset: 0;
-  background: radial-gradient(circle at 72% 18%, rgba(29,139,255,0.24), transparent 28%),
-              radial-gradient(circle at 18% 84%, rgba(0,108,255,0.18), transparent 28%),
-              linear-gradient(135deg, #06162f, #071b3d 55%, #031022);
-  pointer-events: none;
-}
-#smartolt-night-toggle { align-items: center; display: flex; justify-content: center; }
-#smartolt-night-toggle i { line-height: 1; width: 20px; text-align: center; }
-#smartolt-night-toggle .smartolt-theme-icon-light,
-#smartolt-night-toggle .smartolt-theme-icon-night,
-#smartolt-night-toggle .smartolt-theme-icon-system { display: none; }
-#smartolt-night-toggle.is-pref-light .smartolt-theme-icon-light,
-#smartolt-night-toggle.is-pref-night .smartolt-theme-icon-night,
-#smartolt-night-toggle.is-pref-system .smartolt-theme-icon-system { display: inline-block; }
-.font-size-20 { font-size: 20px; }
-.text-ellipsis { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
-.max-width-250 { max-width: 250px; }
-.alert { border-radius: 8px; }
-</style>
-<script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/js/bootstrap.min.js"></script>
+<!DOCTYPE html><html lang="en" class="smartolt-night"><head>
+        <script>window.SMARTOLT_DB_THEME='night';</script>
+    <script>try{var k='smartolt-night',lk='smartolt-theme-local',dbTheme=window.SMARTOLT_DB_THEME,local=null,pref,n;try{local=localStorage.getItem(lk);}catch(e){}if(local==='night'||local==='light'||local==='system'){pref=local;}else if(dbTheme==='night'||dbTheme==='light'||dbTheme==='system'){pref=dbTheme;}else{pref='system';}if(pref==='system'){n=!!(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);}else if(pref==='night'){n=true;}else{n=false;}try{localStorage.setItem(k,n?'1':'0');}catch(e){}if(n){document.documentElement.classList.add('smartolt-night');}else{document.documentElement.classList.remove('smartolt-night');}document.cookie=k+'='+(n?'1':'0')+'; path=/; max-age=31536000; SameSite=Lax'+(location.protocol==='https:'?'; Secure':'');}catch(e){}</script>
+    <meta http-equiv="content-type" content="text/html; utf-8">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+  <title>OLT settings - ISPTotal</title>
+  <link href="/public/smartolt-files/bootstrap-custom.css?v=3.53.0.24" rel="stylesheet">
+  <link href="/public/smartolt-files/bootstrap-multiselect.css?v=3.53.0.20" rel="stylesheet">
+  <link href="/public/smartolt-files/styles.css?v=3.53.0.35" rel="stylesheet">
+  <link href="/public/smartolt-files/toast.css?v=3.53.0.20" rel="stylesheet">
+  <link href="/public/smartolt-files/font-awesome.min.css" rel="stylesheet">
+  <link href="/public/smartolt-files/messagebox.css" rel="stylesheet">
+  <link href="/public/smartolt-files/inter-fonts.css?v=3.53.0.1" rel="stylesheet">
+  <link href="/public/smartolt-files/dashboard-smartolt-night.css?v=3.53.0.314" rel="stylesheet">
+  <script src="/public/smartolt-files/jquery.min.js"></script>
+  <script src="/public/smartolt-files/toast.js"></script>
 </head>
-<body>
+<body class="smartolt-site">
+<script>
+$(document).ready(function() {
+  $.ajaxSetup({ cache: false });
+  var oltId = <%= locals.olt_id || 0 %>;
+  
+  function loadOltDetails() {
+    $.getJSON('/api/olt-detail?id=' + oltId, function(data) {
+      if (!data || !data.success) return;
+      var o = data.data;
+      if (!o) return;
+      $('#olt-name').text(o.nombre || '--');
+      $('#olt-ip').text(o.olt_ip || '--');
+      $('#olt-tcp').text(o.olt_port || '23');
+      $('#olt-username').text(o.olt_username || '--');
+      $('#olt-model').text(o.modelo || '--');
+      $('#olt-vlan').text(o.vlan_default || '--');
+    });
+  }
+  loadOltDetails();
+});
+</script>
+
 <div class="smartolt-landing-hero-bg" aria-hidden="true"></div>
 <div id="content-wrapper">
-  <div class="navbar navbar-default navbar-fixed-top">
+  <div class="navbar navbar-default navbar-fixed-top default-menu">
     <div class="container">
       <div class="navbar-header">
-        <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#navbar-main">
+        <button class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-main">
           <span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span>
         </button>
-        <a class="navbar-brand text-ellipsis max-width-250" href="/modulo?pagina=GPONManager">GPON Manager</a>
+        <a class="navbar-brand" href="/modulo?pagina=GPONManager">Dashboard</a>
       </div>
-      <div class="navbar-collapse collapse" id="navbar-main">
+      <div class="collapse navbar-collapse" id="navbar-main">
         <ul class="nav navbar-nav">
-          <li><a href="/modulo?pagina=GPONManager">Dashboard</a></li>
-          <li><a href="/modulo?pagina=SmartoltConfigured">ONUs Configuradas</a></li>
-          <li><a href="/modulo?pagina=SmartoltUnconfigured">Sin Configurar</a></li>
-          <li><a href="/modulo?pagina=SmartoltSpeedProfiles">Velocidad</a></li>
-          <li><a href="/modulo?pagina=SmartoltOnuTypes">Tipos ONU</a></li>
-          <li class="active"><a href="/modulo?pagina=SmartoltSettings">Config OLT</a></li>
-        </ul>
-        <ul class="nav navbar-nav navbar-right">
-          <li><a href="/modulo?pagina=GPONManager" title="Volver al Dashboard"><i class="fa fa-arrow-left font-size-20"></i></a></li>
-          <li><a href="#" id="smartolt-night-toggle" class="is-pref-night is-resolved" title="Night mode"><i class="fa fa-sun-o font-size-20 smartolt-theme-icon-light"></i><i class="fa fa-moon-o font-size-20 smartolt-theme-icon-night"></i><i class="fa fa-adjust font-size-20 smartolt-theme-icon-system"></i></a></li>
+          <li><a href="/modulo?pagina=smartolt_olt">OLTs</a></li>
+          <li class="active"><a href="#">OLT details</a></li>
         </ul>
       </div>
     </div>
   </div>
 
   <div class="container">
-    <div class="row">
-      <div class="col-lg-8 col-lg-offset-2">
-        <div class="panel panel-default">
-          <div class="panel-heading"><i class="fa fa-cogs"></i> Configuraci&oacute;n OLT / SmartOLT</div>
-          <div class="panel-body">
-            <form id="configForm">
-              <div class="form-group">
-                <label>Subdominio SmartOLT</label>
-                <input type="text" class="form-control" id="cfg_subdomain" placeholder="ej: joelwifi">
-                <small class="text-muted">Tu subdominio en SmartOLT (sin .smartolt.com)</small>
-              </div>
-              <div class="form-group">
-                <label>API Key / X-Token</label>
-                <input type="password" class="form-control" id="cfg_apikey" placeholder="API Key de SmartOLT">
-                <small class="text-muted">X-Token de SmartOLT para autenticar peticiones API</small>
-              </div>
-              <div class="form-group">
-                <label>OLT ID</label>
-                <input type="number" class="form-control" id="cfg_oltid" placeholder="1">
-                <small class="text-muted">ID de la OLT en SmartOLT (normalmente 1)</small>
-              </div>
-              <div class="form-group">
-                <label>Nombre de OLT</label>
-                <input type="text" class="form-control" id="cfg_oltname" placeholder="JOEL WIFI">
-                <small class="text-muted">Nombre descriptivo de tu OLT</small>
-              </div>
-              <hr>
-              <button type="submit" class="btn btn-primary"><i class="fa fa-save"></i> Guardar Configuraci&oacute;n</button>
-              <button type="button" class="btn btn-default" id="btnTestConn"><i class="fa fa-plug"></i> Probar Conexi&oacute;n</button>
-            </form>
-            <div id="connStatus" style="margin-top:15px;display:none;"></div>
-          </div>
+    <h2>OLT details</h2>
+    <a href="/modulo?pagina=smartolt_olt" class="btn btn-success margin-bottom">Back to OLTs list</a>
+    
+    <ul class="nav nav-tabs">
+      <li class="active"><a href="#">OLT details</a></li>
+      <li><a href="/modulo?pagina=smartolt_olt_cards&olt_id=<%= locals.olt_id || 0 %>">OLT cards</a></li>
+      <li><a href="/modulo?pagina=smartolt_olt_pon_ports&olt_id=<%= locals.olt_id || 0 %>">PON ports</a></li>
+      <li><a href="/modulo?pagina=smartolt_olt_uplink_ports&olt_id=<%= locals.olt_id || 0 %>">Uplink</a></li>
+      <li><a href="/modulo?pagina=smartolt_olt_vlans&olt_id=<%= locals.olt_id || 0 %>">VLANs</a></li>
+      <li><a href="/modulo?pagina=smartolt_olt_ip_pools&olt_id=<%= locals.olt_id || 0 %>">ONU IP Pools</a></li>
+    </ul>
+
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <div class="pull-right">
+          <a href="#" class="btn btn-primary btn-sm">Edit OLT settings</a>
+          <a href="#" class="btn btn-default btn-sm">See history</a>
+          <button class="btn btn-default btn-sm"><i class="fa fa-terminal"></i> Cli</button>
         </div>
+      </div>
+      <div class="panel-body">
+        <table class="table table-striped">
+          <thead><tr><th>OLT setting</th><th>Value</th></tr></thead>
+          <tbody>
+            <tr><td>Name</td><td id="olt-name">Cargando...</td></tr>
+            <tr><td>OLT IP</td><td id="olt-ip">Cargando...</td></tr>
+            <tr><td>Reachable via VPN tunnel</td><td>Yes</td></tr>
+            <tr><td>Telnet TCP port</td><td id="olt-tcp">23</td></tr>
+            <tr><td>OLT telnet username</td><td id="olt-username">******</td></tr>
+            <tr><td>OLT telnet password</td><td>******</td></tr>
+            <tr><td>SNMP UDP port</td><td>161</td></tr>
+            <tr><td>OLT hardware version</td><td id="olt-model">Cargando...</td></tr>
+            <tr><td>Default VLAN</td><td id="olt-vlan">--</td></tr>
+          </tbody>
+        </table>
       </div>
     </div>
   </div>
 </div>
 
-<script>
-// Night mode toggle
-(function() {
-  var STORAGE_LOCAL = 'smartolt-theme-local';
-  function applyTheme(pref) {
-    var isNight = pref === 'night' ? true : (pref === 'light' ? false : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches));
-    var html = document.documentElement;
-    if (isNight) html.classList.add('smartolt-night'); else html.classList.remove('smartolt-night');
-    try { localStorage.setItem('smartolt-night', isNight ? '1' : '0'); } catch(e) {}
-    var toggle = document.getElementById('smartolt-night-toggle');
-    if (toggle) { toggle.classList.remove('is-pref-light','is-pref-night','is-pref-system'); toggle.classList.add('is-pref-' + pref); }
-  }
-  var localPref = (function(){ try { var s = localStorage.getItem(STORAGE_LOCAL); if(s==='night'||s==='light'||s==='system') return s; }catch(e){} return 'system'; })();
-  applyTheme(localPref || (window.SMARTOLT_DB_THEME || 'system'));
-  document.getElementById('smartolt-night-toggle').addEventListener('click', function(e) {
-    e.preventDefault();
-    var isNight = document.documentElement.classList.contains('smartolt-night');
-    var newPref = isNight ? 'light' : 'night';
-    try { localStorage.setItem(STORAGE_LOCAL, newPref); } catch(e) {}
-    applyTheme(newPref);
-  });
-})();
-
-// Cargar config
-$.get('/api/smartolt/config', function(data) {
-  if (data.success && data.config) {
-    var c = data.config;
-    $('#cfg_subdomain').val(c.subdomain || '');
-    $('#cfg_apikey').val(c.api_key || '');
-    $('#cfg_oltid').val(c.olt_id || 1);
-    $('#cfg_oltname').val(c.name || '');
-  }
-}, 'json').fail(function() {
-  // Config not loaded yet, that's ok
-});
-
-// Guardar config
-$('#configForm').on('submit', function(e) {
-  e.preventDefault();
-  var data = {
-    subdomain: $('#cfg_subdomain').val(),
-    api_key: $('#cfg_apikey').val(),
-    olt_id: parseInt($('#cfg_oltid').val()) || 1,
-    name: $('#cfg_oltname').val()
-  };
-  var btn = $(this).find('button[type="submit"]');
-  btn.html('<i class="fa fa-spinner fa-spin"></i> Guardando...').prop('disabled', true);
-  $.post('/api/smartolt/config/save', JSON.stringify(data), function(res) {
-    if (res.success) {
-      btn.html('<i class="fa fa-check"></i> Guardado').removeClass('btn-primary').addClass('btn-success');
-      setTimeout(function() { btn.html('<i class="fa fa-save"></i> Guardar Configuración').prop('disabled', false).removeClass('btn-success').addClass('btn-primary'); }, 2000);
-    } else {
-      alert('Error: ' + (res.msg || 'Unknown'));
-      btn.html('<i class="fa fa-save"></i> Guardar Configuración').prop('disabled', false);
-    }
-  }, 'json').fail(function() {
-    alert('Error de conexion');
-    btn.html('<i class="fa fa-save"></i> Guardar Configuración').prop('disabled', false);
-  });
-});
-
-// Probar conexion
-$('#btnTestConn').on('click', function() {
-  var $btn = $(this);
-  var $status = $('#connStatus');
-  $btn.html('<i class="fa fa-spinner fa-spin"></i> Probando...').prop('disabled', true);
-  $status.hide();
-  $.post('/api/smartolt/test', JSON.stringify({
-    subdomain: $('#cfg_subdomain').val(),
-    api_key: $('#cfg_apikey').val()
-  }), function(res) {
-    $status.show().removeClass('alert-success alert-danger').addClass(res.success ? 'alert alert-success' : 'alert alert-danger');
-    $status.html(res.success ? '<i class="fa fa-check-circle"></i> Conexión exitosa! ' + (res.msg || '') : '<i class="fa fa-exclamation-triangle"></i> ' + (res.msg || 'Error de conexión'));
-    $btn.html('<i class="fa fa-plug"></i> Probar Conexión').prop('disabled', false);
-  }, 'json').fail(function() {
-    $status.show().removeClass('alert-success alert-danger').addClass('alert alert-danger');
-    $status.html('<i class="fa fa-exclamation-triangle"></i> Error de conexión al servidor');
-    $btn.html('<i class="fa fa-plug"></i> Probar Conexión').prop('disabled', false);
-  });
-});
-</script>
-</body>
-</html>
+<footer><div class="text-center">ISPTotal GPON v1.0</div></footer>
+<script src="/public/smartolt-files/bootstrap.min.js"></script>
+</body></html>
