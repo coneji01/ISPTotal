@@ -4274,8 +4274,6 @@ var mesesEsp = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto
     data.sn_param = req.query.sn || '';
     data.board_param = req.query.board || '';
     data.port_param = req.query.port || '';
-    var configuredInject = require('./configured-onus-inject')();
-    // Inyectar script con funciones faltantes (sin modificar el .ejs)
     res.render('pages/' + pagina, { ...data, user: req.session.user }, function(err, html) {
       if (err) { res.send(err); return; }
       var injected = '<script>\n' +
@@ -4325,7 +4323,7 @@ var mesesEsp = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto
         '$(document).ready(function() { cargarUnconfigured(); setInterval(cargarUnconfigured, 30000); });\n' +
         '</script>\n';
       // Insertar despues del primer script de jQuery (que ya cargo)
-      html = html.replace('src="/public/smartolt-files/jquery.min.js"></script>', 'src="/public/smartolt-files/jquery.min.js"></script>' + injected + configuredInject);
+      html = html.replace('src="/public/smartolt-files/jquery.min.js"></script>', 'src="/public/smartolt-files/jquery.min.js"></script>' + injected);
       res.send(html);
     });
   } else {
