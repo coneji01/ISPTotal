@@ -895,13 +895,13 @@ $( document ).ready(function() {
                                     <a href="/modulo?pagina=smartolt_olt" class="btn btn-default btn-xs">OLTs</a>
                                     <div class="btn-group">
                                         <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown">
-                                            <%= (locals.olts && locals.olts[0]) ? (locals.olts[0].nombre) : 'All' %>
+                                            <span id="selected-olt-name">All</span>
                                             <span class="caret"></span>
                                         </button>
                                         <ul class="dropdown-menu pull-right" role="menu">
-                                            <li><a href="/modulo?pagina=GPONManager">All</a></li>
+                                            <li><a href="#" class="olt-filter-btn" data-id="0">All</a></li>
                                             <% if (locals.olts) { locals.olts.forEach(function(o) { %>
-                                            <li><a href="/modulo?pagina=SmartoltSettings&olt_id=<%= o.id %>"><%= o.id %> - <%= o.nombre %></a></li>
+                                            <li><a href="#" class="olt-filter-btn" data-id="<%= o.id %>"><%= o.id %> - <%= o.nombre %></a></li>
                                             <% }); } %>
                                         </ul>
                                     </div>
@@ -2069,6 +2069,16 @@ $(document).ready(function()  {
 	    return false;
 	});
 	
+	// Filtrar KPIs por OLT seleccionada
+	var selectedOltId = 0;
+	$(document).on('click', '.olt-filter-btn', function() {
+	    selectedOltId = parseInt($(this).data('id'));
+	    var name = selectedOltId === 0 ? 'All' : $(this).text().trim();
+	    $('#selected-olt-name').text(name);
+	    actualizarDashboard();
+	    return false;
+	});
+	
 	// Cargar datos de cada OLT (uptime, temperatura)
 	$('.olt-list-item').each(function() {
 	    var id = $(this).data('id');
@@ -2628,8 +2638,9 @@ footer {
 <script>
 // Polling en tiempo real cada 5s (datos desde DB, instantaneo)
 function actualizarDashboard() {
+  var oltFilter = (typeof selectedOltId !== 'undefined' && selectedOltId > 0) ? '?olt_id=' + selectedOltId : '';
   $.ajax({
-    url: '/api/gpon/kpis',
+    url: '/api/gpon/kpis' + oltFilter,
     method: 'GET',
     dataType: 'json',
     timeout: 3000,
