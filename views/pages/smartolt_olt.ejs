@@ -59,6 +59,22 @@ $(document).ready(function() {
     }).fail(function() { toast('❌ Delete failed'); });
   };
   
+  // Test connection
+  $(document).on('click', '.test-olt-btn', function() {
+    var id = $(this).data('id');
+    var btn = $(this);
+    btn.find('i').removeClass('fa-plug').addClass('fa-spinner fa-spin');
+    $.getJSON('/api/olt-detail?id=' + id, function(oltData) {
+      if (!oltData.success || !oltData.data) { toast('❌ OLT not found'); btn.find('i').removeClass('fa-spinner fa-spin').addClass('fa-plug'); return; }
+      var o = oltData.data;
+      $.post('/api/olt/test-connection', { ip: o.olt_ip, port: o.olt_port || 23, username: o.olt_username || 'zte', password: 'zte' })
+        .done(function(r) { toast(r.success ? '✅ ' + (r.message || 'Connected') : '❌ ' + (r.message || 'Failed')); })
+        .fail(function() { toast('❌ Connection error'); })
+        .always(function() { btn.find('i').removeClass('fa-spinner fa-spin').addClass('fa-plug'); });
+    }).fail(function() { toast('❌ Error loading OLT'); btn.find('i').removeClass('fa-spinner fa-spin').addClass('fa-plug'); });
+    return false;
+  });
+  
   // Cargar OLTs via AJAX
   $.getJSON('/api/olt-list', function(data) {
     if (!data || !data.success) return;
@@ -77,6 +93,7 @@ $(document).ready(function() {
         '<td>' +
         '<a href="/modulo?pagina=SmartoltSettings&olt_id=' + o.id + '" class="btn btn-link btn-sm" title="Edit"><i class="fa fa-pencil"></i></a>' +
         '<a href="#" class="btn btn-link btn-sm text-danger" onclick="deleteOlt(' + o.id + ',\'' + o.nombre + '\')" title="Delete"><i class="fa fa-trash"></i></a>' +
+        '<a href="#" class="btn btn-link btn-sm test-olt-btn" data-id="' + o.id + '" title="Test connection"><i class="fa fa-plug"></i></a>' +
         '</td>' +
         '</tr>';
     });

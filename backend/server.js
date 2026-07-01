@@ -10166,28 +10166,32 @@ app.post('/api/olt/test-connection', requireAuth, async (req, res) => {
       var buf = '';
       var step = 0;
       sock.on('data', function(d) {
-        buf += d.toString();
-        if (buf.includes('Username:') || buf.includes('Login:') || buf.includes('login:')) {
-          if (step === 0) { sock.write((username || 'zte') + '\r\n'); step++; }
-          else if (step === 1) { sock.write((password || 'zte') + '\r\n'); step++; }
+        var text = d.toString();
+        buf += text;
+        // Username prompt
+        if (step === 0 && (text.includes('Username:') || text.includes('Login:') || text.includes('login:'))) {
+          sock.write((username || 'zte') + '\r\n');
+          step = 1;
+          return;
         }
+        // Password prompt
+        if (step === 1 && (text.includes('assword:') || text.includes('Password:'))) {
+          sock.write((password || 'zte') + '\r\n');
+          step = 2;
+          return;
+        }
+        // Prompt encontrado (# o >)
         if (buf.includes('#') || buf.includes('>')) {
           sock.write('show card\r\n');
           setTimeout(function() {
             sock.destroy();
-            var hasPrompt = buf.includes('#') || buf.includes('>');
-            var hasCardData = buf.includes('Slot') || buf.includes('INSERVICE');
-            resolve({ success: hasPrompt, message: hasPrompt ? 'Telnet connected and authenticated successfully' : 'Connected but login may have failed', output: buf.slice(0, 500) });
+            resolve({ success: true, message: 'Telnet connected and authenticated successfully', output: buf.slice(0, 500) });
           }, 1500);
-        }
-        if (buf.includes('Password:') && step === 2) {
-          resolve({ success: false, message: 'Authentication failed - wrong username or password' });
-          sock.destroy();
+          return;
         }
       });
       sock.on('timeout', function() { resolve({ success: false, message: 'Connection timeout' }); sock.destroy(); });
       sock.on('error', function(e) { resolve({ success: false, message: e.message }); });
-      // Timeout total
       setTimeout(function() { resolve({ success: false, message: 'Connection timeout after 10s' }); sock.destroy(); }, 10000);
     });
     
