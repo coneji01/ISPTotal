@@ -4,7 +4,7 @@ module.exports = function() {
   return '<script>\n' +
   'function cargarConfigured(pag) {\n' +
   '  pag = pag || 1;\n' +
-  '  $.ajax({ url: "/api/onu/configured-list?page=" + pag + "&per_page=100", method: "GET", dataType: "json",\n' +
+  '  $.ajax({ url: "/api/onu/configured-list?page=" + pag + "&per_page=100&_=" + Date.now(), method: "GET", dataType: "json",\n' +
   '    success: function(r) {\n' +
   '      if (!r.success || !r.data) return;\n' +
   '      var h = \'<div class="table-responsive"><table class="table table-striped table-bordered"><thead><tr><th></th><th>Status</th><th>View</th><th>Name</th><th>SN / MAC</th><th>ONU</th><th>Zone</th><th>ODB</th><th>Signal</th><th>B/R</th><th>VLAN</th><th>VoIP</th><th>TV</th><th>Type</th><th>Auth date</th></tr></thead><tbody>\';\n' +
@@ -41,6 +41,7 @@ module.exports = function() {
   '    }\n' +
   '  });\n' +
   '}\n' +
-  '$("#onu_configured_list").length && $(document).ready(function() { cargarConfigured(1); });\n' +
+  // Usar setTimeout largo para ejecutarse DESPUES de todos los scripts del clon
+  'setTimeout(function() { if ($("#onu_configured_list").length) cargarConfigured(1); }, 1500);\n' +
   '</script>';
 };
