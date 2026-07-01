@@ -1180,26 +1180,27 @@ app.all('/modulo', requireAuth, (req, res) => {
     }
     case 'GPONManager': {
       // Ruta express directa para GPONManager (ultra rápido, sin pasar por el switch pesado)
+      data.clientes = db.prepare("SELECT id, nombre, cedula, telefono FROM clientes WHERE estado='activo' ORDER BY nombre ASC").all();
       try {
         data.olts = db.prepare("SELECT id, nombre, COALESCE(modelo,'') as modelo FROM olts ORDER BY id ASC").all();
       } catch(e) {
-        data.olts = [];
+        data.olts = db.prepare("SELECT id, nombre, '' as modelo FROM olts ORDER BY id ASC").all();
       }
       // KPIs DIRECTOS desde DB (sin cache, instantáneo)
       try {
-        var oltId = parseInt(req.query.olt_id) || 0;
-        var oltWhere = oltId > 0 ? 'olt_id=' + oltId : '1=1';
-        var totalOnu = db.prepare("SELECT COUNT(*) as c FROM onu WHERE " + oltWhere).get();
-        var onlineOnu = db.prepare("SELECT COUNT(*) as c FROM onu WHERE " + oltWhere + " AND estado='working'").get();
-        var pwrfailOnu = db.prepare("SELECT COUNT(*) as c FROM onu WHERE " + oltWhere + " AND estado='pwrfail'").get();
-        var losOnu = db.prepare("SELECT COUNT(*) as c FROM onu WHERE " + oltWhere + " AND estado='los'").get();
+        var oltId = parseInt(req.query.olt_id) || 1;
+        var totalOnu = db.prepare("SELECT COUNT(*) as c FROM onu WHERE olt_id=?").get(oltId);
+        var onlineOnu = db.prepare("SELECT COUNT(*) as c FROM onu WHERE olt_id=? AND estado='working'").get(oltId);
+        var pwrfailOnu = db.prepare("SELECT COUNT(*) as c FROM onu WHERE olt_id=? AND estado='pwrfail'").get(oltId);
+        var losOnu = db.prepare("SELECT COUNT(*) as c FROM onu WHERE olt_id=? AND estado='los'").get(oltId);
+        var waitingOnu = db.prepare('SELECT waiting_auth FROM olt_stats WHERE olt_id=? ORDER BY updated_at DESC LIMIT 1').get(oltId);
         var total = totalOnu ? totalOnu.c : 0;
         data.onu_online = (onlineOnu && onlineOnu.c) || 0;
         data.onu_total = total;
         data.onu_offline = total - data.onu_online;
         data.onu_pwrfail = (pwrfailOnu && pwrfailOnu.c) || 0;
         data.onu_los = (losOnu && losOnu.c) || 0;
-        data.onu_waiting = 0;
+        data.onu_waiting = (waitingOnu && waitingOnu.waiting_auth) || 0;
       } catch(e) {
         data.onu_online = 0; data.onu_total = 0; data.onu_offline = 0;
         data.onu_pwrfail = 0; data.onu_los = 0; data.onu_waiting = 0;
@@ -1207,8 +1208,9 @@ app.all('/modulo', requireAuth, (req, res) => {
       break;
     }
     case 'SmartoltConfigured': {
-      // No cargar todas las ONUs aqui - se cargan via AJAX con paginacion
+      data.onus = db.prepare('SELECT o.*, c.nombre as cliente_nombre FROM onu o LEFT JOIN clientes c ON c.id=o.cliente_id ORDER BY o.created_at DESC').all();
       data.olts = db.prepare('SELECT id, nombre FROM olts').all();
+      data.clientes = db.prepare("SELECT id, nombre FROM clientes WHERE estado='activo' ORDER BY nombre").all();
       data.token = 'ispt-' + Date.now();
       break;
     }
@@ -10176,16 +10178,17 @@ app.get('/api/gpon/onus', requireAuth, async (req, res) => {
 // GET /api/gpon/kpis - KPIs del dashboard (refresco cada 5s)
 app.get('/api/gpon/kpis', requireAuth, (req, res) => {
   try {
+    // Default to OLT 2 (ZTE C320 - main production OLT) instead of OLT 1
     var oltId = parseInt(req.query.olt_id) || 0;
-    var oltFilter = oltId > 0 ? ' WHERE olt_id=' + oltId : '';
+    var oltFilter = oltId > 0 ? ' WHERE olt_id=' + oltId : ' WHERE olt_id=2';
     
     var total = db.prepare("SELECT COUNT(*) as c FROM onu" + oltFilter).get();
-    var online = db.prepare("SELECT COUNT(*) as c FROM onu" + oltFilter + (oltFilter ? " AND estado='working'" : " WHERE estado='working'")).get();
-    var pwrfail = db.prepare("SELECT COUNT(*) as c FROM onu" + oltFilter + (oltFilter ? " AND estado='pwrfail'" : " WHERE estado='pwrfail'")).get();
-    var los = db.prepare("SELECT COUNT(*) as c FROM onu" + oltFilter + (oltFilter ? " AND estado='los'" : " WHERE estado='los'")).get();
-    var waiting = 0;
+    var online = db.prepare("SELECT COUNT(*) as c FROM onu" + oltFilter + " AND estado='working'").get();
+    var pwrfail = db.prepare("SELECT COUNT(*) as c FROM onu" + oltFilter + " AND estado='pwrfail'").get();
+    var los = db.prepare("SELECT COUNT(*) as c FROM onu" + oltFilter + " AND estado='los'").get();
+    var waiting = db.prepare('SELECT waiting_auth FROM olt_stats WHERE olt_id=? ORDER BY updated_at DESC LIMIT 1').get(oltId > 0 ? oltId : 2);
     var totalOnu = total ? total.c : 0;
-    res.json({ success: true, total: totalOnu, online: (online?.c||0), offline: totalOnu - (online?.c||0), pwrfail: (pwrfail?.c||0), los: (los?.c||0), waiting: waiting });
+    res.json({ success: true, total: totalOnu, online: (online?.c||0), offline: totalOnu - (online?.c||0), pwrfail: (pwrfail?.c||0), los: (los?.c||0), waiting: (waiting?.waiting_auth||0) });
   } catch(e) { res.json({ success: false, message: e.message }); }
 });
 
