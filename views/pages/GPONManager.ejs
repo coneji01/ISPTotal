@@ -891,40 +891,33 @@ $( document ).ready(function() {
                     <div class="col-lg-4">
                     	<div class="panel panel-default panel-olt">
                             <div class="panel-heading">
-                                OLT <span id="olt-name-display">{{nombre}}</span>                                <div class="pull-right panel-heading-button">
+                                <i class="fa fa-server fa-fw"></i> OLTs                                <div class="pull-right panel-heading-button">
+                                    <a href="/modulo?pagina=smartolt_olt" class="btn btn-default btn-xs">OLTs</a>
                                     <div class="btn-group">
-                                        <button type="button" class="btn btn-default btn-xs dropdown-toggle panel-heading-dropdown-toggle" data-toggle="dropdown">
-                                            <span id="selected_olt"><%= (locals.olts && locals.olts[0]) ? (locals.olts[0].id + ' - ' + locals.olts[0].nombre) : 'Seleccionar OLT' %></span>
+                                        <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown">
+                                            <%= (locals.olts && locals.olts[0]) ? (locals.olts[0].nombre) : 'All' %>
                                             <span class="caret"></span>
                                         </button>
-                                        <ul class="dropdown-menu pull-right" role="menu" id="dropdownOlts">
+                                        <ul class="dropdown-menu pull-right" role="menu">
+                                            <li><a href="/modulo?pagina=GPONManager">All</a></li>
                                             <% if (locals.olts) { locals.olts.forEach(function(o) { %>
-                                            <li><a href="#" class="olt_option min-width-250" data-id="<%= o.id %>" data-ip="<%= o.olt_ip %>"><%= o.id %> - <%= o.nombre %></a></li>
+                                            <li><a href="/modulo?pagina=SmartoltSettings&olt_id=<%= o.id %>"><%= o.id %> - <%= o.nombre %></a></li>
                                             <% }); } %>
                                         </ul>
                                     </div>
                                 </div>
                             </div>
-                            <div class="panel-body text-center">
-                                <img class="dashboard-img" src="/content/img/ZTE-C300.png" data-smartolt-ph-bound="1">
-                                <div class="list-group text-left margin-top-xlg">
-                                    <span class="list-group-item">
-                                        <i class="fa fa-cogs fa-fw"></i> Uptime <span class="pull-right"><em id="olt-up-time" class="small"><%= locals.uptime_real || 'Cargando...' %></em></span>
-                                    </span>
-                                    <span class="list-group-item">
-                                        <i class="fa fa-thermometer-half fa-fw"></i> Temperature <span class="pull-right"><em id="olt-env-temp" class="small"><%= locals.temp_real || '--' %></em></span>
-                                    </span>
-                                    <span class="list-group-item">
-                                        <i class="fa fa-tag fa-fw"></i> Modelo <span class="pull-right"><em id="olt-model-display" class="small">--</em></span>
-                                    </span>
-                                    <span class="list-group-item">
-                                        <i class="fa fa-globe fa-fw"></i> IP <span class="pull-right"><em id="olt-ip-display" class="small">--</em></span>
-                                    </span>
+                            <div class="panel-body">
+                                <div class="list-group olt-list" id="olt-list-panel">
+                                    <% if (locals.olts) { locals.olts.forEach(function(o) { %>
+                                    <a href="/modulo?pagina=smartolt_olt_details&olt_id=<%= o.id %>" class="list-group-item olt-list-item" data-id="<%= o.id %>">
+                                        <i class="fa fa-server fa-fw"></i> <%= o.id %> - <%= o.nombre %>
+                                        <span class="pull-right small"><em id="olt-meta-<%= o.id %>">loading...</em></span>
+                                    </a>
+                                    <% }); } %>
                                 </div>
-                                                        </div>
-                            <!-- /.panel-body -->
+                            </div>
                         </div>
-                        <!-- /.panel -->
                                                 <div class="panel panel-default">
                             <div class="panel-heading">
                                 <i class="fa fa-info-circle fa-fw"></i> Info                            </div>
@@ -2074,6 +2067,20 @@ $(document).ready(function()  {
 	        $('#olt-env-temp').text('--');
 	    });
 	    return false;
+	});
+	
+	// Cargar datos de cada OLT (uptime, temperatura)
+	$('.olt-list-item').each(function() {
+	    var id = $(this).data('id');
+	    var el = $(this).find('em[id="olt-meta-' + id + '"]');
+	    $.getJSON('/api/olt/details?id=' + id, function(r) {
+	        var meta = '';
+	        if (r.success) {
+	            meta = (r.uptime || '') + (r.uptime && r.temperature && r.temperature !== 'N/A' ? ', ' : '') + (r.temperature !== 'N/A' ? r.temperature : '');
+	            if (!meta) meta = 'No data';
+	        } else { meta = 'Offline'; }
+	        el.text(meta);
+	    }).fail(function() { el.text('Error'); });
 	});
 
 	    getWaitingForAuth();

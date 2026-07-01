@@ -4263,7 +4263,7 @@ var mesesEsp = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto
   }
 
   // SmartOLT modules se renderizan sin layout (standalone)
-  var smartoltModules = ['GPONManager', 'SmartoltConfigured', 'SmartoltUnconfigured', 'SmartoltLocations', 'SmartoltOnuTypes', 'SmartoltSpeedProfiles', 'SmartoltSettings', 'SmartoltDashboard', 'SmartoltAuthorizeOnu', 'smartolt_olt', 'smartolt_olt_cards', 'smartolt_olt_pon_ports', 'smartolt_olt_uplink_ports', 'smartolt_olt_vlans', 'smartolt_olt_ip_pools', 'smartolt_olt_add'];
+  var smartoltModules = ['GPONManager', 'SmartoltConfigured', 'SmartoltUnconfigured', 'SmartoltLocations', 'SmartoltOnuTypes', 'SmartoltSpeedProfiles', 'SmartoltSettings', 'SmartoltDashboard', 'SmartoltAuthorizeOnu', 'smartolt_olt', 'smartolt_olt_cards', 'smartolt_olt_pon_ports', 'smartolt_olt_uplink_ports', 'smartolt_olt_vlans', 'smartolt_olt_ip_pools', 'smartolt_olt_add', 'smartolt_olt_details'];
   
   // Clon pages que necesitan funciones del CDN de SmartOLT
   var clonePages = ['smartolt_configured_full', 'smartolt_unconfigured_full'];
