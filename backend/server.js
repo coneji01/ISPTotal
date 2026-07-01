@@ -4276,6 +4276,7 @@ var mesesEsp = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto
     data.sn_param = req.query.sn || '';
     data.board_param = req.query.board || '';
     data.port_param = req.query.port || '';
+    var configuredInject = require('./configured-onus-inject')();
     // Inyectar script con funciones faltantes (sin modificar el .ejs)
     res.render('pages/' + pagina, { ...data, user: req.session.user }, function(err, html) {
       if (err) { res.send(err); return; }
@@ -4324,7 +4325,7 @@ var mesesEsp = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto
         '$(document).ready(function() { cargarUnconfigured(); setInterval(cargarUnconfigured, 30000); });\n' +
         '</script>\n';
       // Insertar despues del primer script de jQuery (que ya cargo)
-      html = html.replace('src="/public/smartolt-files/jquery.min.js"></script>', 'src="/public/smartolt-files/jquery.min.js"></script>' + injected);
+      html = html.replace('src="/public/smartolt-files/jquery.min.js"></script>', 'src="/public/smartolt-files/jquery.min.js"></script>' + injected + configuredInject);
       res.send(html);
     });
   } else {
@@ -6644,16 +6645,25 @@ app.post('/api/smartolt/sync', requireAuth, async (req, res) => {
         else if (Array.isArray(data)) onus = data;
         if (!onus.length) continue;
 
-        const upsert = db.prepare("INSERT INTO onu (sn, nombre, olt_id, puerto_olt, estado, senial) VALUES (?,?,?,?,?,?) ON CONFLICT(sn) DO UPDATE SET nombre=COALESCE(excluded.nombre,onu.nombre), olt_id=COALESCE(excluded.olt_id,onu.olt_id), puerto_olt=COALESCE(excluded.puerto_olt,onu.puerto_olt), estado=COALESCE(excluded.estado,onu.estado), senial=COALESCE(excluded.senial,onu.senial)");
+        const upsert = db.prepare("INSERT INTO onu (sn, nombre, olt_id, puerto_olt, estado, senial, senial_texto, zona, odb, modo, vlan, voip, tv, tipo_onu, auth_date) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT(sn) DO UPDATE SET nombre=COALESCE(excluded.nombre,onu.nombre), olt_id=COALESCE(excluded.olt_id,onu.olt_id), puerto_olt=COALESCE(excluded.puerto_olt,onu.puerto_olt), estado=COALESCE(excluded.estado,onu.estado), senial=COALESCE(excluded.senial,onu.senial), senial_texto=COALESCE(excluded.senial_texto,onu.senial_texto), zona=COALESCE(excluded.zona,onu.zona), odb=COALESCE(excluded.odb,onu.odb), modo=COALESCE(excluded.modo,onu.modo), vlan=COALESCE(excluded.vlan,onu.vlan), voip=COALESCE(excluded.voip,onu.voip), tv=COALESCE(excluded.tv,onu.tv), tipo_onu=COALESCE(excluded.tipo_onu,onu.tipo_onu), auth_date=COALESCE(excluded.auth_date,onu.auth_date)");
         const txn = db.transaction(function() {
           onus.forEach(function(o) {
             const sn = o.sn || o.serial || o.serial_number || '';
             if (!sn) return;
             const nombre = o.name || o.nombre || o.description || sn;
-            const puerto = o.port || o.pon_port || o.puerto || null;
-            const estado = (o.status === 'active' || o.admin_status === 'active') ? 'activo' : 'inactive';
-            const senial = o.signal || o.signal_dbm || o.rx_power || o.senial || null;
-            upsert.run(sn, nombre, olt.id, puerto, estado, senial);
+            const puerto = o.port || o.pon_port || o.puerto || o.onu_id || null;
+            const estado = (o.status === 'active' || o.state === 'working') ? 'working' : (o.state || o.status || '');
+            const senial = o.signal ? parseFloat(o.signal) : (o.signal_dbm || o.rx_power || null);
+            const senialTexto = o.signal ? String(o.signal) + ' dBm' : '';
+            const zona = o.zone_name || o.zone || '';
+            const odb = o.odb || '';
+            const modo = o.mode || o.wan_mode || '';
+            const vlan = o.vlan || '';
+            const voip = o.voip || '';
+            const tv = o.tv || '';
+            const tipoOnu = o.onu_type || o.type || o.onu_type_name || '';
+            const authDate = o.auth_date || o.authorized_at || '';
+            upsert.run(sn, nombre, olt.id, String(puerto), estado, senial, senialTexto, zona, odb, modo, vlan, voip, tv, tipoOnu, authDate);
           });
         });
         txn();
@@ -6662,6 +6672,149 @@ app.post('/api/smartolt/sync', requireAuth, async (req, res) => {
     }
     return res.json({ success: true, message: totalOnus + ' ONUs sincronizadas de ' + olts.length + ' OLTs' + (errors.length ? ' (' + errors.length + ' errores)' : ''), count: totalOnus });
   } catch(e) { return res.json({ success: false, message: e.message || 'Error' }); }
+});
+
+// GET /api/onu/configured-list - List all configured ONUs from DB (SmartOLT-compatible format)
+app.get('/api/onu/configured-list', requireAuth, (req, res) => {
+  try {
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const perPage = Math.min(200, Math.max(10, parseInt(req.query.per_page) || 100));
+    const offset = (page - 1) * perPage;
+    const search = req.query.search || '';
+    const oltId = parseInt(req.query.olt_id) || 0;
+    const estado = req.query.estado || '';
+
+    // Build query conditions
+    let where = [];
+    let params = [];
+
+    if (oltId > 0) {
+      where.push('o.olt_id = ?');
+      params.push(oltId);
+    }
+    if (search) {
+      where.push('(o.sn LIKE ? OR o.nombre LIKE ?)');
+      params.push('%' + search + '%', '%' + search + '%');
+    }
+    if (estado) {
+      where.push('o.estado = ?');
+      params.push(estado);
+    }
+
+    const whereClause = where.length > 0 ? 'WHERE ' + where.join(' AND ') : '';
+
+    // Get total count
+    const countRow = db.prepare('SELECT COUNT(*) as c FROM onu o ' + whereClause).get(...params);
+    const total = countRow ? countRow.c : 0;
+    const lastPage = Math.max(1, Math.ceil(total / perPage));
+
+    // Get ONUs with OLT names
+    const onus = db.prepare(`
+      SELECT o.*, ol.nombre as olt_nombre
+      FROM onu o
+      LEFT JOIN olts ol ON ol.id = o.olt_id
+      ${whereClause}
+      ORDER BY o.id DESC
+      LIMIT ? OFFSET ?
+    `).all(...params, perPage, offset);
+
+    // Format as SmartOLT-style response
+    const data = onus.map(function(o) {
+      // Format signal with icon and dBm
+      var signalStr = '';
+      if (o.senial_texto) {
+        signalStr = o.senial_texto;
+      } else if (o.senial !== null && o.senial !== undefined) {
+        var senVal = parseFloat(o.senial);
+        if (!isNaN(senVal)) {
+          signalStr = senVal.toFixed(2) + ' dBm';
+        }
+      }
+
+      // Map state
+      var stateDisplay = 'offline';
+      var stateIcon = 'fa-circle';
+      var stateColor = '#6c757d'; // gray for offline
+      if (o.estado === 'working') {
+        stateDisplay = 'online';
+        stateColor = '#28a745'; // green globe
+      } else if (o.estado === 'pwrfail') {
+        stateDisplay = 'pwrfail';
+        stateColor = '#ffc107'; // warning yellow
+      } else if (o.estado === 'los') {
+        stateDisplay = 'los';
+        stateColor = '#dc3545'; // red
+      } else if (o.estado === 'offline') {
+        stateDisplay = 'offline';
+        stateColor = '#6c757d'; // gray
+      }
+
+      // Format description like SmartOLT: "1 - ZTE C300 gpon-onu_1/2/10:47"
+      var oltName = o.olt_nombre || ('OLT #' + (o.olt_id || 0));
+      var portStr = o.puerto_olt ? 'gpon-onu_1/2/' + o.puerto_olt : 'gpon-onu_?';
+      var description = (o.olt_id || '?') + ' - ' + oltName + ' ' + portStr;
+
+      // Format auth_date
+      var authDate = '';
+      if (o.auth_date) {
+        try {
+          var d = new Date(o.auth_date);
+          if (!isNaN(d.getTime())) {
+            var dd = String(d.getDate()).padStart(2, '0');
+            var mm = String(d.getMonth() + 1).padStart(2, '0');
+            var yyyy = d.getFullYear();
+            authDate = dd + '-' + mm + '-' + yyyy;
+          } else {
+            authDate = String(o.auth_date).substring(0, 10);
+          }
+        } catch(e) {
+          authDate = String(o.auth_date).substring(0, 10);
+        }
+      } else if (o.created_at) {
+        try {
+          var d = new Date(o.created_at);
+          if (!isNaN(d.getTime())) {
+            var dd = String(d.getDate()).padStart(2, '0');
+            var mm = String(d.getMonth() + 1).padStart(2, '0');
+            var yyyy = d.getFullYear();
+            authDate = dd + '-' + mm + '-' + yyyy;
+          }
+        } catch(e) {}
+      }
+
+      return {
+        id: o.id,
+        sn: o.sn || '',
+        name: o.nombre || '--',
+        description: description,
+        zone_name: o.zona || '',
+        odb: o.odb || '',
+        signal: signalStr,
+        mode: o.modo || 'Router',
+        vlan: o.vlan || '',
+        voip: o.voip || '',
+        tv: o.tv || '',
+        onu_type_name: o.tipo_onu || '',
+        state: stateDisplay,
+        auth_date: authDate,
+        olt_nombre: oltName,
+        // Raw values for frontend processing
+        signal_raw: o.senial,
+        estado_raw: o.estado
+      };
+    });
+
+    res.json({
+      success: true,
+      total: total,
+      per_page: perPage,
+      current_page: page,
+      last_page: lastPage,
+      data: data
+    });
+  } catch (e) {
+    res.json({ success: false, message: e.message });
+  }
 });
 
 // GET /api/smartolt/onus - List ONUs
@@ -10025,12 +10178,15 @@ app.get('/api/gpon/onus', requireAuth, async (req, res) => {
 // GET /api/gpon/kpis - KPIs del dashboard (refresco cada 5s)
 app.get('/api/gpon/kpis', requireAuth, (req, res) => {
   try {
-    var oltId = parseInt(req.query.olt_id) || 1;
-    var total = db.prepare("SELECT COUNT(*) as c FROM onu WHERE olt_id=?").get(oltId);
-    var online = db.prepare("SELECT COUNT(*) as c FROM onu WHERE olt_id=? AND estado='working'").get(oltId);
-    var pwrfail = db.prepare("SELECT COUNT(*) as c FROM onu WHERE olt_id=? AND estado='pwrfail'").get(oltId);
-    var los = db.prepare("SELECT COUNT(*) as c FROM onu WHERE olt_id=? AND estado='los'").get(oltId);
-    var waiting = db.prepare('SELECT waiting_auth FROM olt_stats WHERE olt_id=? ORDER BY updated_at DESC LIMIT 1').get(oltId);
+    // Default to OLT 2 (ZTE C320 - main production OLT) instead of OLT 1
+    var oltId = parseInt(req.query.olt_id) || 0;
+    var oltFilter = oltId > 0 ? ' WHERE olt_id=' + oltId : ' WHERE olt_id=2';
+    
+    var total = db.prepare("SELECT COUNT(*) as c FROM onu" + oltFilter).get();
+    var online = db.prepare("SELECT COUNT(*) as c FROM onu" + oltFilter + " AND estado='working'").get();
+    var pwrfail = db.prepare("SELECT COUNT(*) as c FROM onu" + oltFilter + " AND estado='pwrfail'").get();
+    var los = db.prepare("SELECT COUNT(*) as c FROM onu" + oltFilter + " AND estado='los'").get();
+    var waiting = db.prepare('SELECT waiting_auth FROM olt_stats WHERE olt_id=? ORDER BY updated_at DESC LIMIT 1').get(oltId > 0 ? oltId : 2);
     var totalOnu = total ? total.c : 0;
     res.json({ success: true, total: totalOnu, online: (online?.c||0), offline: totalOnu - (online?.c||0), pwrfail: (pwrfail?.c||0), los: (los?.c||0), waiting: (waiting?.waiting_auth||0) });
   } catch(e) { res.json({ success: false, message: e.message }); }
