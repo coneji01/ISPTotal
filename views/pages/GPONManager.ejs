@@ -907,15 +907,23 @@ $( document ).ready(function() {
                                     </div>
                                 </div>
                             </div>
-                            <div class="panel-body">
-                                <img id="olt-image" class="dashboard-img" src="/content/img/ZTE-C300.png" style="display:block;margin:0 auto 15px;max-width:180px;">
-                                <div class="list-group olt-list" id="olt-list-panel">
-                                    <% if (locals.olts) { locals.olts.forEach(function(o) { %>
-                                    <a href="/modulo?pagina=smartolt_olt_details&olt_id=<%= o.id %>" class="list-group-item olt-list-item" data-id="<%= o.id %>">
-                                        <i class="fa fa-server fa-fw"></i> <%= o.id %> - <%= o.nombre %>
-                                        <span class="pull-right small"><em id="olt-meta-<%= o.id %>">loading...</em></span>
-                                    </a>
-                                    <% }); } %>
+                            <div class="panel-body" id="olt-panel-body">
+                                <div id="olt-all-view">
+                                    <div class="list-group olt-list" id="olt-list-panel">
+                                        <% if (locals.olts) { locals.olts.forEach(function(o) { %>
+                                        <a href="/modulo?pagina=smartolt_olt_details&olt_id=<%= o.id %>" class="list-group-item olt-list-item" data-id="<%= o.id %>">
+                                            <i class="fa fa-server fa-fw"></i> <%= o.id %> - <%= o.nombre %>
+                                            <span class="pull-right small"><em id="olt-meta-<%= o.id %>">loading...</em></span>
+                                        </a>
+                                        <% }); } %>
+                                    </div>
+                                </div>
+                                <div id="olt-single-view" style="display:none;text-align:center;">
+                                    <img id="olt-image" class="dashboard-img" src="/content/img/ZTE-C300.png" style="max-width:180px;margin-bottom:15px;">
+                                    <div class="list-group text-left">
+                                        <span class="list-group-item"><i class="fa fa-clock-o fa-fw"></i> Uptime <span class="pull-right"><em id="olt-single-uptime">--</em></span></span>
+                                        <span class="list-group-item"><i class="fa fa-thermometer-half fa-fw"></i> Temperature <span class="pull-right"><em id="olt-single-temp">--</em></span></span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -2070,7 +2078,7 @@ $(document).ready(function()  {
 	    return false;
 	});
 	
-	// Filtrar OLT seleccionada - cambia imagen y nombre, NO los KPIs
+	// Filtrar OLT seleccionada - toggle entre vista All (lista) y Single (imagen + datos)
 	var selectedOltId = 0;
 	$(document).on('click', '.olt-filter-btn', function() {
 	    selectedOltId = parseInt($(this).data('id'));
@@ -2080,14 +2088,31 @@ $(document).ready(function()  {
 	    $('#selected-olt-name').text(name);
 	    if (selectedOltId === 0) {
 	        $('#olt-header-name').text('OLTs');
-	        $('#olt-image').attr('src', '/content/img/ZTE-C300.png');
+	        $('#olt-all-view').show();
+	        $('#olt-single-view').hide();
 	    } else {
 	        $('#olt-header-name').text(oltName);
+	        $('#olt-all-view').hide();
+	        $('#olt-single-view').show();
+	        $('#olt-single-uptime').html('<i class="fa fa-spinner fa-spin"></i>');
+	        $('#olt-single-temp').html('<i class="fa fa-spinner fa-spin"></i>');
 	        $.getJSON('/api/olt-detail?id=' + selectedOltId, function(d) {
 	            if (d.success && d.data) {
 	                var modelo = d.data.modelo || 'ZTE-C300';
 	                $('#olt-image').attr('src', '/content/img/' + modelo + '.png');
 	            }
+	        });
+	        $.getJSON('/api/olt/details?id=' + selectedOltId, function(r) {
+	            if (r.success) {
+	                $('#olt-single-uptime').text(r.uptime || 'N/A');
+	                $('#olt-single-temp').text(r.temperature || 'N/A');
+	            } else {
+	                $('#olt-single-uptime').text('No disponible');
+	                $('#olt-single-temp').text('--');
+	            }
+	        }).fail(function() {
+	            $('#olt-single-uptime').text('Error');
+	            $('#olt-single-temp').text('--');
 	        });
 	    }
 	    return false;
