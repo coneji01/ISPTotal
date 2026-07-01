@@ -2086,6 +2086,8 @@ $(document).ready(function()  {
 	    var parts = name.split(' - ');
 	    var oltName = parts.length > 1 ? parts[1] : name;
 	    $('#selected-olt-name').text(name);
+	    // Cerrar dropdown
+	    $(this).closest('.dropdown-menu').parent().removeClass('open');
 	    if (selectedOltId === 0) {
 	        $('#olt-header-name').text('OLTs');
 	        $('#olt-all-view').show();
